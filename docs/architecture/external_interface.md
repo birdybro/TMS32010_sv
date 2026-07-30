@@ -23,6 +23,13 @@ activity including the table-read phase
 [ti-tms32010-users-guide-spru001b, §§2.3–2.5 and Figures 2-10–2-12,
 printed pp. 2-15–2-19 (PDF pp. 39–43)]. **Confidence: VERIFIED_PRIMARY.**
 
+The data sheet establishes falling `CLKOUT` as the input sampling boundary.
+Address transition begins after a falling edge, a read strobe asserts about
+one quarter-cycle later, and address/strobe remain stable through the next
+falling edge. See `docs/timing/native_phase_contract.md`
+[ti-tms32010-users-guide-spru001b, Appendix A data sheet, printed
+pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
+
 For an I/O operation the selected three-bit port address appears on
 `PA2..PA0` while upper address pins are zero. Input and output each have eight
 16-bit ports [ti-tms32010-users-guide-spru001b, §2.3.2, printed
@@ -57,5 +64,6 @@ This is a design target, not final port naming:
 | observation | architectural cycle, phase, transaction-valid |
 
 The core must keep transaction signals stable for the entire documented
-phase. Electrical setup, hold, access, and output-enable numbers will be
-captured in constraints after Appendix A transcription.
+phase. Initial Appendix A electrical parameters are transcribed in the native
+phase contract; the pin wrapper will apply them as constraints rather than
+RTL delays.

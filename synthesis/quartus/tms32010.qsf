@@ -1,10 +1,12 @@
 set_global_assignment -name FAMILY "Cyclone V"
 set_global_assignment -name DEVICE 5CSEBA6U23I7
-set_global_assignment -name TOP_LEVEL_ENTITY tms32010_core
+set_global_assignment -name TOP_LEVEL_ENTITY tms32010_synth_top
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/packages/tms32010_pkg.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_core.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_program_bus.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../common/tms32010_synth_top.sv
 set_global_assignment -name SDC_FILE tms32010.sdc
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
 set_global_assignment -name OPTIMIZATION_MODE "BALANCED"

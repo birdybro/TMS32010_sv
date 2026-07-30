@@ -31,6 +31,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
+- Primary-transcribed native timing contract for normal program reads, table
+  transfers, I/O, reset, interrupt sampling, and BIO sampling.
+- Standalone four-subphase program-read engine with distinct FPGA
+  initialization and physical-reset controls, plus directed phase/reset/stall
+  verification.
 
 ### Changed
 
@@ -40,12 +45,20 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the partial core in 36 ALMs with positive 50 MHz
-  setup/hold slack and no unconstrained I/O path categories.
+- Quartus 17.0.2 fits the partial core plus phase engine in 42 ALMs with
+  positive internal 50 MHz setup/hold slack and 209.29 MHz slow-corner
+  internal Fmax; harness I/O paths are explicitly excluded pending a real
+  wrapper.
+- Appendix A establishes falling `CLKOUT` as the input sampling boundary and
+  resolves reset release to an address-0 fetch after one complete cycle.
 
 ### Fixed
 
 - Corrected project spelling and naming in the README.
+- Corrected reset duration from five crystal clocks to five complete `CLKOUT`
+  machine cycles after reviewing the Appendix A timing table.
+- Rejected artificial harness I/O delay assumptions that produced hold
+  violations; synthesis evidence now scopes itself to internal timing.
 
 ### Verified
 

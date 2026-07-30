@@ -10,9 +10,11 @@ instruction-complete TMS32010.
 make synth-yosys
 ```
 
-The script elaborates the portable package, decoder, and core; runs hierarchy
-and structural checks; performs generic synthesis; and writes an ignored JSON
-netlist below `build/yosys/`.
+The script elaborates the portable package, decoder, execution core, and
+program-bus phase engine through a synthesis-only harness; runs hierarchy and
+structural checks; performs generic synthesis; and writes an ignored JSON
+netlist below `build/yosys/`. The harness does not claim functional
+integration between the temporary core interface and native bus engine.
 
 ## Quartus
 
@@ -26,7 +28,10 @@ make synth-quartus \
 ```
 
 The 50 MHz constraint is an FPGA implementation objective, not an emulated
-TMS32010 crystal frequency. All current primary inputs and outputs receive
-simple synchronous I/O delay constraints so TimeQuest can identify genuinely
-unconstrained paths. Fitter and timing reports are generated locally and
-remain ignored.
+TMS32010 crystal frequency. The current synthesis-only harness explicitly
+false-paths its non-clock ports because no board-level memory/host wrapper yet
+defines their timing. This qualifies internal register timing only. The
+integrated wrapper must replace every exclusion with real I/O or
+register-to-register constraints before release; these exclusions are not
+portable-core I/O closure. Fitter and timing reports are generated locally
+and remain ignored.

@@ -45,7 +45,7 @@ lint: docs
 	rtl_files="$$(find rtl/core rtl/wrappers -type f -name '*.sv' -print | sort)"; \
 	if [ -n "$$rtl_files" ]; then \
 	  command -v "$(VERILATOR)" >/dev/null 2>&1 || { echo "ERROR: Verilator is required for RTL lint"; exit 1; }; \
-	  "$(VERILATOR)" --lint-only --Wall $$package_files $$rtl_files; \
+	  "$(VERILATOR)" --lint-only --Wall --Wno-MULTITOP $$package_files $$rtl_files; \
 	else \
 	  echo "SKIP-EVIDENCE: no RTL files exist yet"; \
 	fi

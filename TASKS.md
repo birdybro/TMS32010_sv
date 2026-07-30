@@ -174,7 +174,7 @@ objective passing evidence.
 
 ### BUS-001 — Native program transactions
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** RTL-002, ARCH-001
 - **Description:** Reproduce instruction, immediate, branch, and table/program
@@ -183,8 +183,13 @@ objective passing evidence.
   traces match primary timing figures for every access case.
 - **Documentation:** `docs/architecture/external_interface.md`,
   `docs/timing/bus_cycles.md`
-- **Tests:** `sim/bus/tb_program_bus.sv`
-- **Notes:** Do not collapse Harvard spaces in the native interface.
+- **Tests:** `sim/bus/tb_program_bus_phase.sv`
+- **Notes:** Appendix A normal read and table-transfer pin waveforms are
+  transcribed. A standalone four-subphase normal-read/reset engine verifies
+  falling-edge sampling, quarter-cycle MEN assertion, address stability, and
+  release delay. Pipeline integration, table cycles, branch/call/return, and
+  interrupt sequences remain. Do not collapse Harvard spaces in the native
+  interface.
 
 ## Milestone 10 — Data-memory interface
 
@@ -220,7 +225,7 @@ objective passing evidence.
 
 ### CTRL-001 — Evidence-backed reset
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** ARCH-001, RTL-002, BUS-001
 - **Description:** Implement assertion/release, duration, initial architectural
@@ -228,8 +233,14 @@ objective passing evidence.
 - **Acceptance criteria:** reset tests cover every documented state and preserve
   documented unknowns; assertions show no unintended unknown control state.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
-- **Tests:** `sim/unit/tb_reset.sv`, `formal/reset/`
-- **Notes:** FPGA-deterministic behavior, if any, must be separately labeled.
+- **Tests:** `sim/bus/tb_program_bus_phase.sv`, `sim/unit/tb_reset.sv`,
+  `formal/reset/`
+- **Notes:** Appendix A verifies five-machine-cycle minimum assertion,
+  synchronized response, inactive strobes/high-Z data, PC/address clear after
+  the next full cycle, and first address-0 read one full cycle after release.
+  The standalone phase test covers these external reset phases; architectural
+  state/pipeline integration and formal reset properties remain.
+  FPGA-deterministic behavior, if any, must be separately labeled.
 
 ## Milestone 13 — Interrupt behavior
 
@@ -269,7 +280,7 @@ objective passing evidence.
 
 ### TIMING-001 — Complete timing matrix
 
-- **Status:** NOT STARTED
+- **Status:** RESEARCHING
 - **Priority:** P0
 - **Dependencies:** ISA-002, RTL-002
 - **Description:** Map every instruction/addressing case to documented cycles,
@@ -278,7 +289,9 @@ objective passing evidence.
   and citation; no hidden discrepancy remains.
 - **Documentation:** `docs/timing/instruction_cycles.md`
 - **Tests:** `sim/instruction/test_cycles_*`
-- **Notes:** Electrical delays are wrapper constraints, not RTL delays.
+- **Notes:** Normal memory read, TBLR/TBLW, IN/OUT, reset, INT, and BIO pin
+  timing is transcribed. Control-flow, interrupt-entry, and per-instruction
+  ownership remain. Electrical delays are wrapper constraints, not RTL delays.
 
 ## Milestone 16 — External wait-state behavior
 
@@ -343,9 +356,10 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Partial RTL fits Cyclone V at 50 MHz with positive setup/hold
-  slack and zero unconstrained port/path categories. Yosys is unavailable;
-  full-core resources, pin-level wrapper constraints, and final timing remain.
+- **Notes:** Partial RTL and phase engine fit Cyclone V with positive internal
+  setup/hold slack at 50 MHz. Harness interface paths are explicitly excluded,
+  not timing-closed. Yosys is unavailable; full-core resources, pin-level
+  wrapper constraints, and final timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
 

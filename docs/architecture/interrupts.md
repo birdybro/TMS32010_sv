@@ -20,10 +20,13 @@ an already latched request
 [ti-tms32010-users-guide-spru001b, §2.4.1, printed pp. 2-18–2-19 (PDF
 pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
 
-The precise sampled edge, vector-fetch bus trace, and entry latency are still
-`OQ-004`; no fixed cycle count is claimed yet. The original pin list has no
-separate interrupt-acknowledge output. A wrapper must not invent one and call
-it native without an explicit derivation.
+The pin must be low at least 50 ns before falling `CLKOUT`, and a guaranteed
+pulse is at least one full `CLKOUT` period. The complete vector-fetch bus trace
+and entry latency are still `OQ-004`; no fixed entry cycle count is claimed
+yet. The original pin list has no separate interrupt-acknowledge output. A
+wrapper must not invent one and call it native without an explicit derivation
+[ti-tms32010-users-guide-spru001b, Appendix A interrupt timing, printed
+data-sheet p. 20 (PDF p. 376)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## BIO input
 
@@ -31,6 +34,11 @@ it native without an explicit derivation.
 examined during every clock cycle; the branch occurs when the sampled value is
 low [ti-tms32010-users-guide-spru001b, §2.4.2, printed p. 2-18 (PDF p. 42)].
 **Confidence: VERIFIED_PRIMARY.**
+
+Appendix A places its 50 ns setup requirement before falling `CLKOUT` and
+requires a one-cycle low pulse for guaranteed recognition
+[ti-tms32010-users-guide-spru001b, Appendix A BIO timing, printed data-sheet
+p. 20 (PDF p. 376)]. **Confidence: VERIFIED_PRIMARY.**
 
 The Hard Drivin' sound schematic places external flip-flop logic in the BIO
 path, so that board-level synchronization is wrapper behavior rather than

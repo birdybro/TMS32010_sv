@@ -31,14 +31,12 @@ gate topology.
 
 ## Unresolved sequences
 
-The exact fetch address and strobe sequence still requires waveform
-transcription for:
+Normal read, table, I/O, and reset pin sequences are transcribed in
+`docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
+resolved for:
 
-- reset release and the first fetch (`OQ-006`);
 - a taken versus untaken conditional branch (`OQ-007`);
 - `CALL`, `CALA`, `RET`, `PUSH`, and `POP`;
-- `IN`/`OUT`;
-- the discarded prefetch in `TBLR`/`TBLW`;
 - interrupt entry and its dummy fetches (`OQ-004`);
 - any external cycle stretching (`OQ-001`).
 

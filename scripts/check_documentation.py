@@ -31,6 +31,7 @@ REQUIRED_FILES = {
     "docs/architecture/external_interface.md",
     "docs/timing/instruction_cycles.md",
     "docs/timing/bus_cycles.md",
+    "docs/timing/native_phase_contract.md",
     "docs/research/open_questions.md",
     "docs/research/source_conflicts.md",
     "docs/integration/hard_drivin_requirements.md",

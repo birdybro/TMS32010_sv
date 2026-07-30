@@ -22,18 +22,24 @@ limits. Those values will become wrapper constraints and timing-test
 parameters; they will not be represented with RTL `#delay` constructs.
 Logical phase ordering will be represented with synchronous state.
 
+The normal read, table, I/O, reset, and input-sampling figures are now
+transcribed in `docs/timing/native_phase_contract.md`. Falling `CLKOUT` is the
+read-data, interrupt, and BIO sampling boundary. A normal read changes address
+after one falling edge, asserts `MEN` about one quarter-cycle later, and
+samples the word at the next falling edge
+[ti-tms32010-users-guide-spru001b, Appendix A data sheet, printed
+pp. 13–20 (PDF pp. 369–376)]. **Confidence: VERIFIED_PRIMARY.**
+
 No READY pin appears in the original pinout. There is therefore no verified
 native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
-## Diagrams pending transcription
+## Remaining diagrams
 
-Waveform tables remain pending for normal fetch, `IN`, `OUT`, `TBLR`,
-`TBLW`, reset, and interrupt entry. Each final diagram must identify:
+The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms
+are transcribed. Remaining work must identify:
 
-- input-clock and `CLKOUT` edge;
-- address validity;
-- data direction and sampling edge;
-- strobe assertion/deassertion;
-- pipeline instruction owning the external access;
-- citation to the exact timing figure and speed grade.
+- branch/call/return prefetch address order;
+- complete interrupt entry and vector-fetch order;
+- any internal conflict that changes an otherwise normal read;
+- safe wrapper phase pause, if one exists, despite the absence of READY.

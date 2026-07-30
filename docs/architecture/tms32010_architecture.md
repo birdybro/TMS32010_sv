@@ -77,7 +77,8 @@ cycle counts; UNKNOWN for the complete phase-level matrix.**
 
 ## Reset baseline
 
-`RS` is active low and must remain low for at least five input-clock cycles.
+`RS` is active low and must remain low for at least five complete `CLKOUT`
+machine cycles (twenty crystal/input-clock periods).
 After the current machine cycle completes, reset synchronously clears the PC,
 sets the interrupt mask, clears the interrupt flag, and drives `MEN`, `DEN`,
 and `WE` inactive high while the data bus is high impedance. Reset does not
@@ -86,9 +87,13 @@ pass and must not be invented
 [ti-tms32010-users-guide-spru001b, §2.5, printed p. 2-19 (PDF p. 43)].
 **Confidence: VERIFIED_PRIMARY.**
 
-Implementation reset semantics remain pending the first-fetch phase review
-(`OQ-006`). FPGA-friendly deterministic initialization, if later offered,
-will be wrapper behavior and visibly distinct from physical-chip guarantees.
+Appendix A resolves the external first-fetch sequence: after reset release,
+normal operation resumes after one complete processor cycle and reads address
+0 followed by address 1. FPGA-friendly deterministic initialization, if later
+offered, will be wrapper behavior and visibly distinct from physical-chip
+guarantees
+[ti-tms32010-users-guide-spru001b, Appendix A reset timing, printed data-sheet
+p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
