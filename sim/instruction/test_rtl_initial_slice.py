@@ -93,6 +93,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_lar_target_and_counter_ordering(self) -> None:
+        self._run_testbench(
+            "tb_lar_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_lar_rtl.sv",
+            ],
+        )
+
     def test_sacl_data_write_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_sacl_rtl",

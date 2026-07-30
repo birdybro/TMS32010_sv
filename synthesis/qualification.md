@@ -2,7 +2,7 @@
 
 ## 2026-07-30 Quartus fits
 
-These results cover the twenty-instruction RTL, 144-word internal data RAM, and
+These results cover the twenty-one-instruction RTL, 144-word internal data RAM, and
 first program-bus phase engine. They are not complete-core resource or
 interface-timing results.
 
@@ -15,14 +15,14 @@ interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,615 ALMs (4%).
-- Registers: 2,421.
+- Logic: 1,621 ALMs (4%).
+- Registers: 2,435.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 0.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +3.597 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 61.22 MHz at 100 °C, 60.96 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.964 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.164 ns.
+- Slow-corner internal Fmax: 59.16 MHz at 100 °C, 58.70 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 221 harness-only interface
@@ -31,14 +31,14 @@ The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
 setup, hold, and Fmax figures above are scoped to internal register paths.
 
-The reports contain no latch diagnostic. The 19 warnings are the expected
-synthesis-harness notices: constant currently unreachable state bits,
-asynchronous RAM non-inference, a Lite-only LogicLock notice, and the sole
-physical clock's intentionally absent package location. Quartus explicitly
-reports that the 144-word array cannot infer RAM because its read is
-asynchronous, so it maps to registers and logic. The fit uses 221 virtual pins
-and one physical clock pin; the expected critical warning says that clock has
-no package location.
+The reports contain no latch diagnostic. The five warnings are the expected
+synthesis-harness notices: the currently constant interrupt-mask diagnostic,
+a Lite-only LogicLock notice, incomplete I/O assignments, and the sole
+physical clock's intentionally absent package location. Quartus separately
+reports as information that the 144-word array cannot infer RAM because its
+read is asynchronous, so it maps to registers and logic. The fit uses 221
+virtual pins and one physical clock pin; the expected critical warning says
+that clock has no package location.
 This is not a deployable board image, and the generated `.sof` is deliberately
 ignored.
 
@@ -82,7 +82,7 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.33 from Ubuntu 24.04 successfully elaborates and synthesizes the same
 integrated partial hierarchy. Both pre- and post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, eight RTL assertions
-remain represented, and the generic result contains 7,844 cells. The
+remain represented, and the generic result contains 8,073 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 2,318 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate.

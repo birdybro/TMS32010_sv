@@ -77,6 +77,19 @@ class Disassembler:
                     return f".word 0x{word:04x}"
                 return f"{mnemonic} {modifier}"
             return f"{mnemonic} {modifier},{control & 1}"
+        if mnemonic == "LAR":
+            register = operands["auxiliary_register"]
+            if not operands["indirect"]:
+                return (
+                    f"LAR AR{register},{operands['addressing_field']}"
+                )
+            control = operands["addressing_field"]
+            modifier = {0x00: "*", 0x20: "*+", 0x10: "*-"}[control & 0x30]
+            if control & 0x08:
+                if control & 1:
+                    return f".word 0x{word:04x}"
+                return f"LAR AR{register},{modifier}"
+            return f"LAR AR{register},{modifier},{control & 1}"
         if mnemonic == "LARK":
             return (
                 f"LARK AR{operands['auxiliary_register']},"

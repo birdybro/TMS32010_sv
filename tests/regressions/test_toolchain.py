@@ -338,6 +338,46 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "AR0 or AR1"):
             self.assembler.assemble_text("LARK AR2,1\n")
 
+    def test_lar_encodings_round_trip_and_diagnose_operands(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            LAR AR0,0
+            LAR AR1,127
+            LAR AR0,*+
+            LAR AR1,*-,AR0
+            """
+        )
+        self.assertEqual(
+            list(result.words.values()),
+            [0x3800, 0x397F, 0x38A8, 0x3990],
+        )
+        source = self.disassembler.disassemble_source(
+            [0x3800, 0x397F, 0x38A8, 0x3990, 0x3989]
+        )
+        self.assertEqual(
+            source,
+            "LAR AR0,0\n"
+            "LAR AR1,127\n"
+            "LAR AR0,*+\n"
+            "LAR AR1,*-,0\n"
+            ".word 0x3989\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(
+            list(rebuilt.words.values()),
+            [0x3800, 0x397F, 0x38A8, 0x3990, 0x3989],
+        )
+        for invalid, message in (
+            ("LAR AR2,0\n", "AR0 or AR1"),
+            ("LAR AR0,128\n", "direct address"),
+            ("LAR AR0,*+,2\n", "next ARP"),
+            ("LAR AR0,0,1\n", "only with indirect"),
+            ("LAR AR0\n", "2 to 3 operands"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
     def test_lac_operand_diagnostics(self) -> None:
         cases = (
             ("LAC 128\n", "direct address"),

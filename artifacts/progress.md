@@ -1,20 +1,20 @@
 # Progress summary
 
-- **Current milestone:** ABS original-part overflow-status research
+- **Current milestone:** LAR auxiliary-register load qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 50 repository/provenance/document/ISA/toolchain tests; 70
-  directed model tests; 11 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded twenty-instruction model/RTL
+- **Tests passing:** 52 repository/provenance/document/ISA/toolchain tests; 75
+  directed model tests; 12 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-one-instruction model/RTL
   differential including OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the twenty-instruction partial core, 144-word RAM, and phase engine on
-  `5CSEBA6U23I7`: 1,615 ALMs, 2,421 registers, 0 RAM/DSP, 60.96 MHz worst
-  slow-corner internal Fmax, +3.597 ns setup and +0.165 ns worst hold slack at
+  the twenty-one-instruction partial core, 144-word RAM, and phase engine on
+  `5CSEBA6U23I7`: 1,621 ALMs, 2,435 registers, 0 RAM/DSP, 58.70 MHz worst
+  slow-corner internal Fmax, +2.964 ns setup and +0.164 ns worst hold slack at
   50 MHz. TimeQuest reports zero unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  7,844 generic cells and lowering the asynchronous RAM to registers/muxes; it
+  8,073 generic cells and lowering the asynchronous RAM to registers/muxes; it
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -43,14 +43,17 @@
   follows the same sticky-OV/wrap/saturation policy; ABS is opcode `0x7f88`,
   one word and one cycle, and selects wrap or positive saturation for
   `0x80000000` through OVM, but original sources do not say whether it sets
-  sticky OV
+  sticky OV; LAR loads either auxiliary register from internal data RAM in one
+  cycle, replaces ARP when requested, and exceptionally suppresses indirect
+  auto-increment/decrement when the loaded target is the selected address
+  register while retaining normal post-modification for the other target
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state, Hard
   Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research an unblocked primary-defined instruction such as
-  `LAR`; keep `ADDH` and `ABS` outside the supported boundary pending
-  `OQ-011` and `OQ-013`
+- **Next task:** research the primary-defined `SAR` companion store; keep
+  `ADDH` and `ABS` outside the supported boundary pending `OQ-011` and
+  `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `e594331d46ac9a8f98e7d40c8fa69b115a30735e`
+  `72e693bb906560c4f13ee747faa8f466867acf72`

@@ -75,6 +75,29 @@ their simultaneous assertion; that encoding is rejected and tracked as
 The disassembler renders the noncanonical bit-0-one alias as `.word` so
 binary round trips remain exact.
 
+## Qualified `LAR` research slice
+
+`LAR` loads all 16 bits of the selected internal data-memory word into AR0 or
+AR1. Bits 10:9 of its three-bit auxiliary-register field are zero and bit 8
+selects AR0/AR1, giving base words `0x3800` and `0x3900`; bit 7 and bits 6:0
+use the common direct/indirect address form. The instruction is one word and
+one cycle and does not modify the accumulator or arithmetic overflow state
+[ti-tms32010-users-guide-spru001b, `LAR`, printed p. 3-33 (PDF p. 83);
+ti-first-generation-users-guide-1987, `LAR`, printed p. 4-38
+(PDF p. 119)]. **Confidence: VERIFIED_PRIMARY.**
+
+An indirect LAR first reads through the AR selected by the old ARP. If the
+destination is that same AR, TI explicitly says auto-increment/decrement does
+not modify the newly loaded value. If the destination is the other AR, the
+selected address AR receives the normal nine-bit post-access update. A
+requested next ARP is still applied in either case. This ordering is covered
+by directed model and RTL tests, including both same-AR suppression and
+different-AR modification. Reserved indirect controls and the lossless
+noncanonical preserve-bit policy remain linked to `OQ-010`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LAR`, printed
+pp. 3-2–3-3 and 3-33 (PDF pp. 52–53 and 83)].
+**Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

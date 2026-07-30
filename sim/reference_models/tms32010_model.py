@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP,
-OR, ROVM, SACH, SACL, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS. Logical
+This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDPK,
+NOP, OR, ROVM, SACH, SACL, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS. Logical
 program and internal-data transactions and instruction totals are modeled;
 pin subphases are not yet integrated with this model.
 """
@@ -184,6 +184,7 @@ class Tms32010Model:
             "ADDS",
             "AND",
             "LAC",
+            "LAR",
             "OR",
             "SACL",
             "SACH",
@@ -208,6 +209,7 @@ class Tms32010Model:
                 "ADDS",
                 "AND",
                 "LAC",
+                "LAR",
                 "OR",
                 "SUB",
                 "SUBS",
@@ -233,6 +235,7 @@ class Tms32010Model:
                             "ADDS",
                             "AND",
                             "LAC",
+                            "LAR",
                             "OR",
                             "SUB",
                             "SUBS",
@@ -257,6 +260,9 @@ class Tms32010Model:
                 data_word if data_word < 0x8000 else data_word - 0x10000
             )
             self.state.acc = (signed_word << operands["shift"]) & ACC_MASK
+        elif mnemonic == "LAR":
+            register = operands["auxiliary_register"]
+            self.state.ar[register] = self.data[operands["effective_address"]]
         elif mnemonic == "SACL":
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
@@ -329,6 +335,7 @@ class Tms32010Model:
                 "ADDS",
                 "AND",
                 "LAC",
+                "LAR",
                 "OR",
                 "SACL",
                 "SACH",
@@ -342,16 +349,21 @@ class Tms32010Model:
         ):
             assert selected_arp is not None
             control = operands["addressing_field"]
-            if control & 0x20:
-                self.state.ar[selected_arp] = self._modify_counter(
-                    self.state.ar[selected_arp],
-                    1,
-                )
-            elif control & 0x10:
-                self.state.ar[selected_arp] = self._modify_counter(
-                    self.state.ar[selected_arp],
-                    -1,
-                )
+            suppress_counter_update = (
+                mnemonic == "LAR"
+                and operands["auxiliary_register"] == selected_arp
+            )
+            if not suppress_counter_update:
+                if control & 0x20:
+                    self.state.ar[selected_arp] = self._modify_counter(
+                        self.state.ar[selected_arp],
+                        1,
+                    )
+                elif control & 0x10:
+                    self.state.ar[selected_arp] = self._modify_counter(
+                        self.state.ar[selected_arp],
+                        -1,
+                    )
             if (control & 0x08) == 0:
                 self.state.status.arp = control & 1
 
@@ -443,6 +455,18 @@ class Tms32010Model:
                 raise UnsupportedOpcode(pc, opcode)
             return "LAC", {
                 "shift": (opcode >> 8) & 0xF,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFE00 == 0x3800:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "LAR", {
+                "auxiliary_register": (opcode >> 8) & 1,
                 "indirect": indirect,
                 "addressing_field": control,
             }

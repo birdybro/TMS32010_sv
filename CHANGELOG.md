@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first twenty model/tool encodings.
+  mnemonics and fully describes the first twenty-one model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the twenty-instruction slice.
+  clock-enable execution core for the twenty-one-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the twenty supported
+- Sequential native-phase wrapper that retires the twenty-one supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -86,6 +86,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A scoped `ABS` evidence record that separates its primary-verified opcode,
   result, OVM behavior, and one-cycle timing from its unresolved original-part
   sticky-OV side effect.
+- Primary-cited `LAR` database, model, assembler/disassembler, RTL,
+  native-phase, and differential support for either auxiliary-register target,
+  including TI's exceptional suppression of indirect post-modification when
+  the loaded target is the selected address register.
 
 ### Changed
 
@@ -95,11 +99,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated twenty-instruction phase/RAM slice in
-  1,615 ALMs/2,421 registers with positive internal 50 MHz setup/hold slack and
-  60.96 MHz worst slow-corner internal Fmax; 221 diagnostic pins are virtual,
-  and enumerated harness I/O paths are explicitly excluded pending a real
-  wrapper.
+- Quartus 17.0.2 fits the integrated twenty-one-instruction phase/RAM slice in
+  1,621 ALMs/2,435 registers with +2.964 ns worst setup and +0.164 ns worst
+  hold slack at 50 MHz and 58.70 MHz worst slow-corner internal Fmax; 221
+  diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
+  excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
   resolves reset release to an address-0 fetch after one complete cycle.
 - Decoder operation ports use an explicitly encoded packed vector at module
@@ -110,8 +114,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers twenty of 60 documented
-  mnemonics and twelve common-address data-operation families.
+- The qualified model/tool/RTL boundary now covers twenty-one of 60 documented
+  mnemonics and thirteen common-address data-operation families.
 
 ### Fixed
 
@@ -168,10 +172,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   cross-half bit transfer, direct/indirect writes, accumulator/status
   preservation, both data pages, unresolved-address trapping, post-access
   AR/ARP updates, and one-cycle retirement.
-- The seeded twenty-instruction differential compares logical SACH writes and
+- The seeded differential compares logical SACH writes and
   all final RAM words; undocumented shifts 2, 3, 5, 6, and 7 fail decode.
-- Yosys 0.33 synthesizes the twenty-instruction hierarchy to 7,844 generic
-  cells with eight assertions, zero latches, and clean pre/post checks.
+- The prior SACH synthesis checkpoint produced 7,844 Yosys generic cells with
+  eight assertions, zero latches, and clean pre/post checks.
 - Hand fixtures and directed tests verify `ZALH`/`ZALS` direct and indirect
   reads, both data pages, high/low accumulator placement, zero extension,
   accumulator/status effects, post-access AR/ARP updates, unresolved-address
@@ -218,10 +222,22 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Original TI pages and the later C14/E14 variant page were compared directly
   with pinned MAME for `ABS`; the disagreement is preserved as
   `SC-007`/`OQ-013`, and no provisional implementation was admitted.
+- Hand fixtures and directed model/RTL tests verify both `LAR` targets,
+  direct/page-one and indirect reads, status preservation, unresolved-address
+  traps, reserved target rejection, ARP replacement, and the selected-target
+  post-modification exception.
+- The seeded 512-step differential and native-phase integration compare `LAR`
+  read transactions, loaded auxiliary-register values, both update-ordering
+  cases, and one-cycle retirement without changing the external program-read
+  sequence.
+- Yosys 0.33 synthesizes the twenty-one-instruction hierarchy to 8,073 generic
+  cells with eight assertions, zero latches, and clean pre/post checks;
+  Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
+  five scoped harness warnings.
 
 ### Known Issues
 
-- Only twenty of 60 documented instruction mnemonics have model, tool, and
+- Only twenty-one of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through

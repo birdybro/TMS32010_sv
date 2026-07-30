@@ -318,6 +318,17 @@ class Assembler:
                 location=location,
                 line=line,
             )
+        elif operation == "LAR":
+            register = self._auxiliary_register(operands[0], line)
+            word |= register << 8
+            word |= self._encode_data_address(
+                operation,
+                operands[1:],
+                next_arp_index=1,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
         elif operation == "LARK":
             register = self._auxiliary_register(operands[0], line)
             value = self._evaluate(operands[1], symbols, location, line)

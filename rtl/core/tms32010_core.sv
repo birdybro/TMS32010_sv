@@ -56,6 +56,7 @@ module tms32010_core (
   localparam logic [4:0] OP_ADD  = 5'd17;
   localparam logic [4:0] OP_SUB  = 5'd18;
   localparam logic [4:0] OP_SUBS = 5'd19;
+  localparam logic [4:0] OP_LAR  = 5'd20;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -103,7 +104,8 @@ module tms32010_core (
         (decoded_operation == OP_OR) ||
         (decoded_operation == OP_ADD) ||
         (decoded_operation == OP_SUB) ||
-        (decoded_operation == OP_SUBS)
+        (decoded_operation == OP_SUBS) ||
+        (decoded_operation == OP_LAR)
       )
     ) begin
       if (decoded_indirect) begin
@@ -147,7 +149,8 @@ module tms32010_core (
       (decoded_operation == OP_OR) ||
       (decoded_operation == OP_ADD) ||
       (decoded_operation == OP_SUB) ||
-      (decoded_operation == OP_SUBS)
+      (decoded_operation == OP_SUBS) ||
+      (decoded_operation == OP_LAR)
     );
   assign data_write_o =
     ~reset_i &&
@@ -188,7 +191,8 @@ module tms32010_core (
         (decoded_operation != OP_OR) &&
         (decoded_operation != OP_ADD) &&
         (decoded_operation != OP_SUB) &&
-        (decoded_operation != OP_SUBS)
+        (decoded_operation != OP_SUBS) &&
+        (decoded_operation != OP_LAR)
       ) ||
       ram_address_valid
     );
@@ -246,6 +250,13 @@ module tms32010_core (
           OP_LAC: begin
             accumulator_o <=
               {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
+          end
+          OP_LAR: begin
+            if (decoded_auxiliary_register) begin
+              auxiliary_register_1_o <= ram_read_data;
+            end else begin
+              auxiliary_register_0_o <= ram_read_data;
+            end
           end
           OP_SACL: begin
           end
@@ -340,10 +351,17 @@ module tms32010_core (
            (decoded_operation == OP_OR) ||
            (decoded_operation == OP_ADD) ||
            (decoded_operation == OP_SUB) ||
-           (decoded_operation == OP_SUBS)) &&
+           (decoded_operation == OP_SUBS) ||
+           (decoded_operation == OP_LAR)) &&
           decoded_indirect
         ) begin
-          if (decoded_addressing_field[5]) begin
+          if (
+            decoded_addressing_field[5] &&
+            !(
+              (decoded_operation == OP_LAR) &&
+              (decoded_auxiliary_register == auxiliary_register_pointer_o)
+            )
+          ) begin
             if (auxiliary_register_pointer_o) begin
               auxiliary_register_1_o <= {
                 auxiliary_register_1_o[15:9],
@@ -355,7 +373,13 @@ module tms32010_core (
                 auxiliary_register_0_o[8:0] + 9'd1
               };
             end
-          end else if (decoded_addressing_field[4]) begin
+          end else if (
+            decoded_addressing_field[4] &&
+            !(
+              (decoded_operation == OP_LAR) &&
+              (decoded_auxiliary_register == auxiliary_register_pointer_o)
+            )
+          ) begin
             if (auxiliary_register_pointer_o) begin
               auxiliary_register_1_o <= {
                 auxiliary_register_1_o[15:9],
