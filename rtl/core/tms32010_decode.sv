@@ -3,7 +3,7 @@
 module tms32010_decode (
   input  logic [15:0] instruction_i,
   output logic        valid_o,
-  output logic [3:0]  operation_o,
+  output logic [4:0]  operation_o,
   output logic [7:0]  immediate_o,
   output logic        auxiliary_register_o,
   output logic [3:0]  shift_o,
@@ -13,20 +13,23 @@ module tms32010_decode (
   // Keep the module boundary a packed vector: Ubuntu 24.04's Yosys 0.33
   // cannot elaborate a package-qualified enum port. The exhaustive decoder
   // test compares these values with tms32010_pkg and prevents silent drift.
-  localparam logic [3:0] OP_LACK = 4'd0;
-  localparam logic [3:0] OP_NOP  = 4'd1;
-  localparam logic [3:0] OP_ZAC  = 4'd2;
-  localparam logic [3:0] OP_ROVM = 4'd3;
-  localparam logic [3:0] OP_SOVM = 4'd4;
-  localparam logic [3:0] OP_LARK = 4'd5;
-  localparam logic [3:0] OP_LARP = 4'd6;
-  localparam logic [3:0] OP_LDPK = 4'd7;
-  localparam logic [3:0] OP_LAC  = 4'd8;
-  localparam logic [3:0] OP_SACL = 4'd9;
-  localparam logic [3:0] OP_SACH = 4'd10;
-  localparam logic [3:0] OP_ZALH = 4'd11;
-  localparam logic [3:0] OP_ZALS = 4'd12;
-  localparam logic [3:0] OP_ADDS = 4'd13;
+  localparam logic [4:0] OP_LACK = 5'd0;
+  localparam logic [4:0] OP_NOP  = 5'd1;
+  localparam logic [4:0] OP_ZAC  = 5'd2;
+  localparam logic [4:0] OP_ROVM = 5'd3;
+  localparam logic [4:0] OP_SOVM = 5'd4;
+  localparam logic [4:0] OP_LARK = 5'd5;
+  localparam logic [4:0] OP_LARP = 5'd6;
+  localparam logic [4:0] OP_LDPK = 5'd7;
+  localparam logic [4:0] OP_LAC  = 5'd8;
+  localparam logic [4:0] OP_SACL = 5'd9;
+  localparam logic [4:0] OP_SACH = 5'd10;
+  localparam logic [4:0] OP_ZALH = 5'd11;
+  localparam logic [4:0] OP_ZALS = 5'd12;
+  localparam logic [4:0] OP_ADDS = 5'd13;
+  localparam logic [4:0] OP_XOR  = 5'd14;
+  localparam logic [4:0] OP_AND  = 5'd15;
+  localparam logic [4:0] OP_OR   = 5'd16;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -95,6 +98,25 @@ module tms32010_decode (
     ) begin
       operation_o =
         (instruction_i[15:8] == 8'h65) ? OP_ZALH : OP_ZALS;
+      if (!instruction_i[7]) begin
+        valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
+      end
+    end else if (
+      (instruction_i[15:8] == 8'h78) ||
+      (instruction_i[15:8] == 8'h79) ||
+      (instruction_i[15:8] == 8'h7a)
+    ) begin
+      case (instruction_i[15:8])
+        8'h78: operation_o = OP_XOR;
+        8'h79: operation_o = OP_AND;
+        default: operation_o = OP_OR;
+      endcase
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
       end else if (

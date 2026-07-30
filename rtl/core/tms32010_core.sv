@@ -36,22 +36,25 @@ module tms32010_core (
 );
   // Yosys 0.33 cannot import the operation enum package. These encodings are
   // checked against tms32010_pkg through the exhaustive decoder regression.
-  localparam logic [3:0] OP_LACK = 4'd0;
-  localparam logic [3:0] OP_NOP  = 4'd1;
-  localparam logic [3:0] OP_ZAC  = 4'd2;
-  localparam logic [3:0] OP_ROVM = 4'd3;
-  localparam logic [3:0] OP_SOVM = 4'd4;
-  localparam logic [3:0] OP_LARK = 4'd5;
-  localparam logic [3:0] OP_LARP = 4'd6;
-  localparam logic [3:0] OP_LDPK = 4'd7;
-  localparam logic [3:0] OP_LAC  = 4'd8;
-  localparam logic [3:0] OP_SACL = 4'd9;
-  localparam logic [3:0] OP_SACH = 4'd10;
-  localparam logic [3:0] OP_ZALH = 4'd11;
-  localparam logic [3:0] OP_ZALS = 4'd12;
-  localparam logic [3:0] OP_ADDS = 4'd13;
+  localparam logic [4:0] OP_LACK = 5'd0;
+  localparam logic [4:0] OP_NOP  = 5'd1;
+  localparam logic [4:0] OP_ZAC  = 5'd2;
+  localparam logic [4:0] OP_ROVM = 5'd3;
+  localparam logic [4:0] OP_SOVM = 5'd4;
+  localparam logic [4:0] OP_LARK = 5'd5;
+  localparam logic [4:0] OP_LARP = 5'd6;
+  localparam logic [4:0] OP_LDPK = 5'd7;
+  localparam logic [4:0] OP_LAC  = 5'd8;
+  localparam logic [4:0] OP_SACL = 5'd9;
+  localparam logic [4:0] OP_SACH = 5'd10;
+  localparam logic [4:0] OP_ZALH = 5'd11;
+  localparam logic [4:0] OP_ZALS = 5'd12;
+  localparam logic [4:0] OP_ADDS = 5'd13;
+  localparam logic [4:0] OP_XOR  = 5'd14;
+  localparam logic [4:0] OP_AND  = 5'd15;
+  localparam logic [4:0] OP_OR   = 5'd16;
 
-  logic [3:0] decoded_operation;
+  logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
   logic       decoded_auxiliary_register;
   logic [3:0] decoded_shift;
@@ -84,7 +87,10 @@ module tms32010_core (
         (decoded_operation == OP_SACH) ||
         (decoded_operation == OP_ZALH) ||
         (decoded_operation == OP_ZALS) ||
-        (decoded_operation == OP_ADDS)
+        (decoded_operation == OP_ADDS) ||
+        (decoded_operation == OP_XOR) ||
+        (decoded_operation == OP_AND) ||
+        (decoded_operation == OP_OR)
       )
     ) begin
       if (decoded_indirect) begin
@@ -122,7 +128,10 @@ module tms32010_core (
       (decoded_operation == OP_LAC) ||
       (decoded_operation == OP_ZALH) ||
       (decoded_operation == OP_ZALS) ||
-      (decoded_operation == OP_ADDS)
+      (decoded_operation == OP_ADDS) ||
+      (decoded_operation == OP_XOR) ||
+      (decoded_operation == OP_AND) ||
+      (decoded_operation == OP_OR)
     );
   assign data_write_o =
     ~reset_i &&
@@ -157,7 +166,10 @@ module tms32010_core (
         (decoded_operation != OP_SACH) &&
         (decoded_operation != OP_ZALH) &&
         (decoded_operation != OP_ZALS) &&
-        (decoded_operation != OP_ADDS)
+        (decoded_operation != OP_ADDS) &&
+        (decoded_operation != OP_XOR) &&
+        (decoded_operation != OP_AND) &&
+        (decoded_operation != OP_OR)
       ) ||
       ram_address_valid
     );
@@ -217,6 +229,18 @@ module tms32010_core (
               accumulator_o <= adds_wrapped_result;
             end
           end
+          OP_XOR: accumulator_o <= {
+            accumulator_o[31:16],
+            accumulator_o[15:0] ^ ram_read_data
+          };
+          OP_AND: accumulator_o <= {
+            16'h0000,
+            accumulator_o[15:0] & ram_read_data
+          };
+          OP_OR: accumulator_o <= {
+            accumulator_o[31:16],
+            accumulator_o[15:0] | ram_read_data
+          };
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
               auxiliary_register_1_o <= {8'h00, decoded_immediate};
@@ -242,7 +266,10 @@ module tms32010_core (
            (decoded_operation == OP_SACH) ||
            (decoded_operation == OP_ZALH) ||
            (decoded_operation == OP_ZALS) ||
-           (decoded_operation == OP_ADDS)) &&
+           (decoded_operation == OP_ADDS) ||
+           (decoded_operation == OP_XOR) ||
+           (decoded_operation == OP_AND) ||
+           (decoded_operation == OP_OR)) &&
           decoded_indirect
         ) begin
           if (decoded_addressing_field[5]) begin

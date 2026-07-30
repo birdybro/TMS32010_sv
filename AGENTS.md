@@ -235,12 +235,13 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support fourteen instructions:
-`ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`,
-`SOVM`, `ZAC`, `ZALH`, and `ZALS`. This includes
-`ADDS`/`LAC`/`ZALH`/`ZALS` reads and
+tools, RTL, and seeded differential boundary support seventeen instructions:
+`ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
+`SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+`ADDS`/`AND`/`LAC`/`OR`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH` writes in a 144-word internal RAM, plus SACH output shifts 0, 1,
-and 4. ADDS has directed wrap/saturation and sticky-OV evidence. A phase
+and 4. ADDS has directed wrap/saturation and sticky-OV evidence. AND, OR, and
+XOR have directed accumulator-half and status-preservation evidence. A phase
 wrapper qualifies their normal sequential program reads, but no general
 pipeline, interrupt entry, or complete pin timing exists. The project must not
 be called instruction-complete or cycle-accurate. Consult `TASKS.md` and

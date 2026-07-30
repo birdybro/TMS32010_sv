@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial fourteen-instruction model/tool boundary is intentionally partial
+Its initial seventeen-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -22,12 +22,16 @@ documented mnemonics so missing coverage remains machine-visible.
 | `SACL dma` | `0x5000` | `0xff00` plus addressing constraints | 1 | 1 | individual `SACL` page, printed p. 3-54 |
 | `SACH dma,s` | `0x5800` | `0xf800` plus legal-shift/addressing constraints | 1 | 1 | individual `SACH` page, printed p. 3-53 |
 | `ADDS dma` | `0x6100` | `0xff00` plus addressing constraints | 1 | 1 | individual `ADDS` page, printed p. 3-12 |
+| `XOR dma` | `0x7800` | `0xff00` plus addressing constraints | 1 | 1 | individual `XOR` page, printed p. 3-68 |
+| `AND dma` | `0x7900` | `0xff00` plus addressing constraints | 1 | 1 | individual `AND` page, printed p. 3-13 |
+| `OR dma` | `0x7a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `OR` page, printed p. 3-46 |
 | `ZALH dma` | `0x6500` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALH` page, printed p. 3-70 |
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-12, 3-32, 3-34–3-35, 3-37, 3-53–3-54,
-and 3-70–3-71 (PDF pp. 55–57, 62, 82, 84–85, 87, 103–104, and 120–121)].
+descriptions, printed pp. 3-5–3-7, 3-12–3-13, 3-32, 3-34–3-35, 3-37,
+3-46, 3-53–3-54, 3-68, and 3-70–3-71 (PDF pp. 55–57, 62–63, 82, 84–85,
+87, 96, 103–104, 118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and
@@ -90,6 +94,14 @@ data instructions
 pp. 3-2–3-3 and 3-12 (PDF pp. 52–53 and 62)].
 **Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
 UNKNOWN.**
+
+`XOR`, `AND`, and `OR` fix bits 15:8 to `0x78`, `0x79`, and `0x7a`,
+respectively. Each uses the same no-shift common direct/indirect address form
+and conservative legality/alias policy as `ADDS`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `AND`/`OR`/`XOR`,
+printed pp. 3-2–3-3, 3-13, 3-46, and 3-68 (PDF pp. 52–53, 63, 96, and
+118)]. **Confidence: VERIFIED_PRIMARY except the simultaneous-update case,
+which is UNKNOWN.**
 
 No claim is yet made about unlisted bit patterns. A complete 65,536-word
 decode audit is an acceptance criterion of `ISA-001`.

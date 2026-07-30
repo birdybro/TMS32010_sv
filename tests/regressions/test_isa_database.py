@@ -38,6 +38,9 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SACL",
                 "SACH",
                 "ADDS",
+                "AND",
+                "OR",
+                "XOR",
                 "ZALH",
                 "ZALS",
             },
@@ -98,6 +101,12 @@ class IsaDatabaseTests(unittest.TestCase):
         for control in (0xC8, 0x8A, 0xB8):
             self.assertIsNone(decode_word(self.database, 0x6100 | control))
         self.assertIsNotNone(decode_word(self.database, 0x617F))
+
+    def test_logic_rejects_reserved_indirect_controls(self) -> None:
+        for base in (0x7800, 0x7900, 0x7A00):
+            for control in (0xC8, 0x8A, 0xB8):
+                self.assertIsNone(decode_word(self.database, base | control))
+            self.assertIsNotNone(decode_word(self.database, base | 0x7F))
 
     def test_fixture_provenance_is_independent(self) -> None:
         provenance = self.fixtures["provenance"].lower()

@@ -48,9 +48,14 @@ Arithmetic uses two's-complement values. The ALU is 32 bits wide. A
 data-memory operand is sign-extended before a documented left shift of 0–15
 places; zeros enter at the low end. Instructions that suppress sign extension
 are called out individually. Logical operations act on the upper accumulator
-half while passing the lower half unchanged
-[ti-tms32010-users-guide-spru001b, §§2.1.2–2.1.3, printed pp. 2-3–2-7
-(PDF pp. 27–31)]. **Confidence: VERIFIED_PRIMARY.**
+half as a zero operand and combine the selected 16-bit RAM word with
+`ACC[15:0]`. Consequently `AND` clears `ACC[31:16]`, while `OR` and `XOR`
+preserve it; all three place their logical result in `ACC[15:0]` and cannot
+overflow
+[ti-tms32010-users-guide-spru001b, `AND`, `OR`, and `XOR`, printed
+pp. 3-13, 3-46, and 3-68 (PDF pp. 63, 96, and 118);
+ti-first-generation-users-guide-1987, §3.5.2, printed pp. 3-19–3-20
+(PDF pp. 48–49)]. **Confidence: VERIFIED_PRIMARY.**
 
 The overflow flag `OV` is sticky until `BV` or a status load clears it. With
 overflow mode `OVM` set, positive and negative overflows clamp to
@@ -106,15 +111,18 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 ## Current qualification boundary
 
 The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `ROVM`, `SACL`, `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`. The six
+differential boundary support `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`,
+`LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`,
+and `ZALS`. The nine
 common-address data instructions have independent fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
 all three documented output shifts and rejects all five other field values.
 ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
-`OVM=0` results, and positive `OVM=1` saturation. Unresolved addresses trap
+`OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the
+documented low-half result, their distinct upper-half effects, and unchanged
+`OV`/`OVM`. Unresolved addresses trap
 rather than alias. This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.
 Current evidence does not constitute instruction completeness or cycle

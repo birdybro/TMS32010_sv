@@ -6,8 +6,8 @@ RTL.
 
 Current supported boundary:
 
-- `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`,
-  `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
+- `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
+  `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
   and positive saturation with `OVM=1`;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
@@ -16,6 +16,8 @@ Current supported boundary:
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of
   exactly 0, 1, or 4, with the same post-access controls;
+- `AND`, `OR`, and `XOR` direct/indirect low-half logic, including AND's
+  upper-half clear, OR/XOR upper-half preservation, and unchanged OV/OVM;
 - `ZALH` and `ZALS` direct/indirect reads into the accumulator high and low
   halves, respectively, with the same post-access controls;
 - 12-bit PC wrap;

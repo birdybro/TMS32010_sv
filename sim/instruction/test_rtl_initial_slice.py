@@ -141,6 +141,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_logic_halves_status_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_logic_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_logic_rtl.sv",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

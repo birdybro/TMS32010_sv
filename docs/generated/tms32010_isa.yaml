@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK",
-      "LAC", "SACL", "SACH", "ADDS", "ZALH", "ZALS"
+      "LAC", "SACL", "SACH", "ADDS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -500,6 +500,153 @@
         {"source_id": "ti-tms320c14-e14-users-guide-1988", "section": "ADDS instruction description", "printed_page": "4-17", "pdf_page": 124}
       ],
       "confidence_level": "CORROBORATED",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "XOR",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7800",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "none; data_word is the 16-bit lower-half operand and zero is the upper-half operand",
+      "shift_behavior": "none",
+      "overflow_behavior": "logical operation cannot overflow and does not affect OV or OVM",
+      "result_behavior": "ACC[15:0] receives ACC[15:0] XOR data_word; ACC[31:16] is unchanged because zero XOR ACC[31:16] equals ACC[31:16]",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "XOR instruction description", "printed_page": "3-68", "pdf_page": 118},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and XOR instruction description", "printed_page": "3-19 through 3-20 and 4-73", "pdf_page": "48-49 and 154"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "AND",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7900",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "none; data_word is the 16-bit lower-half operand and zero is the upper-half operand",
+      "shift_behavior": "none",
+      "overflow_behavior": "logical operation cannot overflow and does not affect OV or OVM",
+      "result_behavior": "ACC[15:0] receives ACC[15:0] AND data_word; ACC[31:16] is cleared because zero AND ACC[31:16] equals zero",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "AND instruction description", "printed_page": "3-13", "pdf_page": 63},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and AND instruction description", "printed_page": "3-19 through 3-20 and 4-18", "pdf_page": "48-49 and 99"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "OR",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7a00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "none; data_word is the 16-bit lower-half operand and zero is the upper-half operand",
+      "shift_behavior": "none",
+      "overflow_behavior": "logical operation cannot overflow and does not affect OV or OVM",
+      "result_behavior": "ACC[15:0] receives ACC[15:0] OR data_word; ACC[31:16] is unchanged because zero OR ACC[31:16] equals ACC[31:16]",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "OR instruction description", "printed_page": "3-46", "pdf_page": 96},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and OR instruction description", "printed_page": "3-19 through 3-20 and 4-52", "pdf_page": "48-49 and 133"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]
     },
     {

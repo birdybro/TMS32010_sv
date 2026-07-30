@@ -147,3 +147,24 @@ reserved-control and alias policies remain linked to `OQ-010`.
 high-half addition is documented, but original-part sources omit whether
 `OV`/`OVM` applies, while a C14/E14 variant guide and MAME apply overflow with
 unresolved saturation details. See `SC-006` and `OQ-011`.
+
+## Qualified `AND`, `OR`, and `XOR` research slice
+
+Each logic instruction reads a common-addressed 16-bit internal RAM word and
+combines it with `ACC[15:0]`. `AND` writes
+`ACC = {16'h0000, ACC[15:0] & dma}`. `OR` and `XOR` instead preserve
+`ACC[31:16]` and replace only the low half with their respective result. No
+source is sign-extended or shifted
+[ti-tms32010-users-guide-spru001b, `AND`, `OR`, and `XOR`, printed
+pp. 3-13, 3-46, and 3-68 (PDF pp. 63, 96, and 118);
+ti-first-generation-users-guide-1987, §3.5.2 and `AND`/`OR`/`XOR`, printed
+pp. 3-19–3-20, 4-18, 4-52, and 4-73 (PDF pp. 48–49, 99, 133, and 154)].
+**Confidence: VERIFIED_PRIMARY.**
+
+TI states that logical operations cannot overflow. The three operations leave
+both sticky `OV` and `OVM` unchanged and each occupies one word and one cycle.
+Their direct/indirect address selection, old-AR read ordering, optional
+nine-bit counter update, ARP replacement, reserved-control rejection, and
+noncanonical preserve alias policy match the other qualified common-address
+operations. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
+update bits.**

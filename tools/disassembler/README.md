@@ -1,10 +1,11 @@
 # Project-local TMS32010 disassembler
 
 The disassembler is driven by `docs/generated/tms32010_isa.yaml` and currently
-recognizes the fourteen-instruction model/tool slice. Unknown words are rendered
+recognizes the seventeen-instruction model/tool slice. Unknown words are rendered
 as lossless `.word 0xNNNN` directives, so disassembly remains reassemblable
 without claiming that an encoding is reserved or inert. A legal but
-noncanonical indirect `ADDS`, `LAC`, `SACL`, `SACH`, `ZALH`, or `ZALS` whose
+noncanonical indirect `ADDS`, `AND`, `LAC`, `OR`, `SACL`, `SACH`, `XOR`,
+`ZALH`, or `ZALS` whose
 ignored bit 0 is one while ARP is preserved also uses `.word`, retaining its
 exact binary representation.
 

@@ -56,6 +56,21 @@ class ToolchainSliceTests(unittest.TestCase):
             ADDS *
             ADDS *+,AR1
             ADDS *-,0
+            XOR 0
+            XOR 127
+            XOR *
+            XOR *+,AR1
+            XOR *-,0
+            AND 0
+            AND 127
+            AND *
+            AND *+,AR1
+            AND *-,0
+            OR 0
+            OR 127
+            OR *
+            OR *+,AR1
+            OR *-,0
             ZALH 0
             ZALH 127
             ZALH *
@@ -109,6 +124,21 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6188,
                 0x61A1,
                 0x6190,
+                0x7800,
+                0x787F,
+                0x7888,
+                0x78A1,
+                0x7890,
+                0x7900,
+                0x797F,
+                0x7988,
+                0x79A1,
+                0x7990,
+                0x7A00,
+                0x7A7F,
+                0x7A88,
+                0x7AA1,
+                0x7A90,
                 0x6500,
                 0x657F,
                 0x6588,
@@ -162,6 +192,24 @@ class ToolchainSliceTests(unittest.TestCase):
             0x61A1,
             0x6190,
             0x6189,
+            0x7800,
+            0x787F,
+            0x7888,
+            0x78A1,
+            0x7890,
+            0x7889,
+            0x7900,
+            0x797F,
+            0x7988,
+            0x79A1,
+            0x7990,
+            0x7989,
+            0x7A00,
+            0x7A7F,
+            0x7A88,
+            0x7AA1,
+            0x7A90,
+            0x7A89,
             0x6500,
             0x657F,
             0x6588,
@@ -323,6 +371,28 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x6189\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x6189])
+
+    def test_logic_operand_diagnostics_and_noncanonical_aliases(self) -> None:
+        for mnemonic in ("XOR", "AND", "OR"):
+            cases = (
+                (f"{mnemonic} 128\n", "direct address"),
+                (f"{mnemonic} *+,2\n", "next ARP"),
+                (f"{mnemonic} 0,1\n", "only with indirect"),
+                (f"{mnemonic}\n", "1 to 2 operands"),
+            )
+            for source, message in cases:
+                with self.subTest(source=source):
+                    with self.assertRaisesRegex(AssemblyError, message):
+                        self.assembler.assemble_text(source)
+
+        original = [0x7889, 0x7989, 0x7A89]
+        source = self.disassembler.disassemble_source(original)
+        self.assertEqual(
+            source,
+            ".word 0x7889\n.word 0x7989\n.word 0x7a89\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), original)
 
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(

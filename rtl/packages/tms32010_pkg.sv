@@ -1,21 +1,24 @@
 `default_nettype none
 
 package tms32010_pkg;
-  typedef enum logic [3:0] {
-    OP_LACK = 4'd0,
-    OP_NOP  = 4'd1,
-    OP_ZAC  = 4'd2,
-    OP_ROVM = 4'd3,
-    OP_SOVM = 4'd4,
-    OP_LARK = 4'd5,
-    OP_LARP = 4'd6,
-    OP_LDPK = 4'd7,
-    OP_LAC  = 4'd8,
-    OP_SACL = 4'd9,
-    OP_SACH = 4'd10,
-    OP_ZALH = 4'd11,
-    OP_ZALS = 4'd12,
-    OP_ADDS = 4'd13
+  typedef enum logic [4:0] {
+    OP_LACK = 5'd0,
+    OP_NOP  = 5'd1,
+    OP_ZAC  = 5'd2,
+    OP_ROVM = 5'd3,
+    OP_SOVM = 5'd4,
+    OP_LARK = 5'd5,
+    OP_LARP = 5'd6,
+    OP_LDPK = 5'd7,
+    OP_LAC  = 5'd8,
+    OP_SACL = 5'd9,
+    OP_SACH = 5'd10,
+    OP_ZALH = 5'd11,
+    OP_ZALS = 5'd12,
+    OP_ADDS = 5'd13,
+    OP_XOR  = 5'd14,
+    OP_AND  = 5'd15,
+    OP_OR   = 5'd16
   } tms32010_operation_t;
 endpackage
 

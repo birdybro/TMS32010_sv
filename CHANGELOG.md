@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fourteen model/tool encodings.
+  mnemonics and fully describes the first seventeen model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the fourteen-instruction slice.
+  clock-enable execution core for the seventeen-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the fourteen supported
+- Sequential native-phase wrapper that retires the seventeen supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -71,6 +71,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   as explicitly scoped variant evidence for the unresolved ADDH wording.
 - An explicit deterministic FPGA/test initialization path distinct from
   physical reset, plus an observable OV output for arithmetic verification.
+- Primary-cited `AND`, `OR`, and `XOR` database, model,
+  assembler/disassembler, RTL, native-phase, and differential support for
+  low-half logic and the common direct/indirect data-address modes.
 
 ### Changed
 
@@ -80,9 +83,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated fourteen-instruction phase/RAM slice in
-  1,506 ALMs/2,421 registers with positive internal 50 MHz setup/hold slack and
-  71.40 MHz worst slow-corner internal Fmax; 221 diagnostic pins are virtual,
+- Quartus 17.0.2 fits the integrated seventeen-instruction phase/RAM slice in
+  1,504 ALMs/2,421 registers with positive internal 50 MHz setup/hold slack and
+  67.84 MHz worst slow-corner internal Fmax; 221 diagnostic pins are virtual,
   and enumerated harness I/O paths are explicitly excluded pending a real
   wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -95,6 +98,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
+- The qualified model/tool/RTL boundary now covers seventeen of 60 documented
+  mnemonics and nine common-address data-operation families.
 
 ### Fixed
 
@@ -105,6 +110,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   violations; synthesis evidence now scopes itself to internal timing.
 - Added the OV diagnostic output to the Quartus virtual-pin set after a rejected
   fit exposed an unintended physical harness pin assignment.
+- Corrected the architecture baseline's logic-datapath description: all three
+  operations combine the RAM operand with `ACC[15:0]`; `AND` clears the upper
+  half, while `OR` and `XOR` preserve it.
 
 ### Verified
 
@@ -148,9 +156,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   cross-half bit transfer, direct/indirect writes, accumulator/status
   preservation, both data pages, unresolved-address trapping, post-access
   AR/ARP updates, and one-cycle retirement.
-- The seeded fourteen-instruction differential compares logical SACH writes and
+- The seeded seventeen-instruction differential compares logical SACH writes and
   all final RAM words; undocumented shifts 2, 3, 5, 6, and 7 fail decode.
-- Yosys 0.33 synthesizes the fourteen-instruction hierarchy to 6,562 generic
+- Yosys 0.33 synthesizes the seventeen-instruction hierarchy to 6,738 generic
   cells with eight assertions, zero latches, and clean pre/post checks.
 - Hand fixtures and directed tests verify `ZALH`/`ZALS` direct and indirect
   reads, both data pages, high/low accumulator placement, zero extension,
@@ -165,13 +173,20 @@ Changelog, and the project follows semantic versioning once releases begin.
   traps, one-cycle timing, and native program-fetch coexistence.
 - The seeded 512-step differential now compares OV in addition to ACC/OVM and
   includes deterministic ADDS overflow plus randomized common-address cases.
+- Hand fixtures and directed model/RTL tests verify `AND`, `OR`, and `XOR`
+  direct/indirect reads, both data pages, distinct accumulator upper-half
+  effects, unchanged sticky OV/OVM, AR/ARP post-modification,
+  unresolved-address traps, and one-cycle retirement.
+- The seeded 512-step differential and native-phase integration now include
+  deterministic and randomized logic operations with logical read-transaction
+  comparison.
 - All 15 acquired reference files match their manifest SHA-256 values.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 
 ### Known Issues
 
-- Only fourteen of 60 documented instruction mnemonics have model, tool, and
+- Only seventeen of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - Original-part ADDH overflow/saturation behavior and physical-reset retention
   of unlisted state remain unresolved as OQ-011 and OQ-012.

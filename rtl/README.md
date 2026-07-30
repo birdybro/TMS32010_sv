@@ -1,8 +1,9 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `ROVM`, `SACL`, `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS` at an
+`tms32010_core` supports only `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`,
+`LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`,
+and `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
 one supported one-cycle instruction. Unsupported words, undocumented SACH
 shifts, and common-address data accesses outside the verified 144-word RAM
@@ -31,7 +32,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the fourteen currently qualified one-cycle sequential instructions it
+For the seventeen currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general

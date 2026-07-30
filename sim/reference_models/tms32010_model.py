@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADDS, LAC, LACK, LARK, LARP, LDPK, NOP, ROVM,
-SACH, SACL, SOVM, ZAC, ZALH, and ZALS. Logical program and internal-data
-transactions and instruction totals are modeled; pin subphases are not yet
-integrated with this model.
+This partial slice supports ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP, OR,
+ROVM, SACH, SACL, SOVM, XOR, ZAC, ZALH, and ZALS. Logical program and
+internal-data transactions and instruction totals are modeled; pin subphases
+are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -179,7 +179,17 @@ class Tms32010Model:
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
         selected_arp: int | None = None
-        if mnemonic in {"ADDS", "LAC", "SACL", "SACH", "ZALH", "ZALS"}:
+        if mnemonic in {
+            "ADDS",
+            "AND",
+            "LAC",
+            "OR",
+            "SACL",
+            "SACH",
+            "XOR",
+            "ZALH",
+            "ZALS",
+        }:
             if operands["indirect"]:
                 selected_arp = self.state.status.arp
                 data_address = self.state.ar[selected_arp] & 0xFF
@@ -190,7 +200,7 @@ class Tms32010Model:
             if data_address >= DATA_WORDS:
                 raise UnsupportedDataAddress(pc, opcode, data_address)
             operands["effective_address"] = data_address
-            if mnemonic in {"ADDS", "LAC", "ZALH", "ZALS"}:
+            if mnemonic in {"ADDS", "AND", "LAC", "OR", "XOR", "ZALH", "ZALS"}:
                 transaction_data = self.data[data_address]
             elif mnemonic == "SACL":
                 transaction_data = self.state.acc & WORD_MASK
@@ -203,7 +213,8 @@ class Tms32010Model:
                     space="data",
                     operation=(
                         "read"
-                        if mnemonic in {"ADDS", "LAC", "ZALH", "ZALS"}
+                        if mnemonic
+                        in {"ADDS", "AND", "LAC", "OR", "XOR", "ZALH", "ZALS"}
                         else "write"
                     ),
                     address=data_address,
@@ -235,6 +246,21 @@ class Tms32010Model:
             self.state.acc = self.data[operands["effective_address"]]
         elif mnemonic == "ADDS":
             self._add_accumulator(self.data[operands["effective_address"]])
+        elif mnemonic == "XOR":
+            self.state.acc = (
+                (self.state.acc & 0xFFFF_0000)
+                | (
+                    (self.state.acc & WORD_MASK)
+                    ^ self.data[operands["effective_address"]]
+                )
+            )
+        elif mnemonic == "AND":
+            self.state.acc = (
+                (self.state.acc & WORD_MASK)
+                & self.data[operands["effective_address"]]
+            )
+        elif mnemonic == "OR":
+            self.state.acc |= self.data[operands["effective_address"]]
         elif mnemonic == "LARK":
             register = operands["auxiliary_register"]
             self.state.ar[register] = operands["constant"] & 0xFF
@@ -252,7 +278,18 @@ class Tms32010Model:
             raise AssertionError(f"decoder returned unhandled mnemonic {mnemonic}")
 
         if (
-            mnemonic in {"ADDS", "LAC", "SACL", "SACH", "ZALH", "ZALS"}
+            mnemonic
+            in {
+                "ADDS",
+                "AND",
+                "LAC",
+                "OR",
+                "SACL",
+                "SACH",
+                "XOR",
+                "ZALH",
+                "ZALS",
+            }
             and operands["indirect"]
         ):
             assert selected_arp is not None
@@ -365,6 +402,20 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "ADDS", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if (opcode & 0xFF00) in {0x7800, 0x7900, 0x7A00}:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            mnemonic = {0x7800: "XOR", 0x7900: "AND", 0x7A00: "OR"}[
+                opcode & 0xFF00
+            ]
+            return mnemonic, {
                 "indirect": indirect,
                 "addressing_field": control,
             }
