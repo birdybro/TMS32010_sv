@@ -14,15 +14,15 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support eighteen
+The reference model, local tools, and partial RTL currently support nineteen
 instructions: `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The
+`NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `SUB`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The
 144-word internal RAM exposes verification-visible logical
-`ADD`/`ADDS`/`AND`/`LAC`/`OR`/`XOR`/`ZALH`/`ZALS` reads and `SACL`/`SACH` writes;
+`ADD`/`ADDS`/`AND`/`LAC`/`OR`/`SUB`/`XOR`/`ZALH`/`ZALS` reads and `SACL`/`SACH` writes;
 unsupported opcodes, undocumented SACH shifts, and unresolved RAM addresses
 trap. A
 separate native-phase wrapper qualifies normal sequential program reads for
-this eighteen-instruction subset only; it is not a general
+this nineteen-instruction subset only; it is not a general
 pipeline or cycle-accuracy claim.
 
 ## Design principles

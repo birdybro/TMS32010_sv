@@ -19,7 +19,8 @@ package tms32010_pkg;
     OP_XOR  = 5'd14,
     OP_AND  = 5'd15,
     OP_OR   = 5'd16,
-    OP_ADD  = 5'd17
+    OP_ADD  = 5'd17,
+    OP_SUB  = 5'd18
   } tms32010_operation_t;
 endpackage
 

@@ -175,6 +175,30 @@ old-AR read, optional nine-bit update, ARP replacement, reserved-control
 rejection, and noncanonical alias policy match `LAC`. `ADDH` remains excluded
 under `SC-006`/`OQ-011`.
 
+## Qualified `SUB` research slice
+
+`SUB` sign-extends the selected 16-bit internal RAM word to 32 bits, shifts it
+left by the encoded count from 0 through 15, subtracts that value from the
+full 32-bit accumulator, and stores the result. Low bits introduced by the
+shift are zero-filled
+[ti-tms32010-users-guide-spru001b, §2.2.4.1 and `SUB`, printed pp. 2-6 and
+3-60 (PDF pp. 30 and 110); ti-first-generation-users-guide-1987, §§3.5.1 and
+`SUB`, printed pp. 3-18 and 4-66 (PDF pp. 47 and 147)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The later TI instruction page explicitly states that `SUB` affects sticky
+`OV` and is affected by `OVM`. General ALU rules establish wrapped results
+when `OVM=0` and positive/negative saturation at `0x7fffffff`/`0x80000000`
+when `OVM=1`
+[ti-first-generation-users-guide-1987, §§3.5.2 and `SUB`, printed pp. 3-20
+and 4-66 (PDF pp. 49 and 147)]. **Confidence: VERIFIED_PRIMARY.**
+
+`SUB` occupies one word and one cycle. Its common direct/indirect addressing,
+old-AR read ordering, optional nine-bit counter update, ARP replacement,
+reserved-control rejection, and noncanonical alias policy match `ADD` and
+`LAC`. `SUBH` and `SUBS` are separate encodings and are not implied by this
+qualification boundary.
+
 ## Qualified `AND`, `OR`, and `XOR` research slice
 
 Each logic instruction reads a common-addressed 16-bit internal RAM word and

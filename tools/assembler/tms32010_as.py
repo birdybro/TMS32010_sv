@@ -245,7 +245,7 @@ class Assembler:
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
-        elif operation in {"ADD", "LAC"}:
+        elif operation in {"ADD", "LAC", "SUB"}:
             shift = (
                 self._evaluate(operands[1], symbols, location, line)
                 if len(operands) >= 2

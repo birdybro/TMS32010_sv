@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP,
-OR, ROVM, SACH, SACL, SOVM, XOR, ZAC, ZALH, and ZALS. Logical program and
-internal-data transactions and instruction totals are modeled; pin subphases
-are not yet integrated with this model.
+OR, ROVM, SACH, SACL, SOVM, SUB, XOR, ZAC, ZALH, and ZALS. Logical program
+and internal-data transactions and instruction totals are modeled; pin
+subphases are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -187,6 +187,7 @@ class Tms32010Model:
             "OR",
             "SACL",
             "SACH",
+            "SUB",
             "XOR",
             "ZALH",
             "ZALS",
@@ -207,6 +208,7 @@ class Tms32010Model:
                 "AND",
                 "LAC",
                 "OR",
+                "SUB",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -230,6 +232,7 @@ class Tms32010Model:
                             "AND",
                             "LAC",
                             "OR",
+                            "SUB",
                             "XOR",
                             "ZALH",
                             "ZALS",
@@ -273,6 +276,14 @@ class Tms32010Model:
             self._add_accumulator(
                 (signed_word << operands["shift"]) & ACC_MASK
             )
+        elif mnemonic == "SUB":
+            data_word = self.data[operands["effective_address"]]
+            signed_word = (
+                data_word if data_word < 0x8000 else data_word - 0x10000
+            )
+            self._subtract_accumulator(
+                (signed_word << operands["shift"]) & ACC_MASK
+            )
         elif mnemonic == "XOR":
             self.state.acc = (
                 (self.state.acc & 0xFFFF_0000)
@@ -314,6 +325,7 @@ class Tms32010Model:
                 "OR",
                 "SACL",
                 "SACH",
+                "SUB",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -369,6 +381,24 @@ class Tms32010Model:
                 return
         self.state.acc = wrapped
 
+    def _subtract_accumulator(self, subtrahend: int) -> None:
+        """Apply sticky signed-overflow and OVM rules to a 32-bit subtraction."""
+        old_acc = self.state.acc & ACC_MASK
+        subtrahend &= ACC_MASK
+        wrapped = (old_acc - subtrahend) & ACC_MASK
+        overflow = (
+            ((old_acc ^ subtrahend) & (old_acc ^ wrapped) & 0x8000_0000)
+            != 0
+        )
+        if overflow:
+            self.state.status.ov = True
+            if self.state.status.ovm:
+                self.state.acc = (
+                    0x8000_0000 if old_acc & 0x8000_0000 else 0x7FFF_FFFF
+                )
+                return
+        self.state.acc = wrapped
+
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
@@ -380,6 +410,18 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "ADD", {
+                "shift": (opcode >> 8) & 0xF,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xF000 == 0x1000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SUB", {
                 "shift": (opcode >> 8) & 0xF,
                 "indirect": indirect,
                 "addressing_field": control,

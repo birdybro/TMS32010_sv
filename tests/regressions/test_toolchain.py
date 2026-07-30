@@ -58,6 +58,13 @@ class ToolchainSliceTests(unittest.TestCase):
             ADD *-
             ADD *+,8,AR1
             ADD *+,8,0
+            SUB 0
+            SUB 127,15
+            SUB *
+            SUB *+
+            SUB *-
+            SUB *+,8,AR1
+            SUB *+,8,0
             ADDS 0
             ADDS 127
             ADDS *
@@ -133,6 +140,13 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x0098,
                 0x08A1,
                 0x08A0,
+                0x1000,
+                0x1F7F,
+                0x1088,
+                0x10A8,
+                0x1098,
+                0x18A1,
+                0x18A0,
                 0x6100,
                 0x617F,
                 0x6188,
@@ -172,7 +186,7 @@ class ToolchainSliceTests(unittest.TestCase):
             0x6E00,
             0x7E2A,
             0x7F80,
-            0x1234,
+            0x3ABC,
             0x7F89,
             0x7F8A,
             0x7F8B,
@@ -208,6 +222,14 @@ class ToolchainSliceTests(unittest.TestCase):
             0x08A1,
             0x08A0,
             0x0089,
+            0x1000,
+            0x1F7F,
+            0x1088,
+            0x10A8,
+            0x1098,
+            0x18A1,
+            0x18A0,
+            0x1089,
             0x6100,
             0x617F,
             0x6188,
@@ -337,6 +359,24 @@ class ToolchainSliceTests(unittest.TestCase):
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x0089])
 
+    def test_sub_operand_diagnostics_and_noncanonical_alias(self) -> None:
+        cases = (
+            ("SUB 128\n", "direct address"),
+            ("SUB 0,16\n", "shift"),
+            ("SUB *+,0,2\n", "next ARP"),
+            ("SUB 0,0,1\n", "only with indirect"),
+            ("SUB\n", "1 to 3 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+        source = self.disassembler.disassemble_source([0x1089])
+        self.assertEqual(source, ".word 0x1089\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x1089])
+
     def test_sacl_operand_diagnostics(self) -> None:
         cases = (
             ("SACL 128\n", "direct address"),
@@ -437,9 +477,9 @@ class ToolchainSliceTests(unittest.TestCase):
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(
             AssemblyError,
-            "documented instruction SUB is not implemented",
+            "documented instruction ADDH is not implemented",
         ):
-            self.assembler.assemble_text("SUB 0\n")
+            self.assembler.assemble_text("ADDH 0\n")
 
     def test_expression_language_rejects_code_execution(self) -> None:
         with self.assertRaisesRegex(AssemblyError, "invalid expression"):

@@ -22,7 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ADD/ADDS/AND/LAC/LACK/LARK/LARP/LDPK/OR/SACH/SACL/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-32, 3-34 through 3-35, 3-37, 3-46, 3-53 through 3-54, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-82, 84-85, 87, 96, 103-104, 118, and 120-121)",
+        "Sections 3.3-3.4, Table 3-2, and ADD/ADDS/AND/LAC/LACK/LARK/LARP/LDPK/OR/SACH/SACL/SUB/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-32, 3-34 through 3-35, 3-37, 3-46, 3-53 through 3-54, 3-60, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-82, 84-85, 87, 96, 103-104, 110, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -77,7 +77,7 @@
       "sections_or_pages_used": [
         "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison",
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
-        "ADD, ADDH, ADDS, AND, OR, and XOR instruction descriptions, printed pages 4-15 through 4-18, 4-52, and 4-73 (PDF pages 96-99, 133, and 154)",
+        "ADD, ADDH, ADDS, AND, OR, SUB, and XOR instruction descriptions, printed pages 4-15 through 4-18, 4-52, 4-66, and 4-73 (PDF pages 96-99, 133, 147, and 154)",
         "ROVM instruction description, printed page 4-58 (PDF page 139)"
       ],
       "status": "acquired",

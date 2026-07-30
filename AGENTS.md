@@ -235,12 +235,12 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support eighteen instructions:
+tools, RTL, and seeded differential boundary support nineteen instructions:
 `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
-`SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
-`ADD`/`ADDS`/`AND`/`LAC`/`OR`/`XOR`/`ZALH`/`ZALS` reads and
+`SACL`, `SACH`, `SOVM`, `SUB`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+`ADD`/`ADDS`/`AND`/`LAC`/`OR`/`SUB`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH` writes in a 144-word internal RAM, plus SACH output shifts 0, 1,
-and 4. ADD has directed sign-extension, shift, positive/negative
+and 4. ADD and SUB have directed sign-extension, shift, positive/negative
 wrap/saturation, and sticky-OV evidence. ADDS has directed
 wrap/saturation and sticky-OV evidence. AND, OR, and
 XOR have directed accumulator-half and status-preservation evidence. A phase
