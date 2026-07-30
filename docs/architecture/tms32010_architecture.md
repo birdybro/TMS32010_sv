@@ -99,9 +99,10 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model and local assembler/disassembler support `LAC`, `LACK`,
 `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. RTL and seeded
-model/RTL differential evidence still cover only the latter eight
-non-data-memory instructions. `LAC` has independent fixtures and directed
-model/tool tests, including direct/indirect address and nine-bit counter
-boundaries, but no RTL claim yet. This remains partial RTL support only. The
-sequential native-phase wrapper covers normal program reads only. Current
-evidence does not constitute instruction completeness or cycle accuracy.
+model/RTL differential evidence cover the same nine. `LAC` has independent
+fixtures plus directed and seeded tests for direct/indirect address selection,
+sign extension, shifts, and nine-bit counter updates. The internal RAM has no
+architectural write instruction yet, and unresolved addresses trap rather than
+alias. This remains partial RTL support only. The sequential native-phase
+wrapper covers normal program reads only. Current evidence does not constitute
+instruction completeness or cycle accuracy.

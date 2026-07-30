@@ -34,6 +34,11 @@ No READY pin appears in the original pinout. There is therefore no verified
 native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
+The partial phase integration test proves that a one-cycle `LAC` performs the
+same external program fetch as the other qualified sequential instructions
+while its ordinary data operand remains an internal, verification-visible
+logical read. No `DEN` or `WE` behavior is claimed from that test.
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms

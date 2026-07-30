@@ -5,7 +5,10 @@ module tms32010_decode (
   output logic        valid_o,
   output logic [3:0]  operation_o,
   output logic [7:0]  immediate_o,
-  output logic        auxiliary_register_o
+  output logic        auxiliary_register_o,
+  output logic [3:0]  shift_o,
+  output logic        indirect_o,
+  output logic [6:0]  addressing_field_o
 );
   // Keep the module boundary a packed vector: Ubuntu 24.04's Yosys 0.33
   // cannot elaborate a package-qualified enum port. The exhaustive decoder
@@ -18,29 +21,71 @@ module tms32010_decode (
   localparam logic [3:0] OP_LARK = 4'd5;
   localparam logic [3:0] OP_LARP = 4'd6;
   localparam logic [3:0] OP_LDPK = 4'd7;
+  localparam logic [3:0] OP_LAC  = 4'd8;
 
   always_comb begin
-    valid_o              = 1'b1;
+    valid_o              = 1'b0;
     operation_o          = OP_NOP;
     immediate_o          = instruction_i[7:0];
     auxiliary_register_o = instruction_i[8];
+    shift_o              = instruction_i[11:8];
+    indirect_o           = instruction_i[7];
+    addressing_field_o   = instruction_i[6:0];
 
-    casez (instruction_i)
-      16'b0110_1000_1000_000?: operation_o = OP_LARP;
-      16'b0110_1110_0000_000?: operation_o = OP_LDPK;
-      16'b0111_000?_????_????: operation_o = OP_LARK;
-      16'b0111_1110_????_????: operation_o = OP_LACK;
-      16'h7f80:                operation_o = OP_NOP;
-      16'h7f89:                operation_o = OP_ZAC;
-      16'h7f8a:                operation_o = OP_ROVM;
-      16'h7f8b:                operation_o = OP_SOVM;
-      default: begin
-        valid_o              = 1'b0;
-        operation_o          = OP_NOP;
-        immediate_o          = 8'h00;
-        auxiliary_register_o = 1'b0;
+    if (instruction_i[15:12] == 4'h2) begin
+      operation_o = OP_LAC;
+      if (!instruction_i[7]) begin
+        valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
       end
-    endcase
+    end else begin
+      casez (instruction_i)
+        16'b0110_1000_1000_000?: begin
+          valid_o     = 1'b1;
+          operation_o = OP_LARP;
+        end
+        16'b0110_1110_0000_000?: begin
+          valid_o     = 1'b1;
+          operation_o = OP_LDPK;
+        end
+        16'b0111_000?_????_????: begin
+          valid_o     = 1'b1;
+          operation_o = OP_LARK;
+        end
+        16'b0111_1110_????_????: begin
+          valid_o     = 1'b1;
+          operation_o = OP_LACK;
+        end
+        16'h7f80: begin
+          valid_o     = 1'b1;
+          operation_o = OP_NOP;
+        end
+        16'h7f89: begin
+          valid_o     = 1'b1;
+          operation_o = OP_ZAC;
+        end
+        16'h7f8a: begin
+          valid_o     = 1'b1;
+          operation_o = OP_ROVM;
+        end
+        16'h7f8b: begin
+          valid_o     = 1'b1;
+          operation_o = OP_SOVM;
+        end
+        default: begin
+          immediate_o          = 8'h00;
+          auxiliary_register_o = 1'b0;
+          shift_o              = 4'h0;
+          indirect_o           = 1'b0;
+          addressing_field_o   = 7'h00;
+        end
+      endcase
+    end
   end
 endmodule
 

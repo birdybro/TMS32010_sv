@@ -16,10 +16,11 @@ accepted only when they are tied to cited evidence and automated tests. See
 
 The reference model and local tools currently support nine instructions:
 `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`.
-The partial RTL supports the latter eight; `LAC` RTL and internal RAM are not
-yet implemented, and unsupported opcodes trap. A separate native-phase wrapper
-qualifies normal sequential program reads for the eight-instruction RTL subset
-only; it is not a general pipeline or cycle-accuracy claim.
+The partial RTL supports the same nine, including a 144-word internal RAM and
+verification-visible logical `LAC` reads; unsupported opcodes and unresolved
+RAM addresses trap. A separate native-phase wrapper qualifies normal
+sequential program reads for this nine-instruction subset only; it is not a
+general pipeline or cycle-accuracy claim.
 
 ## Design principles
 

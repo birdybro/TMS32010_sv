@@ -4,6 +4,7 @@ set_global_assignment -name TOP_LEVEL_ENTITY tms32010_synth_top
 set_global_assignment -name PROJECT_OUTPUT_DIRECTORY output_files
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/packages/tms32010_pkg.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_decode.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_internal_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_core.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_program_bus.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/wrappers/tms32010_phase_slice.sv
@@ -21,6 +22,9 @@ set_instance_assignment -name VIRTUAL_PIN ON -to initialize_i
 set_instance_assignment -name VIRTUAL_PIN ON -to rs_i
 set_instance_assignment -name VIRTUAL_PIN ON -to clock_enable_i
 set_instance_assignment -name VIRTUAL_PIN ON -to "program_data_i[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to debug_data_write_i
+set_instance_assignment -name VIRTUAL_PIN ON -to "debug_data_address_i[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "debug_data_i[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "pc_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "accumulator_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_0_o[*]"
@@ -39,5 +43,9 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "native_address_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to men_n_o
 set_instance_assignment -name VIRTUAL_PIN ON -to sample_o
 set_instance_assignment -name VIRTUAL_PIN ON -to native_active_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "data_address_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to data_read_o
+set_instance_assignment -name VIRTUAL_PIN ON -to data_address_valid_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "data_read_data_o[*]"
 
 set_global_assignment -name LAST_QUARTUS_VERSION "17.0.2 Lite Edition"

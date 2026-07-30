@@ -19,9 +19,18 @@ module tb_model_rtl_slice;
   logic        retired;
   logic        illegal;
   logic [31:0] cycle_count;
+  logic [7:0]  data_address;
+  logic        data_read;
+  logic        data_address_valid;
+  logic [15:0] data_read_data;
+  logic        debug_data_write;
+  logic [7:0]  debug_data_address;
+  logic [15:0] debug_data;
   logic [15:0] program_memory [0:4095];
+  logic [15:0] data_memory [0:143];
 
   string image_path;
+  string data_path;
   int unsigned instruction_count;
 
   tms32010_core dut (
@@ -31,6 +40,13 @@ module tb_model_rtl_slice;
     .program_address_o (program_address),
     .program_read_o    (program_read),
     .program_data_i    (program_data),
+    .data_address_o    (data_address),
+    .data_read_o       (data_read),
+    .data_address_valid_o (data_address_valid),
+    .data_read_data_o  (data_read_data),
+    .debug_data_write_i (debug_data_write),
+    .debug_data_address_i (debug_data_address),
+    .debug_data_i      (debug_data),
     .pc_o              (pc),
     .accumulator_o     (accumulator),
     .auxiliary_register_0_o (auxiliary_register_0),
@@ -57,18 +73,33 @@ module tb_model_rtl_slice;
     if (!$value$plusargs("COUNT=%d", instruction_count)) begin
       $fatal(1, "missing +COUNT");
     end
+    if (!$value$plusargs("DATA=%s", data_path)) begin
+      $fatal(1, "missing +DATA");
+    end
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end
     $readmemh(image_path, program_memory);
+    $readmemh(data_path, data_memory);
 
     reset        = 1'b1;
     clock_enable = 1'b1;
+    debug_data_write   = 1'b0;
+    debug_data_address = 8'h00;
+    debug_data         = 16'h0000;
     @(posedge clk);
     #1;
     if (!interrupt_mask || program_read) begin
       $fatal(1, "reset control outputs");
     end
+    debug_data_write = 1'b1;
+    for (int unsigned index = 0; index < 144; index++) begin
+      debug_data_address = index[7:0];
+      debug_data         = data_memory[index];
+      @(posedge clk);
+      #1;
+    end
+    debug_data_write = 1'b0;
     reset = 1'b0;
     #1;
     if (!program_read) begin
@@ -78,12 +109,20 @@ module tb_model_rtl_slice;
     for (int unsigned index = 0; index < instruction_count; index++) begin
       logic [11:0] pc_before;
       logic [15:0] opcode_before;
+      logic [7:0]  data_address_before;
+      logic        data_read_before;
+      logic        data_address_valid_before;
+      logic [15:0] data_read_data_before;
       pc_before     = program_address;
       opcode_before = program_data;
+      data_address_before       = data_address;
+      data_read_before          = data_read;
+      data_address_valid_before = data_address_valid;
+      data_read_data_before     = data_read_data;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %04x",
         pc_before,
         opcode_before,
         pc,
@@ -96,7 +135,11 @@ module tb_model_rtl_slice;
         instruction_valid,
         retired,
         illegal,
-        cycle_count
+        cycle_count,
+        data_address_before,
+        data_read_before,
+        data_address_valid_before,
+        data_read_data_before
       );
     end
     $display("PASS tb_model_rtl_slice");

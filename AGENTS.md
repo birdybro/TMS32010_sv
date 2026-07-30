@@ -236,9 +236,9 @@ or user-supplied Hard Drivin' execution test.
 
 As of 2026-07-30 the machine-readable database, independent model, and local
 tools support nine instructions: `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `ZAC`, `ROVM`, and `SOVM`. The RTL and seeded differential boundary is
-the latter eight only. A phase wrapper qualifies their normal sequential
-program reads, but no data-memory RTL, general pipeline, interrupt entry, or
-complete pin timing exists. The project must not be called
-instruction-complete or cycle-accurate. Consult `TASKS.md` and
-`artifacts/progress.md` for the exact current evidence.
+`NOP`, `ZAC`, `ROVM`, and `SOVM`. RTL and seeded differential evidence cover
+the same nine, including `LAC` reads from a 144-word internal RAM. A phase
+wrapper qualifies their normal sequential program reads, but no architectural
+RAM writes, general pipeline, interrupt entry, or complete pin timing exists.
+The project must not be called instruction-complete or cycle-accurate. Consult
+`TASKS.md` and `artifacts/progress.md` for the exact current evidence.

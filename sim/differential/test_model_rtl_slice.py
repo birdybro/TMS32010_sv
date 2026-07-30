@@ -24,6 +24,7 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
         sources = [
             ROOT / "rtl" / "packages" / "tms32010_pkg.sv",
             ROOT / "rtl" / "core" / "tms32010_decode.sv",
+            ROOT / "rtl" / "core" / "tms32010_internal_ram.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "sim" / "differential" / "tb_model_rtl_slice.sv",
         ]
@@ -49,39 +50,80 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
 
     def test_seeded_mixed_stream_matches_model(self) -> None:
         randomizer = random.Random(SEED)
-        words = [0x7000, 0x7100, 0x6880, 0x6E00, 0x7F89, 0x7F8A]
+        data_words = [randomizer.randrange(0x10000) for _ in range(144)]
+        data_words[0:5] = [0x0000, 0x0001, 0x7FFF, 0x8000, 0xFFFF]
+        words: list[int] = []
+        expected = []
+        model = Tms32010Model()
+        model.data[:] = data_words
+
+        def append_and_step(word: int) -> None:
+            address = len(words)
+            words.append(word)
+            model.program[address] = word
+            expected.append(model.step())
+
+        for word in (0x7000, 0x7100, 0x6880, 0x6E00, 0x7F89, 0x7F8A):
+            append_and_step(word)
+
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
         for _ in range(506):
-            family = randomizer.randrange(6)
+            family = randomizer.randrange(7)
             if family == 0:
-                words.append(0x7E00 | randomizer.randrange(256))
+                word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
-                words.append(
+                word = (
                     0x7000
                     | (randomizer.randrange(2) << 8)
-                    | randomizer.randrange(256)
+                    | randomizer.randrange(144)
                 )
             elif family == 2:
-                words.append(0x6880 | randomizer.randrange(2))
+                word = 0x6880 | randomizer.randrange(2)
             elif family == 3:
-                words.append(0x6E00 | randomizer.randrange(2))
+                word = 0x6E00 | randomizer.randrange(2)
+            elif family == 4:
+                shift = randomizer.randrange(16)
+                if randomizer.randrange(2):
+                    address = (
+                        randomizer.randrange(128)
+                        if model.state.status.dp == 0
+                        else randomizer.randrange(16)
+                    )
+                    word = 0x2000 | (shift << 8) | address
+                else:
+                    selected = model.state.status.arp
+                    if (model.state.ar[selected] & 0xFF) < 144:
+                        control = randomizer.choice(
+                            [0x88, 0xA8, 0x98, 0x80, 0x81, 0xA0, 0xA1, 0x90, 0x91]
+                        )
+                        word = 0x2000 | (shift << 8) | control
+                    else:
+                        address = (
+                            randomizer.randrange(128)
+                            if model.state.status.dp == 0
+                            else randomizer.randrange(16)
+                        )
+                        word = 0x2000 | (shift << 8) | address
             else:
-                words.append(randomizer.choice(choices))
-
-        model = Tms32010Model()
-        model.load_words(words)
-        expected = [model.step() for _ in words]
+                word = randomizer.choice(choices)
+            append_and_step(word)
 
         with tempfile.TemporaryDirectory() as directory:
             image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
             image.write_text(
                 "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
                 encoding="ascii",
             )
             result = subprocess.run(
                 [
                     str(self.build / "Vtb_model_rtl_slice"),
                     f"+IMAGE={image}",
+                    f"+DATA={data_image}",
                     f"+COUNT={len(words)}",
                 ],
                 cwd=ROOT,
@@ -140,6 +182,32 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 model_trace.state_after["cycle_count"],
                 (SEED, index),
             )
+            data_transactions = [
+                transaction
+                for transaction in model_trace.transactions
+                if transaction.space == "data"
+            ]
+            self.assertEqual(
+                bool(int(fields[15], 16)),
+                bool(data_transactions),
+                (SEED, index),
+            )
+            self.assertEqual(
+                bool(int(fields[16], 16)),
+                bool(data_transactions),
+                (SEED, index),
+            )
+            if data_transactions:
+                self.assertEqual(
+                    int(fields[14], 16),
+                    data_transactions[0].address,
+                    (SEED, index),
+                )
+                self.assertEqual(
+                    int(fields[17], 16),
+                    data_transactions[0].data,
+                    (SEED, index),
+                )
 
 
 if __name__ == "__main__":

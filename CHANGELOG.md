@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the eight-instruction slice.
+  clock-enable execution core for the nine-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the eight supported
+- Sequential native-phase wrapper that retires the nine supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -48,6 +48,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Primary-cited `LAC` database/model/tool slice with direct and indirect
   addressing, sign-extension/shift boundaries, logical internal-data traces,
   nine-bit circular AR updates, and explicit unresolved-address traps.
+- Portable 144-word internal data RAM, verification-only preload port, logical
+  data-read observation interface, and full `LAC` RTL execution path.
+- Directed `LAC` RTL/address/cycle tests and randomized logical-data
+  transaction comparison against the independent model.
 
 ### Changed
 
@@ -57,10 +61,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated eight-instruction phase slice in
-  135 ALMs/90 registers with positive internal 50 MHz setup/hold slack and
-  182.08 MHz worst slow-corner internal Fmax; 152 diagnostic ports are virtual
-  and harness I/O paths are explicitly excluded pending a real wrapper.
+- Quartus 17.0.2 fits the integrated nine-instruction phase/RAM slice in
+  1,364 ALMs/2,420 registers with positive internal 50 MHz setup/hold slack and
+  73.69 MHz worst slow-corner internal Fmax; 203 diagnostic pins are virtual,
+  and enumerated harness I/O paths are explicitly excluded pending a real
+  wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
   resolves reset release to an address-0 fetch after one complete cycle.
 - Decoder operation ports use an explicitly encoded packed vector at module
@@ -99,18 +104,30 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Hand fixtures and directed tests verify legal `LAC` direct/indirect words,
   negative and boundary shifts, DP/ARP addressing, post-access AR updates,
   lossless noncanonical aliases, and rejection of reserved controls.
+- RTL tests verify `LAC` sign extension and all documented shift extremes,
+  direct page boundaries, pre-modification indirect reads, low-nine-bit AR
+  wrap, ARP update/preserve behavior, one-cycle retirement, and trapping of
+  unresolved RAM addresses.
+- The 512-instruction seeded differential now compares internal `LAC`
+  address/read/data traces as well as all qualified architectural state.
+- Yosys 0.33 synthesizes the RAM-integrated hierarchy with zero structural
+  check failures or inferred latches; Quartus 17.0.2 reports zero unconstrained
+  timing categories after explicit harness exclusions and positive setup/hold
+  slack at 50 MHz.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 
 ### Known Issues
 
-- Nine instruction behaviors are modeled and supported by local tools, but
-  only eight have RTL/differential evidence; `LAC` RTL is not yet implemented.
+- Only nine of 60 documented instruction mnemonics have model, tool, and
+  RTL/differential evidence.
 - Control-flow bus traces, interrupt entry phases, reserved status bits, and
   out-of-range RAM behavior remain open.
 - The execution core still has an instruction-step test interface; the
-  native-phase wrapper covers only normal sequential program reads, and only
-  eight instructions are implemented.
+  native-phase wrapper covers only normal sequential program reads.
+- No architectural RAM write instruction exists. The asynchronous RAM read is
+  intentionally correctness-first and maps to 2,304 registers plus mux logic,
+  not an FPGA block RAM.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the
   local executable path. Yosys is qualified in an isolated Ubuntu 24.04
   environment; the host target still fails explicitly when the tool is absent.

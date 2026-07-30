@@ -7,6 +7,9 @@ module tms32010_synth_top (
   input  logic        rs_i,
   input  logic        clock_enable_i,
   input  logic [15:0] program_data_i,
+  input  logic        debug_data_write_i,
+  input  logic [7:0]  debug_data_address_i,
+  input  logic [15:0] debug_data_i,
 
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
@@ -26,7 +29,11 @@ module tms32010_synth_top (
   output logic [11:0] native_address_o,
   output logic        men_n_o,
   output logic        sample_o,
-  output logic        native_active_o
+  output logic        native_active_o,
+  output logic [7:0]  data_address_o,
+  output logic        data_read_o,
+  output logic        data_address_valid_o,
+  output logic [15:0] data_read_data_o
 );
   tms32010_phase_slice phase_slice (
     .clk_i                         (clk_i),
@@ -34,12 +41,19 @@ module tms32010_synth_top (
     .rs_i                          (rs_i),
     .clock_enable_i                (clock_enable_i),
     .program_data_i                (program_data_i),
+    .debug_data_write_i            (debug_data_write_i),
+    .debug_data_address_i          (debug_data_address_i),
+    .debug_data_i                  (debug_data_i),
     .phase_o                       (phase_o),
     .clkout_o                      (clkout_o),
     .program_address_o             (native_address_o),
     .men_n_o                       (men_n_o),
     .sample_o                      (sample_o),
     .bus_active_o                  (native_active_o),
+    .data_address_o                (data_address_o),
+    .data_read_o                   (data_read_o),
+    .data_address_valid_o          (data_address_valid_o),
+    .data_read_data_o              (data_read_data_o),
     .pc_o                          (pc_o),
     .accumulator_o                 (accumulator_o),
     .auxiliary_register_0_o        (auxiliary_register_0_o),

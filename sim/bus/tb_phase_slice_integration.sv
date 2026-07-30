@@ -12,6 +12,13 @@ module tb_phase_slice_integration;
   logic        men_n;
   logic        sample;
   logic        bus_active;
+  logic [7:0]  data_address;
+  logic        data_read;
+  logic        data_address_valid;
+  logic [15:0] data_read_data;
+  logic        debug_data_write;
+  logic [7:0]  debug_data_address;
+  logic [15:0] debug_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
   logic [15:0] auxiliary_register_0;
@@ -32,12 +39,19 @@ module tb_phase_slice_integration;
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
     .program_data_i                (program_data),
+    .debug_data_write_i            (debug_data_write),
+    .debug_data_address_i          (debug_data_address),
+    .debug_data_i                  (debug_data),
     .phase_o                       (phase),
     .clkout_o                      (clkout),
     .program_address_o             (program_address),
     .men_n_o                       (men_n),
     .sample_o                      (sample),
     .bus_active_o                  (bus_active),
+    .data_address_o                (data_address),
+    .data_read_o                   (data_read),
+    .data_address_valid_o          (data_address_valid),
+    .data_read_data_o              (data_read_data),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .auxiliary_register_0_o        (auxiliary_register_0),
@@ -88,13 +102,22 @@ module tb_phase_slice_integration;
     program_memory[2] = 16'h6881;  // LARP 1
     program_memory[3] = 16'h6e01;  // LDPK 1
     program_memory[4] = 16'h7f8b;  // SOVM
-    program_memory[5] = 16'h7ea5;  // LACK 0xa5
-    program_memory[6] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[5] = 16'h7f8a;  // ROVM
+    program_memory[6] = 16'h7f8b;  // SOVM
+    program_memory[7] = 16'h7ea5;  // LACK 0xa5
+    program_memory[8] = 16'h7f89;  // ZAC
+    program_memory[9] = 16'h7f80;  // NOP
+    program_memory[10] = 16'h2403;  // LAC 3,4
+    program_memory[11] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
     clock_enable = 1'b1;
+    debug_data_write   = 1'b1;
+    debug_data_address = 8'h83;
+    debug_data         = 16'hff80;
     tick();
+    debug_data_write = 1'b0;
     initialize = 1'b0;
 
     for (int unsigned index = 0; index < 20; index++) begin
@@ -148,17 +171,45 @@ module tb_phase_slice_integration;
     require(pc == 12'h005, "SOVM sample advances PC");
 
     advance_to_sample();
-    require(retired, "LACK retires on sixth sample");
+    require(retired && !overflow_mode, "ROVM clears overflow mode");
+    require(pc == 12'h006, "ROVM sample advances PC");
+
+    advance_to_sample();
+    require(retired && overflow_mode, "second SOVM restores overflow mode");
+    require(pc == 12'h007, "second SOVM sample advances PC");
+
+    advance_to_sample();
+    require(retired, "LACK retires on eighth sample");
     require(accumulator == 32'h0000_00a5, "LACK consumes sampled program word");
-    require(pc == 12'h006 && cycle_count == 32'd6,
-            "six samples retire six instructions");
+    require(pc == 12'h008 && cycle_count == 32'd8,
+            "eight samples retire eight instructions");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0000_0000,
+            "ZAC retires and clears the accumulator");
+    require(pc == 12'h009, "ZAC sample advances PC");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0000_0000,
+            "NOP retires without changing the accumulator");
+    require(pc == 12'h00a && cycle_count == 32'd10,
+            "NOP consumes one native instruction cycle");
+    require(data_read && data_address_valid && data_address == 8'h83,
+            "LAC concatenates DP with its direct address");
+    require(data_read_data == 16'hff80, "LAC sees preloaded internal word");
+
+    advance_to_sample();
+    require(retired, "LAC retires on eleventh sample");
+    require(accumulator == 32'hffff_f800, "LAC sign extends and shifts");
+    require(pc == 12'h00b && cycle_count == 32'd11,
+            "LAC consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h006, "trap holds architectural PC");
-    require(program_address == 12'h006, "trap holds native program address");
-    require(cycle_count == 32'd6, "trap does not count as retired cycle");
+    require(pc == 12'h00b, "trap holds architectural PC");
+    require(program_address == 12'h00b, "trap holds native program address");
+    require(cycle_count == 32'd11, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

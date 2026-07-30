@@ -19,18 +19,24 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 
 ## Qualified timing tests
 
-None. A model test that increments a software cycle counter is not sufficient
-evidence of RTL cycle accuracy.
+The current native-phase integration test observes one complete four-subphase
+program-read cycle for `LAC` and each of the eight earlier sequential
+instructions, then checks retirement on the falling-edge sample boundary.
+The directed `LAC` RTL test separately checks one architectural cycle for
+direct and indirect cases. This qualifies the documented one-cycle total only
+inside the current sequential subset; it does not qualify general
+fetch/execute overlap or any unimplemented instruction.
 
 ## Open timing dimensions
 
 - whether taken and untaken conditions have identical two-cycle totals;
 - exact immediate-word fetch ordering for branch and call;
-- interaction of program fetch with internal data RAM;
+- interaction of program fetch with internal data RAM beyond the qualified
+  one-cycle `LAC` read;
 - table-operation discarded fetch order;
 - interrupt entry latency and recognition boundary;
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is
-resolved and tested in the standalone native phase engine, but it is not yet
-integrated with the execution pipeline.
+resolved and tested through both the standalone native phase engine and the
+partial sequential integration.

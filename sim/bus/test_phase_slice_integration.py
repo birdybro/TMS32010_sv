@@ -18,6 +18,7 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         sources = [
             ROOT / "rtl" / "packages" / "tms32010_pkg.sv",
             ROOT / "rtl" / "core" / "tms32010_decode.sv",
+            ROOT / "rtl" / "core" / "tms32010_internal_ram.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",

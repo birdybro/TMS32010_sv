@@ -44,3 +44,26 @@ is discarded and fetched again
 Self-modifying program RAM is consequently architecturally meaningful and
 must remain observable. Program images are word-addressed; byte order belongs
 to file/wrapper formats, not to the CPU architecture.
+
+## Current RTL boundary
+
+The partial RTL implements exactly 144 addressable 16-bit words and refuses to
+retire `LAC` when its effective address is `0x90`–`0xff`. It exposes the
+effective address, read-valid indication, and operand for verification without
+creating a physical data-memory strobe. Direct and indirect `LAC` tests cover
+both data pages, the final physical word, and pre-modification indirect
+addressing. **Implementation evidence; unresolved-address policy:
+PROVISIONAL under OQ-002.**
+
+The current array has an asynchronous read because the temporary execution
+slice samples program data and commits a one-cycle instruction at one
+boundary. This is an implementation convenience, not evidence about the
+physical TMS32010 RAM. It consequently synthesizes as registers and muxes in
+the qualified Yosys and Quartus flows. Replacing it with an FPGA block-RAM
+implementation is deferred until the documented pipeline phases can preserve
+the same externally visible cycle without speculative latency.
+
+An explicit synchronous preload port exists for simulation and integration
+debug only. It is forbidden during live CPU execution, does not run on
+physical reset, and does not imply deterministic hardware power-up contents.
+No architectural data-memory write instruction is implemented yet.

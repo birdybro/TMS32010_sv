@@ -19,6 +19,13 @@ module tb_initial_rtl_slice;
   logic        retired;
   logic        illegal;
   logic [31:0] cycle_count;
+  logic [7:0]  data_address;
+  logic        data_read;
+  logic        data_address_valid;
+  logic [15:0] data_read_data;
+  logic        debug_data_write;
+  logic [7:0]  debug_data_address;
+  logic [15:0] debug_data;
 
   logic [15:0] program_memory [0:4095];
 
@@ -29,6 +36,13 @@ module tb_initial_rtl_slice;
     .program_address_o (program_address),
     .program_read_o    (program_read),
     .program_data_i    (program_data),
+    .data_address_o    (data_address),
+    .data_read_o       (data_read),
+    .data_address_valid_o (data_address_valid),
+    .data_read_data_o  (data_read_data),
+    .debug_data_write_i (debug_data_write),
+    .debug_data_address_i (debug_data_address),
+    .debug_data_i      (debug_data),
     .pc_o              (pc),
     .accumulator_o     (accumulator),
     .auxiliary_register_0_o (auxiliary_register_0),
@@ -75,10 +89,17 @@ module tb_initial_rtl_slice;
 
     reset        = 1'b1;
     clock_enable = 1'b1;
+    debug_data_write   = 1'b0;
+    debug_data_address = 8'h00;
+    debug_data         = 16'h0000;
     tick();
     require(pc == 12'h000, "reset PC");
     require(interrupt_mask, "reset masks interrupts");
     require(!program_read, "program read inactive during reset");
+    require(!data_read && !data_address_valid && data_address == 8'h00,
+            "logical data read is inactive during reset");
+    require(!data_read || !$isunknown(data_read_data),
+            "an active logical data read must return known test data");
 
     reset = 1'b0;
     tick();

@@ -156,11 +156,13 @@ objective passing evidence.
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/datapath/`
-- **Notes:** Initial 32-bit accumulator, two 16-bit ARs, ARP, DP, and OVM state
-  effects exist for the eight-instruction slice. Reset deliberately preserves
-  OVM and does not invent ACC/AR/ARP/DP power-up state. ALU, multiplier,
-  shifters, stack, remaining status behavior, and RAM remain. Do not commit
-  speculative widths or power-up values.
+- **Notes:** Initial 32-bit accumulator, two 16-bit ARs, ARP, DP, OVM, and
+  144-word internal RAM exist for the nine-instruction slice. `LAC` verifies
+  sign extension, left shifts, direct/indirect addressing, and low-nine-bit AR
+  updates. Reset deliberately preserves OVM and does not invent ACC/AR/ARP/DP
+  or RAM power-up state. ALU, multiplier, output shifter, stack, and remaining
+  status behavior remain. The asynchronous RAM read is a provisional
+  implementation boundary and synthesizes to registers, not block RAM.
 
 ## Milestone 8 — RTL program sequencer
 
@@ -178,9 +180,10 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each supported one-cycle instruction on its falling-edge sample and
-  aligns PC/native address across stalls, traps, and reset. General overlap,
-  branch, multi-cycle, and interrupt control do not exist yet.
+  retires each of nine supported one-cycle instructions, including internal
+  `LAC`, on its falling-edge sample and aligns PC/native address across stalls,
+  traps, and reset. General overlap, branch, multi-cycle, and interrupt control
+  do not exist yet.
 
 ## Milestone 9 — Program-memory interface
 
@@ -200,16 +203,17 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all supported
-  sequential instructions and holds PC/address on traps and stalls. Table
-  cycles, branch/call/return, general pipeline overlap, and interrupt
-  sequences remain. Do not collapse Harvard spaces in the native interface.
+  release delay. A partial wrapper integrates those phases with all nine
+  supported sequential instructions, checks that `LAC` remains a normal
+  external program read, and holds PC/address on traps and stalls. Table
+  cycles, branch/call/return, general pipeline overlap, and interrupt sequences
+  remain. Do not collapse Harvard spaces in the native interface.
 
 ## Milestone 10 — Data-memory interface
 
 ### BUS-002 — Internal data transactions
 
-- **Status:** RESEARCHING
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** RTL-002, ARCH-001
 - **Description:** Implement internal RAM mapping and verification-visible
@@ -220,9 +224,11 @@ objective passing evidence.
 - **Tests:** `sim/bus/tb_data_bus.sv`
 - **Notes:** Primary documentation establishes that ordinary operands are
   wholly internal; external storage moves through table or I/O instructions.
-  `LAC` model tests now cover valid address selection and explicitly trap
-  unresolved `0x90`–`0xff`. RTL RAM remains. Variant RAM sizes must not leak
-  into the TMS32010 default.
+  `LAC` model/RTL tests cover valid address selection, logical read traces,
+  and explicitly trap unresolved `0x90`–`0xff`. The portable RTL contains
+  exactly 144 words and a nonarchitectural preload port; architectural writes,
+  read/write ordering, and remaining instruction interactions remain. Variant
+  RAM sizes must not leak into the TMS32010 default.
 
 ## Milestone 11 — I/O interface
 
@@ -291,9 +297,11 @@ objective passing evidence.
 - **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`
 - **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
   `SOVM`) passes model, RTL, toolchain, and differential tests. Cycle evidence
-  is instruction-boundary only, not native bus timing. `LAC` now passes
-  primary-cited database, model, and tool tests but has no RTL/cycle claim.
-  Maintain one subtask per family when implementation begins.
+  is qualified only for the current sequential native-phase boundary. `LAC`
+  now passes primary-cited database/model/tool tests, directed RTL cycle and
+  addressing tests, native phase integration, and seeded logical-data
+  differential traces. The rest of the load/store family remains. Maintain
+  one subtask per family when implementation begins.
 
 ## Milestone 15 — Pipeline and cycle timing
 
@@ -309,8 +317,10 @@ objective passing evidence.
 - **Documentation:** `docs/timing/instruction_cycles.md`
 - **Tests:** `sim/instruction/test_cycles_*`
 - **Notes:** Normal memory read, TBLR/TBLW, IN/OUT, reset, INT, and BIO pin
-  timing is transcribed. Control-flow, interrupt-entry, and per-instruction
-  ownership remain. Electrical delays are wrapper constraints, not RTL delays.
+  timing is transcribed. One-cycle `LAC` retirement is now asserted through the
+  partial native-phase integration. Control-flow, interrupt-entry, and most
+  per-instruction ownership remain. Electrical delays are wrapper constraints,
+  not RTL delays.
 
 ## Milestone 16 — External wait-state behavior
 
@@ -343,7 +353,8 @@ objective passing evidence.
 - **Documentation:** `sim/differential/README.md`
 - **Tests:** `sim/differential/test_*`
 - **Notes:** Seed `0x32010` runs 512 supported instructions with model/RTL
-  state and logical-cycle agreement. MAME comparison and legal randomized
+  state, logical-cycle, and `LAC` internal-read transaction agreement over an
+  identical deterministic 144-word image. MAME comparison and legal randomized
   full-ISA streams remain. MAME disagreement creates research work, not an
   automatic oracle verdict.
 
@@ -375,11 +386,14 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Partial RTL and phase engine fit Cyclone V with positive internal
-  setup/hold slack at 50 MHz. Harness interface paths are explicitly excluded,
-  not timing-closed. Yosys 0.33 passes in an isolated Ubuntu 24.04 environment
-  but is absent from the host path. Full-core resources, pin-level wrapper
-  constraints, and final timing remain.
+- **Notes:** Nine-instruction RTL, phase engine, and 144-word RAM fit Cyclone V
+  in 1,364 ALMs/2,420 registers with no RAM/DSP blocks, 73.69 MHz worst
+  slow-corner internal Fmax, and positive 50 MHz setup/hold slack. All harness
+  exclusions are enumerated and TimeQuest reports zero unconstrained
+  categories; this is still not wrapper I/O closure. Yosys 0.33 passes
+  structural/generic synthesis in isolated Ubuntu 24.04, lowering the
+  asynchronous RAM to flip-flops/muxes. Full-core resources, a block-RAM-safe
+  pipeline, pin-level wrapper constraints, and final timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
 

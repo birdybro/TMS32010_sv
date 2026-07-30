@@ -9,6 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 PACKAGE = ROOT / "rtl" / "packages" / "tms32010_pkg.sv"
 DECODE = ROOT / "rtl" / "core" / "tms32010_decode.sv"
 CORE = ROOT / "rtl" / "core" / "tms32010_core.sv"
+INTERNAL_RAM = ROOT / "rtl" / "core" / "tms32010_internal_ram.sv"
 
 
 class RtlInitialSliceTests(unittest.TestCase):
@@ -74,8 +75,21 @@ class RtlInitialSliceTests(unittest.TestCase):
             [
                 PACKAGE,
                 DECODE,
+                INTERNAL_RAM,
                 CORE,
                 ROOT / "sim" / "instruction" / "tb_initial_rtl_slice.sv",
+            ],
+        )
+
+    def test_lac_data_address_shift_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_lac_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_lac_rtl.sv",
             ],
         )
 

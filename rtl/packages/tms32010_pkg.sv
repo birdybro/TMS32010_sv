@@ -9,7 +9,8 @@ package tms32010_pkg;
     OP_SOVM = 4'd4,
     OP_LARK = 4'd5,
     OP_LARP = 4'd6,
-    OP_LDPK = 4'd7
+    OP_LDPK = 4'd7,
+    OP_LAC  = 4'd8
   } tms32010_operation_t;
 endpackage
 

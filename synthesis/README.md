@@ -1,8 +1,8 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current partial execution slice only.
-They do not establish resource or timing characteristics of an
-instruction-complete TMS32010.
+The checked-in projects synthesize the current nine-instruction execution
+slice, 144-word data RAM, and program phase engine only. They do not establish
+resource or timing characteristics of an instruction-complete TMS32010.
 
 ## Yosys
 
@@ -16,7 +16,9 @@ hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
 for the current one-cycle sequential instruction subset. Yosys 0.33 from
 Ubuntu 24.04 is the currently verified open-source synthesis baseline; see
-`synthesis/qualification.md` for the reproducible isolated command.
+`synthesis/qualification.md` for the reproducible isolated command. The
+asynchronous data-RAM read currently lowers to registers and muxes rather than
+a memory block.
 
 ## Quartus
 
