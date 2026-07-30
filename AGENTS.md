@@ -236,7 +236,8 @@ or user-supplied Hard Drivin' execution test.
 
 As of 2026-07-30 the repository has a primary-cited research baseline and a
 partial machine-readable/model slice for `LACK`, `NOP`, `ZAC`, `ROVM`, and
-`SOVM`, plus matching partial assembler/disassembler support. No architectural
-RTL exists, no timing behavior is qualified, and the project must not be
-called instruction-complete or cycle-accurate. Consult `TASKS.md` and
-`artifacts/progress.md` for the exact current evidence.
+`SOVM`, matching partial assembler/disassembler support, and an
+instruction-boundary RTL execution slice. The temporary RTL interface does
+not implement native bus phases, no physical timing behavior is qualified,
+and the project must not be called instruction-complete or cycle-accurate.
+Consult `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

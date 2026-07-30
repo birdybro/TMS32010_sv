@@ -1,0 +1,12 @@
+read_verilog -sv rtl/packages/tms32010_pkg.sv
+read_verilog -sv rtl/core/tms32010_decode.sv
+read_verilog -sv rtl/core/tms32010_core.sv
+
+hierarchy -check -top tms32010_core
+proc
+opt
+check -assert
+synth -top tms32010_core
+check -assert
+stat
+write_json build/yosys/tms32010.json

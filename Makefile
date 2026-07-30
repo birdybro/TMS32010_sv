@@ -41,10 +41,11 @@ differential:
 
 lint: docs
 	$(PYTHON) -m compileall -q scripts tests tools sim/reference_models
-	@rtl_files="$$(find rtl -type f -name '*.sv' -print)"; \
+	@package_files="$$(find rtl/packages -type f -name '*.sv' -print | sort)"; \
+	rtl_files="$$(find rtl/core rtl/wrappers -type f -name '*.sv' -print | sort)"; \
 	if [ -n "$$rtl_files" ]; then \
 	  command -v "$(VERILATOR)" >/dev/null 2>&1 || { echo "ERROR: Verilator is required for RTL lint"; exit 1; }; \
-	  "$(VERILATOR)" --lint-only --Wall --Wno-DECLFILENAME $$rtl_files; \
+	  "$(VERILATOR)" --lint-only --Wall $$package_files $$rtl_files; \
 	else \
 	  echo "SKIP-EVIDENCE: no RTL files exist yet"; \
 	fi

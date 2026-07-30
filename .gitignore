@@ -20,6 +20,10 @@
 *.qws
 *.qdf
 *.db
+/synthesis/quartus/db/
+/synthesis/quartus/incremental_db/
+/synthesis/quartus/output_files/
+/synthesis/quartus/c5_pin_model_dump.txt
 
 # Python
 __pycache__/

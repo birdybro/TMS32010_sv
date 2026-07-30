@@ -39,6 +39,9 @@ REQUIRED_FILES = {
     "sim/reference_models/README.md",
     "tools/assembler/README.md",
     "tools/disassembler/README.md",
+    "rtl/README.md",
+    "synthesis/README.md",
+    "synthesis/qualification.md",
     "artifacts/progress.md",
 }
 REQUIRED_DIRECTORIES = {

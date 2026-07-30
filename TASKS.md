@@ -138,7 +138,7 @@ objective passing evidence.
 
 ### RTL-001 — Width-accurate datapath primitives
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** ARCH-001, MODEL-001
 - **Description:** Implement accumulator, ALU, multiplier, shifters, auxiliary
@@ -147,13 +147,16 @@ objective passing evidence.
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/datapath/`
-- **Notes:** Do not commit speculative widths or power-up values.
+- **Notes:** Initial 32-bit accumulator and OVM state effects exist for the
+  five-instruction slice. Reset deliberately preserves OVM and does not invent
+  ACC power-up state. ALU, multiplier, shifters, ARs, stack, status, and RAM
+  remain. Do not commit speculative widths or power-up values.
 
 ## Milestone 8 — RTL program sequencer
 
 ### RTL-002 — Fetch/decode/execute sequencer
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** RTL-001, ISA-001
 - **Description:** Implement documented phases, pipeline overlap, control flow,
@@ -162,7 +165,10 @@ objective passing evidence.
   cycle tests pass without gated clocks or combinational cycles.
 - **Documentation:** `docs/architecture/pipeline.md`
 - **Tests:** `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
-- **Notes:** Optimize only after externally visible overlap is verified.
+- **Notes:** Temporary one-enable instruction-boundary execution and
+  trap-without-PC-advance are verified. Native fetch phases, overlap, and
+  control flow do not exist yet. Optimize only after externally visible
+  overlap is verified.
 
 ## Milestone 9 — Program-memory interface
 
@@ -244,7 +250,7 @@ objective passing evidence.
 
 ### ISA-002 — Instruction-family implementation
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** MODEL-001, RTL-001, RTL-002, BUS-001, BUS-002, BUS-003
 - **Description:** Research, model, implement, and verify arithmetic, logic,
@@ -254,7 +260,10 @@ objective passing evidence.
   met for every family and full regression passes.
 - **Documentation:** `docs/architecture/instruction_set.md`
 - **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`
-- **Notes:** Maintain one subtask per family when implementation begins.
+- **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
+  `SOVM`) passes model, RTL, toolchain, and differential tests. Cycle evidence
+  is instruction-boundary only, not native bus timing. Maintain one subtask
+  per family when implementation begins.
 
 ## Milestone 15 — Pipeline and cycle timing
 
@@ -291,7 +300,7 @@ objective passing evidence.
 
 ### DIFF-001 — Model/RTL/MAME trace comparison
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P1
 - **Dependencies:** MODEL-001, ISA-002, TOOLS-001
 - **Description:** Compare architectural state, memories, transactions,
@@ -301,8 +310,10 @@ objective passing evidence.
   adapter records exact commit/configuration/license and known timing limits.
 - **Documentation:** `sim/differential/README.md`
 - **Tests:** `sim/differential/test_*`
-- **Notes:** MAME disagreement creates research work, not an automatic oracle
-  verdict.
+- **Notes:** Seed `0x32010` runs 512 supported instructions with model/RTL
+  state and logical-cycle agreement. MAME comparison and legal randomized
+  full-ISA streams remain. MAME disagreement creates research work, not an
+  automatic oracle verdict.
 
 ## Milestone 18 — Formal verification
 
@@ -323,7 +334,7 @@ objective passing evidence.
 
 ### SYNTH-001 — Portable and Cyclone V qualification
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P1
 - **Dependencies:** RTL-001, RTL-002
 - **Description:** Run early Yosys smoke synthesis, then a constrained Quartus
@@ -332,7 +343,9 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Local Quartus 17.0 is present; compatibility must be qualified.
+- **Notes:** Partial RTL fits Cyclone V at 50 MHz with positive setup/hold
+  slack and zero unconstrained port/path categories. Yosys is unavailable;
+  full-core resources, pin-level wrapper constraints, and final timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
 

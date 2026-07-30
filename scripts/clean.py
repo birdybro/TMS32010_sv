@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Remove generated children of the repository build directory safely."""
+"""Remove known generated build and local Quartus products safely."""
 
 from __future__ import annotations
 
@@ -23,6 +23,24 @@ def main() -> int:
             shutil.rmtree(child)
         else:
             child.unlink()
+        removed += 1
+    quartus = (REPOSITORY_ROOT / "synthesis" / "quartus").resolve()
+    expected_quartus = REPOSITORY_ROOT.resolve() / "synthesis" / "quartus"
+    if quartus != expected_quartus or quartus.parent.parent != REPOSITORY_ROOT.resolve():
+        raise RuntimeError(f"refusing unexpected Quartus path: {quartus}")
+    for name in (
+        "db",
+        "incremental_db",
+        "output_files",
+        "c5_pin_model_dump.txt",
+    ):
+        target = quartus / name
+        if not target.exists() and not target.is_symlink():
+            continue
+        if target.is_dir() and not target.is_symlink():
+            shutil.rmtree(target)
+        else:
+            target.unlink()
         removed += 1
     print(f"CLEAN: removed {removed} generated build entries")
     return 0

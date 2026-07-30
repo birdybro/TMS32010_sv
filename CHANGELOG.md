@@ -25,6 +25,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Deterministic project-local assembler/disassembler slice with checked
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
+- Portable SystemVerilog package, exhaustive partial decoder, and
+  clock-enable execution core for the five-instruction slice.
+- Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
+  512-instruction model/RTL differential trace.
+- Reproducible Yosys and Quartus synthesis projects with synchronous I/O
+  constraints and partial-core synthesis qualification record.
 
 ### Changed
 
@@ -34,6 +40,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
+- Quartus 17.0.2 fits the partial core in 36 ALMs with positive 50 MHz
+  setup/hold slack and no unconstrained I/O path categories.
 
 ### Fixed
 
@@ -55,5 +63,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - No instruction behavior or cycle timing is yet qualified.
 - Bus waveform transcription, reset first-fetch timing, interrupt entry
   phases, reserved status bits, and out-of-range RAM behavior remain open.
+- The RTL program interface is an instruction-step test interface, not native
+  pin timing; only five instructions are implemented.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the
-  local executable path.
+  local executable path; the Yosys target fails explicitly.

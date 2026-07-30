@@ -51,7 +51,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             architecture,
             r"not yet a complete implementation\s+specification",
         )
-        self.assertIn("No RTL exists", architecture)
+        self.assertIn("partial RTL support only", architecture)
+        self.assertIn("does not constitute", architecture)
         self.assertNotIn("cycle-accurate implementation", architecture.lower())
 
     def test_no_native_ready_protocol_is_claimed(self) -> None:

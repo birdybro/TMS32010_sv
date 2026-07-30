@@ -19,6 +19,8 @@ class RepositoryFoundationTests(unittest.TestCase):
             "reference-cache/manual.pdf",
             "build/simulator/output.vcd",
             "artifacts/full_synthesis.log",
+            "synthesis/quartus/db/generated.cdb",
+            "synthesis/quartus/output_files/tms32010.sof",
         ]
         result = subprocess.run(
             ["git", "check-ignore", "--stdin"],
