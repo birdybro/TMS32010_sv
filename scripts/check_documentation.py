@@ -37,6 +37,8 @@ REQUIRED_FILES = {
     "docs/decisions/ADR-0001-reference-precedence.md",
     "docs/generated/tms32010_isa.yaml",
     "sim/reference_models/README.md",
+    "tools/assembler/README.md",
+    "tools/disassembler/README.md",
     "artifacts/progress.md",
 }
 REQUIRED_DIRECTORIES = {

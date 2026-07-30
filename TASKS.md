@@ -117,7 +117,7 @@ objective passing evidence.
 
 ### TOOLS-001 — Assembler and disassembler
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P1
 - **Dependencies:** ISA-001
 - **Description:** Qualify a legal assembler or implement deterministic local
@@ -128,8 +128,11 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** A surviving binary tool may be cataloged but never executed
-  outside isolation.
+- **Notes:** Qualified slice supports the same five instructions as the model,
+  labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing output,
+  lossless unknown-word disassembly, and round trips. The remaining 55
+  documented instructions are rejected explicitly. A surviving binary tool
+  may be cataloged but never executed outside isolation.
 
 ## Milestone 7 — RTL datapath
 

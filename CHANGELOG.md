@@ -22,6 +22,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial five-instruction slice.
 - Independent hand opcode fixtures and decode/model boundary tests.
+- Deterministic project-local assembler/disassembler slice with checked
+  expressions, labels, origin/data/include directives, raw/hex/listing output,
+  and lossless source round trips.
 
 ### Changed
 
@@ -29,6 +32,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   overview.
 - Reframed the external-wait milestone after confirming that the original
   40-pin TMS32010 has no READY/WAIT input.
+- The local assembler diagnoses out-of-range `LACK` operands instead of
+  reproducing the historical assembler's silent truncation.
 
 ### Fixed
 

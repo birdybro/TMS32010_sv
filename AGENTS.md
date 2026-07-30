@@ -236,6 +236,7 @@ or user-supplied Hard Drivin' execution test.
 
 As of 2026-07-30 the repository has a primary-cited research baseline and a
 partial machine-readable/model slice for `LACK`, `NOP`, `ZAC`, `ROVM`, and
-`SOVM`. No architectural RTL exists, no timing behavior is qualified, and the
-project must not be called instruction-complete or cycle-accurate. Consult
-`TASKS.md` and `artifacts/progress.md` for the exact current evidence.
+`SOVM`, plus matching partial assembler/disassembler support. No architectural
+RTL exists, no timing behavior is qualified, and the project must not be
+called instruction-complete or cycle-accurate. Consult `TASKS.md` and
+`artifacts/progress.md` for the exact current evidence.
