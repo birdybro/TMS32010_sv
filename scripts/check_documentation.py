@@ -35,6 +35,8 @@ REQUIRED_FILES = {
     "docs/research/source_conflicts.md",
     "docs/integration/hard_drivin_requirements.md",
     "docs/decisions/ADR-0001-reference-precedence.md",
+    "docs/generated/tms32010_isa.yaml",
+    "sim/reference_models/README.md",
     "artifacts/progress.md",
 }
 REQUIRED_DIRECTORIES = {

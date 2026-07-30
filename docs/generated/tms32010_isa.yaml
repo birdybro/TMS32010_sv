@@ -1,0 +1,188 @@
+{
+  "schema_version": 1,
+  "device": "TMS32010",
+  "database_status": "PARTIAL_RESEARCH_BASELINE",
+  "generated_policy": "Hand-maintained JSON syntax valid as YAML 1.2; future generated views must not replace independent fixtures.",
+  "coverage": {
+    "expected_documented_instruction_count": 60,
+    "documented_mnemonics": [
+      "ABS", "ADD", "ADDH", "ADDS", "AND", "LAC", "LACK", "OR", "SACH",
+      "SACL", "SUB", "SUBC", "SUBH", "SUBS", "XOR", "ZAC", "ZALH", "ZALS",
+      "LAR", "LARK", "LARP", "LDP", "LDPK", "MAR", "SAR",
+      "B", "BANZ", "BGEZ", "BGZ", "BIOZ", "BLEZ", "BLZ", "BNZ", "BV",
+      "BZ", "CALA", "CALL", "RET",
+      "APAC", "LT", "LTA", "LTD", "MPY", "MPYK", "PAC", "SPAC",
+      "DINT", "EINT", "LST", "NOP", "POP", "PUSH", "ROVM", "SOVM", "SST",
+      "DMOV", "IN", "OUT", "TBLR", "TBLW"
+    ],
+    "supported_mnemonics": ["LACK", "NOP", "ZAC", "ROVM", "SOVM"],
+    "complete": false,
+    "reserved_encoding_audit_complete": false
+  },
+  "instructions": [
+    {
+      "mnemonic": "LACK",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7e00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "constant", "lsb": 0, "width": 8, "signed": false}
+        ]
+      },
+      "operands": [
+        {"name": "constant", "kind": "unsigned_immediate", "width": 8}
+      ],
+      "addressing_modes": ["immediate"],
+      "registers_read": [],
+      "registers_written": ["ACC"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "suppressed; the 8-bit constant is zero-extended",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "ACC[7:0] receives constant and ACC[31:8] receives zero",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "not yet qualified"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "LACK instruction description", "printed_page": "3-32", "pdf_page": 82}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "NOP",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f80",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": [],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "no architectural register or memory effect other than normal PC advance",
+      "branch_behavior": "none",
+      "interrupt_interaction": "normal instruction-boundary recognition; detailed phase not yet qualified",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "not yet qualified"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and NOP instruction description", "printed_page": "3-7", "pdf_page": 57}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "ZAC",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f89",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": ["ACC"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not affect OV or OVM",
+      "result_behavior": "ACC receives 0x00000000",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "not yet qualified"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and ZAC instruction description", "printed_page": "3-5", "pdf_page": 55}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "ROVM",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f8a",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": ["OVM"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["OVM"],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "clears saturation-mode enable; does not clear OV",
+      "result_behavior": "OVM receives 0",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "not yet qualified"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and ROVM instruction description", "printed_page": "3-7", "pdf_page": 57}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "SOVM",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f8b",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": ["OVM"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["OVM"],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "sets saturation-mode enable; does not set or clear OV",
+      "result_behavior": "OVM receives 1",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "not yet qualified"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and SOVM instruction description", "printed_page": "3-7", "pdf_page": 57}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    }
+  ]
+}

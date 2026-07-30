@@ -92,7 +92,7 @@ will be wrapper behavior and visibly distinct from physical-chip guarantees.
 
 ## Current qualification boundary
 
-No RTL exists at this baseline. No instruction is yet claimed implemented,
-instruction-complete, or cycle-accurate. The first executable-model slice
-will include only instructions with independently checked encodings and
-directed tests.
+No RTL exists at this baseline. The executable model supports only `LACK`,
+`NOP`, `ZAC`, `ROVM`, and `SOVM`; all other encodings trap. This narrow slice
+has independent fixtures and directed model tests but does not constitute an
+RTL, instruction-completeness, or cycle-accuracy claim.

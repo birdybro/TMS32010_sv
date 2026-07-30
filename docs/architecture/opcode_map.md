@@ -1,9 +1,10 @@
 # Opcode map status
 
-The canonical machine-readable map will be
-`docs/generated/tms32010_isa.yaml`. The initial map is intentionally partial
+The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
+Its initial five-instruction executable boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
-independent assembly listings.
+independent assembly listings. The database separately enumerates all 60
+documented mnemonics so missing coverage remains machine-visible.
 
 ## Hand-transcribed initial encodings
 

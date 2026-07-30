@@ -98,7 +98,7 @@ objective passing evidence.
 
 ### MODEL-001 — Independent architectural model
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** ISA-001
 - **Description:** Implement deterministic decode, state, memory spaces, I/O,
@@ -107,7 +107,11 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Keep model structure independent of the future RTL.
+- **Notes:** Independent first slice supports `LACK`, `NOP`, `ZAC`, `ROVM`,
+  and `SOVM`, raw program loading, logical fetch traces, reset-boundary effects,
+  and deterministic replay. Unsupported words trap. Interrupts, memory/I/O
+  instructions, and pin phases remain unimplemented. Keep model structure
+  independent of the future RTL.
 
 ## Milestone 6 — Assembler and test-program workflow
 

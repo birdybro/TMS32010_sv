@@ -14,6 +14,10 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
+The current executable boundary is a five-instruction reference-model slice:
+`LACK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. Unsupported opcodes trap, and no RTL
+implementation is claimed yet.
+
 ## Design principles
 
 - Original TI documentation has precedence over secondary implementations.

@@ -234,7 +234,8 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-30 the repository is in foundation and primary-source
-acquisition. No RTL behavior is instruction-complete, no timing behavior is
-verified, and the project must not be called cycle-accurate. Consult
+As of 2026-07-30 the repository has a primary-cited research baseline and a
+partial machine-readable/model slice for `LACK`, `NOP`, `ZAC`, `ROVM`, and
+`SOVM`. No architectural RTL exists, no timing behavior is qualified, and the
+project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

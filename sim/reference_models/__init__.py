@@ -1,0 +1,1 @@
+"""Independent executable architectural models."""
