@@ -1,0 +1,39 @@
+# Downloaded references and user-supplied copyrighted data
+/reference-cache/
+/**/*.rom
+/**/*.bin
+!/tests/expected/**/*.bin
+
+# Generated build and synthesis products
+/build/*
+!/build/.gitkeep
+/artifacts/*
+!/artifacts/progress.md
+!/artifacts/.gitkeep
+*.vcd
+*.fst
+*.wlf
+*.jou
+*.log
+*.rpt
+*.sof
+*.qws
+*.qdf
+*.db
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+*~
+*.swp
+.idea/
+.vscode/
