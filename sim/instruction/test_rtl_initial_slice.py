@@ -165,6 +165,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_subs_unsigned_source_overflow_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_subs_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_subs_rtl.sv",
+            ],
+        )
+
     def test_logic_halves_status_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_logic_rtl",

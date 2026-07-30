@@ -4,7 +4,7 @@ This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
-  `SACL`, `SACH`, `SOVM`, `SUB`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
+  `SACL`, `SACH`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
 - checked integer expressions;
@@ -37,6 +37,9 @@ shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
 
 `ADDS` uses the same no-shift common address forms, for example `ADDS 6` or
 `ADDS *+,AR1`.
+
+`SUBS` uses the same no-shift common address forms, for example `SUBS 6` or
+`SUBS *+,AR1`.
 
 `AND`, `OR`, and `XOR` use the same forms, for example `AND 6`,
 `OR *+,AR1`, or `XOR *-`.

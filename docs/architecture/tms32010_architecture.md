@@ -112,8 +112,8 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`,
-`LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `SUB`, `XOR`,
-`ZAC`, `ZALH`, and `ZALS`. The eleven
+`LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `SUB`, `SUBS`,
+`XOR`, `ZAC`, `ZALH`, and `ZALS`. The twelve
 common-address data instructions have independent fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -126,6 +126,8 @@ documented low-half result, their distinct upper-half effects, and unchanged
 sticky overflow, wrapped results, and both OVM saturation endpoints. SUB
 verifies the corresponding signed subtraction, shift, sticky-overflow, wrap,
 and saturation cases.
+SUBS verifies unsigned-source subtraction, sticky overflow, negative wrap,
+and negative saturation without importing SUB's sign extension.
 Unresolved addresses trap
 rather than alias. This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.

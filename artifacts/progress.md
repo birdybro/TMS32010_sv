@@ -1,20 +1,20 @@
 # Progress summary
 
-- **Current milestone:** SUB shifted accumulator-arithmetic instruction slice
+- **Current milestone:** SUBS unsigned-source accumulator-arithmetic slice
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 48 repository/provenance/document/ISA/toolchain tests; 63
-  directed model tests; 10 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded nineteen-instruction model/RTL
+- **Tests passing:** 50 repository/provenance/document/ISA/toolchain tests; 70
+  directed model tests; 11 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-instruction model/RTL
   differential including OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the nineteen-instruction partial core, 144-word RAM, and phase engine on
-  `5CSEBA6U23I7`: 1,538 ALMs, 2,421 registers, 0 RAM/DSP, 59.56 MHz worst
-  slow-corner internal Fmax, +3.209 ns setup and +0.168 ns worst hold slack at
+  the twenty-instruction partial core, 144-word RAM, and phase engine on
+  `5CSEBA6U23I7`: 1,615 ALMs, 2,421 registers, 0 RAM/DSP, 60.96 MHz worst
+  slow-corner internal Fmax, +3.597 ns setup and +0.165 ns worst hold slack at
   50 MHz. TimeQuest reports zero unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  7,528 generic cells and lowering the asynchronous RAM to registers/muxes; it
+  7,844 generic cells and lowering the asynchronous RAM to registers/muxes; it
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -38,15 +38,16 @@
   full-accumulator addition, applies sticky OV, wraps with OVM clear, and
   saturates at either signed endpoint with OVM set; SUB uses the same signed
   source extension and shift path, subtracts it from ACC, sets sticky OV,
-  wraps with OVM clear, and saturates at either signed endpoint with OVM set
+  wraps with OVM clear, and saturates at either signed endpoint with OVM set;
+  SUBS instead zero-extends its RAM word, can overflow only negatively, and
+  follows the same sticky-OV/wrap/saturation policy
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH overflow,
   physical-reset retention of unlisted state, Hard Drivin' INT net, and safe
   phase adaptation without READY
-- **Next task:** research whether the primary-defined `SUBS` sign-extension-
-  suppressed arithmetic instruction has complete original-part overflow
-  semantics; keep `ADDH` and any similarly ambiguous high-half behavior
-  blocked
+- **Next task:** research and qualify `ABS` if its original-part overflow
+  behavior is explicit; keep `ADDH` and any similarly ambiguous high-half
+  arithmetic outside the supported boundary
 - **Latest committed baseline before this cycle:**
-  `50b8aec4da23f0eac0711eeec88efd7d88fe0ac4`
+  `a311c9e9d1776f2bcb116ee2b85910052262db5e`

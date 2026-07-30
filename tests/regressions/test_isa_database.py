@@ -40,6 +40,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "ADD",
                 "SUB",
                 "ADDS",
+                "SUBS",
                 "AND",
                 "OR",
                 "XOR",
@@ -129,6 +130,11 @@ class IsaDatabaseTests(unittest.TestCase):
                     0x1000 | (shift << 8) | 0x7F,
                 )
             )
+
+    def test_subs_rejects_reserved_indirect_controls(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6300 | control))
+        self.assertIsNotNone(decode_word(self.database, 0x637F))
 
     def test_logic_rejects_reserved_indirect_controls(self) -> None:
         for base in (0x7800, 0x7900, 0x7A00):

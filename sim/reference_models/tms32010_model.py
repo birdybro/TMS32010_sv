@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP,
-OR, ROVM, SACH, SACL, SOVM, SUB, XOR, ZAC, ZALH, and ZALS. Logical program
-and internal-data transactions and instruction totals are modeled; pin
-subphases are not yet integrated with this model.
+OR, ROVM, SACH, SACL, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS. Logical
+program and internal-data transactions and instruction totals are modeled;
+pin subphases are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -188,6 +188,7 @@ class Tms32010Model:
             "SACL",
             "SACH",
             "SUB",
+            "SUBS",
             "XOR",
             "ZALH",
             "ZALS",
@@ -209,6 +210,7 @@ class Tms32010Model:
                 "LAC",
                 "OR",
                 "SUB",
+                "SUBS",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -233,6 +235,7 @@ class Tms32010Model:
                             "LAC",
                             "OR",
                             "SUB",
+                            "SUBS",
                             "XOR",
                             "ZALH",
                             "ZALS",
@@ -284,6 +287,10 @@ class Tms32010Model:
             self._subtract_accumulator(
                 (signed_word << operands["shift"]) & ACC_MASK
             )
+        elif mnemonic == "SUBS":
+            self._subtract_accumulator(
+                self.data[operands["effective_address"]]
+            )
         elif mnemonic == "XOR":
             self.state.acc = (
                 (self.state.acc & 0xFFFF_0000)
@@ -326,6 +333,7 @@ class Tms32010Model:
                 "SACL",
                 "SACH",
                 "SUB",
+                "SUBS",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -484,6 +492,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "ADDS", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6300:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SUBS", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

@@ -35,7 +35,7 @@ native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`, `LAC`,
-`OR`, `SACL`, `SACH`, `SUB`, `XOR`, `ZALH`, and `ZALS` perform the same external
+`OR`, `SACL`, `SACH`, `SUB`, `SUBS`, `XOR`, `ZALH`, and `ZALS` perform the same external
 program fetch as the other qualified sequential instructions while their
 ordinary data operands remain internal, verification-visible logical
 reads/writes. No physical `DEN` or `WE` behavior is claimed from those

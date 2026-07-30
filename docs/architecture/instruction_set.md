@@ -199,6 +199,30 @@ reserved-control rejection, and noncanonical alias policy match `ADD` and
 `LAC`. `SUBH` and `SUBS` are separate encodings and are not implied by this
 qualification boundary.
 
+## Qualified `SUBS` research slice
+
+`SUBS` suppresses sign extension and subtracts the selected 16-bit internal
+RAM word as an unsigned value from the signed 32-bit accumulator. It has no
+shift operand. TI's original example subtracts `0xf003` from `0x0000f105` to
+produce `0x00000102`, directly distinguishing this behavior from
+sign-extending `SUB`
+[ti-tms32010-users-guide-spru001b, `SUBS`, printed p. 3-63 (PDF p. 113);
+ti-first-generation-users-guide-1987, `SUBS`, printed p. 4-70
+(PDF p. 151)]. **Confidence: VERIFIED_PRIMARY.**
+
+The later TI page explicitly states that `SUBS` affects sticky `OV` and is
+affected by `OVM`. `OVM=0` retains the wrapped result; `OVM=1` saturates an
+overflowing result. Because its zero-extended subtrahend is nonnegative, SUBS
+can cross only the negative signed endpoint, so positive overflow is
+unreachable
+[ti-first-generation-users-guide-1987, §§3.5.2 and `SUBS`, printed
+pp. 3-20 and 4-70 (PDF pp. 49 and 151)]. **Confidence: VERIFIED_PRIMARY.**
+
+`SUBS` is one word and one cycle. It uses the no-shift common direct/indirect
+address form and the same old-AR access, optional nine-bit update, ARP
+replacement, reserved-control rejection, and lossless alias policy as
+`ADDS`.
+
 ## Qualified `AND`, `OR`, and `XOR` research slice
 
 Each logic instruction reads a common-addressed 16-bit internal RAM word and

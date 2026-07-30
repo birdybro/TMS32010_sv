@@ -124,7 +124,8 @@ module tb_phase_slice_integration;
     program_memory[18] = 16'h7a03;  // OR 3
     program_memory[19] = 16'h0003;  // ADD 3,0
     program_memory[20] = 16'h1003;  // SUB 3,0
-    program_memory[21] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[21] = 16'h6303;  // SUBS 3
+    program_memory[22] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -321,13 +322,23 @@ module tb_phase_slice_integration;
             "nonoverflowing SUB preserves arithmetic status");
     require(pc == 12'h015 && cycle_count == 32'd21,
             "SUB consumes one native instruction cycle");
+    require(data_read && !data_write && data_address == 8'h83,
+            "SUBS presents its internal operand beside program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0000_0000,
+            "SUBS treats its data word as unsigned");
+    require(!overflow_flag && overflow_mode,
+            "nonoverflowing SUBS preserves arithmetic status");
+    require(pc == 12'h016 && cycle_count == 32'd22,
+            "SUBS consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h015, "trap holds architectural PC");
-    require(program_address == 12'h015, "trap holds native program address");
-    require(cycle_count == 32'd21, "trap does not count as retired cycle");
+    require(pc == 12'h016, "trap holds architectural PC");
+    require(program_address == 12'h016, "trap holds native program address");
+    require(cycle_count == 32'd22, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

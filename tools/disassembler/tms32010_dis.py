@@ -59,7 +59,15 @@ class Disassembler:
                 suffix = f",{shift}" if shift else ""
                 return f"SACH {modifier}{suffix}"
             return f"SACH {modifier},{shift},{control & 1}"
-        if mnemonic in {"ADDS", "AND", "OR", "XOR", "ZALH", "ZALS"}:
+        if mnemonic in {
+            "ADDS",
+            "AND",
+            "OR",
+            "SUBS",
+            "XOR",
+            "ZALH",
+            "ZALS",
+        }:
             if not operands["indirect"]:
                 return f"{mnemonic} {operands['addressing_field']}"
             control = operands["addressing_field"]

@@ -65,6 +65,11 @@ class ToolchainSliceTests(unittest.TestCase):
             SUB *-
             SUB *+,8,AR1
             SUB *+,8,0
+            SUBS 0
+            SUBS 127
+            SUBS *
+            SUBS *+,AR1
+            SUBS *-,0
             ADDS 0
             ADDS 127
             ADDS *
@@ -147,6 +152,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x1098,
                 0x18A1,
                 0x18A0,
+                0x6300,
+                0x637F,
+                0x6388,
+                0x63A1,
+                0x6390,
                 0x6100,
                 0x617F,
                 0x6188,
@@ -230,6 +240,12 @@ class ToolchainSliceTests(unittest.TestCase):
             0x18A1,
             0x18A0,
             0x1089,
+            0x6300,
+            0x637F,
+            0x6388,
+            0x63A1,
+            0x6390,
+            0x6389,
             0x6100,
             0x617F,
             0x6188,
@@ -376,6 +392,23 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x1089\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x1089])
+
+    def test_subs_operand_diagnostics_and_noncanonical_alias(self) -> None:
+        cases = (
+            ("SUBS 128\n", "direct address"),
+            ("SUBS *+,2\n", "next ARP"),
+            ("SUBS 0,1\n", "only with indirect"),
+            ("SUBS\n", "1 to 2 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+        source = self.disassembler.disassemble_source([0x6389])
+        self.assertEqual(source, ".word 0x6389\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x6389])
 
     def test_sacl_operand_diagnostics(self) -> None:
         cases = (
