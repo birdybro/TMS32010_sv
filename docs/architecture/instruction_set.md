@@ -99,3 +99,22 @@ optional nine-bit increment/decrement and ARP replacement
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SACH`, printed
 pp. 3-2–3-3 and 3-53 (PDF pp. 52–53 and 103)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
+
+## Qualified `ZALH` and `ZALS` research slice
+
+`ZALH` reads the selected 16-bit internal data word into `ACC[31:16]` and
+clears `ACC[15:0]`. `ZALS` reads the word into `ACC[15:0]` and clears
+`ACC[31:16]`; the source is therefore zero-extended even when its sign bit is
+one. Neither instruction changes overflow status. Both are one word and one
+cycle
+[ti-tms32010-users-guide-spru001b, `ZALH` and `ZALS`, printed pp. 3-70–3-71
+(PDF pp. 120–121)]. **Confidence: VERIFIED_PRIMARY.**
+
+Both instructions use the common direct/indirect data-address field without a
+shift operand. The indirect read occurs at the old selected-AR address before
+the optional nine-bit counter update and ARP replacement. Reserved indirect
+controls, simultaneous increment/decrement, and noncanonical ARP-preserve
+aliases follow the same conservative policy as `LAC`, `SACL`, and `SACH`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `ZALH`/`ZALS`, printed
+pp. 3-2–3-3 and 3-70–3-71 (PDF pp. 52–53 and 120–121)].
+**Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**

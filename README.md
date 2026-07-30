@@ -14,13 +14,14 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support eleven
+The reference model, local tools, and partial RTL currently support thirteen
 instructions: `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`,
-`SACH`, `SOVM`, and `ZAC`. The 144-word internal RAM exposes
-verification-visible logical `LAC` reads and `SACL`/`SACH` writes; unsupported
-opcodes, undocumented SACH shifts, and unresolved RAM addresses trap. A
+`SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`. The 144-word internal RAM exposes
+verification-visible logical `LAC`/`ZALH`/`ZALS` reads and `SACL`/`SACH`
+writes; unsupported opcodes, undocumented SACH shifts, and unresolved RAM
+addresses trap. A
 separate native-phase wrapper qualifies normal sequential program reads for
-this eleven-instruction subset only; it is not a general
+this thirteen-instruction subset only; it is not a general
 pipeline or cycle-accuracy claim.
 
 ## Design principles

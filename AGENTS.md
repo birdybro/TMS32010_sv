@@ -235,10 +235,11 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support eleven instructions:
+tools, RTL, and seeded differential boundary support thirteen instructions:
 `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`, `SOVM`,
-and `ZAC`. This includes `LAC` reads and `SACL`/`SACH` writes in a 144-word
-internal RAM, plus SACH output shifts 0, 1, and 4. A phase
+`ZAC`, `ZALH`, and `ZALS`. This includes `LAC`/`ZALH`/`ZALS` reads and
+`SACL`/`SACH` writes in a 144-word internal RAM, plus SACH output shifts 0, 1,
+and 4. A phase
 wrapper qualifies their normal sequential program reads, but no general
 pipeline, interrupt entry, or complete pin timing exists. The project must not
 be called instruction-complete or cycle-accurate. Consult `TASKS.md` and

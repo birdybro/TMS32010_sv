@@ -45,6 +45,8 @@ module tms32010_core (
   localparam logic [3:0] OP_LAC  = 4'd8;
   localparam logic [3:0] OP_SACL = 4'd9;
   localparam logic [3:0] OP_SACH = 4'd10;
+  localparam logic [3:0] OP_ZALH = 4'd11;
+  localparam logic [3:0] OP_ZALS = 4'd12;
 
   logic [3:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -74,7 +76,9 @@ module tms32010_core (
       (
         (decoded_operation == OP_LAC) ||
         (decoded_operation == OP_SACL) ||
-        (decoded_operation == OP_SACH)
+        (decoded_operation == OP_SACH) ||
+        (decoded_operation == OP_ZALH) ||
+        (decoded_operation == OP_ZALS)
       )
     ) begin
       if (decoded_indirect) begin
@@ -105,7 +109,13 @@ module tms32010_core (
   assign program_address_o = pc_o;
   assign program_read_o    = ~reset_i;
   assign data_read_o =
-    ~reset_i && decoded_valid && (decoded_operation == OP_LAC);
+    ~reset_i &&
+    decoded_valid &&
+    (
+      (decoded_operation == OP_LAC) ||
+      (decoded_operation == OP_ZALH) ||
+      (decoded_operation == OP_ZALS)
+    );
   assign data_write_o =
     ~reset_i &&
     decoded_valid &&
@@ -135,7 +145,9 @@ module tms32010_core (
       (
         (decoded_operation != OP_LAC) &&
         (decoded_operation != OP_SACL) &&
-        (decoded_operation != OP_SACH)
+        (decoded_operation != OP_SACH) &&
+        (decoded_operation != OP_ZALH) &&
+        (decoded_operation != OP_ZALS)
       ) ||
       ram_address_valid
     );
@@ -167,6 +179,8 @@ module tms32010_core (
           end
           OP_SACH: begin
           end
+          OP_ZALH: accumulator_o <= {ram_read_data, 16'h0000};
+          OP_ZALS: accumulator_o <= {16'h0000, ram_read_data};
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
               auxiliary_register_1_o <= {8'h00, decoded_immediate};
@@ -189,7 +203,9 @@ module tms32010_core (
         if (
           ((decoded_operation == OP_LAC) ||
            (decoded_operation == OP_SACL) ||
-           (decoded_operation == OP_SACH)) &&
+           (decoded_operation == OP_SACH) ||
+           (decoded_operation == OP_ZALH) ||
+           (decoded_operation == OP_ZALS)) &&
           decoded_indirect
         ) begin
           if (decoded_addressing_field[5]) begin

@@ -4,7 +4,7 @@ This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
 - `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`,
-  `SOVM`, and `ZAC`;
+  `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
 - checked integer expressions;
@@ -28,6 +28,9 @@ before a next-ARP operand. Any nonzero placeholder is diagnosed.
 `SACH` accepts the same addressing forms and an optional shift of exactly
 `0`, `1`, or `4`, for example `SACH 6,4` or `SACH *+,1,AR1`. Other shift
 values are diagnosed rather than emitted as undocumented encodings.
+
+`ZALH` and `ZALS` accept the common direct/indirect address forms without a
+shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
 
 Example:
 

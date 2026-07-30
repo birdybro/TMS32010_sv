@@ -254,43 +254,14 @@ class Assembler:
             if not 0 <= shift <= 15:
                 raise line.error(f"LAC shift out of range 0..15: {shift}")
             word |= shift << 8
-            addressing = operands[0].replace(" ", "").upper()
-            indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
-            if addressing in indirect_controls:
-                control = indirect_controls[addressing]
-                if len(operands) == 3:
-                    next_arp_text = operands[2].strip().upper()
-                    if next_arp_text in {"AR0", "AR1"}:
-                        next_arp = self._auxiliary_register(next_arp_text, line)
-                    else:
-                        next_arp = self._evaluate(
-                            operands[2],
-                            symbols,
-                            location,
-                            line,
-                        )
-                    if not 0 <= next_arp <= 1:
-                        raise line.error(
-                            f"LAC next ARP out of range 0..1: {next_arp}"
-                        )
-                    control = (control & ~0x09) | next_arp
-                word |= control
-            else:
-                if len(operands) == 3:
-                    raise line.error(
-                        "LAC next ARP is valid only with indirect addressing"
-                    )
-                address = self._evaluate(
-                    operands[0],
-                    symbols,
-                    location,
-                    line,
-                )
-                if not 0 <= address <= 127:
-                    raise line.error(
-                        f"LAC direct address out of range 0..127: {address}"
-                    )
-                word |= address
+            word |= self._encode_data_address(
+                operation,
+                operands,
+                next_arp_index=2,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
         elif operation == "SACL":
             shift = (
                 self._evaluate(operands[1], symbols, location, line)
@@ -301,43 +272,14 @@ class Assembler:
                 raise line.error(
                     f"SACL has no shift; explicit placeholder must be 0: {shift}"
                 )
-            addressing = operands[0].replace(" ", "").upper()
-            indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
-            if addressing in indirect_controls:
-                control = indirect_controls[addressing]
-                if len(operands) == 3:
-                    next_arp_text = operands[2].strip().upper()
-                    if next_arp_text in {"AR0", "AR1"}:
-                        next_arp = self._auxiliary_register(next_arp_text, line)
-                    else:
-                        next_arp = self._evaluate(
-                            operands[2],
-                            symbols,
-                            location,
-                            line,
-                        )
-                    if not 0 <= next_arp <= 1:
-                        raise line.error(
-                            f"SACL next ARP out of range 0..1: {next_arp}"
-                        )
-                    control = (control & ~0x09) | next_arp
-                word |= control
-            else:
-                if len(operands) == 3:
-                    raise line.error(
-                        "SACL next ARP is valid only with indirect addressing"
-                    )
-                address = self._evaluate(
-                    operands[0],
-                    symbols,
-                    location,
-                    line,
-                )
-                if not 0 <= address <= 127:
-                    raise line.error(
-                        f"SACL direct address out of range 0..127: {address}"
-                    )
-                word |= address
+            word |= self._encode_data_address(
+                operation,
+                operands,
+                next_arp_index=2,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
         elif operation == "SACH":
             shift = (
                 self._evaluate(operands[1], symbols, location, line)
@@ -349,43 +291,23 @@ class Assembler:
                     f"SACH shift must be exactly 0, 1, or 4: {shift}"
                 )
             word |= shift << 8
-            addressing = operands[0].replace(" ", "").upper()
-            indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
-            if addressing in indirect_controls:
-                control = indirect_controls[addressing]
-                if len(operands) == 3:
-                    next_arp_text = operands[2].strip().upper()
-                    if next_arp_text in {"AR0", "AR1"}:
-                        next_arp = self._auxiliary_register(next_arp_text, line)
-                    else:
-                        next_arp = self._evaluate(
-                            operands[2],
-                            symbols,
-                            location,
-                            line,
-                        )
-                    if not 0 <= next_arp <= 1:
-                        raise line.error(
-                            f"SACH next ARP out of range 0..1: {next_arp}"
-                        )
-                    control = (control & ~0x09) | next_arp
-                word |= control
-            else:
-                if len(operands) == 3:
-                    raise line.error(
-                        "SACH next ARP is valid only with indirect addressing"
-                    )
-                address = self._evaluate(
-                    operands[0],
-                    symbols,
-                    location,
-                    line,
-                )
-                if not 0 <= address <= 127:
-                    raise line.error(
-                        f"SACH direct address out of range 0..127: {address}"
-                    )
-                word |= address
+            word |= self._encode_data_address(
+                operation,
+                operands,
+                next_arp_index=2,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
+        elif operation in {"ZALH", "ZALS"}:
+            word |= self._encode_data_address(
+                operation,
+                operands,
+                next_arp_index=1,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
         elif operation == "LARK":
             register = self._auxiliary_register(operands[0], line)
             value = self._evaluate(operands[1], symbols, location, line)
@@ -405,6 +327,50 @@ class Assembler:
                 raise line.error(f"{operation} constant out of range 0..1: {value}")
             word |= value
         return word
+
+    def _encode_data_address(
+        self,
+        operation: str,
+        operands: list[str],
+        *,
+        next_arp_index: int,
+        symbols: dict[str, int],
+        location: int,
+        line: SourceLine,
+    ) -> int:
+        """Encode the common direct/indirect data-memory address field."""
+        addressing = operands[0].replace(" ", "").upper()
+        indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
+        if addressing in indirect_controls:
+            control = indirect_controls[addressing]
+            if len(operands) > next_arp_index:
+                next_arp_text = operands[next_arp_index].strip().upper()
+                if next_arp_text in {"AR0", "AR1"}:
+                    next_arp = self._auxiliary_register(next_arp_text, line)
+                else:
+                    next_arp = self._evaluate(
+                        operands[next_arp_index],
+                        symbols,
+                        location,
+                        line,
+                    )
+                if not 0 <= next_arp <= 1:
+                    raise line.error(
+                        f"{operation} next ARP out of range 0..1: {next_arp}"
+                    )
+                control = (control & ~0x09) | next_arp
+            return control
+
+        if len(operands) > next_arp_index:
+            raise line.error(
+                f"{operation} next ARP is valid only with indirect addressing"
+            )
+        address = self._evaluate(operands[0], symbols, location, line)
+        if not 0 <= address <= 127:
+            raise line.error(
+                f"{operation} direct address out of range 0..127: {address}"
+            )
+        return address
 
     @staticmethod
     def _auxiliary_register(text: str, line: SourceLine) -> int:

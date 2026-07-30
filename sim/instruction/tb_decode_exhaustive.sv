@@ -31,6 +31,8 @@ module tb_decode_exhaustive;
       logic expected_lac;
       logic expected_sacl;
       logic expected_sach;
+      logic expected_zalh;
+      logic expected_zals;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -68,8 +70,29 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_zalh =
+        (instruction[15:8] == 8'h65) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
+      expected_zals =
+        (instruction[15:8] == 8'h66) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_valid =
         expected_lac || expected_sacl || expected_sach ||
+        expected_zalh || expected_zals ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
         ((instruction & 16'hfe00) == 16'h7000) ||
@@ -107,6 +130,20 @@ module tb_decode_exhaustive;
           $fatal(1, "SACH decode mismatch at %04x", word);
         end
       end
+      if (expected_zalh) begin
+        if (operation != OP_ZALH ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "ZALH decode mismatch at %04x", word);
+        end
+      end
+      if (expected_zals) begin
+        if (operation != OP_ZALS ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "ZALS decode mismatch at %04x", word);
+        end
+      end
       if ((instruction & 16'hff00) == 16'h7e00) begin
         if (operation != OP_LACK || immediate != word[7:0]) begin
           $fatal(1, "LACK decode mismatch at %04x", word);
@@ -130,8 +167,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 3576) begin
-      $fatal(1, "expected 3576 supported words, got %0d", valid_count);
+    if (valid_count != 3856) begin
+      $fatal(1, "expected 3856 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

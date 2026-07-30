@@ -7,13 +7,15 @@ RTL.
 Current supported boundary:
 
 - `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`,
-  `SOVM`, and `ZAC`;
+  `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of
   exactly 0, 1, or 4, with the same post-access controls;
+- `ZALH` and `ZALS` direct/indirect reads into the accumulator high and low
+  halves, respectively, with the same post-access controls;
 - 12-bit PC wrap;
 - deterministic program/data/I/O storage and raw word-image loading;
 - step-boundary reset effects established by TI;

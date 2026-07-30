@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports LAC, LACK, LARK, LARP, LDPK, NOP, ROVM, SACH,
-SACL, SOVM, and ZAC. Logical program and internal-data transactions and
-instruction totals are modeled; pin subphases are not yet integrated with this
-model.
+SACL, SOVM, ZAC, ZALH, and ZALS. Logical program and internal-data
+transactions and instruction totals are modeled; pin subphases are not yet
+integrated with this model.
 """
 
 from __future__ import annotations
@@ -179,7 +179,7 @@ class Tms32010Model:
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
         selected_arp: int | None = None
-        if mnemonic in {"LAC", "SACL", "SACH"}:
+        if mnemonic in {"LAC", "SACL", "SACH", "ZALH", "ZALS"}:
             if operands["indirect"]:
                 selected_arp = self.state.status.arp
                 data_address = self.state.ar[selected_arp] & 0xFF
@@ -190,7 +190,7 @@ class Tms32010Model:
             if data_address >= DATA_WORDS:
                 raise UnsupportedDataAddress(pc, opcode, data_address)
             operands["effective_address"] = data_address
-            if mnemonic == "LAC":
+            if mnemonic in {"LAC", "ZALH", "ZALS"}:
                 transaction_data = self.data[data_address]
             elif mnemonic == "SACL":
                 transaction_data = self.state.acc & WORD_MASK
@@ -201,7 +201,11 @@ class Tms32010Model:
                 Transaction(
                     cycle=self.cycle_count,
                     space="data",
-                    operation="read" if mnemonic == "LAC" else "write",
+                    operation=(
+                        "read"
+                        if mnemonic in {"LAC", "ZALH", "ZALS"}
+                        else "write"
+                    ),
                     address=data_address,
                     data=transaction_data,
                 )
@@ -224,6 +228,11 @@ class Tms32010Model:
         elif mnemonic == "SACH":
             shifted = (self.state.acc << operands["shift"]) & ACC_MASK
             self.data[operands["effective_address"]] = shifted >> 16
+        elif mnemonic == "ZALH":
+            data_word = self.data[operands["effective_address"]]
+            self.state.acc = data_word << 16
+        elif mnemonic == "ZALS":
+            self.state.acc = self.data[operands["effective_address"]]
         elif mnemonic == "LARK":
             register = operands["auxiliary_register"]
             self.state.ar[register] = operands["constant"] & 0xFF
@@ -240,7 +249,10 @@ class Tms32010Model:
         elif mnemonic != "NOP":
             raise AssertionError(f"decoder returned unhandled mnemonic {mnemonic}")
 
-        if mnemonic in {"LAC", "SACL", "SACH"} and operands["indirect"]:
+        if (
+            mnemonic in {"LAC", "SACL", "SACH", "ZALH", "ZALS"}
+            and operands["indirect"]
+        ):
             assert selected_arp is not None
             control = operands["addressing_field"]
             if control & 0x20:
@@ -312,6 +324,17 @@ class Tms32010Model:
                 raise UnsupportedOpcode(pc, opcode)
             return "SACH", {
                 "shift": shift,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if (opcode & 0xFF00) in {0x6500, 0x6600}:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return ("ZALH" if (opcode & 0xFF00) == 0x6500 else "ZALS"), {
                 "indirect": indirect,
                 "addressing_field": control,
             }

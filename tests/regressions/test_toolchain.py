@@ -51,6 +51,14 @@ class ToolchainSliceTests(unittest.TestCase):
             SACH *-,4
             SACH *,0,AR0
             SACH *+,4,1
+            ZALH 0
+            ZALH 127
+            ZALH *
+            ZALH *+,AR1
+            ZALS 0
+            ZALS 127
+            ZALS *-
+            ZALS *,0
             """
         )
         self.assertEqual(
@@ -91,6 +99,14 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x5C98,
                 0x5880,
                 0x5CA1,
+                0x6500,
+                0x657F,
+                0x6588,
+                0x65A1,
+                0x6600,
+                0x667F,
+                0x6698,
+                0x6680,
             ],
         )
 
@@ -130,6 +146,16 @@ class ToolchainSliceTests(unittest.TestCase):
             0x5880,
             0x5CA1,
             0x5C89,
+            0x6500,
+            0x657F,
+            0x6588,
+            0x65A1,
+            0x6589,
+            0x6600,
+            0x667F,
+            0x6698,
+            0x6680,
+            0x6689,
         ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
@@ -244,6 +270,26 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x5c89\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x5C89])
+
+    def test_zero_load_operand_diagnostics(self) -> None:
+        for mnemonic in ("ZALH", "ZALS"):
+            cases = (
+                (f"{mnemonic} 128\n", "direct address"),
+                (f"{mnemonic} *+,2\n", "next ARP"),
+                (f"{mnemonic} 0,1\n", "only with indirect"),
+                (f"{mnemonic}\n", "1 to 2 operands"),
+            )
+            for source, message in cases:
+                with self.subTest(source=source):
+                    with self.assertRaisesRegex(AssemblyError, message):
+                        self.assembler.assemble_text(source)
+
+    def test_zero_load_noncanonical_aliases_round_trip_as_words(self) -> None:
+        original = [0x6589, 0x6689]
+        source = self.disassembler.disassemble_source(original)
+        self.assertEqual(source, ".word 0x6589\n.word 0x6689\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), original)
 
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(

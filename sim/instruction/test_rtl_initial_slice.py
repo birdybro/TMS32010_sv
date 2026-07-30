@@ -117,6 +117,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_zero_load_transfers_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_zero_loads_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_zero_loads_rtl.sv",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

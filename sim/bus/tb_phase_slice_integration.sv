@@ -114,7 +114,9 @@ module tb_phase_slice_integration;
     program_memory[10] = 16'h2403;  // LAC 3,4
     program_memory[11] = 16'h5004;  // SACL 4
     program_memory[12] = 16'h5c05;  // SACH 5,4
-    program_memory[13] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[13] = 16'h6503;  // ZALH 3
+    program_memory[14] = 16'h6603;  // ZALS 3
+    program_memory[15] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -231,13 +233,30 @@ module tb_phase_slice_integration;
             "SACH retires without modifying the accumulator");
     require(pc == 12'h00d && cycle_count == 32'd13,
             "SACH consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h83 && data_read_data == 16'hff80,
+            "ZALH exposes the page-one logical read beside program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'hff80_0000,
+            "ZALH transfers the sampled word to the accumulator high half");
+    require(pc == 12'h00e && cycle_count == 32'd14,
+            "ZALH consumes one native instruction cycle");
+    require(data_read && !data_write && data_address == 8'h83,
+            "ZALS exposes a logical read without changing MEN sequencing");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0000_ff80,
+            "ZALS zero-extends the sampled word in the low half");
+    require(pc == 12'h00f && cycle_count == 32'd15,
+            "ZALS consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h00d, "trap holds architectural PC");
-    require(program_address == 12'h00d, "trap holds native program address");
-    require(cycle_count == 32'd13, "trap does not count as retired cycle");
+    require(pc == 12'h00f, "trap holds architectural PC");
+    require(program_address == 12'h00f, "trap holds native program address");
+    require(cycle_count == 32'd15, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.
