@@ -35,3 +35,8 @@ integrated wrapper must replace every exclusion with real I/O or
 register-to-register constraints before release; these exclusions are not
 portable-core I/O closure. Fitter and timing reports are generated locally
 and remain ignored.
+
+All non-clock harness ports are Quartus virtual pins. This prevents the
+diagnostic state/interface width from being mistaken for a DE10-Nano package
+pinout while retaining the logic for internal resource and timing analysis.
+The setting is confined to the synthesis project, not the portable RTL.

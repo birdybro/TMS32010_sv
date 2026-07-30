@@ -49,11 +49,22 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
 
     def test_seeded_mixed_stream_matches_model(self) -> None:
         randomizer = random.Random(SEED)
-        words = [0x7F89, 0x7F8A]
+        words = [0x7000, 0x7100, 0x6880, 0x6E00, 0x7F89, 0x7F8A]
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(510):
-            if randomizer.randrange(3) == 0:
+        for _ in range(506):
+            family = randomizer.randrange(6)
+            if family == 0:
                 words.append(0x7E00 | randomizer.randrange(256))
+            elif family == 1:
+                words.append(
+                    0x7000
+                    | (randomizer.randrange(2) << 8)
+                    | randomizer.randrange(256)
+                )
+            elif family == 2:
+                words.append(0x6880 | randomizer.randrange(2))
+            elif family == 3:
+                words.append(0x6E00 | randomizer.randrange(2))
             else:
                 words.append(randomizer.choice(choices))
 
@@ -101,10 +112,30 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 model_trace.state_after["status"]["ovm"],
                 (SEED, index),
             )
-            self.assertEqual(int(fields[6], 16), 1, (SEED, index))
-            self.assertEqual(int(fields[7], 16), 0, (SEED, index))
+            self.assertEqual(
+                int(fields[6], 16),
+                model_trace.state_after["ar"][0],
+                (SEED, index),
+            )
+            self.assertEqual(
+                int(fields[7], 16),
+                model_trace.state_after["ar"][1],
+                (SEED, index),
+            )
             self.assertEqual(
                 int(fields[8], 16),
+                model_trace.state_after["status"]["arp"],
+                (SEED, index),
+            )
+            self.assertEqual(
+                int(fields[9], 16),
+                model_trace.state_after["status"]["dp"],
+                (SEED, index),
+            )
+            self.assertEqual(int(fields[10], 16), 1, (SEED, index))
+            self.assertEqual(int(fields[11], 16), 0, (SEED, index))
+            self.assertEqual(
+                int(fields[12], 16),
                 model_trace.state_after["cycle_count"],
                 (SEED, index),
             )

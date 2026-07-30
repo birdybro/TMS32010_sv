@@ -25,7 +25,7 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(len(coverage["documented_mnemonics"]), 60)
         self.assertEqual(
             set(coverage["supported_mnemonics"]),
-            {"LACK", "NOP", "ZAC", "ROVM", "SOVM"},
+            {"LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK"},
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
@@ -50,6 +50,8 @@ class IsaDatabaseTests(unittest.TestCase):
 
     def test_adjacent_unimplemented_control_opcode_does_not_decode(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x7F81))
+        self.assertIsNone(decode_word(self.database, 0x6882))
+        self.assertIsNone(decode_word(self.database, 0x6E02))
 
     def test_fixture_provenance_is_independent(self) -> None:
         provenance = self.fixtures["provenance"].lower()

@@ -20,9 +20,17 @@ class Disassembler:
         if decoded is None:
             return f".word 0x{word:04x}"
         entry, operands = decoded
-        if entry["mnemonic"] == "LACK":
+        mnemonic = entry["mnemonic"]
+        if mnemonic == "LACK":
             return f"LACK {operands['constant']}"
-        return entry["mnemonic"]
+        if mnemonic == "LARK":
+            return (
+                f"LARK AR{operands['auxiliary_register']},"
+                f"{operands['constant']}"
+            )
+        if mnemonic in {"LARP", "LDPK"}:
+            return f"{mnemonic} {operands['constant']}"
+        return mnemonic
 
     def disassemble_source(self, words: Iterable[int]) -> str:
         return "".join(f"{self.disassemble_word(word)}\n" for word in words)

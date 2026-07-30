@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `LACK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
+- `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
 - 12-bit PC wrap;
 - deterministic program/data/I/O storage and raw word-image loading;
 - step-boundary reset effects established by TI;

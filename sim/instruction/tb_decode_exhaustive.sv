@@ -7,13 +7,15 @@ module tb_decode_exhaustive;
   logic                 valid;
   tms32010_operation_t  operation;
   logic [7:0]           immediate;
+  logic                 auxiliary_register;
   int unsigned          valid_count;
 
   tms32010_decode dut (
     .instruction_i (instruction),
     .valid_o       (valid),
     .operation_o   (operation),
-    .immediate_o   (immediate)
+    .immediate_o   (immediate),
+    .auxiliary_register_o (auxiliary_register)
   );
 
   initial begin
@@ -23,6 +25,9 @@ module tb_decode_exhaustive;
       instruction = word[15:0];
       #1;
       expected_valid =
+        ((instruction & 16'hfffe) == 16'h6880) ||
+        ((instruction & 16'hfffe) == 16'h6e00) ||
+        ((instruction & 16'hfe00) == 16'h7000) ||
         ((instruction & 16'hff00) == 16'h7e00) ||
         (instruction == 16'h7f80) ||
         (instruction == 16'h7f89) ||
@@ -39,9 +44,26 @@ module tb_decode_exhaustive;
           $fatal(1, "LACK decode mismatch at %04x", word);
         end
       end
+      if ((instruction & 16'hfe00) == 16'h7000) begin
+        if (operation != OP_LARK ||
+            auxiliary_register != word[8] ||
+            immediate != word[7:0]) begin
+          $fatal(1, "LARK decode mismatch at %04x", word);
+        end
+      end
+      if ((instruction & 16'hfffe) == 16'h6880) begin
+        if (operation != OP_LARP || immediate[0] != word[0]) begin
+          $fatal(1, "LARP decode mismatch at %04x", word);
+        end
+      end
+      if ((instruction & 16'hfffe) == 16'h6e00) begin
+        if (operation != OP_LDPK || immediate[0] != word[0]) begin
+          $fatal(1, "LDPK decode mismatch at %04x", word);
+        end
+      end
     end
-    if (valid_count != 260) begin
-      $fatal(1, "expected 260 supported words, got %0d", valid_count);
+    if (valid_count != 776) begin
+      $fatal(1, "expected 776 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

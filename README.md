@@ -14,10 +14,11 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The current executable boundary is a five-instruction reference-model slice:
-`LACK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. A matching partial RTL execution
-slice exists and unsupported opcodes trap. Its temporary instruction-boundary
-interface is not evidence of native bus timing or cycle accuracy.
+The current executable boundary is an eight-instruction reference-model slice:
+`LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. A matching
+partial RTL execution slice exists and unsupported opcodes trap. Its temporary
+instruction-boundary interface is not evidence of native bus timing or cycle
+accuracy.
 
 ## Design principles
 

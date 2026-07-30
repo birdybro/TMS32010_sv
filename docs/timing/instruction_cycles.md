@@ -29,7 +29,8 @@ evidence of RTL cycle accuracy.
 - interaction of program fetch with internal data RAM;
 - table-operation discarded fetch order;
 - interrupt entry latency and recognition boundary;
-- reset-to-first-fetch sequence;
 - board-level phase stretching in the absence of a READY pin.
 
-These map to `OQ-001`, `OQ-004`, `OQ-006`, and `OQ-007`.
+These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is
+resolved and tested in the standalone native phase engine, but it is not yet
+integrated with the execution pipeline.

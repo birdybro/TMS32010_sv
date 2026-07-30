@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `LACK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
+- `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
 - checked integer expressions;
@@ -11,8 +11,10 @@ complete TMS32010 assembler. It supports:
 - deterministic big- or little-endian raw binary, hex, and listing output.
 
 Every other documented mnemonic produces an explicit not-implemented error.
-`LACK` values outside 0–255 are diagnosed rather than silently truncated like
-the historical TI assembler.
+Immediate ranges are diagnosed rather than silently truncated like the
+historical TI assembler. `LARK` accepts `AR0`/`AR1` (or `0`/`1`) as its
+register selector, and `LARP` accepts either the register name or a one-bit
+constant.
 
 Example:
 

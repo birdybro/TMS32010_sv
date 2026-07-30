@@ -16,6 +16,14 @@ class ToolchainSliceTests(unittest.TestCase):
     def test_supported_instruction_encodings_match_hand_fixtures(self) -> None:
         result = self.assembler.assemble_text(
             """
+            LARP 0
+            LARP AR1
+            LDPK 0
+            LDPK 1
+            LARK AR0,0
+            LARK AR0,255
+            LARK AR1,0
+            LARK AR1,255
             LACK 0
             LACK 255
             NOP
@@ -26,11 +34,37 @@ class ToolchainSliceTests(unittest.TestCase):
         )
         self.assertEqual(
             list(result.words.values()),
-            [0x7E00, 0x7EFF, 0x7F80, 0x7F89, 0x7F8A, 0x7F8B],
+            [
+                0x6880,
+                0x6881,
+                0x6E00,
+                0x6E01,
+                0x7000,
+                0x70FF,
+                0x7100,
+                0x71FF,
+                0x7E00,
+                0x7EFF,
+                0x7F80,
+                0x7F89,
+                0x7F8A,
+                0x7F8B,
+            ],
         )
 
     def test_round_trip_preserves_supported_and_unknown_words(self) -> None:
-        original = [0x7E2A, 0x7F80, 0x1234, 0x7F89, 0x7F8A, 0x7F8B]
+        original = [
+            0x7001,
+            0x71FE,
+            0x6881,
+            0x6E00,
+            0x7E2A,
+            0x7F80,
+            0x1234,
+            0x7F89,
+            0x7F8A,
+            0x7F8B,
+        ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), original)
@@ -79,6 +113,14 @@ class ToolchainSliceTests(unittest.TestCase):
     def test_lack_out_of_range_is_an_error_not_truncation(self) -> None:
         with self.assertRaisesRegex(AssemblyError, "out of range"):
             self.assembler.assemble_text("LACK 256\n")
+
+    def test_immediate_control_operand_diagnostics(self) -> None:
+        for source in ("LARP 2\n", "LDPK -1\n", "LARK AR0,256\n"):
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, "out of range"):
+                    self.assembler.assemble_text(source)
+        with self.assertRaisesRegex(AssemblyError, "AR0 or AR1"):
+            self.assembler.assemble_text("LARK AR2,1\n")
 
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(

@@ -120,6 +120,24 @@ def validate_database(database: dict[str, Any]) -> None:
             raise IsaDatabaseError(f"{mnemonic} opcode is not 16 bits")
         if match & ~mask:
             raise IsaDatabaseError(f"{mnemonic} match sets an unmasked bit")
+        variable_mask = 0
+        for field in opcode["variable_fields"]:
+            lsb = int(field["lsb"])
+            width = int(field["width"])
+            if lsb < 0 or width < 1 or lsb + width > 16:
+                raise IsaDatabaseError(f"{mnemonic} has invalid variable field")
+            field_mask = ((1 << width) - 1) << lsb
+            if variable_mask & field_mask:
+                raise IsaDatabaseError(f"{mnemonic} has overlapping variable fields")
+            if mask & field_mask:
+                raise IsaDatabaseError(
+                    f"{mnemonic} variable field overlaps fixed opcode bits"
+                )
+            variable_mask |= field_mask
+        if variable_mask != (~mask & 0xFFFF):
+            raise IsaDatabaseError(
+                f"{mnemonic} does not describe every variable opcode bit"
+            )
         if entry["documented_cycle_count"] < 1:
             raise IsaDatabaseError(f"{mnemonic} has invalid cycle count")
         for citation in entry["source_citations"]:

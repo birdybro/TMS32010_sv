@@ -15,7 +15,9 @@
       "DINT", "EINT", "LST", "NOP", "POP", "PUSH", "ROVM", "SOVM", "SST",
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
-    "supported_mnemonics": ["LACK", "NOP", "ZAC", "ROVM", "SOVM"],
+    "supported_mnemonics": [
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK"
+    ],
     "complete": false,
     "reserved_encoding_audit_complete": false
   },
@@ -180,6 +182,116 @@
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and SOVM instruction description", "printed_page": "3-7", "pdf_page": 57}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "LARK",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7000",
+        "mask": "0xfe00",
+        "variable_fields": [
+          {"name": "auxiliary_register", "lsb": 8, "width": 1, "signed": false},
+          {"name": "constant", "lsb": 0, "width": 8, "signed": false}
+        ]
+      },
+      "operands": [
+        {"name": "auxiliary_register", "kind": "register_select", "width": 1},
+        {"name": "constant", "kind": "unsigned_immediate", "width": 8}
+      ],
+      "addressing_modes": ["immediate"],
+      "registers_read": [],
+      "registers_written": ["selected AR"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "suppressed; the 8-bit constant is zero-extended into the selected 16-bit auxiliary register",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "AR[auxiliary_register] receives the unsigned 8-bit constant",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; pipeline integration pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "LARK instruction description", "printed_page": "3-34", "pdf_page": 84}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "LARP",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6880",
+        "mask": "0xfffe",
+        "variable_fields": [
+          {"name": "constant", "lsb": 0, "width": 1, "signed": false}
+        ]
+      },
+      "operands": [
+        {"name": "constant", "kind": "unsigned_immediate", "width": 1}
+      ],
+      "addressing_modes": ["immediate"],
+      "registers_read": [],
+      "registers_written": ["ARP"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["ARP"],
+      "arithmetic_width_bits": 1,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "ARP receives the one-bit constant",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; pipeline integration pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "LARP instruction description", "printed_page": "3-35", "pdf_page": 85}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "LDPK",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6e00",
+        "mask": "0xfffe",
+        "variable_fields": [
+          {"name": "constant", "lsb": 0, "width": 1, "signed": false}
+        ]
+      },
+      "operands": [
+        {"name": "constant", "kind": "unsigned_immediate", "width": 1}
+      ],
+      "addressing_modes": ["immediate"],
+      "registers_read": [],
+      "registers_written": ["DP"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["DP"],
+      "arithmetic_width_bits": 1,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "DP receives the one-bit constant selecting data page 0 or 1",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; pipeline integration pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "LDPK instruction description", "printed_page": "3-37", "pdf_page": 87}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []

@@ -13,4 +13,32 @@ set_global_assignment -name OPTIMIZATION_MODE "BALANCED"
 set_global_assignment -name REMOVE_DUPLICATE_REGISTERS ON
 set_global_assignment -name AUTO_SHIFT_REGISTER_RECOGNITION OFF
 
+# Internal-resource/timing harness, not a board pinout. Keep clk_i physical and
+# make every diagnostic/interface port virtual so architectural state width
+# cannot exceed the package I/O count. A deployable wrapper replaces these.
+set_instance_assignment -name VIRTUAL_PIN ON -to initialize_i
+set_instance_assignment -name VIRTUAL_PIN ON -to rs_i
+set_instance_assignment -name VIRTUAL_PIN ON -to clock_enable_i
+set_instance_assignment -name VIRTUAL_PIN ON -to "program_data_i[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "next_address_i[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "program_address_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to program_read_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "pc_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "accumulator_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_0_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_1_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to auxiliary_register_pointer_o
+set_instance_assignment -name VIRTUAL_PIN ON -to data_page_pointer_o
+set_instance_assignment -name VIRTUAL_PIN ON -to overflow_mode_o
+set_instance_assignment -name VIRTUAL_PIN ON -to interrupt_mask_o
+set_instance_assignment -name VIRTUAL_PIN ON -to retired_o
+set_instance_assignment -name VIRTUAL_PIN ON -to illegal_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "cycle_count_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "phase_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to clkout_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "native_address_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to men_n_o
+set_instance_assignment -name VIRTUAL_PIN ON -to sample_o
+set_instance_assignment -name VIRTUAL_PIN ON -to native_active_o
+
 set_global_assignment -name LAST_QUARTUS_VERSION "17.0.2 Lite Edition"

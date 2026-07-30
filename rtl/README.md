@@ -1,10 +1,10 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `LACK`, `NOP`, `ZAC`, `ROVM`, and `SOVM` at an
-instruction-boundary program interface. One asserted `clock_enable_i` retires
-one supported one-cycle instruction. Unsupported words assert `illegal_o` and
-do not advance the PC.
+`tms32010_core` supports only `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`,
+`ROVM`, and `SOVM` at an instruction-boundary program interface. One asserted
+`clock_enable_i` retires one supported one-cycle instruction. Unsupported
+words assert `illegal_o` and do not advance the PC.
 
 This temporary interface does not reproduce `MEN`, `CLKOUT`, fetch/execute
 overlap, or pin subphases. It exists to qualify decode, state effects, clock

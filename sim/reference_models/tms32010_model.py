@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This initial slice traps every instruction outside LACK, NOP, ZAC, ROVM, and
-SOVM. Logical fetch transactions and instruction totals are modeled; pin
-subphases are not yet qualified.
+This initial slice traps every instruction outside LACK, LARK, LARP, LDPK,
+NOP, ZAC, ROVM, and SOVM. Logical fetch transactions and instruction totals
+are modeled; pin subphases are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -165,6 +165,13 @@ class Tms32010Model:
 
         if mnemonic == "LACK":
             self.state.acc = operands["constant"] & 0xFF
+        elif mnemonic == "LARK":
+            register = operands["auxiliary_register"]
+            self.state.ar[register] = operands["constant"] & 0xFF
+        elif mnemonic == "LARP":
+            self.state.status.arp = operands["constant"]
+        elif mnemonic == "LDPK":
+            self.state.status.dp = operands["constant"]
         elif mnemonic == "ZAC":
             self.state.acc = 0
         elif mnemonic == "ROVM":
@@ -191,6 +198,15 @@ class Tms32010Model:
         """Independent hand-written decode for the qualified model slice."""
         if opcode & 0xFF00 == 0x7E00:
             return "LACK", {"constant": opcode & 0xFF}
+        if opcode & 0xFE00 == 0x7000:
+            return "LARK", {
+                "auxiliary_register": (opcode >> 8) & 1,
+                "constant": opcode & 0xFF,
+            }
+        if opcode & 0xFFFE == 0x6880:
+            return "LARP", {"constant": opcode & 1}
+        if opcode & 0xFFFE == 0x6E00:
+            return "LDPK", {"constant": opcode & 1}
         fixed = {
             0x7F80: "NOP",
             0x7F89: "ZAC",

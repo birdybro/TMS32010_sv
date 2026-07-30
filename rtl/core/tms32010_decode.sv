@@ -4,25 +4,31 @@ module tms32010_decode (
   input  logic [15:0]                       instruction_i,
   output logic                              valid_o,
   output tms32010_pkg::tms32010_operation_t operation_o,
-  output logic [7:0]                        immediate_o
+  output logic [7:0]                        immediate_o,
+  output logic                              auxiliary_register_o
 );
   import tms32010_pkg::*;
 
   always_comb begin
-    valid_o     = 1'b1;
-    operation_o = OP_NOP;
-    immediate_o = instruction_i[7:0];
+    valid_o              = 1'b1;
+    operation_o          = OP_NOP;
+    immediate_o          = instruction_i[7:0];
+    auxiliary_register_o = instruction_i[8];
 
     casez (instruction_i)
+      16'b0110_1000_1000_000?: operation_o = OP_LARP;
+      16'b0110_1110_0000_000?: operation_o = OP_LDPK;
+      16'b0111_000?_????_????: operation_o = OP_LARK;
       16'b0111_1110_????_????: operation_o = OP_LACK;
       16'h7f80:                operation_o = OP_NOP;
       16'h7f89:                operation_o = OP_ZAC;
       16'h7f8a:                operation_o = OP_ROVM;
       16'h7f8b:                operation_o = OP_SOVM;
       default: begin
-        valid_o     = 1'b0;
-        operation_o = OP_NOP;
-        immediate_o = 8'h00;
+        valid_o              = 1'b0;
+        operation_o          = OP_NOP;
+        immediate_o          = 8'h00;
+        auxiliary_register_o = 1'b0;
       end
     endcase
   end

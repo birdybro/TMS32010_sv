@@ -97,8 +97,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and partial RTL support only `LACK`, `NOP`, `ZAC`,
-`ROVM`, and `SOVM`; all other encodings trap. This narrow slice has
+The executable model and partial RTL support only `LACK`, `LARK`, `LARP`,
+`LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`; all other encodings trap. This
+narrow slice has
 independent fixtures, directed model/RTL tests, and seeded differential
 evidence. Its instruction-boundary program interface does not constitute
 native-bus, instruction-completeness, or cycle-accuracy evidence.

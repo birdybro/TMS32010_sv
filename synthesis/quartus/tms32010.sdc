@@ -11,6 +11,8 @@ set_false_path -from \
               next_address_i[*]}]
 set_false_path -to \
   [get_ports {program_address_o[*] program_read_o pc_o[*] accumulator_o[*] \
+              auxiliary_register_0_o[*] auxiliary_register_1_o[*] \
+              auxiliary_register_pointer_o data_page_pointer_o \
               overflow_mode_o interrupt_mask_o retired_o illegal_o \
               cycle_count_o[*] phase_o[*] clkout_o native_address_o[*] \
               men_n_o sample_o native_active_o}]

@@ -213,12 +213,17 @@ class Assembler:
             if operation.startswith("."):
                 raise line.error(f"unknown directive {operation}")
             raise line.error(f"unknown instruction {operation}")
-        expects_operand = bool(entry["operands"])
-        if expects_operand != bool(operand_text):
-            expectation = "one operand" if expects_operand else "no operands"
+        expected_count = len(entry["operands"])
+        if bool(expected_count) != bool(operand_text):
+            expectation = (
+                "no operands"
+                if expected_count == 0
+                else f"{expected_count} operand"
+                f"{'s' if expected_count != 1 else ''}"
+            )
             raise line.error(f"{operation} expects {expectation}")
-        if operand_text and len(self._operand_list(operand_text, line)) != 1:
-            raise line.error(f"{operation} expects one operand")
+        if operand_text and len(self._operand_list(operand_text, line)) != expected_count:
+            raise line.error(f"{operation} expects {expected_count} operands")
 
     def _encode(
         self,
@@ -231,12 +236,42 @@ class Assembler:
         self._validate_instruction_shape(operation, operand_text, line)
         entry = self.entries[operation]
         word = parse_int(entry["opcode"]["match"])
+        operands = self._operand_list(operand_text, line) if operand_text else []
         if operation == "LACK":
             value = self._evaluate(operand_text, symbols, location, line)
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
+        elif operation == "LARK":
+            register = self._auxiliary_register(operands[0], line)
+            value = self._evaluate(operands[1], symbols, location, line)
+            if not 0 <= value <= 0xFF:
+                raise line.error(f"LARK constant out of range 0..255: {value}")
+            word |= register << 8
+            word |= value
+        elif operation in {"LARP", "LDPK"}:
+            if operation == "LARP" and operand_text.strip().upper() in {
+                "AR0",
+                "AR1",
+            }:
+                value = self._auxiliary_register(operand_text, line)
+            else:
+                value = self._evaluate(operand_text, symbols, location, line)
+            if not 0 <= value <= 1:
+                raise line.error(f"{operation} constant out of range 0..1: {value}")
+            word |= value
         return word
+
+    @staticmethod
+    def _auxiliary_register(text: str, line: SourceLine) -> int:
+        normalized = text.strip().upper()
+        aliases = {"AR0": 0, "AR1": 1, "0": 0, "1": 1}
+        try:
+            return aliases[normalized]
+        except KeyError as error:
+            raise line.error(
+                f"auxiliary register must be AR0 or AR1, got {text!r}"
+            ) from error
 
     @staticmethod
     def _statement(text: str) -> str:

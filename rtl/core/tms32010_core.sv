@@ -11,6 +11,10 @@ module tms32010_core (
 
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
+  output logic [15:0] auxiliary_register_0_o,
+  output logic [15:0] auxiliary_register_1_o,
+  output logic        auxiliary_register_pointer_o,
+  output logic        data_page_pointer_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
   output logic        retired_o,
@@ -22,12 +26,14 @@ module tms32010_core (
   logic                 decoded_valid;
   tms32010_operation_t  decoded_operation;
   logic [7:0]           decoded_immediate;
+  logic                 decoded_auxiliary_register;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
     .valid_o       (decoded_valid),
     .operation_o   (decoded_operation),
-    .immediate_o   (decoded_immediate)
+    .immediate_o   (decoded_immediate),
+    .auxiliary_register_o (decoded_auxiliary_register)
   );
 
   assign program_address_o = pc_o;
@@ -41,8 +47,8 @@ module tms32010_core (
       interrupt_mask_o <= 1'b1;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
-      // ACC and OVM have no arbitrary reset value here. In particular, TI
-      // documents that reset leaves OVM unchanged.
+      // ACC, AR0, AR1, ARP, DP, and OVM have no arbitrary reset value here.
+      // In particular, TI documents that reset leaves OVM unchanged.
     end else if (clock_enable_i) begin
       if (decoded_valid) begin
         pc_o          <= pc_o + 12'h001;
@@ -52,6 +58,15 @@ module tms32010_core (
 
         case (decoded_operation)
           OP_LACK: accumulator_o   <= {24'h000000, decoded_immediate};
+          OP_LARK: begin
+            if (decoded_auxiliary_register) begin
+              auxiliary_register_1_o <= {8'h00, decoded_immediate};
+            end else begin
+              auxiliary_register_0_o <= {8'h00, decoded_immediate};
+            end
+          end
+          OP_LARP: auxiliary_register_pointer_o <= decoded_immediate[0];
+          OP_LDPK: data_page_pointer_o          <= decoded_immediate[0];
           OP_NOP:  begin
           end
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;

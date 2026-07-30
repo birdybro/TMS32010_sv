@@ -9,6 +9,10 @@ module tb_model_rtl_slice;
   logic [15:0] program_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
+  logic [15:0] auxiliary_register_0;
+  logic [15:0] auxiliary_register_1;
+  logic        auxiliary_register_pointer;
+  logic        data_page_pointer;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        retired;
@@ -28,6 +32,10 @@ module tb_model_rtl_slice;
     .program_data_i    (program_data),
     .pc_o              (pc),
     .accumulator_o     (accumulator),
+    .auxiliary_register_0_o (auxiliary_register_0),
+    .auxiliary_register_1_o (auxiliary_register_1),
+    .auxiliary_register_pointer_o (auxiliary_register_pointer),
+    .data_page_pointer_o (data_page_pointer),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
     .retired_o         (retired),
@@ -73,12 +81,16 @@ module tb_model_rtl_slice;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %01x %01x %08x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %08x",
         pc_before,
         opcode_before,
         pc,
         accumulator,
         overflow_mode,
+        auxiliary_register_0,
+        auxiliary_register_1,
+        auxiliary_register_pointer,
+        data_page_pointer,
         retired,
         illegal,
         cycle_count
