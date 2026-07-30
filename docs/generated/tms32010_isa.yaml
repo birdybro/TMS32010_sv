@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK",
-      "LAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -344,6 +344,57 @@
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3 Addressing and LAR instruction description", "printed_page": "3-2 through 3-3 and 3-33", "pdf_page": "52-53 and 83"},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "LAR instruction description", "printed_page": "4-38", "pdf_page": 119}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "SAR",
+      "aliases": [],
+      "opcode": {
+        "match": "0x3000",
+        "mask": "0xfe00",
+        "variable_fields": [
+          {"name": "auxiliary_register", "lsb": 8, "width": 1, "signed": false},
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "auxiliary_register", "kind": "register_select", "width": 1},
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["designated AR", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["selected address AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "internal_data_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; all 16 bits of the designated auxiliary register are stored",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "the old selected AR supplies an indirect address; if that same AR is designated with auto-modification, its post-modification value is stored at the old address",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3 Addressing and SAR instruction description", "printed_page": "3-2 through 3-3 and 3-55 through 3-56", "pdf_page": "52-53 and 105-106"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "SAR instruction description", "printed_page": "4-61 through 4-62", "pdf_page": "142-143"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]

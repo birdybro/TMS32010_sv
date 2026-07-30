@@ -98,6 +98,30 @@ noncanonical preserve-bit policy remain linked to `OQ-010`
 pp. 3-2–3-3 and 3-33 (PDF pp. 52–53 and 83)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
 
+## Qualified `SAR` research slice
+
+`SAR` stores all 16 bits of AR0 or AR1 into the selected internal data-memory
+word. Bits 10:9 of its three-bit auxiliary-register field are zero and bit 8
+selects AR0/AR1, giving base words `0x3000` and `0x3100`; bit 7 and bits 6:0
+use the common direct/indirect address form. The instruction is one word and
+one cycle and does not modify the accumulator or arithmetic overflow state
+[ti-tms32010-users-guide-spru001b, `SAR`, printed pp. 3-55–3-56
+(PDF pp. 105–106); ti-first-generation-users-guide-1987, `SAR`, printed
+pp. 4-61–4-62 (PDF pp. 142–143)]. **Confidence: VERIFIED_PRIMARY.**
+
+SAR's indirect auto-modification order is an explicit architectural special
+case. The old selected-AR value supplies the memory address. If the designated
+source is that same AR, TI's examples show that `*+` stores the incremented
+value and `*-` stores the decremented value at the old address. If the source
+is the other AR, that source is stored unchanged while the selected address AR
+receives the normal nine-bit update. A requested next ARP is then applied.
+Directed model/RTL tests cover same-source increment and decrement, other-source
+modification, old-address selection, and ARP replacement/preservation.
+Reserved indirect controls remain linked to `OQ-010`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SAR`, printed
+pp. 3-2–3-3 and 3-55–3-56 (PDF pp. 52–53 and 105–106)].
+**Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

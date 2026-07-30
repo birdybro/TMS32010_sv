@@ -126,7 +126,8 @@ module tb_phase_slice_integration;
     program_memory[20] = 16'h1003;  // SUB 3,0
     program_memory[21] = 16'h6303;  // SUBS 3
     program_memory[22] = 16'h3803;  // LAR AR0,3
-    program_memory[23] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[23] = 16'h3004;  // SAR AR0,4
+    program_memory[24] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -343,13 +344,24 @@ module tb_phase_slice_integration;
             "LAR preserves arithmetic status");
     require(pc == 12'h017 && cycle_count == 32'd23,
             "LAR consumes one native instruction cycle");
+    require(!data_read && data_write && data_address == 8'h84 &&
+            data_write_data == 16'hff80,
+            "SAR presents its internal write beside program phases");
+
+    advance_to_sample();
+    require(retired && auxiliary_register_0 == 16'hff80,
+            "direct SAR preserves its auxiliary-register source");
+    require(!overflow_flag && overflow_mode,
+            "SAR preserves arithmetic status");
+    require(pc == 12'h018 && cycle_count == 32'd24,
+            "SAR consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h017, "trap holds architectural PC");
-    require(program_address == 12'h017, "trap holds native program address");
-    require(cycle_count == 32'd23, "trap does not count as retired cycle");
+    require(pc == 12'h018, "trap holds architectural PC");
+    require(program_address == 12'h018, "trap holds native program address");
+    require(cycle_count == 32'd24, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

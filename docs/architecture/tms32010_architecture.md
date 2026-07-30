@@ -111,9 +111,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 ## Current qualification boundary
 
 The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`,
-`LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `SUB`, `SUBS`,
-`XOR`, `ZAC`, `ZALH`, and `ZALS`. The thirteen
+differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
+`LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`,
+`SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The fourteen
 common-address data instructions have independent fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -130,6 +130,8 @@ SUBS verifies unsigned-source subtraction, sticky overflow, negative wrap,
 and negative saturation without importing SUB's sign extension.
 LAR verifies 16-bit loads to either auxiliary register, including suppression
 of an indirect counter update when the destination also supplied the address.
+SAR verifies 16-bit stores from either auxiliary register, including its
+post-modified-value store when the source also supplied the old address.
 Unresolved addresses trap
 rather than alias. This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.

@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial twenty-one-instruction model/tool boundary is intentionally partial
+Its initial twenty-two-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -20,6 +20,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `SOVM` | `0x7f8b` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `LAC dma,s` | `0x2000` | `0xf000` plus addressing constraints | 1 | 1 | individual `LAC` page, printed p. 3-31 |
 | `LAR AR,dma` | `0x3800` | `0xfe00` plus addressing constraints | 1 | 1 | individual `LAR` page, printed p. 3-33 |
+| `SAR AR,dma` | `0x3000` | `0xfe00` plus addressing constraints | 1 | 1 | individual `SAR` pages, printed pp. 3-55–3-56 |
 | `SACL dma` | `0x5000` | `0xff00` plus addressing constraints | 1 | 1 | individual `SACL` page, printed p. 3-54 |
 | `SACH dma,s` | `0x5800` | `0xf800` plus legal-shift/addressing constraints | 1 | 1 | individual `SACH` page, printed p. 3-53 |
 | `ADD dma,s` | `0x0000` | `0xf000` plus addressing constraints | 1 | 1 | individual `ADD` page, printed p. 3-10 |
@@ -34,8 +35,8 @@ documented mnemonics so missing coverage remains machine-visible.
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
 descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-13, 3-31–3-35, 3-37,
-3-46, 3-53–3-54, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF pp. 55–57, 60, 62–63,
-81–85, 87, 96, 103–104, 110, 113, 118, and 120–121)].
+3-46, 3-53–3-56, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF pp. 55–57, 60, 62–63,
+81–85, 87, 96, 103–106, 110, 113, 118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and
@@ -68,6 +69,16 @@ currently selected address AR, the documented special case suppresses
 postincrement/postdecrement of the loaded word
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LAR`, printed
 pp. 3-2–3-3 and 3-33 (PDF pp. 52–53 and 83)].
+**Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
+UNKNOWN.**
+
+`SAR` fixes bits 15:11 to `00110`; its auxiliary-register and common-address
+fields parallel LAR, with base words `0x3000` and `0x3100`. Its exceptional
+ordering differs from LAR: the old selected AR supplies the address, but when
+that AR is also the designated source, auto-increment/decrement changes the
+value written at that old address
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SAR`, printed
+pp. 3-2–3-3 and 3-55–3-56 (PDF pp. 52–53 and 105–106)].
 **Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
 UNKNOWN.**
 

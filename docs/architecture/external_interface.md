@@ -31,13 +31,13 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the twenty-one supported one-cycle sequential
+read relationship for the twenty-two supported one-cycle sequential
 instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SUB`, `XOR`, `ZALH`,
-`ZALS`, and `SUBS` cases expose concurrent internal logical reads, while `SACL`
-and `SACH` expose writes, without changing the physical `MEN` activity from a
-normal program fetch. That is implementation evidence for the cited normal-read
-mapping, not a claim that control flow, external data/I/O access, or general
-pipeline overlap is complete.
+`ZALS`, and `SUBS` cases expose concurrent internal logical reads, while
+`SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
+activity from a normal program fetch. That is implementation evidence for the
+cited normal-read mapping, not a claim that control flow, external data/I/O
+access, or general pipeline overlap is complete.
 
 Ordinary data-memory accesses stay inside the chip's 144-word RAM and produce
 no physical memory strobe. Logical data transactions remain observable in the

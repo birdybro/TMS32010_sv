@@ -47,6 +47,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "ZALH",
                 "ZALS",
                 "LAR",
+                "SAR",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -90,6 +91,16 @@ class IsaDatabaseTests(unittest.TestCase):
                 decode_word(self.database, 0x3800 | (reserved_register << 8))
             )
         self.assertIsNotNone(decode_word(self.database, 0x397F))
+
+    def test_sar_rejects_reserved_register_and_indirect_fields(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x3000 | control))
+            self.assertIsNone(decode_word(self.database, 0x3100 | control))
+        for reserved_register in range(2, 8):
+            self.assertIsNone(
+                decode_word(self.database, 0x3000 | (reserved_register << 8))
+            )
+        self.assertIsNotNone(decode_word(self.database, 0x317F))
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))

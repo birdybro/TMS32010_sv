@@ -318,7 +318,7 @@ class Assembler:
                 location=location,
                 line=line,
             )
-        elif operation == "LAR":
+        elif operation in {"LAR", "SAR"}:
             register = self._auxiliary_register(operands[0], line)
             word |= register << 8
             word |= self._encode_data_address(

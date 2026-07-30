@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDPK,
-NOP, OR, ROVM, SACH, SACL, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS. Logical
-program and internal-data transactions and instruction totals are modeled;
-pin subphases are not yet integrated with this model.
+NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+Logical program and internal-data transactions and instruction totals are
+modeled; pin subphases are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -188,6 +188,7 @@ class Tms32010Model:
             "OR",
             "SACL",
             "SACH",
+            "SAR",
             "SUB",
             "SUBS",
             "XOR",
@@ -220,6 +221,21 @@ class Tms32010Model:
                 transaction_data = self.data[data_address]
             elif mnemonic == "SACL":
                 transaction_data = self.state.acc & WORD_MASK
+            elif mnemonic == "SAR":
+                register = operands["auxiliary_register"]
+                transaction_data = self.state.ar[register]
+                if operands["indirect"] and register == selected_arp:
+                    control = operands["addressing_field"]
+                    if control & 0x20:
+                        transaction_data = self._modify_counter(
+                            transaction_data,
+                            1,
+                        )
+                    elif control & 0x10:
+                        transaction_data = self._modify_counter(
+                            transaction_data,
+                            -1,
+                        )
             else:
                 shifted = (self.state.acc << operands["shift"]) & ACC_MASK
                 transaction_data = shifted >> 16
@@ -267,6 +283,16 @@ class Tms32010Model:
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
             )
+        elif mnemonic == "SAR":
+            register = operands["auxiliary_register"]
+            store_value = self.state.ar[register]
+            if operands["indirect"] and register == selected_arp:
+                control = operands["addressing_field"]
+                if control & 0x20:
+                    store_value = self._modify_counter(store_value, 1)
+                elif control & 0x10:
+                    store_value = self._modify_counter(store_value, -1)
+            self.data[operands["effective_address"]] = store_value
         elif mnemonic == "SACH":
             shifted = (self.state.acc << operands["shift"]) & ACC_MASK
             self.data[operands["effective_address"]] = shifted >> 16
@@ -339,6 +365,7 @@ class Tms32010Model:
                 "OR",
                 "SACL",
                 "SACH",
+                "SAR",
                 "SUB",
                 "SUBS",
                 "XOR",
@@ -455,6 +482,18 @@ class Tms32010Model:
                 raise UnsupportedOpcode(pc, opcode)
             return "LAC", {
                 "shift": (opcode >> 8) & 0xF,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFE00 == 0x3000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SAR", {
+                "auxiliary_register": (opcode >> 8) & 1,
                 "indirect": indirect,
                 "addressing_field": control,
             }

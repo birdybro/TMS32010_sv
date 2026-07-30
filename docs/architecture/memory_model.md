@@ -48,7 +48,7 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS`
+retire `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS`
 when its effective
 address is `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
@@ -69,5 +69,5 @@ the same externally visible cycle without speculative latency.
 An explicit synchronous preload port exists for simulation and integration
 debug only. It is forbidden during live CPU execution, does not run on
 physical reset, and does not imply deterministic hardware power-up contents.
-`SACL` and `SACH` supply architectural write paths; assertions exclude
+`SACL`, `SACH`, and `SAR` supply architectural write paths; assertions exclude
 simultaneous CPU/debug writes and invalid CPU write addresses.
