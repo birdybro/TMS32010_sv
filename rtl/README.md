@@ -6,17 +6,23 @@ The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
 `clock_enable_i` retires one supported one-cycle instruction. Unsupported
 words assert `illegal_o` and do not advance the PC.
 
-This temporary interface does not reproduce `MEN`, `CLKOUT`, fetch/execute
-overlap, or pin subphases. It exists to qualify decode, state effects, clock
-enables, and reset preservation before the cited native bus sequencer is
-available. It must not be used as evidence of cycle accuracy.
+This temporary core interface does not itself reproduce `MEN`, `CLKOUT`,
+fetch/execute overlap, or pin subphases. It exists to qualify decode, state
+effects, clock enables, and reset preservation. It must not be used alone as
+evidence of cycle accuracy.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one
 quarter-cycle after the falling boundary, samples at the next falling
 boundary, preserves address during the active strobe, and implements the
-documented one-cycle reset-release wait. It is not yet connected to the
-instruction pipeline, and it does not model analog pin delays.
+documented one-cycle reset-release wait. It does not model analog pin delays.
+
+`tms32010_phase_slice` connects that phase primitive to the execution slice.
+For the eight currently qualified one-cycle sequential instructions it samples
+and retires on the same falling boundary, keeps PC and native address aligned,
+holds both on an unsupported opcode, and preserves phase/address/control state
+during a clock-enable stall. It is not a general sequencer: branch,
+multi-cycle, data-memory, I/O, table, and interrupt sequences remain absent.
 
 The phase primitive separates `initialize_i` (deterministic FPGA control-state
 initialization) from `rs_i` (the emulated active-high form of physical

@@ -15,6 +15,7 @@ module tb_initial_rtl_slice;
   logic        data_page_pointer;
   logic        overflow_mode;
   logic        interrupt_mask;
+  logic        instruction_valid;
   logic        retired;
   logic        illegal;
   logic [31:0] cycle_count;
@@ -36,6 +37,7 @@ module tb_initial_rtl_slice;
     .data_page_pointer_o (data_page_pointer),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
+    .instruction_valid_o (instruction_valid),
     .retired_o         (retired),
     .illegal_o         (illegal),
     .cycle_count_o     (cycle_count)
@@ -80,6 +82,7 @@ module tb_initial_rtl_slice;
 
     reset = 1'b0;
     tick();
+    require(instruction_valid, "LARK encoding is qualified");
     require(auxiliary_register_0 == 16'h0000, "LARK zero boundary");
     require(pc == 12'h001, "LARK AR0 advances PC");
 
@@ -122,6 +125,7 @@ module tb_initial_rtl_slice;
 
     tick();
     require(illegal, "unsupported opcode traps");
+    require(!instruction_valid, "unsupported opcode is visibly invalid");
     require(!retired, "unsupported opcode does not retire");
     require(pc == 12'h008, "unsupported opcode holds PC");
     require(cycle_count == 32'd8, "unsupported opcode is not counted");

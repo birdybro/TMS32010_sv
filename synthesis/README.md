@@ -10,11 +10,11 @@ instruction-complete TMS32010.
 make synth-yosys
 ```
 
-The script elaborates the portable package, decoder, execution core, and
-program-bus phase engine through a synthesis-only harness; runs hierarchy and
-structural checks; performs generic synthesis; and writes an ignored JSON
-netlist below `build/yosys/`. The harness does not claim functional
-integration between the temporary core interface and native bus engine.
+The script elaborates the portable package, decoder, execution core, program
+bus, and sequential phase wrapper through a synthesis-only harness; runs
+hierarchy and structural checks; performs generic synthesis; and writes an
+ignored JSON netlist below `build/yosys/`. The integration is qualified only
+for the current one-cycle sequential instruction subset.
 
 ## Quartus
 

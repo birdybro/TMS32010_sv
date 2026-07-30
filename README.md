@@ -18,7 +18,9 @@ The current executable boundary is an eight-instruction reference-model slice:
 `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. A matching
 partial RTL execution slice exists and unsupported opcodes trap. Its temporary
 instruction-boundary interface is not evidence of native bus timing or cycle
-accuracy.
+accuracy. A separate native-phase wrapper now qualifies normal sequential
+program reads for this subset only; it is not a general pipeline or
+cycle-accuracy claim.
 
 ## Design principles
 

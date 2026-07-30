@@ -2,6 +2,7 @@ read_verilog -sv rtl/packages/tms32010_pkg.sv
 read_verilog -sv rtl/core/tms32010_decode.sv
 read_verilog -sv rtl/core/tms32010_core.sv
 read_verilog -sv rtl/core/tms32010_program_bus.sv
+read_verilog -sv rtl/wrappers/tms32010_phase_slice.sv
 read_verilog -sv synthesis/common/tms32010_synth_top.sv
 
 hierarchy -check -top tms32010_synth_top

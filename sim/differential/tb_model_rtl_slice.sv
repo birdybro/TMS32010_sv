@@ -15,6 +15,7 @@ module tb_model_rtl_slice;
   logic        data_page_pointer;
   logic        overflow_mode;
   logic        interrupt_mask;
+  logic        instruction_valid;
   logic        retired;
   logic        illegal;
   logic [31:0] cycle_count;
@@ -38,6 +39,7 @@ module tb_model_rtl_slice;
     .data_page_pointer_o (data_page_pointer),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
+    .instruction_valid_o (instruction_valid),
     .retired_o         (retired),
     .illegal_o         (illegal),
     .cycle_count_o     (cycle_count)
@@ -81,7 +83,7 @@ module tb_model_rtl_slice;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %08x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x",
         pc_before,
         opcode_before,
         pc,
@@ -91,6 +93,7 @@ module tb_model_rtl_slice;
         auxiliary_register_1,
         auxiliary_register_pointer,
         data_page_pointer,
+        instruction_valid,
         retired,
         illegal,
         cycle_count

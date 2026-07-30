@@ -133,5 +133,8 @@ minimum assertion interval, one-cycle release delay, address-0/address-1
 startup, quarter-cycle `MEN` assertion, address stability, the falling-edge
 sample event, and clock-enable stalls. This four-phase mapping is an
 implementation choice, not an assertion about the original internal gate
-topology. It remains standalone until program-sequencer integration and has
-not yet been qualified for table, I/O, or interrupt sequences.
+topology. `tms32010_phase_slice` now integrates these phases with the current
+one-cycle sequential execution subset: a directed test verifies synchronized
+PC/native-address advancement, same-boundary retirement, stalls, traps, and
+recognized reset. It has not been qualified for branch, multi-cycle, table,
+I/O, or interrupt sequences.

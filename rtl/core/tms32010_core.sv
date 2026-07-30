@@ -17,20 +17,20 @@ module tms32010_core (
   output logic        data_page_pointer_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
+  output logic        instruction_valid_o,
   output logic        retired_o,
   output logic        illegal_o,
   output logic [31:0] cycle_count_o
 );
   import tms32010_pkg::*;
 
-  logic                 decoded_valid;
   tms32010_operation_t  decoded_operation;
   logic [7:0]           decoded_immediate;
   logic                 decoded_auxiliary_register;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
-    .valid_o       (decoded_valid),
+    .valid_o       (instruction_valid_o),
     .operation_o   (decoded_operation),
     .immediate_o   (decoded_immediate),
     .auxiliary_register_o (decoded_auxiliary_register)
@@ -50,7 +50,7 @@ module tms32010_core (
       // ACC, AR0, AR1, ARP, DP, and OVM have no arbitrary reset value here.
       // In particular, TI documents that reset leaves OVM unchanged.
     end else if (clock_enable_i) begin
-      if (decoded_valid) begin
+      if (instruction_valid_o) begin
         pc_o          <= pc_o + 12'h001;
         retired_o     <= 1'b1;
         illegal_o     <= 1'b0;

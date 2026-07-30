@@ -133,9 +133,10 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 (SEED, index),
             )
             self.assertEqual(int(fields[10], 16), 1, (SEED, index))
-            self.assertEqual(int(fields[11], 16), 0, (SEED, index))
+            self.assertEqual(int(fields[11], 16), 1, (SEED, index))
+            self.assertEqual(int(fields[12], 16), 0, (SEED, index))
             self.assertEqual(
-                int(fields[12], 16),
+                int(fields[13], 16),
                 model_trace.state_after["cycle_count"],
                 (SEED, index),
             )

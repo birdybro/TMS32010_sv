@@ -38,6 +38,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
+- Sequential native-phase wrapper that retires the eight supported
+  instructions on falling-edge program samples and keeps PC/native address
+  aligned across clock-enable stalls, traps, and reset.
 
 ### Changed
 
@@ -47,9 +50,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the eight-instruction partial core plus phase engine in
-  144 ALMs/90 registers with positive internal 50 MHz setup/hold slack and
-  315.36 MHz worst slow-corner internal Fmax; 176 diagnostic ports are virtual
+- Quartus 17.0.2 fits the integrated eight-instruction phase slice in
+  138 ALMs/90 registers with positive internal 50 MHz setup/hold slack and
+  216.87 MHz worst slow-corner internal Fmax; 152 diagnostic ports are virtual
   and harness I/O paths are explicitly excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
   resolves reset release to an address-0 fetch after one complete cycle.
@@ -72,6 +75,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   tests pass over the supported boundary.
 - `LARK`, `LARP`, and `LDPK` immediate boundaries and AR/ARP/DP effects agree
   between independent model and RTL paths across the seeded mixed trace.
+- Native phase integration test proves address-0 startup, sequential sampling,
+  same-boundary retirement, phase stalls, trap hold, and reset realignment for
+  the supported subset.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 
@@ -81,7 +87,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   is not yet integrated.
 - Control-flow bus traces, interrupt entry phases, reserved status bits, and
   out-of-range RAM behavior remain open.
-- The RTL program interface is an instruction-step test interface, not native
-  pin timing; only eight instructions are implemented.
+- The execution core still has an instruction-step test interface; the
+  native-phase wrapper covers only normal sequential program reads, and only
+  eight instructions are implemented.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the
   local executable path; the Yosys target fails explicitly.

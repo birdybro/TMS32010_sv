@@ -167,11 +167,13 @@ objective passing evidence.
 - **Acceptance criteria:** state-transition assertions and per-instruction
   cycle tests pass without gated clocks or combinational cycles.
 - **Documentation:** `docs/architecture/pipeline.md`
-- **Tests:** `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
-- **Notes:** Temporary one-enable instruction-boundary execution and
-  trap-without-PC-advance are verified. Native fetch phases, overlap, and
-  control flow do not exist yet. Optimize only after externally visible
-  overlap is verified.
+- **Tests:** `sim/bus/tb_phase_slice_integration.sv`,
+  `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
+- **Notes:** Temporary one-enable instruction execution and
+  trap-without-PC-advance are verified. The sequential phase wrapper now
+  retires each supported one-cycle instruction on its falling-edge sample and
+  aligns PC/native address across stalls, traps, and reset. General overlap,
+  branch, multi-cycle, and interrupt control do not exist yet.
 
 ## Milestone 9 — Program-memory interface
 
@@ -186,13 +188,15 @@ objective passing evidence.
   traces match primary timing figures for every access case.
 - **Documentation:** `docs/architecture/external_interface.md`,
   `docs/timing/bus_cycles.md`
-- **Tests:** `sim/bus/tb_program_bus_phase.sv`
+- **Tests:** `sim/bus/tb_program_bus_phase.sv`,
+  `sim/bus/tb_phase_slice_integration.sv`
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
-  transcribed. A standalone four-subphase normal-read/reset engine verifies
+  transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. Pipeline integration, table cycles, branch/call/return, and
-  interrupt sequences remain. Do not collapse Harvard spaces in the native
-  interface.
+  release delay. A partial wrapper integrates those phases with all supported
+  sequential instructions and holds PC/address on traps and stalls. Table
+  cycles, branch/call/return, general pipeline overlap, and interrupt
+  sequences remain. Do not collapse Harvard spaces in the native interface.
 
 ## Milestone 10 — Data-memory interface
 
