@@ -2,6 +2,7 @@
 
 module tms32010_core (
   input  logic        clk_i,
+  input  logic        initialize_i,
   input  logic        reset_i,
   input  logic        clock_enable_i,
 
@@ -25,6 +26,7 @@ module tms32010_core (
   output logic [15:0] auxiliary_register_1_o,
   output logic        auxiliary_register_pointer_o,
   output logic        data_page_pointer_o,
+  output logic        overflow_flag_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
   output logic        instruction_valid_o,
@@ -47,6 +49,7 @@ module tms32010_core (
   localparam logic [3:0] OP_SACH = 4'd10;
   localparam logic [3:0] OP_ZALH = 4'd11;
   localparam logic [3:0] OP_ZALS = 4'd12;
+  localparam logic [3:0] OP_ADDS = 4'd13;
 
   logic [3:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -57,6 +60,8 @@ module tms32010_core (
   logic       decoded_valid;
   logic       ram_address_valid;
   logic [15:0] ram_read_data;
+  logic [31:0] adds_wrapped_result;
+  logic        adds_overflow;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -78,7 +83,8 @@ module tms32010_core (
         (decoded_operation == OP_SACL) ||
         (decoded_operation == OP_SACH) ||
         (decoded_operation == OP_ZALH) ||
-        (decoded_operation == OP_ZALS)
+        (decoded_operation == OP_ZALS) ||
+        (decoded_operation == OP_ADDS)
       )
     ) begin
       if (decoded_indirect) begin
@@ -107,17 +113,20 @@ module tms32010_core (
   );
 
   assign program_address_o = pc_o;
-  assign program_read_o    = ~reset_i;
+  assign program_read_o    = ~reset_i && ~initialize_i;
   assign data_read_o =
     ~reset_i &&
+    ~initialize_i &&
     decoded_valid &&
     (
       (decoded_operation == OP_LAC) ||
       (decoded_operation == OP_ZALH) ||
-      (decoded_operation == OP_ZALS)
+      (decoded_operation == OP_ZALS) ||
+      (decoded_operation == OP_ADDS)
     );
   assign data_write_o =
     ~reset_i &&
+    ~initialize_i &&
     decoded_valid &&
     ((decoded_operation == OP_SACL) || (decoded_operation == OP_SACH));
   assign data_address_valid_o =
@@ -147,21 +156,39 @@ module tms32010_core (
         (decoded_operation != OP_SACL) &&
         (decoded_operation != OP_SACH) &&
         (decoded_operation != OP_ZALH) &&
-        (decoded_operation != OP_ZALS)
+        (decoded_operation != OP_ZALS) &&
+        (decoded_operation != OP_ADDS)
       ) ||
       ram_address_valid
     );
+  assign adds_wrapped_result =
+    accumulator_o + {16'h0000, ram_read_data};
+  assign adds_overflow =
+    ~accumulator_o[31] && adds_wrapped_result[31];
 
   always_ff @(posedge clk_i) begin
     retired_o <= 1'b0;
 
-    if (reset_i) begin
+    if (initialize_i) begin
+      pc_o                         <= 12'h000;
+      accumulator_o                <= 32'h0000_0000;
+      auxiliary_register_0_o       <= 16'h0000;
+      auxiliary_register_1_o       <= 16'h0000;
+      auxiliary_register_pointer_o <= 1'b0;
+      data_page_pointer_o          <= 1'b0;
+      overflow_flag_o              <= 1'b0;
+      overflow_mode_o              <= 1'b0;
+      interrupt_mask_o             <= 1'b1;
+      illegal_o                    <= 1'b0;
+      cycle_count_o                <= 32'h0000_0000;
+    end else if (reset_i) begin
       pc_o             <= 12'h000;
       interrupt_mask_o <= 1'b1;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
-      // ACC, AR0, AR1, ARP, DP, and OVM have no arbitrary reset value here.
-      // In particular, TI documents that reset leaves OVM unchanged.
+      // ACC, AR0, AR1, ARP, DP, and OV receive no arbitrary reset value.
+      // TI explicitly documents that reset leaves OVM unchanged. Retention of
+      // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
       if (instruction_valid_o) begin
         pc_o          <= pc_o + 12'h001;
@@ -181,6 +208,15 @@ module tms32010_core (
           end
           OP_ZALH: accumulator_o <= {ram_read_data, 16'h0000};
           OP_ZALS: accumulator_o <= {16'h0000, ram_read_data};
+          OP_ADDS: begin
+            if (adds_overflow) begin
+              overflow_flag_o <= 1'b1;
+              accumulator_o <=
+                overflow_mode_o ? 32'h7fff_ffff : adds_wrapped_result;
+            end else begin
+              accumulator_o <= adds_wrapped_result;
+            end
+          end
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
               auxiliary_register_1_o <= {8'h00, decoded_immediate};
@@ -205,7 +241,8 @@ module tms32010_core (
            (decoded_operation == OP_SACL) ||
            (decoded_operation == OP_SACH) ||
            (decoded_operation == OP_ZALH) ||
-           (decoded_operation == OP_ZALS)) &&
+           (decoded_operation == OP_ZALS) ||
+           (decoded_operation == OP_ADDS)) &&
           decoded_indirect
         ) begin
           if (decoded_addressing_field[5]) begin
@@ -245,7 +282,7 @@ module tms32010_core (
 
   always_ff @(posedge clk_i) begin
     assert (!(retired_o && illegal_o));
-    if (!reset_i) begin
+    if (!reset_i && !initialize_i) begin
       assert (!(debug_data_write_i && clock_enable_i));
       if ((data_read_o || data_write_o) && !data_address_valid_o) begin
         assert (!instruction_valid_o);

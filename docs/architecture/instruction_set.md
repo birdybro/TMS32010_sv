@@ -118,3 +118,32 @@ aliases follow the same conservative policy as `LAC`, `SACL`, and `SACH`
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `ZALH`/`ZALS`, printed
 pp. 3-2–3-3 and 3-70–3-71 (PDF pp. 52–53 and 120–121)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
+
+## Qualified `ADDS` research slice
+
+`ADDS` treats the selected 16-bit data word as an unsigned value, adds its
+zero-extended value to the full 32-bit accumulator, and stores the 32-bit
+result. Unlike `ADD dma,0`, it never sign-extends a source whose bit 15 is one.
+It is one word and one cycle
+[ti-tms32010-users-guide-spru001b, `ADDS`, printed p. 3-12 (PDF p. 62);
+ti-first-generation-users-guide-1987, `ADDS`, printed p. 4-17 (PDF p. 98)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The later TI guide explicitly states that ADDS affects sticky `OV` and is
+affected by `OVM`. Signed 32-bit overflow sets `OV`; `OVM=0` retains the
+wrapped result, while `OVM=1` saturates it. Because the ADDS operand is always
+nonnegative, only positive saturation can arise from this instruction
+[ti-first-generation-users-guide-1987, §§3.5.2 and `ADDS`, printed pp. 3-20
+and 4-17 (PDF pp. 49 and 98)]. The older guide's contradictory `OVM=0`
+sentence is resolved in `SC-001`. **Confidence: CORROBORATED for the resolved
+wording; VERIFIED_PRIMARY for ADDS status applicability.**
+
+Direct/indirect address selection and post-access controls use the common
+data-address form. The read uses the old selected-AR address before an optional
+nine-bit counter update and ARP replacement. The current conservative
+reserved-control and alias policies remain linked to `OQ-010`.
+
+`ADDH` is intentionally not in this qualification boundary. Its ordinary
+high-half addition is documented, but original-part sources omit whether
+`OV`/`OVM` applies, while a C14/E14 variant guide and MAME apply overflow with
+unresolved saturation details. See `SC-006` and `OQ-011`.

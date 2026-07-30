@@ -54,11 +54,16 @@ half while passing the lower half unchanged
 
 The overflow flag `OV` is sticky until `BV` or a status load clears it. With
 overflow mode `OVM` set, positive and negative overflows clamp to
-`0x7fff_ffff` and `0x8000_0000`, respectively. The prose for `OVM=0`
-contains an internal wording conflict tracked as `SC-001`; no implementation
-claim is made from the contradictory sentence
-[ti-tms32010-users-guide-spru001b, §2.1.2, printed pp. 2-3–2-5 (PDF
-pp. 27–29)]. **Confidence: VERIFIED_PRIMARY except SC-001.**
+`0x7fff_ffff` and `0x8000_0000`, respectively. With `OVM` clear, the wrapped
+overflow result is loaded without saturation and `OV` is still set. The older
+SPRU001B paragraph contains one contradictory sentence, but its following
+explanation and the later TI SPRU013 architecture and `ROVM` descriptions
+unambiguously establish the latter behavior
+[ti-tms32010-users-guide-spru001b, §2.2.1.1, printed p. 2-4 (PDF p. 28);
+ti-first-generation-users-guide-1987, §3.5.2 and `ROVM`, printed pp. 3-20 and
+4-58 (PDF pp. 49 and 139); `SC-001`]. **Confidence: CORROBORATED for the
+resolved contradiction; VERIFIED_PRIMARY for sticky `OV` and saturation
+endpoints.**
 
 ## Control path
 
@@ -82,30 +87,35 @@ machine cycles (twenty crystal/input-clock periods).
 After the current machine cycle completes, reset synchronously clears the PC,
 sets the interrupt mask, clears the interrupt flag, and drives `MEN`, `DEN`,
 and `WE` inactive high while the data bus is high impedance. Reset does not
-change `OVM`. Other register power-up values are not specified by this
+change `OVM`. Other register reset/power-up values are not specified by this
 pass and must not be invented
 [ti-tms32010-users-guide-spru001b, §2.5, printed p. 2-19 (PDF p. 43)].
 **Confidence: VERIFIED_PRIMARY.**
 
 Appendix A resolves the external first-fetch sequence: after reset release,
 normal operation resumes after one complete processor cycle and reads address
-0 followed by address 1. FPGA-friendly deterministic initialization, if later
-offered, will be wrapper behavior and visibly distinct from physical-chip
-guarantees
+0 followed by address 1. The current wrapper offers a separate explicit
+FPGA/test initialization input that establishes deterministic modeled state;
+it is not physical `RS` behavior and does not initialize RAM. Physical reset
+assigns no value to unlisted RTL state, so it retains prior FPGA state as a
+conservative implementation policy pending `OQ-012`, not as a verified
+physical-device claim
 [ti-tms32010-users-guide-spru001b, Appendix A reset timing, printed data-sheet
 p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
 The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`,
-`ROVM`, `SACL`, `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`. The five
+differential boundary support `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
+`NOP`, `ROVM`, `SACL`, `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`. The six
 common-address data instructions have independent fixtures plus directed and
-seeded tests for direct/indirect address selection, reads or writes, accumulator
-behavior, and nine-bit counter updates. SACH additionally verifies all three
-documented output shifts and rejects all five other field values. ZALH and
-ZALS verify high-half placement and low-half zero extension, respectively.
-Unresolved addresses trap rather than alias. This is partial RTL support only.
+seeded tests for direct/indirect address selection, reads or writes,
+accumulator behavior, and nine-bit counter updates. SACH additionally verifies
+all three documented output shifts and rejects all five other field values.
+ZALH and ZALS verify high-half placement and low-half zero extension,
+respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
+`OVM=0` results, and positive `OVM=1` saturation. Unresolved addresses trap
+rather than alias. This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.
 Current evidence does not constitute instruction completeness or cycle
 accuracy.

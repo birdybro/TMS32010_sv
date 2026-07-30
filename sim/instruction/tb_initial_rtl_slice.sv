@@ -2,6 +2,7 @@
 
 module tb_initial_rtl_slice;
   logic        clk;
+  logic        initialize;
   logic        reset;
   logic        clock_enable;
   logic [11:0] program_address;
@@ -13,6 +14,7 @@ module tb_initial_rtl_slice;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        instruction_valid;
@@ -33,6 +35,7 @@ module tb_initial_rtl_slice;
 
   tms32010_core dut (
     .clk_i             (clk),
+    .initialize_i      (initialize),
     .reset_i           (reset),
     .clock_enable_i    (clock_enable),
     .program_address_o (program_address),
@@ -53,6 +56,7 @@ module tb_initial_rtl_slice;
     .auxiliary_register_1_o (auxiliary_register_1),
     .auxiliary_register_pointer_o (auxiliary_register_pointer),
     .data_page_pointer_o (data_page_pointer),
+    .overflow_flag_o   (overflow_flag),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
     .instruction_valid_o (instruction_valid),
@@ -91,14 +95,17 @@ module tb_initial_rtl_slice;
     program_memory[7] = 16'h7f80;
     program_memory[8] = 16'h7f81;
 
+    initialize   = 1'b1;
     reset        = 1'b1;
     clock_enable = 1'b1;
     debug_data_write   = 1'b0;
     debug_data_address = 8'h00;
     debug_data         = 16'h0000;
     tick();
+    initialize = 1'b0;
     require(pc == 12'h000, "reset PC");
     require(interrupt_mask, "reset masks interrupts");
+    require(!overflow_flag, "explicit initialization clears OV");
     require(!program_read, "program read inactive during reset");
     require(!data_read && !data_write &&
             !data_address_valid && data_address == 8'h00,

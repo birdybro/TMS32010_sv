@@ -7,10 +7,15 @@
   unmodified on overflow when `OVM=0`, while the following explanation says
   the overflowed result is loaded; normal two's-complement wrap is also
   implied by instruction examples.
-- **Current treatment:** unresolved wording conflict. Individual instruction
-  pages and another TI revision must be checked before arithmetic RTL.
-- **Confidence:** UNKNOWN for the disputed sentence; saturation endpoints
-  with `OVM=1` are VERIFIED_PRIMARY.
+- **Resolution:** the detailed paragraph immediately following the disputed
+  sentence says the overflowed result is loaded without modification. TI
+  SPRU013 §3.5.2, printed p. 3-20, and its `ROVM` page, printed p. 4-58,
+  repeat that behavior unambiguously: `OVM=0` retains the wrapped result and
+  sets `OV`; `OVM=1` saturates while also setting `OV`.
+- **Current treatment:** resolved for arithmetic implementation. Retain this
+  record because the original revision-B sentence remains erroneous.
+- **Confidence:** CORROBORATED for the resolution across TI revisions;
+  VERIFIED_PRIMARY for the saturation endpoints and sticky `OV`.
 
 ## SC-002 — Hard Drivin' device identity
 
@@ -48,3 +53,21 @@ only 0–143; keep address 144 and all higher eight-bit addresses unresolved
 under `OQ-002` rather than interpreting the inconsistent endpoint as storage.
 **Confidence:** VERIFIED_PRIMARY for the 144-word capacity; UNKNOWN for the
 electrical result of an out-of-range access.
+
+## SC-006 — ADDH overflow wording
+
+- **Original-part sources:** TI SPRU001B `ADDH`, printed p. 3-11, gives the
+  high-half addition and says it is useful for 32-bit arithmetic, but does not
+  state whether `OV` or `OVM` applies. TI SPRU013 `ADDH`, printed p. 4-16,
+  repeats that omission.
+- **Variant source:** TI SPRU032A for the TMS320C14/E14 explicitly says
+  `ADDH` affects `OV` and is affected by `OVM`, while still saying the low
+  accumulator half is unaffected.
+- **Secondary source:** the pinned MAME implementation applies high-half
+  overflow and saturation but comments that this is an inference because the
+  manual omitted it.
+- **Current treatment:** `ADDH` remains outside the implemented boundary under
+  `OQ-011`. `ADDS`, whose status behavior is explicit in SPRU013 and SPRU032A,
+  can proceed independently.
+- **Confidence:** UNKNOWN for original-TMS32010 `ADDH` overflow and saturation
+  details; VERIFIED_PRIMARY for its ordinary non-overflow transfer.

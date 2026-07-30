@@ -2,6 +2,7 @@
 
 module tb_lac_rtl;
   logic        clk;
+  logic        initialize;
   logic        reset;
   logic        clock_enable;
   logic [11:0] program_address;
@@ -22,6 +23,7 @@ module tb_lac_rtl;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        instruction_valid;
@@ -32,6 +34,7 @@ module tb_lac_rtl;
 
   tms32010_core dut (
     .clk_i                         (clk),
+    .initialize_i                  (initialize),
     .reset_i                       (reset),
     .clock_enable_i                (clock_enable),
     .program_address_o             (program_address),
@@ -52,6 +55,7 @@ module tb_lac_rtl;
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
     .data_page_pointer_o           (data_page_pointer),
+    .overflow_flag_o               (overflow_flag),
     .overflow_mode_o               (overflow_mode),
     .interrupt_mask_o              (interrupt_mask),
     .instruction_valid_o           (instruction_valid),
@@ -103,12 +107,15 @@ module tb_lac_rtl;
     program_memory[9]  = 16'h2098;  // LAC *-,0, preserve ARP
     program_memory[10] = 16'h2010;  // page-one address 144, unresolved
 
+    initialize         = 1'b1;
     reset              = 1'b1;
     clock_enable       = 1'b1;
     debug_data_write   = 1'b0;
     debug_data_address = 8'h00;
     debug_data         = 16'h0000;
     tick();
+    initialize = 1'b0;
+    require(!overflow_flag, "explicit initialization clears OV");
     require(!program_read && interrupt_mask && !data_write,
             "reset control outputs");
     load_data(8'd3, 16'h8000);

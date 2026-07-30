@@ -299,7 +299,7 @@ class Assembler:
                 location=location,
                 line=line,
             )
-        elif operation in {"ZALH", "ZALS"}:
+        elif operation in {"ADDS", "ZALH", "ZALS"}:
             word |= self._encode_data_address(
                 operation,
                 operands,

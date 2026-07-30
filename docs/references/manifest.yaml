@@ -60,9 +60,9 @@
       "id": "ti-first-generation-users-guide-1987",
       "title": "First-Generation TMS320 User's Guide",
       "author_or_organization": "Texas Instruments",
-      "publication_number": "unknown",
+      "publication_number": "SPRU013",
       "publication_date": "1987",
-      "revision": "unknown",
+      "revision": "initial",
       "source_url": "https://www.bitsavers.org/components/ti/TMS320xx/3201x/1987_TI_First-Generation_TMS320_Users_Guide.pdf",
       "retrieval_date": "2026-07-30",
       "local_filename": "ti/TI_First-Generation_TMS320_Users_Guide_1987.pdf",
@@ -75,7 +75,10 @@
       "notes": "Later family guide may describe CMOS variants; every statement must be scoped to the original TMS32010 before use.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison"
+        "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison",
+        "Section 3.5.2 overflow behavior, printed page 3-20 (PDF page 49)",
+        "ADDH and ADDS instruction descriptions, printed pages 4-16 through 4-17 (PDF pages 97-98)",
+        "ROVM instruction description, printed page 4-58 (PDF page 139)"
       ],
       "status": "acquired",
       "download": {
@@ -102,6 +105,34 @@
       "notes": "Development-system evidence; architectural conflicts defer to original device manuals.",
       "may_commit": false,
       "sections_or_pages_used": [],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-tms320c14-e14-users-guide-1988",
+      "title": "TMS320C14/TMS320E14 User's Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU032A",
+      "publication_date": "1988",
+      "revision": "A",
+      "source_url": "https://www.bitsavers.org/components/ti/TMS320xx/320C1x/TI_TMS320C14_E14_Users_Guide_1988.pdf",
+      "retrieval_date": "2026-07-30",
+      "local_filename": "ti/TI_TMS320C14_E14_Users_Guide_1988.pdf",
+      "sha256": "0fc004e58fb194e0ed06a8e6a3d0bb9674604f67a333f333672f80dffd83e9d2",
+      "document_type": "primary first-generation variant user guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Independent TI wording for first-generation ALU overflow behavior and C14/E14 variant differences",
+      "authority_level": 1,
+      "notes": "The C14/E14 is not the target TMS32010; use only as explicitly scoped corroboration or conflict evidence.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "ADDH and ADDS instruction descriptions, printed pages 4-16 through 4-17 (PDF pages 123-124)",
+        "Document control page identifying SPRU032 revision A"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,

@@ -27,6 +27,7 @@ module tb_phase_slice_integration;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        instruction_valid;
@@ -62,6 +63,7 @@ module tb_phase_slice_integration;
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
     .data_page_pointer_o           (data_page_pointer),
+    .overflow_flag_o               (overflow_flag),
     .overflow_mode_o               (overflow_mode),
     .interrupt_mask_o              (interrupt_mask),
     .instruction_valid_o           (instruction_valid),
@@ -116,7 +118,8 @@ module tb_phase_slice_integration;
     program_memory[12] = 16'h5c05;  // SACH 5,4
     program_memory[13] = 16'h6503;  // ZALH 3
     program_memory[14] = 16'h6603;  // ZALS 3
-    program_memory[15] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[15] = 16'h6103;  // ADDS 3
+    program_memory[16] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -127,6 +130,7 @@ module tb_phase_slice_integration;
     tick();
     debug_data_write = 1'b0;
     initialize = 1'b0;
+    require(!overflow_flag, "explicit initialization clears OV");
 
     for (int unsigned index = 0; index < 20; index++) begin
       tick();
@@ -250,13 +254,24 @@ module tb_phase_slice_integration;
             "ZALS zero-extends the sampled word in the low half");
     require(pc == 12'h00f && cycle_count == 32'd15,
             "ZALS consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h83 && data_read_data == 16'hff80,
+            "ADDS presents its unsigned internal operand beside program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0001_ff00,
+            "ADDS adds an unsigned word to the full accumulator");
+    require(!overflow_flag,
+            "nonoverflowing ADDS preserves the initialized clear OV flag");
+    require(pc == 12'h010 && cycle_count == 32'd16,
+            "ADDS consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h00f, "trap holds architectural PC");
-    require(program_address == 12'h00f, "trap holds native program address");
-    require(cycle_count == 32'd15, "trap does not count as retired cycle");
+    require(pc == 12'h010, "trap holds architectural PC");
+    require(program_address == 12'h010, "trap holds native program address");
+    require(cycle_count == 32'd16, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

@@ -129,6 +129,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_adds_arithmetic_status_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_adds_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_adds_rtl.sv",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

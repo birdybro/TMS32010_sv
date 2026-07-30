@@ -48,11 +48,12 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `LAC`, `SACL`, `SACH`, `ZALH`, or `ZALS` when its effective address is
-`0x90`–`0xff`. It exposes the effective address, operation-valid indication,
-and read/write data for verification without creating a physical data-memory
-strobe. Direct and indirect tests cover both data pages, the final physical
-word, pre-modification indirect addressing, and write-to-read ordering.
+retire `ADDS`, `LAC`, `SACL`, `SACH`, `ZALH`, or `ZALS` when its effective
+address is `0x90`–`0xff`. It exposes the effective address, operation-valid
+indication, and read/write data for verification without creating a physical
+data-memory strobe. Direct and indirect tests cover both data pages, the final
+physical word, pre-modification indirect addressing, and write-to-read
+ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
 

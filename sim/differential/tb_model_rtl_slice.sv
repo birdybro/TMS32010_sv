@@ -2,6 +2,7 @@
 
 module tb_model_rtl_slice;
   logic        clk;
+  logic        initialize;
   logic        reset;
   logic        clock_enable;
   logic [11:0] program_address;
@@ -13,6 +14,7 @@ module tb_model_rtl_slice;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        instruction_valid;
@@ -37,6 +39,7 @@ module tb_model_rtl_slice;
 
   tms32010_core dut (
     .clk_i             (clk),
+    .initialize_i      (initialize),
     .reset_i           (reset),
     .clock_enable_i    (clock_enable),
     .program_address_o (program_address),
@@ -57,6 +60,7 @@ module tb_model_rtl_slice;
     .auxiliary_register_1_o (auxiliary_register_1),
     .auxiliary_register_pointer_o (auxiliary_register_pointer),
     .data_page_pointer_o (data_page_pointer),
+    .overflow_flag_o   (overflow_flag),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
     .instruction_valid_o (instruction_valid),
@@ -86,6 +90,7 @@ module tb_model_rtl_slice;
     $readmemh(image_path, program_memory);
     $readmemh(data_path, data_memory);
 
+    initialize   = 1'b1;
     reset        = 1'b1;
     clock_enable = 1'b1;
     debug_data_write   = 1'b0;
@@ -93,7 +98,8 @@ module tb_model_rtl_slice;
     debug_data         = 16'h0000;
     @(posedge clk);
     #1;
-    if (!interrupt_mask || program_read) begin
+    initialize = 1'b0;
+    if (!interrupt_mask || overflow_flag || program_read) begin
       $fatal(1, "reset control outputs");
     end
     debug_data_write = 1'b1;
@@ -130,7 +136,7 @@ module tb_model_rtl_slice;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %04x %04x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %04x %04x %01x",
         pc_before,
         opcode_before,
         pc,
@@ -149,7 +155,8 @@ module tb_model_rtl_slice;
         data_write_before,
         data_address_valid_before,
         data_read_data_before,
-        data_write_data_before
+        data_write_data_before,
+        overflow_flag
       );
     end
     for (int unsigned index = 0; index < 144; index++) begin

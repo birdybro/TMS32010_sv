@@ -14,7 +14,8 @@ package tms32010_pkg;
     OP_SACL = 4'd9,
     OP_SACH = 4'd10,
     OP_ZALH = 4'd11,
-    OP_ZALS = 4'd12
+    OP_ZALS = 4'd12,
+    OP_ADDS = 4'd13
   } tms32010_operation_t;
 endpackage
 

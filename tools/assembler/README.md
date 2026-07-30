@@ -3,8 +3,8 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`,
-  `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
+- `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`,
+  `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
 - checked integer expressions;
@@ -31,6 +31,9 @@ values are diagnosed rather than emitted as undocumented encodings.
 
 `ZALH` and `ZALS` accept the common direct/indirect address forms without a
 shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
+
+`ADDS` uses the same no-shift common address forms, for example `ADDS 6` or
+`ADDS *+,AR1`.
 
 Example:
 

@@ -31,6 +31,7 @@ module tms32010_phase_slice (
   output logic [15:0] auxiliary_register_1_o,
   output logic        auxiliary_register_pointer_o,
   output logic        data_page_pointer_o,
+  output logic        overflow_flag_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
   output logic        instruction_valid_o,
@@ -47,7 +48,7 @@ module tms32010_phase_slice (
   // The physical reset is sampled at the same falling-CLKOUT boundary as the
   // native phase engine. initialize_i remains a separate FPGA-only control.
   assign core_reset =
-    initialize_i | (clock_enable_i & (phase_o == 2'd3) & rs_i);
+    clock_enable_i & (phase_o == 2'd3) & rs_i;
 
   // Each currently supported instruction retires on its single program-read
   // sampling boundary. Future branch/multicycle families require a sequencer,
@@ -64,6 +65,7 @@ module tms32010_phase_slice (
 
   tms32010_core core (
     .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
     .reset_i                       (core_reset),
     .clock_enable_i                (execute_boundary),
     .program_address_o             (logical_program_address),
@@ -84,6 +86,7 @@ module tms32010_phase_slice (
     .auxiliary_register_1_o        (auxiliary_register_1_o),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer_o),
     .data_page_pointer_o           (data_page_pointer_o),
+    .overflow_flag_o               (overflow_flag_o),
     .overflow_mode_o               (overflow_mode_o),
     .interrupt_mask_o              (interrupt_mask_o),
     .instruction_valid_o           (instruction_valid_o),

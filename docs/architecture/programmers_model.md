@@ -11,7 +11,7 @@
 | `AR0`, `AR1` | 16 each | indirect address/counter registers | unspecified here | VERIFIED_PRIMARY |
 | `ARP` | 1 | selects active auxiliary register | status bit; reset value unresolved | VERIFIED_PRIMARY |
 | `DP` | 1 | selects direct-address data page | status bit; reset value unresolved | VERIFIED_PRIMARY |
-| `OV` | 1 | sticky arithmetic overflow | reset behavior needs exact review | VERIFIED_PRIMARY |
+| `OV` | 1 | sticky arithmetic overflow | reset behavior unresolved (`OQ-012`) | VERIFIED_PRIMARY for role; UNKNOWN for reset |
 | `OVM` | 1 | saturation enable | unchanged by reset | VERIFIED_PRIMARY |
 | `INTM` | 1 | interrupt mask | set by reset and `DINT` | VERIFIED_PRIMARY |
 | stack | 4 × 12 | PC return stack | contents unspecified | VERIFIED_PRIMARY |
@@ -22,7 +22,10 @@ printed pp. 2-1–2-19 (PDF pp. 25–43)].
 Unknown values remain unknown in the architectural specification. Tests may
 seed them explicitly. The software reference model may use deterministic
 constructor defaults for reproducibility, but those defaults are not physical
-reset claims.
+reset claims. The RTL's separate `initialize_i` test/FPGA control establishes
+the same deterministic modeled state, while physical reset leaves unlisted
+state without an assigned reset value; retention is provisional under
+`OQ-012`.
 
 ## Status register
 

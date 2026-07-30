@@ -51,6 +51,11 @@ class ToolchainSliceTests(unittest.TestCase):
             SACH *-,4
             SACH *,0,AR0
             SACH *+,4,1
+            ADDS 0
+            ADDS 127
+            ADDS *
+            ADDS *+,AR1
+            ADDS *-,0
             ZALH 0
             ZALH 127
             ZALH *
@@ -99,6 +104,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x5C98,
                 0x5880,
                 0x5CA1,
+                0x6100,
+                0x617F,
+                0x6188,
+                0x61A1,
+                0x6190,
                 0x6500,
                 0x657F,
                 0x6588,
@@ -146,6 +156,12 @@ class ToolchainSliceTests(unittest.TestCase):
             0x5880,
             0x5CA1,
             0x5C89,
+            0x6100,
+            0x617F,
+            0x6188,
+            0x61A1,
+            0x6190,
+            0x6189,
             0x6500,
             0x657F,
             0x6588,
@@ -290,6 +306,23 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x6589\n.word 0x6689\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), original)
+
+    def test_adds_operand_diagnostics_and_noncanonical_alias(self) -> None:
+        cases = (
+            ("ADDS 128\n", "direct address"),
+            ("ADDS *+,2\n", "next ARP"),
+            ("ADDS 0,1\n", "only with indirect"),
+            ("ADDS\n", "1 to 2 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+        source = self.disassembler.disassemble_source([0x6189])
+        self.assertEqual(source, ".word 0x6189\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x6189])
 
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(

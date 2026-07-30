@@ -2,6 +2,7 @@
 
 module tb_zero_loads_rtl;
   logic        clk;
+  logic        initialize;
   logic        reset;
   logic        clock_enable;
   logic [11:0] program_address;
@@ -22,6 +23,7 @@ module tb_zero_loads_rtl;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
   logic        instruction_valid;
@@ -32,6 +34,7 @@ module tb_zero_loads_rtl;
 
   tms32010_core dut (
     .clk_i                         (clk),
+    .initialize_i                  (initialize),
     .reset_i                       (reset),
     .clock_enable_i                (clock_enable),
     .program_address_o             (program_address),
@@ -52,6 +55,7 @@ module tb_zero_loads_rtl;
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
     .data_page_pointer_o           (data_page_pointer),
+    .overflow_flag_o               (overflow_flag),
     .overflow_mode_o               (overflow_mode),
     .interrupt_mask_o              (interrupt_mask),
     .instruction_valid_o           (instruction_valid),
@@ -95,12 +99,14 @@ module tb_zero_loads_rtl;
     program_memory[12] = 16'h6e01;  // LDPK 1
     program_memory[13] = 16'h6510;  // unresolved physical address 144
 
+    initialize         = 1'b1;
     reset              = 1'b1;
     clock_enable       = 1'b1;
     debug_data_write   = 1'b1;
     debug_data_address = 8'd3;
     debug_data         = 16'hf7ff;
     tick();
+    initialize = 1'b0;
     debug_data_address = 8'd143;
     debug_data         = 16'h8421;
     tick();
@@ -108,6 +114,7 @@ module tb_zero_loads_rtl;
     debug_data         = 16'h1234;
     tick();
     debug_data_write = 1'b0;
+    require(!overflow_flag, "explicit initialization clears OV");
     require(!program_read && interrupt_mask,
             "reset suppresses fetch and masks interrupts");
 

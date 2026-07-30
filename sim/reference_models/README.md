@@ -6,8 +6,10 @@ RTL.
 
 Current supported boundary:
 
-- `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SACH`,
-  `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
+- `ADDS`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`,
+  `SACH`, `SOVM`, `ZAC`, `ZALH`, and `ZALS`;
+- `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
+  and positive saturation with `OVM=1`;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the

@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports LAC, LACK, LARK, LARP, LDPK, NOP, ROVM, SACH,
-SACL, SOVM, ZAC, ZALH, and ZALS. Logical program and internal-data
+This partial slice supports ADDS, LAC, LACK, LARK, LARP, LDPK, NOP, ROVM,
+SACH, SACL, SOVM, ZAC, ZALH, and ZALS. Logical program and internal-data
 transactions and instruction totals are modeled; pin subphases are not yet
 integrated with this model.
 """
@@ -179,7 +179,7 @@ class Tms32010Model:
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
         selected_arp: int | None = None
-        if mnemonic in {"LAC", "SACL", "SACH", "ZALH", "ZALS"}:
+        if mnemonic in {"ADDS", "LAC", "SACL", "SACH", "ZALH", "ZALS"}:
             if operands["indirect"]:
                 selected_arp = self.state.status.arp
                 data_address = self.state.ar[selected_arp] & 0xFF
@@ -190,7 +190,7 @@ class Tms32010Model:
             if data_address >= DATA_WORDS:
                 raise UnsupportedDataAddress(pc, opcode, data_address)
             operands["effective_address"] = data_address
-            if mnemonic in {"LAC", "ZALH", "ZALS"}:
+            if mnemonic in {"ADDS", "LAC", "ZALH", "ZALS"}:
                 transaction_data = self.data[data_address]
             elif mnemonic == "SACL":
                 transaction_data = self.state.acc & WORD_MASK
@@ -203,7 +203,7 @@ class Tms32010Model:
                     space="data",
                     operation=(
                         "read"
-                        if mnemonic in {"LAC", "ZALH", "ZALS"}
+                        if mnemonic in {"ADDS", "LAC", "ZALH", "ZALS"}
                         else "write"
                     ),
                     address=data_address,
@@ -233,6 +233,8 @@ class Tms32010Model:
             self.state.acc = data_word << 16
         elif mnemonic == "ZALS":
             self.state.acc = self.data[operands["effective_address"]]
+        elif mnemonic == "ADDS":
+            self._add_accumulator(self.data[operands["effective_address"]])
         elif mnemonic == "LARK":
             register = operands["auxiliary_register"]
             self.state.ar[register] = operands["constant"] & 0xFF
@@ -250,7 +252,7 @@ class Tms32010Model:
             raise AssertionError(f"decoder returned unhandled mnemonic {mnemonic}")
 
         if (
-            mnemonic in {"LAC", "SACL", "SACH", "ZALH", "ZALS"}
+            mnemonic in {"ADDS", "LAC", "SACL", "SACH", "ZALH", "ZALS"}
             and operands["indirect"]
         ):
             assert selected_arp is not None
@@ -284,6 +286,23 @@ class Tms32010Model:
     def _modify_counter(value: int, delta: int) -> int:
         """Modify only AR[8:0], the documented circular counter field."""
         return (value & 0xFE00) | ((value + delta) & 0x01FF)
+
+    def _add_accumulator(self, addend: int) -> None:
+        """Apply sticky signed-overflow and OVM rules to a 32-bit addition."""
+        old_acc = self.state.acc & ACC_MASK
+        addend &= ACC_MASK
+        wrapped = (old_acc + addend) & ACC_MASK
+        overflow = (
+            (~(old_acc ^ addend) & (old_acc ^ wrapped) & 0x8000_0000) != 0
+        )
+        if overflow:
+            self.state.status.ov = True
+            if self.state.status.ovm:
+                self.state.acc = (
+                    0x8000_0000 if old_acc & 0x8000_0000 else 0x7FFF_FFFF
+                )
+                return
+        self.state.acc = wrapped
 
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
@@ -335,6 +354,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return ("ZALH" if (opcode & 0xFF00) == 0x6500 else "ZALS"), {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6100:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "ADDS", {
                 "indirect": indirect,
                 "addressing_field": control,
             }
