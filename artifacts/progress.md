@@ -2,7 +2,7 @@
 
 - **Current milestone:** First RTL execution slice and early synthesis
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 27 repository/provenance/document/ISA/toolchain tests; 10
+- **Tests passing:** 28 repository/provenance/document/ISA/toolchain tests; 10
   directed model tests; 2 RTL instruction/decode tests; 2 native bus/phase
   tests; one 512-instruction seeded model/RTL differential; 14 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
@@ -23,4 +23,4 @@
   Drivin' INT net, and safe phase adaptation without READY
 - **Next task:** research and implement the first data-memory/addressing
   instruction family without extending the sequential wrapper speculatively
-- **Latest commit:** `c471b3bca822522921943dc6a0ca0f3b85e4a466`
+- **Latest commit:** `b71585b817b5d87df9f12328a4750da929c5234e`

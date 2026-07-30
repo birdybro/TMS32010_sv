@@ -1,0 +1,75 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  repository:
+    name: Repository, model, and tools
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        # v6.0.2
+      - name: Select Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        # v6.2.0
+        with:
+          python-version: "3.14"
+      - name: Report Python version
+        run: python --version
+      - name: Check whitespace
+        run: git diff-tree --check --no-commit-id -r HEAD
+      - name: Check documentation and provenance
+        run: make docs
+      - name: Run repository, model, and tool tests
+        run: make unit
+
+  verilator:
+    name: Verilator regression and lint
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        # v6.0.2
+      - name: Select Python
+        uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405
+        # v6.2.0
+        with:
+          python-version: "3.14"
+      - name: Install open-source simulator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends verilator
+          verilator --version
+      - name: Run available regression
+        run: make test
+      - name: Run static checks
+        run: make lint
+
+  yosys:
+    name: Yosys synthesis smoke test
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Check out source
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        # v6.0.2
+      - name: Install open-source synthesis tool
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends yosys
+          yosys -V
+      - name: Synthesize portable hierarchy
+        run: make synth-yosys

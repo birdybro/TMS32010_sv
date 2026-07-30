@@ -25,7 +25,7 @@ objective passing evidence.
 
 ### REPO-002 — Continuous integration
 
-- **Status:** NOT STARTED
+- **Status:** VERIFYING
 - **Priority:** P1
 - **Dependencies:** REPO-001
 - **Description:** Add pinned, legal CI jobs for formatting, Python tests, RTL,
@@ -34,7 +34,11 @@ objective passing evidence.
   fetch legacy executables or copyrighted ROMs/manuals.
 - **Documentation:** `.github/workflows/`, `CONTRIBUTING.md`
 - **Tests:** GitHub Actions workflow runs
-- **Notes:** Split jobs only when it improves failure attribution.
+- **Notes:** Pinned Ubuntu 24.04 jobs cover repository/model/tool checks,
+  Verilator regression/lint, and Yosys synthesis. Local structural tests and
+  equivalent tool runs pass; retain `VERIFYING` until the workflow completes
+  on GitHub. No dependency cache is needed because the Python tooling is
+  standard-library-only and simulator/synthesis packages come from Ubuntu.
 
 ## Milestone 2 — Documentation acquisition and provenance
 

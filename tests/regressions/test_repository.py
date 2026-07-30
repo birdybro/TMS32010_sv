@@ -44,6 +44,27 @@ class RepositoryFoundationTests(unittest.TestCase):
             re.compile(r"not yet an\s+instruction-complete or cycle-accurate", re.I),
         )
 
+    def test_ci_is_pinned_least_privilege_and_self_contained(self) -> None:
+        workflow = (ROOT / ".github/workflows/ci.yml").read_text(encoding="utf-8")
+        self.assertIn(
+            "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd",
+            workflow,
+        )
+        self.assertIn(
+            "actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405",
+            workflow,
+        )
+        self.assertIn("permissions:\n  contents: read", workflow)
+        self.assertNotIn("pull_request_target", workflow)
+        self.assertNotRegex(
+            workflow,
+            re.compile(r"uses:\s+\S+@(main|master|v\d+)\s*$", re.M),
+        )
+        for command in ("make docs", "make unit", "make test", "make lint"):
+            self.assertIn(command, workflow)
+        self.assertIn("make synth-yosys", workflow)
+        self.assertNotIn("reference-cache", workflow)
+
 
 if __name__ == "__main__":
     unittest.main()

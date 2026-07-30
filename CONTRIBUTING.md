@@ -50,3 +50,8 @@ make synth-yosys
 ```
 
 Additional focused targets are listed by `make help`.
+
+GitHub Actions repeats the documentation, unit, Verilator regression/lint, and
+Yosys smoke-synthesis checks from a clean Ubuntu 24.04 checkout. It deliberately
+does not acquire manuals, ROMs, or legacy binary tools. Quartus remains a local
+licensed-tool qualification step.

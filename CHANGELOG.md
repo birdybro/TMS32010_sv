@@ -43,6 +43,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
   with a reproducible Ubuntu 24.04 command.
+- Least-privilege, immutable-action GitHub Actions jobs for documentation,
+  repository/model/tool tests, Verilator regression/lint, and Yosys synthesis.
 
 ### Changed
 
@@ -86,6 +88,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Yosys 0.33 parses, checks, and synthesizes the integrated partial hierarchy
   without structural-check failures or inferred latches; Quartus still passes
   full fit and timing after the portability changes.
+- CI policy regression checks enforce immutable action references,
+  read-only repository permissions, required build commands, and exclusion of
+  the ignored reference cache.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 
