@@ -105,6 +105,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_sach_output_shifts_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_sach_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_sach_rtl.sv",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -23,6 +23,7 @@ module tms32010_decode (
   localparam logic [3:0] OP_LDPK = 4'd7;
   localparam logic [3:0] OP_LAC  = 4'd8;
   localparam logic [3:0] OP_SACL = 4'd9;
+  localparam logic [3:0] OP_SACH = 4'd10;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -46,6 +47,25 @@ module tms32010_decode (
       end
     end else if (instruction_i[15:8] == 8'h50) begin
       operation_o = OP_SACL;
+      if (!instruction_i[7]) begin
+        valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
+      end
+    end else if (
+      (instruction_i[15:11] == 5'b01011) &&
+      (
+        (instruction_i[10:8] == 3'd0) ||
+        (instruction_i[10:8] == 3'd1) ||
+        (instruction_i[10:8] == 3'd4)
+      )
+    ) begin
+      operation_o = OP_SACH;
+      shift_o     = {1'b0, instruction_i[10:8]};
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
       end else if (

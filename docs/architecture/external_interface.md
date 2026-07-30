@@ -31,9 +31,9 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the ten supported one-cycle sequential instructions.
-Its `LAC` and `SACL` cases also expose the concurrent internal logical read or
-write while keeping the physical `MEN` activity a normal program fetch. That
+read relationship for the eleven supported one-cycle sequential instructions.
+Its `LAC`, `SACL`, and `SACH` cases also expose the concurrent internal logical
+read or write while keeping the physical `MEN` activity a normal program fetch. That
 is implementation evidence for the cited normal-read mapping, not a claim that
 control flow, external data/I/O access, or general pipeline overlap is
 complete.

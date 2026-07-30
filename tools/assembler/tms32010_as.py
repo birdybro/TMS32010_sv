@@ -338,6 +338,54 @@ class Assembler:
                         f"SACL direct address out of range 0..127: {address}"
                     )
                 word |= address
+        elif operation == "SACH":
+            shift = (
+                self._evaluate(operands[1], symbols, location, line)
+                if len(operands) >= 2
+                else 0
+            )
+            if shift not in {0, 1, 4}:
+                raise line.error(
+                    f"SACH shift must be exactly 0, 1, or 4: {shift}"
+                )
+            word |= shift << 8
+            addressing = operands[0].replace(" ", "").upper()
+            indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
+            if addressing in indirect_controls:
+                control = indirect_controls[addressing]
+                if len(operands) == 3:
+                    next_arp_text = operands[2].strip().upper()
+                    if next_arp_text in {"AR0", "AR1"}:
+                        next_arp = self._auxiliary_register(next_arp_text, line)
+                    else:
+                        next_arp = self._evaluate(
+                            operands[2],
+                            symbols,
+                            location,
+                            line,
+                        )
+                    if not 0 <= next_arp <= 1:
+                        raise line.error(
+                            f"SACH next ARP out of range 0..1: {next_arp}"
+                        )
+                    control = (control & ~0x09) | next_arp
+                word |= control
+            else:
+                if len(operands) == 3:
+                    raise line.error(
+                        "SACH next ARP is valid only with indirect addressing"
+                    )
+                address = self._evaluate(
+                    operands[0],
+                    symbols,
+                    location,
+                    line,
+                )
+                if not 0 <= address <= 127:
+                    raise line.error(
+                        f"SACH direct address out of range 0..127: {address}"
+                    )
+                word |= address
         elif operation == "LARK":
             register = self._auxiliary_register(operands[0], line)
             value = self._evaluate(operands[1], symbols, location, line)

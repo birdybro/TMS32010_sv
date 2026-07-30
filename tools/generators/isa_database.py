@@ -89,6 +89,8 @@ def decode_entry(entry: dict[str, Any], word: int) -> dict[str, int] | None:
         raw = (word >> int(field["lsb"])) & ((1 << width) - 1)
         if field["signed"] and raw & (1 << (width - 1)):
             raw -= 1 << width
+        if "legal_values" in field and raw not in field["legal_values"]:
+            return None
         fields[field["name"]] = raw
     return fields
 
@@ -151,6 +153,20 @@ def validate_database(database: dict[str, Any]) -> None:
                 raise IsaDatabaseError(
                     f"{mnemonic} variable field overlaps fixed opcode bits"
                 )
+            if "legal_values" in field:
+                legal_values = field["legal_values"]
+                if (
+                    not isinstance(legal_values, list)
+                    or not legal_values
+                    or len(legal_values) != len(set(legal_values))
+                    or any(
+                        type(value) is not int or not 0 <= value < (1 << width)
+                        for value in legal_values
+                    )
+                ):
+                    raise IsaDatabaseError(
+                        f"{mnemonic} variable field has invalid legal values"
+                    )
             variable_mask |= field_mask
         if variable_mask != (~mask & 0xFFFF):
             raise IsaDatabaseError(

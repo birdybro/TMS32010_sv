@@ -76,3 +76,26 @@ pp. 3-2–3-3 and 3-54 (PDF pp. 52–53 and 104)].
 Reserved indirect controls, simultaneous increment/decrement, and the
 noncanonical ARP-preserve alias follow the same conservative policies as
 `LAC`; they remain linked to `OQ-010`.
+
+## Qualified `SACH` research slice
+
+`SACH` copies the entire 32-bit accumulator into its dedicated output shifter,
+left-shifts by exactly 0, 1, or 4, and stores shifted bits 31:16 in the selected
+internal data-memory word. Bits shifted above bit 31 are discarded; bits
+crossing from the original low accumulator half enter the stored word. The
+accumulator itself and overflow status are unchanged
+[ti-tms32010-users-guide-spru001b, §2.2.4.2 and `SACH`, printed pp. 2-7 and
+3-53 (PDF pp. 31 and 103)]. **Confidence: VERIFIED_PRIMARY.**
+
+For example, TI shows `0xA34B78CD` stored with shift 4 as `0x34B7`, and its
+instruction page separately shows the 0/1/4 restriction and one-word,
+one-cycle timing. The opcode's three-bit shift field is therefore accepted
+only for values 0, 1, and 4. Encodings 2, 3, 5, 6, and 7 trap; they are not
+treated as aliases or no-ops.
+
+Direct/indirect address selection and post-access auxiliary-register controls
+match `LAC` and `SACL`. The write uses the old selected-AR address before any
+optional nine-bit increment/decrement and ARP replacement
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SACH`, printed
+pp. 3-2–3-3 and 3-53 (PDF pp. 52–53 and 103)].
+**Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**

@@ -11,7 +11,8 @@ package tms32010_pkg;
     OP_LARP = 4'd6,
     OP_LDPK = 4'd7,
     OP_LAC  = 4'd8,
-    OP_SACL = 4'd9
+    OP_SACL = 4'd9,
+    OP_SACH = 4'd10
   } tms32010_operation_t;
 endpackage
 

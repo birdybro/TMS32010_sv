@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK",
-      "LAC", "SACL"
+      "LAC", "SACL", "SACH"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -396,6 +396,58 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.2.2 Accumulator", "printed_page": "2-4", "pdf_page": 28},
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.3.1.1 and 3.3 Addressing", "printed_page": "2-8 through 2-10 and 3-2 through 3-3", "pdf_page": 32},
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "SACL instruction description", "printed_page": "3-54", "pdf_page": 104}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "SACH",
+      "aliases": [],
+      "opcode": {
+        "match": "0x5800",
+        "mask": "0xf800",
+        "variable_fields": [
+          {"name": "shift", "lsb": 8, "width": 3, "signed": false, "legal_values": [0, 1, 4]},
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "shift", "kind": "unsigned_immediate", "width": 3, "optional": true, "default": 0},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "not applicable; the complete 32-bit ACC value enters the output shifter",
+      "shift_behavior": "left shift the complete 32-bit ACC by exactly 0, 1, or 4; discard bits above bit 31 and store shifted bits 31:16",
+      "overflow_behavior": "does not affect OV or OVM",
+      "result_behavior": "the addressed data-memory word receives bits 31:16 of the 32-bit shifted value; ACC is unchanged",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.2.4.2 Parallel Shifter", "printed_page": "2-7", "pdf_page": 31},
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.3.1.1 and 3.3 Addressing", "printed_page": "2-8 through 2-10 and 3-2 through 3-3", "pdf_page": 32},
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "SACH instruction description", "printed_page": "3-53", "pdf_page": 103}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]

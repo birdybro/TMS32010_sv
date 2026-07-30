@@ -99,9 +99,11 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`,
-`ROVM`, `SACL`, `SOVM`, and `ZAC`. `LAC` and `SACL` have independent fixtures
-plus directed and seeded tests for direct/indirect address selection, reads
-and writes, accumulator behavior, and nine-bit counter updates. Unresolved
-addresses trap rather than alias. This remains partial RTL support only. The
-sequential native-phase wrapper covers normal program reads only. Current
-evidence does not constitute instruction completeness or cycle accuracy.
+`ROVM`, `SACL`, `SACH`, `SOVM`, and `ZAC`. `LAC`, `SACL`, and `SACH` have
+independent fixtures plus directed and seeded tests for direct/indirect address
+selection, reads and writes, accumulator behavior, and nine-bit counter
+updates. SACH additionally verifies all three documented output shifts and
+rejects all five other field values. Unresolved addresses trap rather than
+alias. This remains partial RTL support only. The sequential native-phase
+wrapper covers normal program reads only. Current evidence does not constitute
+instruction completeness or cycle accuracy.

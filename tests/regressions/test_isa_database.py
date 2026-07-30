@@ -36,6 +36,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LDPK",
                 "LAC",
                 "SACL",
+                "SACH",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -75,6 +76,14 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertIsNone(decode_word(self.database, 0x508A))
         self.assertIsNone(decode_word(self.database, 0x50B8))
         self.assertIsNotNone(decode_word(self.database, 0x507F))
+
+    def test_sach_rejects_undocumented_shifts_and_reserved_controls(self) -> None:
+        for shift in (2, 3, 5, 6, 7):
+            self.assertIsNone(decode_word(self.database, 0x5800 | (shift << 8)))
+        for word in (0x58C8, 0x588A, 0x58B8):
+            self.assertIsNone(decode_word(self.database, word))
+        for word in (0x5800, 0x5900, 0x5C00, 0x5C7F):
+            self.assertIsNotNone(decode_word(self.database, word))
 
     def test_fixture_provenance_is_independent(self) -> None:
         provenance = self.fixtures["provenance"].lower()

@@ -113,7 +113,8 @@ module tb_phase_slice_integration;
     program_memory[9] = 16'h7f80;  // NOP
     program_memory[10] = 16'h2403;  // LAC 3,4
     program_memory[11] = 16'h5004;  // SACL 4
-    program_memory[12] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[12] = 16'h5c05;  // SACH 5,4
+    program_memory[13] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -220,13 +221,23 @@ module tb_phase_slice_integration;
             "SACL retires without modifying the accumulator");
     require(pc == 12'h00c && cycle_count == 32'd12,
             "SACL consumes one native instruction cycle");
+    require(data_write && data_address_valid && data_address == 8'h85,
+            "SACH exposes its internal write during a normal program read");
+    require(data_write_data == 16'hffff,
+            "SACH output shifter feeds logical write data");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'hffff_f800,
+            "SACH retires without modifying the accumulator");
+    require(pc == 12'h00d && cycle_count == 32'd13,
+            "SACH consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h00c, "trap holds architectural PC");
-    require(program_address == 12'h00c, "trap holds native program address");
-    require(cycle_count == 32'd12, "trap does not count as retired cycle");
+    require(pc == 12'h00d, "trap holds architectural PC");
+    require(program_address == 12'h00d, "trap holds native program address");
+    require(cycle_count == 32'd13, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

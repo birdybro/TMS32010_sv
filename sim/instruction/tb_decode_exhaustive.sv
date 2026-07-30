@@ -30,6 +30,7 @@ module tb_decode_exhaustive;
       logic expected_valid;
       logic expected_lac;
       logic expected_sacl;
+      logic expected_sach;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -52,8 +53,23 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_sach =
+        (instruction[15:11] == 5'b01011) &&
+        (
+          (instruction[10:8] == 3'd0) ||
+          (instruction[10:8] == 3'd1) ||
+          (instruction[10:8] == 3'd4)
+        ) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_valid =
-        expected_lac || expected_sacl ||
+        expected_lac || expected_sacl || expected_sach ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
         ((instruction & 16'hfe00) == 16'h7000) ||
@@ -83,6 +99,14 @@ module tb_decode_exhaustive;
           $fatal(1, "SACL decode mismatch at %04x", word);
         end
       end
+      if (expected_sach) begin
+        if (operation != OP_SACH ||
+            shift != {1'b0, word[10:8]} ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "SACH decode mismatch at %04x", word);
+        end
+      end
       if ((instruction & 16'hff00) == 16'h7e00) begin
         if (operation != OP_LACK || immediate != word[7:0]) begin
           $fatal(1, "LACK decode mismatch at %04x", word);
@@ -106,8 +130,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 3156) begin
-      $fatal(1, "expected 3156 supported words, got %0d", valid_count);
+    if (valid_count != 3576) begin
+      $fatal(1, "expected 3576 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

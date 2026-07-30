@@ -2,10 +2,11 @@
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
 `tms32010_core` supports only `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`,
-`ROVM`, `SACL`, `SOVM`, and `ZAC` at an instruction-boundary program
+`ROVM`, `SACL`, `SACH`, `SOVM`, and `ZAC` at an instruction-boundary program
 interface. One asserted `clock_enable_i` retires one supported one-cycle
-instruction. Unsupported words and `LAC`/`SACL` accesses outside the verified
-144-word RAM assert `illegal_o` and do not advance the PC.
+instruction. Unsupported words, undocumented SACH shifts, and
+`LAC`/`SACL`/`SACH` accesses outside the verified 144-word RAM assert
+`illegal_o` and do not advance the PC.
 
 `tms32010_internal_ram` supplies the original-part 144 by 16-bit data store.
 Its asynchronous read lets the present single-boundary execution slice consume
@@ -14,7 +15,7 @@ implementation convenience, not a claim about the physical memory array, and
 currently maps to registers and muxes in both qualified synthesis flows. The
 explicit debug write port is only for deterministic verification preload;
 physical reset never initializes the RAM, and assertions reject preload during
-live execution or collision with the architectural `SACL` write. Logical data
+live execution or collision with an architectural `SACL`/`SACH` write. Logical data
 address/operation/data outputs expose internal activity for tests and are not
 original package pins.
 
@@ -30,7 +31,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the ten currently qualified one-cycle sequential instructions it samples
+For the eleven currently qualified one-cycle sequential instructions it samples
 and retires on the same falling boundary, keeps PC and native address aligned,
 holds both on an unsupported opcode, and preserves phase/address/control state
 during a clock-enable stall. It is not a general sequencer: branch,
