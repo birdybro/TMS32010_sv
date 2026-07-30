@@ -20,7 +20,11 @@
       "authority_level": 1,
       "notes": "Bitsavers scan. Bibliographic year appears as 1983 in filename while cover revision is March 1985; preserve both facts.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
+        "Sections 3.3-3.4, Table 3-2, and LACK instruction page, printed pages 3-1 through 3-8 and 3-32 (PDF pages 51-58 and 82)",
+        "Appendix A pin assignments, clock characteristics, and AC timing tables"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -70,7 +74,9 @@
       "authority_level": 1,
       "notes": "Later family guide may describe CMOS variants; every statement must be scoped to the original TMS32010 before use.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -145,7 +151,9 @@
       "authority_level": 2,
       "notes": "Lawfully public engineer-hosted copy; access does not grant repository redistribution.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Drawing A044427, sheets 3 through 7 of 10 (PDF pages 5-14): TMS32010, program RAM/host path, BIO/reset, I/O decode, and DAC"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -295,7 +303,9 @@
       "authority_level": 6,
       "notes": "Independent oracle only. Current source configures TMS320C10 at 20 MHz although game comments call the slave TMS32010; investigate device-label distinction against schematics.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "sounddsp_program_map, sounddsp_io_map, BIO callback, I/O handlers, and device configuration"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,

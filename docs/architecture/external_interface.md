@@ -1,0 +1,61 @@
+# Native external interface research
+
+## Architectural transactions versus physical pins
+
+The reusable core will expose distinct program, data, and I/O transactions
+for verification while retaining enough phase information to reconstruct the
+documented pins. A pin-compatibility wrapper may multiplex them onto the
+original 16-bit data bus and address/control signals. This separation is an
+implementation decision; it must not merge address spaces or hide bus order.
+
+The physical TMS32010 interface includes:
+
+- 12 program-address outputs, with `A2..A0` multiplexed as `PA2..PA0` for I/O;
+- a bidirectional 16-bit data bus;
+- active-low `MEN`, `DEN`, and `WE`;
+- active-low `RS`, `INT`, and `BIO`;
+- `CLKIN`, `CLKOUT`, and oscillator pins;
+- `MC/MP` mode selection.
+
+`MEN`, `DEN`, and `WE` are mutually exclusive. `DEN` identifies `IN`;
+`WE` identifies `OUT` and `TBLW`; `MEN` identifies external program-memory
+activity including the table-read phase
+[ti-tms32010-users-guide-spru001b, §§2.3–2.5 and Figures 2-10–2-12,
+printed pp. 2-15–2-19 (PDF pp. 39–43)]. **Confidence: VERIFIED_PRIMARY.**
+
+For an I/O operation the selected three-bit port address appears on
+`PA2..PA0` while upper address pins are zero. Input and output each have eight
+16-bit ports [ti-tms32010-users-guide-spru001b, §2.3.2, printed
+pp. 2-15–2-16 (PDF pp. 39–40)]. **Confidence: VERIFIED_PRIMARY.**
+
+## No documented READY pin
+
+The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.
+The initial user-guide and data-sheet review has therefore found no native
+per-transaction wait-state handshake
+[ti-tms32010-users-guide-spru001b, §2.3 and Appendix A pin assignments].
+**Confidence: VERIFIED_PRIMARY for the pinout; `OQ-001` remains open for any
+documented clock-stretching rule.**
+
+Consequently a modern `ready` input must not be described as original
+TMS32010 behavior. If integration needs slow memory, a separate adapter may
+pause explicit emulation phases under documented-safe clock conditions; its
+behavior and divergence will be tested and labeled. TASKS milestone
+`TIMING-002` must be revised around evidence rather than presuming a READY
+protocol.
+
+## Candidate native RTL signals
+
+This is a design target, not final port naming:
+
+| Group | Information retained |
+|---|---|
+| program | 12-bit word address, 16-bit read/write data, read/write phase |
+| data | 8-bit word address, 16-bit read/write data, internal/external marker |
+| I/O | 3-bit port, 16-bit read/write data, direction |
+| control | reset, interrupt, BIO, clock enable |
+| observation | architectural cycle, phase, transaction-valid |
+
+The core must keep transaction signals stable for the entire documented
+phase. Electrical setup, hold, access, and output-enable numbers will be
+captured in constraints after Appendix A transcription.
