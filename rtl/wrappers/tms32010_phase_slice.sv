@@ -90,8 +90,7 @@ module tms32010_phase_slice (
 
   always_ff @(posedge clk_i) begin
     if (!initialize_i) begin
-      assert (!(retired_o && !sample_o))
-        else $error("retirement must coincide with a native sample event");
+      assert (!(retired_o && !sample_o));
     end
   end
 endmodule

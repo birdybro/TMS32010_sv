@@ -14,14 +14,14 @@ phase engine. They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 138 ALMs (<1%).
+- Logic: 135 ALMs (<1%).
 - Registers: 90.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 0.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +15.389 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 216.87 MHz at 100 °C, 221.14 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +14.508 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.167 ns.
+- Slow-corner internal Fmax: 182.08 MHz at 100 °C, 188.82 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each harness-only interface path is
@@ -66,6 +66,26 @@ Detailed hold-path diagnostics can be regenerated with:
 
 ## Yosys status
 
-The portable synthesis script exists, but Yosys is not installed on the local
-executable path. `make synth-yosys` therefore fails explicitly with
-`ERROR: Yosys is required`; there is no Yosys synthesis evidence yet.
+Yosys 0.33 from Ubuntu 24.04 successfully elaborates and synthesizes the same
+integrated partial hierarchy. Both pre- and post-synthesis `check -assert`
+passes report zero problems; no latches are inferred, three RTL assertions
+remain represented, and the generic result contains 416 cells with no
+memories. This is a portability smoke test, not an FPGA resource estimate.
+
+The host executable path does not contain Yosys, so a direct
+`make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
+The successful run used an isolated, disposable Ubuntu environment:
+
+```sh
+docker run --rm \
+  -v "$PWD:/src" \
+  -w /src \
+  ubuntu:24.04 \
+  bash -lc 'apt-get update -qq &&
+    apt-get install -y --no-install-recommends yosys &&
+    make synth-yosys'
+```
+
+The repository mount is writable because the target creates the ignored
+`build/yosys/tms32010.json` netlist. No downloaded binary is committed or
+executed outside the Ubuntu package environment.

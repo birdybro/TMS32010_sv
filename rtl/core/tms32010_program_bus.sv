@@ -58,8 +58,7 @@ module tms32010_program_bus (
 
   always_ff @(posedge clk_i) begin
     if (!initialize_i) begin
-      assert (!(sample_o && !active_o))
-        else $error("an inactive program bus cannot sample data");
+      assert (!(sample_o && !active_o));
     end
   end
 endmodule

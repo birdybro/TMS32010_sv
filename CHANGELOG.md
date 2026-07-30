@@ -41,6 +41,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Sequential native-phase wrapper that retires the eight supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
+- Yosys 0.33 portable-synthesis qualification for the integrated partial core,
+  with a reproducible Ubuntu 24.04 command.
 
 ### Changed
 
@@ -56,6 +58,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   and harness I/O paths are explicitly excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
   resolves reset release to an address-0 fetch after one complete cycle.
+- Decoder operation ports use an explicitly encoded packed vector at module
+  boundaries so the same RTL elaborates in Verilator, Quartus 17.0.2, and
+  Yosys 0.33; exhaustive decode tests guard the package/RTL encoding contract.
 
 ### Fixed
 
@@ -78,6 +83,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Native phase integration test proves address-0 startup, sequential sampling,
   same-boundary retirement, phase stalls, trap hold, and reset realignment for
   the supported subset.
+- Yosys 0.33 parses, checks, and synthesizes the integrated partial hierarchy
+  without structural-check failures or inferred latches; Quartus still passes
+  full fit and timing after the portability changes.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 
@@ -91,4 +99,5 @@ Changelog, and the project follows semantic versioning once releases begin.
   native-phase wrapper covers only normal sequential program reads, and only
   eight instructions are implemented.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the
-  local executable path; the Yosys target fails explicitly.
+  local executable path. Yosys is qualified in an isolated Ubuntu 24.04
+  environment; the host target still fails explicitly when the tool is absent.

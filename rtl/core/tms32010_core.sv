@@ -22,11 +22,20 @@ module tms32010_core (
   output logic        illegal_o,
   output logic [31:0] cycle_count_o
 );
-  import tms32010_pkg::*;
+  // Yosys 0.33 cannot import the operation enum package. These encodings are
+  // checked against tms32010_pkg through the exhaustive decoder regression.
+  localparam logic [3:0] OP_LACK = 4'd0;
+  localparam logic [3:0] OP_NOP  = 4'd1;
+  localparam logic [3:0] OP_ZAC  = 4'd2;
+  localparam logic [3:0] OP_ROVM = 4'd3;
+  localparam logic [3:0] OP_SOVM = 4'd4;
+  localparam logic [3:0] OP_LARK = 4'd5;
+  localparam logic [3:0] OP_LARP = 4'd6;
+  localparam logic [3:0] OP_LDPK = 4'd7;
 
-  tms32010_operation_t  decoded_operation;
-  logic [7:0]           decoded_immediate;
-  logic                 decoded_auxiliary_register;
+  logic [3:0] decoded_operation;
+  logic [7:0] decoded_immediate;
+  logic       decoded_auxiliary_register;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -83,8 +92,7 @@ module tms32010_core (
   end
 
   always_ff @(posedge clk_i) begin
-    assert (!(retired_o && illegal_o))
-      else $error("instruction cannot retire and trap simultaneously");
+    assert (!(retired_o && illegal_o));
   end
 endmodule
 

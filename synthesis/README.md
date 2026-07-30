@@ -14,7 +14,9 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current one-cycle sequential instruction subset.
+for the current one-cycle sequential instruction subset. Yosys 0.33 from
+Ubuntu 24.04 is the currently verified open-source synthesis baseline; see
+`synthesis/qualification.md` for the reproducible isolated command.
 
 ## Quartus
 

@@ -365,8 +365,9 @@ objective passing evidence.
 - **Tests:** `make synth-yosys`, `make synth-quartus`
 - **Notes:** Partial RTL and phase engine fit Cyclone V with positive internal
   setup/hold slack at 50 MHz. Harness interface paths are explicitly excluded,
-  not timing-closed. Yosys is unavailable; full-core resources, pin-level
-  wrapper constraints, and final timing remain.
+  not timing-closed. Yosys 0.33 passes in an isolated Ubuntu 24.04 environment
+  but is absent from the host path. Full-core resources, pin-level wrapper
+  constraints, and final timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
 

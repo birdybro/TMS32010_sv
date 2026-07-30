@@ -7,9 +7,11 @@
   tests; one 512-instruction seeded model/RTL differential; 14 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the eight-instruction partial core plus phase engine on `5CSEBA6U23I7`:
-  138 ALMs, 90 registers, 0 RAM/DSP, 216.87 MHz worst slow-corner internal
-  Fmax, +15.389 ns setup and +0.165 ns hold slack at 50 MHz. Harness I/O is
-  virtual and explicitly excluded pending a real wrapper; Yosys unavailable
+  135 ALMs, 90 registers, 0 RAM/DSP, 182.08 MHz worst slow-corner internal
+  Fmax, +14.508 ns setup and +0.167 ns hold slack at 50 MHz. Harness I/O is
+  virtual and explicitly excluded pending a real wrapper. Yosys 0.33 passes
+  structural checks and generic synthesis in isolated Ubuntu 24.04; it is not
+  installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -21,5 +23,4 @@
   Drivin' INT net, and safe phase adaptation without READY
 - **Next task:** research and implement the first data-memory/addressing
   instruction family without extending the sequential wrapper speculatively
-- **Latest commit:** `4f5e3ea6ced7fbd3026599deadf32a0eed1846ea`
-- **Latest commit:** `b3bc61c484e016c7725192b76226b46d9147b9d4`
+- **Latest commit:** `c471b3bca822522921943dc6a0ca0f3b85e4a466`
