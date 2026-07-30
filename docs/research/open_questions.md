@@ -14,3 +14,4 @@ a targeted test and must retain their confidence label.
 | OQ-007 | What are exact taken/untaken branch prefetch and address traces? | RESEARCHING; both are listed as two cycles | individual instruction diagrams and hardware trace if needed | program trace alignment |
 | OQ-008 | Does any mask revision materially differ? | UNKNOWN | TI errata/mask notices or measured devices | release qualification |
 | OQ-009 | Is a lawful, automatable modern TMS32010 assembler available? | RESEARCHING; no qualified candidate yet | license/source/encoding audit | local test-program workflow |
+| OQ-010 | What does an indirect control field do when increment and decrement bits are both one? | UNKNOWN: TI defines each bit separately but offers no syntax, example, or combined result; current decode rejects it | explicit TI reserved-encoding statement or physical opcode test | malformed code only; ordinary Hard Drivin' binaries are unlikely to emit it |

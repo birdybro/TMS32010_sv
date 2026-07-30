@@ -97,9 +97,11 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and partial RTL support only `LACK`, `LARK`, `LARP`,
-`LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`; all other encodings trap. This
-narrow slice has
-independent fixtures, directed model/RTL tests, and seeded differential
-evidence. Its instruction-boundary program interface does not constitute
-native-bus, instruction-completeness, or cycle-accuracy evidence.
+The executable model and local assembler/disassembler support `LAC`, `LACK`,
+`LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. RTL and seeded
+model/RTL differential evidence still cover only the latter eight
+non-data-memory instructions. `LAC` has independent fixtures and directed
+model/tool tests, including direct/indirect address and nine-bit counter
+boundaries, but no RTL claim yet. This remains partial RTL support only. The
+sequential native-phase wrapper covers normal program reads only. Current
+evidence does not constitute instruction completeness or cycle accuracy.

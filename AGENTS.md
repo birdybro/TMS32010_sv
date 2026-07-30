@@ -234,10 +234,11 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-30 the repository has a primary-cited research baseline and a
-partial machine-readable/model slice for `LACK`, `NOP`, `ZAC`, `ROVM`, and
-`SOVM`, matching partial assembler/disassembler support, and an
-instruction-boundary RTL execution slice. The temporary RTL interface does
-not implement native bus phases, no physical timing behavior is qualified,
-and the project must not be called instruction-complete or cycle-accurate.
-Consult `TASKS.md` and `artifacts/progress.md` for the exact current evidence.
+As of 2026-07-30 the machine-readable database, independent model, and local
+tools support nine instructions: `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
+`NOP`, `ZAC`, `ROVM`, and `SOVM`. The RTL and seeded differential boundary is
+the latter eight only. A phase wrapper qualifies their normal sequential
+program reads, but no data-memory RTL, general pipeline, interrupt entry, or
+complete pin timing exists. The project must not be called
+instruction-complete or cycle-accurate. Consult `TASKS.md` and
+`artifacts/progress.md` for the exact current evidence.

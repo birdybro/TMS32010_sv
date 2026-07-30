@@ -38,3 +38,13 @@ The requested qualification includes READY/wait-state behavior, but the
 original TMS32010 40-pin interface has no READY/WAIT pin in SPRU001B. A
 wrapper-level phase pause may still be useful, but it cannot be labeled a
 native protocol without clocking evidence. **Treatment: open as OQ-001.**
+
+## SC-005 — Data-page-one upper bound
+
+SPRU001B §2.3.1.2 prints page 1 as locations 128–144, which would contain 17
+words. The same guide repeatedly specifies 144 total words and a 16-word
+second page, establishing implemented locations 128–143. **Treatment:** model
+only 0–143; keep address 144 and all higher eight-bit addresses unresolved
+under `OQ-002` rather than interpreting the inconsistent endpoint as storage.
+**Confidence:** VERIFIED_PRIMARY for the 144-word capacity; UNKNOWN for the
+electrical result of an out-of-range access.

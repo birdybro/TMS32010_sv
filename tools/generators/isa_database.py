@@ -65,6 +65,24 @@ def decode_entry(entry: dict[str, Any], word: int) -> dict[str, int] | None:
     mask = parse_int(opcode["mask"])
     if word & mask != match & mask:
         return None
+    for constraint in opcode.get("constraints", []):
+        when = constraint["when"]
+        when_mask = parse_int(when["mask"])
+        when_match = parse_int(when["match"])
+        if word & when_mask != when_match:
+            continue
+        if "require" in constraint:
+            requirement = constraint["require"]
+            required_mask = parse_int(requirement["mask"])
+            required_match = parse_int(requirement["match"])
+            if word & required_mask != required_match:
+                return None
+        else:
+            forbidden = constraint["forbid"]
+            forbidden_mask = parse_int(forbidden["mask"])
+            forbidden_match = parse_int(forbidden["match"])
+            if word & forbidden_mask == forbidden_match:
+                return None
     fields: dict[str, int] = {}
     for field in opcode["variable_fields"]:
         width = int(field["width"])
@@ -138,6 +156,8 @@ def validate_database(database: dict[str, Any]) -> None:
             raise IsaDatabaseError(
                 f"{mnemonic} does not describe every variable opcode bit"
             )
+        for constraint in opcode.get("constraints", []):
+            _validate_constraint(mnemonic, constraint)
         if entry["documented_cycle_count"] < 1:
             raise IsaDatabaseError(f"{mnemonic} has invalid cycle count")
         for citation in entry["source_citations"]:
@@ -149,6 +169,7 @@ def validate_database(database: dict[str, Any]) -> None:
     if len(entry_names) != len(set(entry_names)):
         raise IsaDatabaseError("duplicate instruction entries")
 
+    match_counts = {mnemonic: 0 for mnemonic in entry_names}
     for word in range(0x10000):
         matches = [
             entry["mnemonic"]
@@ -158,6 +179,34 @@ def validate_database(database: dict[str, Any]) -> None:
         if len(matches) > 1:
             raise IsaDatabaseError(
                 f"decode collision at 0x{word:04x}: {', '.join(matches)}"
+            )
+        for mnemonic in matches:
+            match_counts[mnemonic] += 1
+    for mnemonic, count in match_counts.items():
+        if count == 0:
+            raise IsaDatabaseError(f"{mnemonic} constraints reject every encoding")
+
+
+def _validate_constraint(mnemonic: str, constraint: object) -> None:
+    if not isinstance(constraint, dict):
+        raise IsaDatabaseError(f"{mnemonic} opcode constraint is not a mapping")
+    if set(constraint) not in ({"when", "require"}, {"when", "forbid"}):
+        raise IsaDatabaseError(
+            f"{mnemonic} constraint needs when and exactly one action"
+        )
+    for name in constraint:
+        pattern = constraint[name]
+        if not isinstance(pattern, dict) or set(pattern) != {"mask", "match"}:
+            raise IsaDatabaseError(
+                f"{mnemonic} constraint {name} is not a mask/match pattern"
+            )
+        mask = parse_int(pattern["mask"])
+        match = parse_int(pattern["match"])
+        if not 0 <= mask <= 0xFFFF or not 0 <= match <= 0xFFFF:
+            raise IsaDatabaseError(f"{mnemonic} constraint is not 16 bits")
+        if match & ~mask:
+            raise IsaDatabaseError(
+                f"{mnemonic} constraint {name} sets an unmasked bit"
             )
 
 

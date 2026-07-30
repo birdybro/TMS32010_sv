@@ -24,6 +24,14 @@ VERIFIED_PRIMARY.**
 The behavior of data addresses `0x90`–`0xff` is not assigned (`OQ-002`).
 Expanded RAM in the TMS320C15 is outside the default device scope.
 
+All ordinary non-immediate data operands reside in the 144-word on-chip RAM.
+The original part has no ordinary external-data-memory transaction: software
+moves off-chip data through `TBLR`/`TBLW` program-space transfers or `IN`/`OUT`
+peripheral transfers. A reusable core may expose internal-data transactions
+for verification, but those signals are not physical TMS32010 pins
+[ti-tms32010-users-guide-spru001b, §2.3, printed p. 2-7 (PDF p. 31)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Program/data bridges
 
 `TBLR` reads a program word addressed by the low 12 bits of `ACC` into a data

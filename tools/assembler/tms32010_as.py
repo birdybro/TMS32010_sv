@@ -213,17 +213,20 @@ class Assembler:
             if operation.startswith("."):
                 raise line.error(f"unknown directive {operation}")
             raise line.error(f"unknown instruction {operation}")
-        expected_count = len(entry["operands"])
-        if bool(expected_count) != bool(operand_text):
-            expectation = (
-                "no operands"
-                if expected_count == 0
-                else f"{expected_count} operand"
-                f"{'s' if expected_count != 1 else ''}"
-            )
+        definitions = entry["operands"]
+        minimum = sum(not item.get("optional", False) for item in definitions)
+        maximum = len(definitions)
+        actual = len(self._operand_list(operand_text, line)) if operand_text else 0
+        if not minimum <= actual <= maximum:
+            if minimum == maximum:
+                expectation = (
+                    "no operands"
+                    if maximum == 0
+                    else f"{maximum} operand{'s' if maximum != 1 else ''}"
+                )
+            else:
+                expectation = f"{minimum} to {maximum} operands"
             raise line.error(f"{operation} expects {expectation}")
-        if operand_text and len(self._operand_list(operand_text, line)) != expected_count:
-            raise line.error(f"{operation} expects {expected_count} operands")
 
     def _encode(
         self,
@@ -242,6 +245,52 @@ class Assembler:
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
+        elif operation == "LAC":
+            shift = (
+                self._evaluate(operands[1], symbols, location, line)
+                if len(operands) >= 2
+                else 0
+            )
+            if not 0 <= shift <= 15:
+                raise line.error(f"LAC shift out of range 0..15: {shift}")
+            word |= shift << 8
+            addressing = operands[0].replace(" ", "").upper()
+            indirect_controls = {"*": 0x88, "*+": 0xA8, "*-": 0x98}
+            if addressing in indirect_controls:
+                control = indirect_controls[addressing]
+                if len(operands) == 3:
+                    next_arp_text = operands[2].strip().upper()
+                    if next_arp_text in {"AR0", "AR1"}:
+                        next_arp = self._auxiliary_register(next_arp_text, line)
+                    else:
+                        next_arp = self._evaluate(
+                            operands[2],
+                            symbols,
+                            location,
+                            line,
+                        )
+                    if not 0 <= next_arp <= 1:
+                        raise line.error(
+                            f"LAC next ARP out of range 0..1: {next_arp}"
+                        )
+                    control = (control & ~0x09) | next_arp
+                word |= control
+            else:
+                if len(operands) == 3:
+                    raise line.error(
+                        "LAC next ARP is valid only with indirect addressing"
+                    )
+                address = self._evaluate(
+                    operands[0],
+                    symbols,
+                    location,
+                    line,
+                )
+                if not 0 <= address <= 127:
+                    raise line.error(
+                        f"LAC direct address out of range 0..127: {address}"
+                    )
+                word |= address
         elif operation == "LARK":
             register = self._auxiliary_register(operands[0], line)
             value = self._evaluate(operands[1], symbols, location, line)

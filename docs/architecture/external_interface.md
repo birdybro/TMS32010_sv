@@ -35,6 +35,13 @@ read relationship for the eight supported one-cycle sequential instructions.
 That is implementation evidence for the cited normal-read mapping, not a claim
 that control flow, data/I/O access, or general pipeline overlap is complete.
 
+Ordinary data-memory accesses stay inside the chip's 144-word RAM and produce
+no physical memory strobe. Logical data transactions remain observable in the
+model/core verification interface; only table and I/O instructions use pins
+to move values between internal RAM and external storage
+[ti-tms32010-users-guide-spru001b, §2.3, printed p. 2-7 (PDF p. 31)].
+**Confidence: VERIFIED_PRIMARY.**
+
 For an I/O operation the selected three-bit port address appears on
 `PA2..PA0` while upper address pins are zero. Input and output each have eight
 16-bit ports [ti-tms32010-users-guide-spru001b, §2.3.2, printed

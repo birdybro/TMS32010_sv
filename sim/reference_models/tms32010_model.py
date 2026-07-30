@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This initial slice traps every instruction outside LACK, LARK, LARP, LDPK,
-NOP, ZAC, ROVM, and SOVM. Logical fetch transactions and instruction totals
+This partial slice supports LAC, LACK, LARK, LARP, LDPK, NOP, ZAC, ROVM, and
+SOVM. Logical program and internal-data transactions and instruction totals
 are modeled; pin subphases are not yet integrated with this model.
 """
 
@@ -27,6 +27,19 @@ class UnsupportedOpcode(RuntimeError):
         super().__init__(f"unsupported opcode 0x{opcode:04x} at PC 0x{pc:03x}")
         self.pc = pc
         self.opcode = opcode
+
+
+class UnsupportedDataAddress(RuntimeError):
+    """Raised for original-part data addresses whose behavior is unresolved."""
+
+    def __init__(self, pc: int, opcode: int, address: int) -> None:
+        super().__init__(
+            f"unresolved data address 0x{address:02x} "
+            f"for opcode 0x{opcode:04x} at PC 0x{pc:03x}"
+        )
+        self.pc = pc
+        self.opcode = opcode
+        self.address = address
 
 
 @dataclass
@@ -152,19 +165,65 @@ class Tms32010Model:
         """Execute one supported opcode and return an instruction trace."""
         pc = self.state.pc & PC_MASK
         opcode = self.program[pc] & WORD_MASK
-        transaction = Transaction(
-            cycle=self.cycle_count,
-            space="program",
-            operation="instruction_fetch",
-            address=pc,
-            data=opcode,
-        )
+        transactions = [
+            Transaction(
+                cycle=self.cycle_count,
+                space="program",
+                operation="instruction_fetch",
+                address=pc,
+                data=opcode,
+            )
+        ]
 
         mnemonic, operands = self._decode(opcode, pc)
+        operands = dict(operands)
+        selected_arp: int | None = None
+        if mnemonic == "LAC":
+            if operands["indirect"]:
+                selected_arp = self.state.status.arp
+                data_address = self.state.ar[selected_arp] & 0xFF
+            else:
+                data_address = (
+                    (self.state.status.dp << 7) | operands["addressing_field"]
+                )
+            if data_address >= DATA_WORDS:
+                raise UnsupportedDataAddress(pc, opcode, data_address)
+            operands["effective_address"] = data_address
+            transactions.append(
+                Transaction(
+                    cycle=self.cycle_count,
+                    space="data",
+                    operation="read",
+                    address=data_address,
+                    data=self.data[data_address],
+                )
+            )
+
         self.state.pc = (pc + 1) & PC_MASK
 
         if mnemonic == "LACK":
             self.state.acc = operands["constant"] & 0xFF
+        elif mnemonic == "LAC":
+            data_word = self.data[operands["effective_address"]]
+            signed_word = (
+                data_word if data_word < 0x8000 else data_word - 0x10000
+            )
+            self.state.acc = (signed_word << operands["shift"]) & ACC_MASK
+            if operands["indirect"]:
+                assert selected_arp is not None
+                control = operands["addressing_field"]
+                if control & 0x20:
+                    self.state.ar[selected_arp] = self._modify_counter(
+                        self.state.ar[selected_arp],
+                        1,
+                    )
+                elif control & 0x10:
+                    self.state.ar[selected_arp] = self._modify_counter(
+                        self.state.ar[selected_arp],
+                        -1,
+                    )
+                if (control & 0x08) == 0:
+                    self.state.status.arp = control & 1
         elif mnemonic == "LARK":
             register = operands["auxiliary_register"]
             self.state.ar[register] = operands["constant"] & 0xFF
@@ -189,13 +248,30 @@ class Tms32010Model:
             mnemonic=mnemonic,
             operands=operands,
             cycles=cycles,
-            transactions=(transaction,),
+            transactions=tuple(transactions),
             state_after=self.architectural_state(),
         )
 
     @staticmethod
+    def _modify_counter(value: int, delta: int) -> int:
+        """Modify only AR[8:0], the documented circular counter field."""
+        return (value & 0xFE00) | ((value + delta) & 0x01FF)
+
+    @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
+        if opcode & 0xF000 == 0x2000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "LAC", {
+                "shift": (opcode >> 8) & 0xF,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
         if opcode & 0xFF00 == 0x7E00:
             return "LACK", {"constant": opcode & 0xFF}
         if opcode & 0xFE00 == 0x7000:

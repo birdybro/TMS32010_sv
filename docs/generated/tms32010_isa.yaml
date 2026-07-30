@@ -16,7 +16,8 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK"
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK",
+      "LAC"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -295,6 +296,58 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []
+    },
+    {
+      "mnemonic": "LAC",
+      "aliases": [],
+      "opcode": {
+        "match": "0x2000",
+        "mask": "0xf000",
+        "variable_fields": [
+          {"name": "shift", "lsb": 8, "width": 4, "signed": false},
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "shift", "kind": "unsigned_immediate", "width": 4, "optional": true, "default": 0},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "the 16-bit data word is sign-extended to 32 bits before shifting",
+      "shift_behavior": "left shift by 0 through 15; low bits are zero-filled and the sign extension supplies high bits",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "ACC receives the 32-bit sign-extended data word shifted left by the encoded count",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.2.4.1 Barrel Shifter", "printed_page": "2-6", "pdf_page": 30},
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.3.1.1 and 3.3 Addressing", "printed_page": "2-8 through 2-10 and 3-2 through 3-3", "pdf_page": 32},
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "LAC instruction description", "printed_page": "3-31", "pdf_page": 81}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
     }
   ]
 }

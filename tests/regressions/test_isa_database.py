@@ -25,7 +25,17 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(len(coverage["documented_mnemonics"]), 60)
         self.assertEqual(
             set(coverage["supported_mnemonics"]),
-            {"LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "LDPK"},
+            {
+                "LACK",
+                "NOP",
+                "ZAC",
+                "ROVM",
+                "SOVM",
+                "LARK",
+                "LARP",
+                "LDPK",
+                "LAC",
+            },
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
@@ -52,6 +62,12 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertIsNone(decode_word(self.database, 0x7F81))
         self.assertIsNone(decode_word(self.database, 0x6882))
         self.assertIsNone(decode_word(self.database, 0x6E02))
+
+    def test_lac_rejects_reserved_indirect_controls(self) -> None:
+        self.assertIsNone(decode_word(self.database, 0x20C8))
+        self.assertIsNone(decode_word(self.database, 0x208A))
+        self.assertIsNone(decode_word(self.database, 0x20B8))
+        self.assertIsNotNone(decode_word(self.database, 0x207F))
 
     def test_fixture_provenance_is_independent(self) -> None:
         provenance = self.fixtures["provenance"].lower()

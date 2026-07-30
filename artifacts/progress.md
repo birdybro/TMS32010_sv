@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** First RTL execution slice and early synthesis
+- **Current milestone:** First internal-data instruction model/tool slice
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 28 repository/provenance/document/ISA/toolchain tests; 10
+- **Tests passing:** 31 repository/provenance/document/ISA/toolchain tests; 17
   directed model tests; 2 RTL instruction/decode tests; 2 native bus/phase
   tests; one 512-instruction seeded model/RTL differential; 14 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
@@ -16,11 +16,14 @@
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
   transfers are three; falling CLKOUT samples program/I/O data, INT, and BIO;
-  reset release waits one full cycle then fetches addresses 0 and 1; Atari
-  A044427 labels a TMS32010 at 20 MHz
+  reset release waits one full cycle then fetches addresses 0 and 1; `LAC`
+  sign-extends before shifting and indirect AR updates wrap only bits 8:0;
+  ordinary data operands never leave on-chip RAM; Atari A044427 labels a
+  TMS32010 at 20 MHz
 - **Unresolved issues:** general pipeline overlap, control-flow and
-  interrupt-entry traces, reserved SST bits, out-of-range RAM behavior, Hard
-  Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and implement the first data-memory/addressing
-  instruction family without extending the sequential wrapper speculatively
-- **Latest commit:** `b71585b817b5d87df9f12328a4750da929c5234e`
+  interrupt-entry traces, reserved SST bits, simultaneous indirect
+  increment/decrement, out-of-range RAM behavior, Hard Drivin' INT net, and
+  safe phase adaptation without READY
+- **Next task:** implement and verify `LAC` plus 144-word internal RAM in RTL
+  without assigning behavior to unresolved addresses
+- **Latest commit:** `153f238585df2ae087b381392acf70c026fed458`

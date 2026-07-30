@@ -53,6 +53,12 @@ The memory access uses the pre-modification address
 [ti-tms32010-users-guide-spru001b, §3.3 and Figure 3-1, printed pp. 3-1–3-3
 (PDF pp. 51–53)]. **Confidence: VERIFIED_PRIMARY.**
 
+Auto-increment and auto-decrement modify the low nine bits as a circular
+counter, not the whole 16-bit register: incrementing `AR[8:0]=0x1ff` produces
+zero and decrementing zero produces `0x1ff`, while `AR[15:9]` is unchanged
+[ti-tms32010-users-guide-spru001b, §2.4.1 and Figure 2-3, printed
+pp. 2-9–2-10 (PDF pp. 33–34)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Program sequencing
 
 Program address 0 is the reset entry and address 2 is the interrupt vector.

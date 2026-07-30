@@ -6,15 +6,18 @@ RTL.
 
 Current supported boundary:
 
-- `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
+- `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
+- `LAC` direct/indirect addressing, internal-data read traces, sign extension,
+  shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - 12-bit PC wrap;
 - deterministic program/data/I/O storage and raw word-image loading;
 - step-boundary reset effects established by TI;
 - logical program-fetch transactions, documented cycle totals, and stable
   JSON traces.
 
-Everything else raises `UnsupportedOpcode`; no reserved or unimplemented word
-is treated as a no-op. The model currently reports logical transactions, not
+Everything else raises `UnsupportedOpcode`; an access beyond physical data
+word 143 raises `UnsupportedDataAddress`. No reserved or unimplemented word is
+treated as a no-op. The model currently reports logical transactions, not
 qualified TMS32010 pin phases. Constructor-zeroed storage and registers are a
 test-harness convenience, not a physical power-up claim.
 

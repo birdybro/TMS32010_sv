@@ -31,3 +31,26 @@ Each family enters the qualification boundary only after:
 5. all confidence and unresolved fields are updated in the ISA database.
 
 Reserved encodings will trap until authoritative behavior is established.
+
+## Qualified `LAC` research slice
+
+`LAC` accepts direct or indirect internal-data addressing and a left shift
+from 0 through 15. The selected 16-bit RAM word is sign-extended to 32 bits
+and then shifted left; low bits are zero-filled. The instruction writes `ACC`
+without changing `OV` or applying `OVM`, and is one word and one cycle
+[ti-tms32010-users-guide-spru001b, §2.2.4.1 and `LAC`, printed pp. 2-6 and
+3-31 (PDF pp. 30 and 81)]. **Confidence: VERIFIED_PRIMARY.**
+
+For indirect addressing, the memory read uses the selected auxiliary
+register's low eight bits before any update. Auto-increment/decrement and an
+optional ARP replacement occur after the access. The update is a circular
+nine-bit operation on `AR[8:0]`; `AR[15:9]` is unchanged
+[ti-tms32010-users-guide-spru001b, §§2.3.1.1, 2.4.1, printed pp. 2-8–2-10
+(PDF pp. 32–34)]. **Confidence: VERIFIED_PRIMARY.**
+
+Indirect control bits 6, 2, and 1 are documented reserved and must be zero.
+The manual defines separate increment and decrement bits but does not define
+their simultaneous assertion; that encoding is rejected and tracked as
+`OQ-010`. When ARP-preserve bit 3 is one, bit 0 is architecturally ignored.
+The disassembler renders the noncanonical bit-0-one alias as `.word` so
+binary round trips remain exact.
