@@ -31,8 +31,8 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the seventeen supported one-cycle sequential
-instructions. Its `ADDS`, `AND`, `LAC`, `OR`, `XOR`, `ZALH`, and `ZALS`
+read relationship for the eighteen supported one-cycle sequential
+instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `OR`, `XOR`, `ZALH`, and `ZALS`
 cases expose concurrent internal logical reads, while `SACL` and `SACH`
 expose writes, without
 changing the physical `MEN` activity from a normal program fetch. That is

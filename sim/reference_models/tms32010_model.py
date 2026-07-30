@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP, OR,
-ROVM, SACH, SACL, SOVM, XOR, ZAC, ZALH, and ZALS. Logical program and
+This partial slice supports ADD, ADDS, AND, LAC, LACK, LARK, LARP, LDPK, NOP,
+OR, ROVM, SACH, SACL, SOVM, XOR, ZAC, ZALH, and ZALS. Logical program and
 internal-data transactions and instruction totals are modeled; pin subphases
 are not yet integrated with this model.
 """
@@ -180,6 +180,7 @@ class Tms32010Model:
         operands = dict(operands)
         selected_arp: int | None = None
         if mnemonic in {
+            "ADD",
             "ADDS",
             "AND",
             "LAC",
@@ -200,7 +201,16 @@ class Tms32010Model:
             if data_address >= DATA_WORDS:
                 raise UnsupportedDataAddress(pc, opcode, data_address)
             operands["effective_address"] = data_address
-            if mnemonic in {"ADDS", "AND", "LAC", "OR", "XOR", "ZALH", "ZALS"}:
+            if mnemonic in {
+                "ADD",
+                "ADDS",
+                "AND",
+                "LAC",
+                "OR",
+                "XOR",
+                "ZALH",
+                "ZALS",
+            }:
                 transaction_data = self.data[data_address]
             elif mnemonic == "SACL":
                 transaction_data = self.state.acc & WORD_MASK
@@ -214,7 +224,16 @@ class Tms32010Model:
                     operation=(
                         "read"
                         if mnemonic
-                        in {"ADDS", "AND", "LAC", "OR", "XOR", "ZALH", "ZALS"}
+                        in {
+                            "ADD",
+                            "ADDS",
+                            "AND",
+                            "LAC",
+                            "OR",
+                            "XOR",
+                            "ZALH",
+                            "ZALS",
+                        }
                         else "write"
                     ),
                     address=data_address,
@@ -246,6 +265,14 @@ class Tms32010Model:
             self.state.acc = self.data[operands["effective_address"]]
         elif mnemonic == "ADDS":
             self._add_accumulator(self.data[operands["effective_address"]])
+        elif mnemonic == "ADD":
+            data_word = self.data[operands["effective_address"]]
+            signed_word = (
+                data_word if data_word < 0x8000 else data_word - 0x10000
+            )
+            self._add_accumulator(
+                (signed_word << operands["shift"]) & ACC_MASK
+            )
         elif mnemonic == "XOR":
             self.state.acc = (
                 (self.state.acc & 0xFFFF_0000)
@@ -280,6 +307,7 @@ class Tms32010Model:
         if (
             mnemonic
             in {
+                "ADD",
                 "ADDS",
                 "AND",
                 "LAC",
@@ -344,6 +372,18 @@ class Tms32010Model:
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
+        if opcode & 0xF000 == 0x0000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "ADD", {
+                "shift": (opcode >> 8) & 0xF,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
         if opcode & 0xF000 == 0x2000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

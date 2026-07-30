@@ -1,0 +1,255 @@
+`default_nettype none
+
+module tb_add_rtl;
+  logic        clk;
+  logic        initialize;
+  logic        reset;
+  logic        clock_enable;
+  logic [11:0] program_address;
+  logic        program_read;
+  logic [15:0] program_data;
+  logic [7:0]  data_address;
+  logic        data_read;
+  logic        data_write;
+  logic        data_address_valid;
+  logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
+  logic        debug_data_write;
+  logic [7:0]  debug_data_address;
+  logic [15:0] debug_data;
+  logic [11:0] pc;
+  logic [31:0] accumulator;
+  logic [15:0] auxiliary_register_0;
+  logic [15:0] auxiliary_register_1;
+  logic        auxiliary_register_pointer;
+  logic        data_page_pointer;
+  logic        overflow_flag;
+  logic        overflow_mode;
+  logic        interrupt_mask;
+  logic        instruction_valid;
+  logic        retired;
+  logic        illegal;
+  logic [31:0] cycle_count;
+  logic [15:0] program_memory [0:4095];
+
+  tms32010_core dut (
+    .clk_i                         (clk),
+    .initialize_i                  (initialize),
+    .reset_i                       (reset),
+    .clock_enable_i                (clock_enable),
+    .program_address_o             (program_address),
+    .program_read_o                (program_read),
+    .program_data_i                (program_data),
+    .data_address_o                (data_address),
+    .data_read_o                   (data_read),
+    .data_write_o                  (data_write),
+    .data_address_valid_o          (data_address_valid),
+    .data_read_data_o              (data_read_data),
+    .data_write_data_o             (data_write_data),
+    .debug_data_write_i            (debug_data_write),
+    .debug_data_address_i          (debug_data_address),
+    .debug_data_i                  (debug_data),
+    .pc_o                          (pc),
+    .accumulator_o                 (accumulator),
+    .auxiliary_register_0_o        (auxiliary_register_0),
+    .auxiliary_register_1_o        (auxiliary_register_1),
+    .auxiliary_register_pointer_o  (auxiliary_register_pointer),
+    .data_page_pointer_o           (data_page_pointer),
+    .overflow_flag_o               (overflow_flag),
+    .overflow_mode_o               (overflow_mode),
+    .interrupt_mask_o              (interrupt_mask),
+    .instruction_valid_o           (instruction_valid),
+    .retired_o                     (retired),
+    .illegal_o                     (illegal),
+    .cycle_count_o                 (cycle_count)
+  );
+
+  assign program_data = program_memory[program_address];
+
+  initial clk = 1'b0;
+  always #5 clk = ~clk;
+
+  task automatic tick;
+    @(posedge clk);
+    #1;
+  endtask
+
+  task automatic require(input logic condition, input string message);
+    if (!condition) begin
+      $fatal(1, "%s", message);
+    end
+  endtask
+
+  task automatic load_data(
+    input logic [7:0] address,
+    input logic [15:0] value
+  );
+    debug_data_address = address;
+    debug_data         = value;
+    debug_data_write   = 1'b1;
+    tick();
+    debug_data_write   = 1'b0;
+  endtask
+
+  initial begin
+    for (int unsigned index = 0; index < 4096; index++) begin
+      program_memory[index] = 16'h7f80;
+    end
+    program_memory[0] = 16'h7e07;  // LACK 7
+    program_memory[1] = 16'h0300;  // ADD 0,3
+    program_memory[2] = 16'h7f89;  // ZAC
+    program_memory[3] = 16'h0401;  // ADD 1,4
+    program_memory[4] = 16'h6505;  // ZALH 5
+    program_memory[5] = 16'h6106;  // ADDS 6
+    program_memory[6] = 16'h0102;  // ADD 2,1, positive overflow
+    program_memory[7] = 16'h0004;  // ADD 4,0, sticky-OV check
+    program_memory[8] = 16'h6507;  // ZALH 7
+    program_memory[9] = 16'h6108;  // ADDS 8 -> 0x8000_0001
+    program_memory[10] = 16'h0103;  // ADD 3,1, negative overflow
+
+    initialize         = 1'b1;
+    reset              = 1'b1;
+    clock_enable       = 1'b1;
+    debug_data_write   = 1'b0;
+    debug_data_address = 8'h00;
+    debug_data         = 16'h0000;
+    load_data(8'd0, 16'h0002);
+    load_data(8'd1, 16'h8b0e);
+    load_data(8'd2, 16'h0001);
+    load_data(8'd3, 16'hffff);
+    load_data(8'd4, 16'h0000);
+    load_data(8'd5, 16'h7fff);
+    load_data(8'd6, 16'hfffe);
+    load_data(8'd7, 16'h8000);
+    load_data(8'd8, 16'h0001);
+    load_data(8'd9, 16'hffff);
+    load_data(8'd143, 16'h0002);
+    initialize = 1'b0;
+    require(!program_read && interrupt_mask,
+            "explicit initialization establishes deterministic control state");
+    reset = 1'b0;
+
+    tick();
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'd0 && data_read_data == 16'h0002,
+            "ADD exposes its selected internal-data word");
+    tick();
+    require(accumulator == 32'h0000_0017 && !overflow_flag,
+            "ADD applies a positive left shift before accumulation");
+    tick();
+    require(data_read && data_address == 8'd1 &&
+            data_read_data == 16'h8b0e,
+            "negative ADD source is observable before execution");
+    tick();
+    require(accumulator == 32'hfff8_b0e0 && !overflow_flag,
+            "ADD sign-extends a negative word before shifting");
+    tick();
+    tick();
+    require(accumulator == 32'h7fff_fffe,
+            "setup reaches the positive overflow boundary");
+    tick();
+    require(accumulator == 32'h8000_0000 && overflow_flag &&
+            !overflow_mode,
+            "OVM-clear positive ADD overflow wraps and sets sticky OV");
+    tick();
+    require(accumulator == 32'h8000_0000 && overflow_flag,
+            "nonoverflowing ADD does not clear sticky OV");
+    tick();
+    tick();
+    tick();
+    require(accumulator == 32'h7fff_ffff && overflow_flag &&
+            !overflow_mode,
+            "OVM-clear negative ADD overflow wraps at the opposite endpoint");
+    require(pc == 12'd11 && cycle_count == 32'd11,
+            "each accepted ADD consumes one architectural cycle");
+
+    program_memory[0]  = 16'h6505;  // ZALH 5
+    program_memory[1]  = 16'h6106;  // ADDS 6 -> 0x7fff_fffe
+    program_memory[2]  = 16'h7f8b;  // SOVM
+    program_memory[3]  = 16'h0102;  // ADD 2,1 -> positive saturation
+    program_memory[4]  = 16'h6507;  // ZALH 7
+    program_memory[5]  = 16'h6108;  // ADDS 8 -> 0x8000_0001
+    program_memory[6]  = 16'h0103;  // ADD 3,1 -> negative saturation
+    program_memory[7]  = 16'h7f89;  // ZAC
+    program_memory[8]  = 16'h6e01;  // LDPK 1
+    program_memory[9]  = 16'h010f;  // ADD 15,1 -> physical address 143
+    program_memory[10] = 16'h6e00;  // LDPK 0
+    program_memory[11] = 16'h708f;  // LARK AR0,143
+    program_memory[12] = 16'h7109;  // LARK AR1,9
+    program_memory[13] = 16'h6880;  // LARP 0
+    program_memory[14] = 16'h03a1;  // ADD *+,3,AR1
+    program_memory[15] = 16'h0090;  // ADD *-,0,AR0
+    program_memory[16] = 16'h6e01;  // LDPK 1
+    program_memory[17] = 16'h0010;  // unresolved physical address 144
+
+    initialize = 1'b1;
+    tick();
+    initialize = 1'b0;
+    reset      = 1'b0;
+    require(!overflow_flag && !overflow_mode,
+            "explicit reinitialization begins independent saturation cases");
+
+    tick();
+    tick();
+    tick();
+    tick();
+    require(accumulator == 32'h7fff_ffff && overflow_flag && overflow_mode,
+            "OVM-set positive ADD overflow saturates at 0x7fffffff");
+    tick();
+    tick();
+    require(accumulator == 32'h8000_0001,
+            "negative-overflow setup preserves OVM and sticky OV");
+    tick();
+    require(accumulator == 32'h8000_0000 && overflow_flag && overflow_mode,
+            "OVM-set negative ADD overflow saturates at 0x80000000");
+
+    tick();
+    tick();
+    require(data_page_pointer && data_read &&
+            data_address == 8'd143 && data_read_data == 16'h0002,
+            "page-one ADD reaches the final physical word");
+    tick();
+    require(accumulator == 32'h0000_0004 && overflow_flag,
+            "page-one shifted ADD preserves sticky OV");
+    tick();
+    tick();
+    tick();
+    tick();
+    require(!auxiliary_register_pointer &&
+            auxiliary_register_0 == 16'd143 &&
+            auxiliary_register_1 == 16'd9,
+            "indirect ADD setup selects AR0");
+    require(data_read && data_address == 8'd143,
+            "indirect ADD reads the selected AR before update");
+    tick();
+    require(accumulator == 32'h0000_0014 &&
+            auxiliary_register_0 == 16'd144 &&
+            auxiliary_register_pointer,
+            "indirect shifted ADD increments AR0 and installs AR1");
+    require(data_read && data_address == 8'd9 &&
+            data_read_data == 16'hffff,
+            "second indirect ADD uses newly selected AR1");
+    tick();
+    require(accumulator == 32'h0000_0013 &&
+            auxiliary_register_1 == 16'd8 &&
+            !auxiliary_register_pointer,
+            "indirect ADD sign-extends -1, decrements AR1, and restores AR0");
+
+    tick();
+    require(data_page_pointer && data_read && !data_address_valid &&
+            data_address == 8'd144 && !instruction_valid,
+            "unresolved page-one ADD is visible but cannot execute");
+    tick();
+    require(illegal && !retired && pc == 12'd17,
+            "unresolved ADD traps without architectural retirement");
+    require(cycle_count == 32'd17,
+            "only accepted instructions contribute to the cycle count");
+    require(data_write_data == accumulator[15:0],
+            "inactive write data remains deterministic");
+
+    $display("PASS tb_add_rtl");
+    $finish;
+  end
+endmodule
+
+`default_nettype wire

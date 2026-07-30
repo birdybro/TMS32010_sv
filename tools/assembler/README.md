@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
+- `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`,
   `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -20,6 +20,9 @@ constant.
 `LAC` accepts TI direct and indirect forms such as `LAC 6,4`, `LAC *`,
 `LAC *+,8,AR1`, and `LAC *-,0,0`. Direct addresses and shifts are checked;
 an explicit next ARP is permitted only on an indirect form.
+
+`ADD` accepts the same address and shift syntax as `LAC`, for example
+`ADD 6,4` or `ADD *+,8,AR1`.
 
 `SACL` accepts forms such as `SACL 6`, `SACL *+`, and `SACL *-,0,AR1`.
 There is no SACL shift; the explicit zero is the TI-defined placeholder needed

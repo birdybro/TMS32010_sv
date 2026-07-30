@@ -111,9 +111,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 ## Current qualification boundary
 
 The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`,
+differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LARK`, `LARP`,
 `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SOVM`, `XOR`, `ZAC`, `ZALH`,
-and `ZALS`. The nine
+and `ZALS`. The ten
 common-address data instructions have independent fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -122,7 +122,9 @@ ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
 `OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the
 documented low-half result, their distinct upper-half effects, and unchanged
-`OV`/`OVM`. Unresolved addresses trap
+`OV`/`OVM`. ADD verifies signed source extension, all shift-field bounds,
+sticky overflow, wrapped results, and both OVM saturation endpoints.
+Unresolved addresses trap
 rather than alias. This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.
 Current evidence does not constitute instruction completeness or cycle

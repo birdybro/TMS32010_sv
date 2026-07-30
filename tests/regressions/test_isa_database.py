@@ -37,6 +37,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LAC",
                 "SACL",
                 "SACH",
+                "ADD",
                 "ADDS",
                 "AND",
                 "OR",
@@ -101,6 +102,16 @@ class IsaDatabaseTests(unittest.TestCase):
         for control in (0xC8, 0x8A, 0xB8):
             self.assertIsNone(decode_word(self.database, 0x6100 | control))
         self.assertIsNotNone(decode_word(self.database, 0x617F))
+
+    def test_add_rejects_reserved_indirect_controls(self) -> None:
+        for shift in (0, 7, 15):
+            for control in (0xC8, 0x8A, 0xB8):
+                self.assertIsNone(
+                    decode_word(self.database, (shift << 8) | control)
+                )
+            self.assertIsNotNone(
+                decode_word(self.database, (shift << 8) | 0x7F)
+            )
 
     def test_logic_rejects_reserved_indirect_controls(self) -> None:
         for base in (0x7800, 0x7900, 0x7A00):

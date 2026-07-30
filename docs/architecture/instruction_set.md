@@ -148,6 +148,33 @@ high-half addition is documented, but original-part sources omit whether
 `OV`/`OVM` applies, while a C14/E14 variant guide and MAME apply overflow with
 unresolved saturation details. See `SC-006` and `OQ-011`.
 
+## Qualified `ADD` research slice
+
+`ADD` sign-extends the selected 16-bit internal RAM word to 32 bits, shifts it
+left by the encoded count from 0 through 15, adds that value to the full
+32-bit accumulator, and stores the result. Low bits introduced by the shift
+are zero; the sign-extended high bits enter the ALU
+[ti-tms32010-users-guide-spru001b, §2.2.4.1 and `ADD`, printed pp. 2-6 and
+3-10 (PDF pp. 30 and 60); ti-first-generation-users-guide-1987, §§3.5.1 and
+`ADD`, printed pp. 3-18 and 4-15 (PDF pp. 47 and 96)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Signed 32-bit overflow sets sticky `OV`. With `OVM=0`, the wrapped result is
+loaded; with `OVM=1`, positive and negative overflow saturate to
+`0x7fffffff` and `0x80000000`, respectively. The individual ADD page defines
+the arithmetic but does not repeat the status sentence; these effects come
+from the original guide's general accumulator overflow sections and the later
+TI ALU/accumulator section
+[ti-tms32010-users-guide-spru001b, §§2.2.1.1–2.2.2.1, printed
+pp. 2-4–2-5 (PDF pp. 28–29); ti-first-generation-users-guide-1987, §3.5.2,
+printed p. 3-20 (PDF p. 49)]. This is documented general hardware behavior,
+not a per-instruction-page inference. **Confidence: VERIFIED_PRIMARY.**
+
+ADD occupies one word and one cycle. Its common direct/indirect address,
+old-AR read, optional nine-bit update, ARP replacement, reserved-control
+rejection, and noncanonical alias policy match `LAC`. `ADDH` remains excluded
+under `SC-006`/`OQ-011`.
+
 ## Qualified `AND`, `OR`, and `XOR` research slice
 
 Each logic instruction reads a common-addressed 16-bit internal RAM word and

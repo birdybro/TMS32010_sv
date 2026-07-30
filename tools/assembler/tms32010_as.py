@@ -245,14 +245,16 @@ class Assembler:
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
-        elif operation == "LAC":
+        elif operation in {"ADD", "LAC"}:
             shift = (
                 self._evaluate(operands[1], symbols, location, line)
                 if len(operands) >= 2
                 else 0
             )
             if not 0 <= shift <= 15:
-                raise line.error(f"LAC shift out of range 0..15: {shift}")
+                raise line.error(
+                    f"{operation} shift out of range 0..15: {shift}"
+                )
             word |= shift << 8
             word |= self._encode_data_address(
                 operation,

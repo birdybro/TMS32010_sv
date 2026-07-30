@@ -53,6 +53,7 @@ module tms32010_core (
   localparam logic [4:0] OP_XOR  = 5'd14;
   localparam logic [4:0] OP_AND  = 5'd15;
   localparam logic [4:0] OP_OR   = 5'd16;
+  localparam logic [4:0] OP_ADD  = 5'd17;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -65,6 +66,9 @@ module tms32010_core (
   logic [15:0] ram_read_data;
   logic [31:0] adds_wrapped_result;
   logic        adds_overflow;
+  logic [31:0] shifted_data_operand;
+  logic [31:0] add_wrapped_result;
+  logic        add_overflow;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -90,7 +94,8 @@ module tms32010_core (
         (decoded_operation == OP_ADDS) ||
         (decoded_operation == OP_XOR) ||
         (decoded_operation == OP_AND) ||
-        (decoded_operation == OP_OR)
+        (decoded_operation == OP_OR) ||
+        (decoded_operation == OP_ADD)
       )
     ) begin
       if (decoded_indirect) begin
@@ -131,7 +136,8 @@ module tms32010_core (
       (decoded_operation == OP_ADDS) ||
       (decoded_operation == OP_XOR) ||
       (decoded_operation == OP_AND) ||
-      (decoded_operation == OP_OR)
+      (decoded_operation == OP_OR) ||
+      (decoded_operation == OP_ADD)
     );
   assign data_write_o =
     ~reset_i &&
@@ -169,7 +175,8 @@ module tms32010_core (
         (decoded_operation != OP_ADDS) &&
         (decoded_operation != OP_XOR) &&
         (decoded_operation != OP_AND) &&
-        (decoded_operation != OP_OR)
+        (decoded_operation != OP_OR) &&
+        (decoded_operation != OP_ADD)
       ) ||
       ram_address_valid
     );
@@ -177,6 +184,12 @@ module tms32010_core (
     accumulator_o + {16'h0000, ram_read_data};
   assign adds_overflow =
     ~accumulator_o[31] && adds_wrapped_result[31];
+  assign shifted_data_operand =
+    {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
+  assign add_wrapped_result = accumulator_o + shifted_data_operand;
+  assign add_overflow =
+    ~(accumulator_o[31] ^ shifted_data_operand[31]) &&
+    (accumulator_o[31] ^ add_wrapped_result[31]);
 
   always_ff @(posedge clk_i) begin
     retired_o <= 1'b0;
@@ -241,6 +254,19 @@ module tms32010_core (
             accumulator_o[31:16],
             accumulator_o[15:0] | ram_read_data
           };
+          OP_ADD: begin
+            if (add_overflow) begin
+              overflow_flag_o <= 1'b1;
+              if (overflow_mode_o) begin
+                accumulator_o <=
+                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
+              end else begin
+                accumulator_o <= add_wrapped_result;
+              end
+            end else begin
+              accumulator_o <= add_wrapped_result;
+            end
+          end
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
               auxiliary_register_1_o <= {8'h00, decoded_immediate};
@@ -269,7 +295,8 @@ module tms32010_core (
            (decoded_operation == OP_ADDS) ||
            (decoded_operation == OP_XOR) ||
            (decoded_operation == OP_AND) ||
-           (decoded_operation == OP_OR)) &&
+           (decoded_operation == OP_OR) ||
+           (decoded_operation == OP_ADD)) &&
           decoded_indirect
         ) begin
           if (decoded_addressing_field[5]) begin
