@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** SUBS unsigned-source accumulator-arithmetic slice
+- **Current milestone:** ABS original-part overflow-status research
 - **Completed task IDs:** REPO-001, REF-001
 - **Tests passing:** 50 repository/provenance/document/ISA/toolchain tests; 70
   directed model tests; 11 RTL instruction/decode tests; 2 native bus/phase
@@ -40,14 +40,17 @@
   source extension and shift path, subtracts it from ACC, sets sticky OV,
   wraps with OVM clear, and saturates at either signed endpoint with OVM set;
   SUBS instead zero-extends its RAM word, can overflow only negatively, and
-  follows the same sticky-OV/wrap/saturation policy
+  follows the same sticky-OV/wrap/saturation policy; ABS is opcode `0x7f88`,
+  one word and one cycle, and selects wrap or positive saturation for
+  `0x80000000` through OVM, but original sources do not say whether it sets
+  sticky OV
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
-  increment/decrement, out-of-range RAM behavior, original-part ADDH overflow,
-  physical-reset retention of unlisted state, Hard Drivin' INT net, and safe
-  phase adaptation without READY
-- **Next task:** research and qualify `ABS` if its original-part overflow
-  behavior is explicit; keep `ADDH` and any similarly ambiguous high-half
-  arithmetic outside the supported boundary
+  increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
+  overflow-status behavior, physical-reset retention of unlisted state, Hard
+  Drivin' INT net, and safe phase adaptation without READY
+- **Next task:** research an unblocked primary-defined instruction such as
+  `LAR`; keep `ADDH` and `ABS` outside the supported boundary pending
+  `OQ-011` and `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `a311c9e9d1776f2bcb116ee2b85910052262db5e`
+  `e594331d46ac9a8f98e7d40c8fa69b115a30735e`

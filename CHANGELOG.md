@@ -83,6 +83,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Primary-cited `SUBS` database, model, assembler/disassembler, RTL,
   native-phase, and differential support for unsigned-source subtraction,
   sticky overflow, wrapped results, and negative OVM saturation.
+- A scoped `ABS` evidence record that separates its primary-verified opcode,
+  result, OVM behavior, and one-cycle timing from its unresolved original-part
+  sticky-OV side effect.
 
 ### Changed
 
@@ -212,13 +215,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 - All 15 acquired reference files match their manifest SHA-256 values.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
+- Original TI pages and the later C14/E14 variant page were compared directly
+  with pinned MAME for `ABS`; the disagreement is preserved as
+  `SC-007`/`OQ-013`, and no provisional implementation was admitted.
 
 ### Known Issues
 
 - Only twenty of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
-- Original-part ADDH overflow/saturation behavior and physical-reset retention
-  of unlisted state remain unresolved as OQ-011 and OQ-012.
+- Original-part ADDH overflow/saturation, physical-reset retention of unlisted
+  state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
+  OQ-013.
 - Control-flow bus traces, interrupt entry phases, reserved status bits, and
   out-of-range RAM behavior remain open.
 - The execution core still has an instruction-step test interface; the

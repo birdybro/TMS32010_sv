@@ -133,3 +133,12 @@ which is UNKNOWN.**
 
 No claim is yet made about unlisted bit patterns. A complete 65,536-word
 decode audit is an acceptance criterion of `ISA-001`.
+
+## Researched encoding withheld from support
+
+The original instruction page verifies `ABS` as the exact word `0x7f88`, but
+its original-part sticky-`OV` behavior is unresolved. The encoding remains
+outside the machine-readable supported-instruction list and independent
+fixtures so that decode coverage cannot be mistaken for execution
+qualification. See `SC-007` and `OQ-013`
+[ti-tms32010-users-guide-spru001b, `ABS`, printed p. 3-9 (PDF p. 59)].

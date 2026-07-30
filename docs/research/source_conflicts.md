@@ -71,3 +71,26 @@ electrical result of an out-of-range access.
   can proceed independently.
 - **Confidence:** UNKNOWN for original-TMS32010 `ADDH` overflow and saturation
   details; VERIFIED_PRIMARY for its ordinary non-overflow transfer.
+
+## SC-007 — ABS overflow-flag omission
+
+- **Original-part sources:** TI SPRU001B `ABS`, printed p. 3-9 (PDF p. 59),
+  and SPRU013 `ABS`, printed p. 4-14 (PDF p. 95), both define opcode
+  `0x7f88`, the ordinary absolute-value result, the OVM-dependent
+  `ABS(0x80000000)` result, and one-cycle timing. Neither page states whether
+  that boundary case sets sticky `OV`.
+- **Variant source:** TI SPRU032A for the TMS320C14/E14, `ABS`, printed
+  p. 4-14 (PDF p. 121), explicitly states that ABS affects `OV` and is
+  affected by `OVM`. This is evidence about a later variant, not proof of the
+  original NMOS part.
+- **Secondary source:** pinned MAME commit
+  `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` implements negation and OVM
+  saturation in `tms320c1x.cpp:341`, but its handler never writes `OV`.
+- **Competing hypotheses:** the original part sets sticky `OV` on the unique
+  unrepresentable negation, consistent with the variant guide; or it leaves
+  `OV` unchanged, consistent with the original pages' omission and MAME.
+- **Current treatment:** `ABS` remains outside the database/model/tool/RTL
+  support boundary under `OQ-013`. No provisional status behavior is selected.
+- **Confidence:** VERIFIED_PRIMARY for encoding, accumulator result, OVM
+  result selection, word count, and cycle count; UNKNOWN for original-part
+  `OV`.

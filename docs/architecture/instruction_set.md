@@ -32,6 +32,26 @@ Each family enters the qualification boundary only after:
 
 Reserved encodings will trap until authoritative behavior is established.
 
+## Deferred `ABS` research
+
+`ABS` is an implied one-word, one-cycle instruction encoded as `0x7f88`. If
+`ACC` is nonnegative it is unchanged; if negative it is replaced by its
+two's-complement negation. The most-negative input is special: with `OVM=0`,
+`ABS(0x80000000)` remains `0x80000000`; with `OVM=1`, it saturates to
+`0x7fffffff`
+[ti-tms32010-users-guide-spru001b, `ABS`, printed p. 3-9 (PDF p. 59);
+ti-first-generation-users-guide-1987, `ABS`, printed p. 4-14 (PDF p. 95)].
+**Confidence: VERIFIED_PRIMARY for encoding, result, OVM selection, word
+count, and cycle count.**
+
+Neither original-part page states whether the unrepresentable negation sets
+sticky `OV`. The TMS320C14/E14 variant guide explicitly says ABS affects OV,
+while the pinned MAME handler leaves OV unchanged. Because software can
+observe that distinction, the project does not select either behavior.
+`ABS` is therefore absent from the supported database, opcode fixtures,
+assembler/disassembler, model, and RTL pending `SC-007`/`OQ-013`.
+**Confidence: UNKNOWN for original-TMS32010 OV behavior.**
+
 ## Qualified `LAC` research slice
 
 `LAC` accepts direct or indirect internal-data addressing and a left shift
