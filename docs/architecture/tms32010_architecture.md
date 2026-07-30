@@ -97,12 +97,11 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and local assembler/disassembler support `LAC`, `LACK`,
-`LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`. RTL and seeded
-model/RTL differential evidence cover the same nine. `LAC` has independent
-fixtures plus directed and seeded tests for direct/indirect address selection,
-sign extension, shifts, and nine-bit counter updates. The internal RAM has no
-architectural write instruction yet, and unresolved addresses trap rather than
-alias. This remains partial RTL support only. The sequential native-phase
-wrapper covers normal program reads only. Current evidence does not constitute
-instruction completeness or cycle accuracy.
+The executable model, local assembler/disassembler, RTL, and seeded
+differential boundary support `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`,
+`ROVM`, `SACL`, `SOVM`, and `ZAC`. `LAC` and `SACL` have independent fixtures
+plus directed and seeded tests for direct/indirect address selection, reads
+and writes, accumulator behavior, and nine-bit counter updates. Unresolved
+addresses trap rather than alias. This remains partial RTL support only. The
+sequential native-phase wrapper covers normal program reads only. Current
+evidence does not constitute instruction completeness or cycle accuracy.

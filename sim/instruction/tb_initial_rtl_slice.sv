@@ -21,8 +21,10 @@ module tb_initial_rtl_slice;
   logic [31:0] cycle_count;
   logic [7:0]  data_address;
   logic        data_read;
+  logic        data_write;
   logic        data_address_valid;
   logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -38,8 +40,10 @@ module tb_initial_rtl_slice;
     .program_data_i    (program_data),
     .data_address_o    (data_address),
     .data_read_o       (data_read),
+    .data_write_o      (data_write),
     .data_address_valid_o (data_address_valid),
     .data_read_data_o  (data_read_data),
+    .data_write_data_o (data_write_data),
     .debug_data_write_i (debug_data_write),
     .debug_data_address_i (debug_data_address),
     .debug_data_i      (debug_data),
@@ -96,8 +100,11 @@ module tb_initial_rtl_slice;
     require(pc == 12'h000, "reset PC");
     require(interrupt_mask, "reset masks interrupts");
     require(!program_read, "program read inactive during reset");
-    require(!data_read && !data_address_valid && data_address == 8'h00,
+    require(!data_read && !data_write &&
+            !data_address_valid && data_address == 8'h00,
             "logical data read is inactive during reset");
+    require(!data_write || data_write_data == accumulator[15:0],
+            "logical write data always reflects ACC low");
     require(!data_read || !$isunknown(data_read_data),
             "an active logical data read must return known test data");
 

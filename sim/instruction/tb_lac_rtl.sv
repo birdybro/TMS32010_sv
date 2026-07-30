@@ -9,8 +9,10 @@ module tb_lac_rtl;
   logic [15:0] program_data;
   logic [7:0]  data_address;
   logic        data_read;
+  logic        data_write;
   logic        data_address_valid;
   logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -37,8 +39,10 @@ module tb_lac_rtl;
     .program_data_i                (program_data),
     .data_address_o                (data_address),
     .data_read_o                   (data_read),
+    .data_write_o                  (data_write),
     .data_address_valid_o          (data_address_valid),
     .data_read_data_o              (data_read_data),
+    .data_write_data_o             (data_write_data),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
     .debug_data_i                  (debug_data),
@@ -105,7 +109,8 @@ module tb_lac_rtl;
     debug_data_address = 8'h00;
     debug_data         = 16'h0000;
     tick();
-    require(!program_read && interrupt_mask, "reset control outputs");
+    require(!program_read && interrupt_mask && !data_write,
+            "reset control outputs");
     load_data(8'd3, 16'h8000);
     load_data(8'd143, 16'h1234);
     load_data(8'd0, 16'hff80);
@@ -122,6 +127,8 @@ module tb_lac_rtl;
     tick();
     require(accumulator == 32'hc000_0000,
             "LAC sign extends before maximum shift");
+    require(data_write_data == accumulator[15:0],
+            "inactive logical write data follows ACC low");
     require(pc == 12'd3 && cycle_count == 32'd3, "direct LAC is one cycle");
     require(overflow_mode, "LAC does not change overflow mode");
 

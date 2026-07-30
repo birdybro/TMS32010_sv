@@ -234,11 +234,11 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-30 the machine-readable database, independent model, and local
-tools support nine instructions: `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `ZAC`, `ROVM`, and `SOVM`. RTL and seeded differential evidence cover
-the same nine, including `LAC` reads from a 144-word internal RAM. A phase
-wrapper qualifies their normal sequential program reads, but no architectural
-RAM writes, general pipeline, interrupt entry, or complete pin timing exists.
-The project must not be called instruction-complete or cycle-accurate. Consult
-`TASKS.md` and `artifacts/progress.md` for the exact current evidence.
+As of 2026-07-30 the machine-readable database, independent model, local
+tools, RTL, and seeded differential boundary support ten instructions: `LAC`,
+`LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SOVM`, and `ZAC`.
+This includes `LAC` reads and `SACL` writes in a 144-word internal RAM. A phase
+wrapper qualifies their normal sequential program reads, but no general
+pipeline, interrupt entry, or complete pin timing exists. The project must not
+be called instruction-complete or cycle-accurate. Consult `TASKS.md` and
+`artifacts/progress.md` for the exact current evidence.

@@ -54,3 +54,25 @@ their simultaneous assertion; that encoding is rejected and tracked as
 `OQ-010`. When ARP-preserve bit 3 is one, bit 0 is architecturally ignored.
 The disassembler renders the noncanonical bit-0-one alias as `.word` so
 binary round trips remain exact.
+
+## Qualified `SACL` research slice
+
+`SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory
+word. It does not shift, modify `ACC`, or affect overflow status. The
+instruction is one word and one cycle
+[ti-tms32010-users-guide-spru001b, §2.2.2 and `SACL`, printed pp. 2-4 and
+3-54 (PDF pp. 28 and 104)]. **Confidence: VERIFIED_PRIMARY.**
+
+Its direct/indirect address selection and post-access auxiliary-register
+controls have the same form described above for `LAC`. The memory write uses
+the old selected-AR address before optional increment/decrement and ARP
+replacement. TI specifies no shift for SACL, but its assembler syntax requires
+an explicit zero placeholder when a next ARP follows, for example
+`SACL *+,0,1`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SACL`, printed
+pp. 3-2–3-3 and 3-54 (PDF pp. 52–53 and 104)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Reserved indirect controls, simultaneous increment/decrement, and the
+noncanonical ARP-preserve alias follow the same conservative policies as
+`LAC`; they remain linked to `OQ-010`.

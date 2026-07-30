@@ -48,12 +48,13 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `LAC` when its effective address is `0x90`–`0xff`. It exposes the
-effective address, read-valid indication, and operand for verification without
-creating a physical data-memory strobe. Direct and indirect `LAC` tests cover
-both data pages, the final physical word, and pre-modification indirect
-addressing. **Implementation evidence; unresolved-address policy:
-PROVISIONAL under OQ-002.**
+retire `LAC` or `SACL` when its effective address is `0x90`–`0xff`. It exposes
+the effective address, operation-valid indication, and read/write data for
+verification without creating a physical data-memory strobe. Direct and
+indirect tests cover both data pages, the final physical word,
+pre-modification indirect addressing, and write-to-read ordering.
+**Implementation evidence; unresolved-address policy: PROVISIONAL under
+OQ-002.**
 
 The current array has an asynchronous read because the temporary execution
 slice samples program data and commits a one-cycle instruction at one
@@ -66,4 +67,5 @@ the same externally visible cycle without speculative latency.
 An explicit synchronous preload port exists for simulation and integration
 debug only. It is forbidden during live CPU execution, does not run on
 physical reset, and does not imply deterministic hardware power-up contents.
-No architectural data-memory write instruction is implemented yet.
+`SACL` supplies the first architectural write path; assertions exclude
+simultaneous CPU/debug writes and invalid CPU write addresses.

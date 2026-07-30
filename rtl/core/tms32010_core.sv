@@ -11,8 +11,10 @@ module tms32010_core (
 
   output logic [7:0]  data_address_o,
   output logic        data_read_o,
+  output logic        data_write_o,
   output logic        data_address_valid_o,
   output logic [15:0] data_read_data_o,
+  output logic [15:0] data_write_data_o,
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
   input  logic [15:0] debug_data_i,
@@ -41,6 +43,7 @@ module tms32010_core (
   localparam logic [3:0] OP_LARP = 4'd6;
   localparam logic [3:0] OP_LDPK = 4'd7;
   localparam logic [3:0] OP_LAC  = 4'd8;
+  localparam logic [3:0] OP_SACL = 4'd9;
 
   logic [3:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -65,7 +68,10 @@ module tms32010_core (
 
   always_comb begin
     data_address_o = 8'h00;
-    if (decoded_valid && (decoded_operation == OP_LAC)) begin
+    if (
+      decoded_valid &&
+      ((decoded_operation == OP_LAC) || (decoded_operation == OP_SACL))
+    ) begin
       if (decoded_indirect) begin
         data_address_o =
           auxiliary_register_pointer_o
@@ -82,6 +88,10 @@ module tms32010_core (
     .address_i       (data_address_o),
     .read_data_o     (ram_read_data),
     .address_valid_o (ram_address_valid),
+    .write_i         (
+      data_write_o && clock_enable_i && instruction_valid_o
+    ),
+    .write_data_i    (data_write_data_o),
     .debug_write_i   (debug_data_write_i),
     .debug_address_i (debug_data_address_i),
     .debug_data_i    (debug_data_i)
@@ -91,11 +101,21 @@ module tms32010_core (
   assign program_read_o    = ~reset_i;
   assign data_read_o =
     ~reset_i && decoded_valid && (decoded_operation == OP_LAC);
-  assign data_address_valid_o = data_read_o && ram_address_valid;
+  assign data_write_o =
+    ~reset_i && decoded_valid && (decoded_operation == OP_SACL);
+  assign data_address_valid_o =
+    (data_read_o || data_write_o) && ram_address_valid;
   assign data_read_data_o     = ram_read_data;
+  assign data_write_data_o    = accumulator_o[15:0];
   assign instruction_valid_o =
     decoded_valid &&
-    ((decoded_operation != OP_LAC) || ram_address_valid);
+    (
+      (
+        (decoded_operation != OP_LAC) &&
+        (decoded_operation != OP_SACL)
+      ) ||
+      ram_address_valid
+    );
 
   always_ff @(posedge clk_i) begin
     retired_o <= 1'b0;
@@ -119,36 +139,8 @@ module tms32010_core (
           OP_LAC: begin
             accumulator_o <=
               {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
-            if (decoded_indirect) begin
-              if (decoded_addressing_field[5]) begin
-                if (auxiliary_register_pointer_o) begin
-                  auxiliary_register_1_o <= {
-                    auxiliary_register_1_o[15:9],
-                    auxiliary_register_1_o[8:0] + 9'd1
-                  };
-                end else begin
-                  auxiliary_register_0_o <= {
-                    auxiliary_register_0_o[15:9],
-                    auxiliary_register_0_o[8:0] + 9'd1
-                  };
-                end
-              end else if (decoded_addressing_field[4]) begin
-                if (auxiliary_register_pointer_o) begin
-                  auxiliary_register_1_o <= {
-                    auxiliary_register_1_o[15:9],
-                    auxiliary_register_1_o[8:0] - 9'd1
-                  };
-                end else begin
-                  auxiliary_register_0_o <= {
-                    auxiliary_register_0_o[15:9],
-                    auxiliary_register_0_o[8:0] - 9'd1
-                  };
-                end
-              end
-              if (!decoded_addressing_field[3]) begin
-                auxiliary_register_pointer_o <= decoded_addressing_field[0];
-              end
-            end
+          end
+          OP_SACL: begin
           end
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
@@ -168,6 +160,41 @@ module tms32010_core (
             // All enum values are covered above.
           end
         endcase
+
+        if (
+          ((decoded_operation == OP_LAC) ||
+           (decoded_operation == OP_SACL)) &&
+          decoded_indirect
+        ) begin
+          if (decoded_addressing_field[5]) begin
+            if (auxiliary_register_pointer_o) begin
+              auxiliary_register_1_o <= {
+                auxiliary_register_1_o[15:9],
+                auxiliary_register_1_o[8:0] + 9'd1
+              };
+            end else begin
+              auxiliary_register_0_o <= {
+                auxiliary_register_0_o[15:9],
+                auxiliary_register_0_o[8:0] + 9'd1
+              };
+            end
+          end else if (decoded_addressing_field[4]) begin
+            if (auxiliary_register_pointer_o) begin
+              auxiliary_register_1_o <= {
+                auxiliary_register_1_o[15:9],
+                auxiliary_register_1_o[8:0] - 9'd1
+              };
+            end else begin
+              auxiliary_register_0_o <= {
+                auxiliary_register_0_o[15:9],
+                auxiliary_register_0_o[8:0] - 9'd1
+              };
+            end
+          end
+          if (!decoded_addressing_field[3]) begin
+            auxiliary_register_pointer_o <= decoded_addressing_field[0];
+          end
+        end
       end else begin
         illegal_o <= 1'b1;
       end
@@ -178,7 +205,7 @@ module tms32010_core (
     assert (!(retired_o && illegal_o));
     if (!reset_i) begin
       assert (!(debug_data_write_i && clock_enable_i));
-      if (data_read_o && !data_address_valid_o) begin
+      if ((data_read_o || data_write_o) && !data_address_valid_o) begin
         assert (!instruction_valid_o);
       end
     end

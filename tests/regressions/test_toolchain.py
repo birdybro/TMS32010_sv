@@ -37,6 +37,13 @@ class ToolchainSliceTests(unittest.TestCase):
             LAC *-
             LAC *+,8,AR1
             LAC *+,8,0
+            SACL 0
+            SACL 127,0
+            SACL *
+            SACL *+
+            SACL *-
+            SACL *,0,AR0
+            SACL *+,0,1
             """
         )
         self.assertEqual(
@@ -63,6 +70,13 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x2098,
                 0x28A1,
                 0x28A0,
+                0x5000,
+                0x507F,
+                0x5088,
+                0x50A8,
+                0x5098,
+                0x5080,
+                0x50A1,
             ],
         )
 
@@ -86,6 +100,14 @@ class ToolchainSliceTests(unittest.TestCase):
             0x28A1,
             0x28A0,
             0x2089,
+            0x5000,
+            0x507F,
+            0x5088,
+            0x50A8,
+            0x5098,
+            0x5080,
+            0x50A1,
+            0x5089,
         ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
@@ -162,6 +184,25 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x2089\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x2089])
+
+    def test_sacl_operand_diagnostics(self) -> None:
+        cases = (
+            ("SACL 128\n", "direct address"),
+            ("SACL 0,1\n", "no shift"),
+            ("SACL *+,0,2\n", "next ARP"),
+            ("SACL 0,0,1\n", "only with indirect"),
+            ("SACL\n", "1 to 3 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+    def test_sacl_noncanonical_preserve_bit_round_trips_as_word(self) -> None:
+        source = self.disassembler.disassemble_source([0x5089])
+        self.assertEqual(source, ".word 0x5089\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x5089])
 
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(

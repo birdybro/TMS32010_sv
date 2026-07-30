@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial nine-instruction model/tool boundary is intentionally partial
+Its initial ten-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -19,10 +19,11 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ROVM` | `0x7f8a` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `SOVM` | `0x7f8b` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `LAC dma,s` | `0x2000` | `0xf000` plus addressing constraints | 1 | 1 | individual `LAC` page, printed p. 3-31 |
+| `SACL dma` | `0x5000` | `0xff00` plus addressing constraints | 1 | 1 | individual `SACL` page, printed p. 3-54 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-32, 3-34–3-35, and 3-37 (PDF
-pp. 55–57, 82, 84–85, and 87)].
+descriptions, printed pp. 3-5–3-7, 3-32, 3-34–3-35, 3-37, and 3-54 (PDF
+pp. 55–57, 82, 84–85, 87, and 104)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and
@@ -44,6 +45,16 @@ increment and decrement pending `OQ-010`; it accepts either value of ignored
 bit 0 when bit 3 requests ARP preservation
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LAC`, printed
 pp. 3-2–3-3 and 3-31 (PDF pp. 52–53 and 81)].
+**Confidence: VERIFIED_PRIMARY except the rejected simultaneous-update case,
+which is UNKNOWN.**
+
+`SACL` fixes bits 15:8 to `0x50`; bit 7 selects direct or indirect addressing,
+and bits 6:0 carry the address/control field. Its indirect legality constraints
+are the same as `LAC`. The instruction copies `ACC[15:0]` without a shift; the
+assembly-level zero preceding a next ARP is a syntax placeholder and encodes
+no shift bits
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SACL`, printed
+pp. 3-2–3-3 and 3-54 (PDF pp. 52–53 and 104)].
 **Confidence: VERIFIED_PRIMARY except the rejected simultaneous-update case,
 which is UNKNOWN.**
 

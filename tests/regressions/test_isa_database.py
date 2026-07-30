@@ -35,6 +35,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LARP",
                 "LDPK",
                 "LAC",
+                "SACL",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -68,6 +69,12 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertIsNone(decode_word(self.database, 0x208A))
         self.assertIsNone(decode_word(self.database, 0x20B8))
         self.assertIsNotNone(decode_word(self.database, 0x207F))
+
+    def test_sacl_rejects_reserved_indirect_controls(self) -> None:
+        self.assertIsNone(decode_word(self.database, 0x50C8))
+        self.assertIsNone(decode_word(self.database, 0x508A))
+        self.assertIsNone(decode_word(self.database, 0x50B8))
+        self.assertIsNotNone(decode_word(self.database, 0x507F))
 
     def test_fixture_provenance_is_independent(self) -> None:
         provenance = self.fixtures["provenance"].lower()

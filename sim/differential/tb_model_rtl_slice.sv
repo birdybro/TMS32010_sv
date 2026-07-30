@@ -21,8 +21,10 @@ module tb_model_rtl_slice;
   logic [31:0] cycle_count;
   logic [7:0]  data_address;
   logic        data_read;
+  logic        data_write;
   logic        data_address_valid;
   logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -42,8 +44,10 @@ module tb_model_rtl_slice;
     .program_data_i    (program_data),
     .data_address_o    (data_address),
     .data_read_o       (data_read),
+    .data_write_o      (data_write),
     .data_address_valid_o (data_address_valid),
     .data_read_data_o  (data_read_data),
+    .data_write_data_o (data_write_data),
     .debug_data_write_i (debug_data_write),
     .debug_data_address_i (debug_data_address),
     .debug_data_i      (debug_data),
@@ -111,18 +115,22 @@ module tb_model_rtl_slice;
       logic [15:0] opcode_before;
       logic [7:0]  data_address_before;
       logic        data_read_before;
+      logic        data_write_before;
       logic        data_address_valid_before;
       logic [15:0] data_read_data_before;
+      logic [15:0] data_write_data_before;
       pc_before     = program_address;
       opcode_before = program_data;
       data_address_before       = data_address;
       data_read_before          = data_read;
+      data_write_before         = data_write;
       data_address_valid_before = data_address_valid;
       data_read_data_before     = data_read_data;
+      data_write_data_before    = data_write_data;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %04x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %04x %04x",
         pc_before,
         opcode_before,
         pc,
@@ -138,9 +146,14 @@ module tb_model_rtl_slice;
         cycle_count,
         data_address_before,
         data_read_before,
+        data_write_before,
         data_address_valid_before,
-        data_read_data_before
+        data_read_data_before,
+        data_write_data_before
       );
+    end
+    for (int unsigned index = 0; index < 144; index++) begin
+      $display("RAM %02x %04x", index[7:0], dut.data_ram.memory[index]);
     end
     $display("PASS tb_model_rtl_slice");
     $finish;

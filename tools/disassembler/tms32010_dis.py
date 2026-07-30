@@ -36,6 +36,16 @@ class Disassembler:
                 suffix = f",{shift}" if shift else ""
                 return f"LAC {modifier}{suffix}"
             return f"LAC {modifier},{shift},{control & 1}"
+        if mnemonic == "SACL":
+            if not operands["indirect"]:
+                return f"SACL {operands['addressing_field']}"
+            control = operands["addressing_field"]
+            modifier = {0x00: "*", 0x20: "*+", 0x10: "*-"}[control & 0x30]
+            if control & 0x08:
+                if control & 1:
+                    return f".word 0x{word:04x}"
+                return f"SACL {modifier}"
+            return f"SACL {modifier},0,{control & 1}"
         if mnemonic == "LARK":
             return (
                 f"LARK AR{operands['auxiliary_register']},"

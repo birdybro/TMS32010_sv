@@ -20,19 +20,19 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for `LAC` and each of the eight earlier sequential
-instructions, then checks retirement on the falling-edge sample boundary.
-The directed `LAC` RTL test separately checks one architectural cycle for
-direct and indirect cases. This qualifies the documented one-cycle total only
-inside the current sequential subset; it does not qualify general
-fetch/execute overlap or any unimplemented instruction.
+program-read cycle for every instruction in the ten-instruction subset, then
+checks retirement on the falling-edge sample boundary. Directed `LAC` and
+`SACL` RTL tests separately check one architectural cycle for direct and
+indirect cases. This qualifies the documented one-cycle totals only inside the
+current sequential subset; it does not qualify general fetch/execute overlap
+or any unimplemented instruction.
 
 ## Open timing dimensions
 
 - whether taken and untaken conditions have identical two-cycle totals;
 - exact immediate-word fetch ordering for branch and call;
 - interaction of program fetch with internal data RAM beyond the qualified
-  one-cycle `LAC` read;
+  one-cycle `LAC` read and `SACL` write;
 - table-operation discarded fetch order;
 - interrupt entry latency and recognition boundary;
 - board-level phase stretching in the absence of a READY pin.

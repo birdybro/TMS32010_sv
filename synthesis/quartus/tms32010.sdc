@@ -17,4 +17,5 @@ set_false_path -to \
               retired_o illegal_o \
               cycle_count_o[*] phase_o[*] clkout_o native_address_o[*] \
               men_n_o sample_o native_active_o data_address_o[*] \
-              data_read_o data_address_valid_o data_read_data_o[*]}]
+              data_read_o data_write_o data_address_valid_o \
+              data_read_data_o[*] data_write_data_o[*]}]

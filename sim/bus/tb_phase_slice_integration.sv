@@ -14,8 +14,10 @@ module tb_phase_slice_integration;
   logic        bus_active;
   logic [7:0]  data_address;
   logic        data_read;
+  logic        data_write;
   logic        data_address_valid;
   logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -50,8 +52,10 @@ module tb_phase_slice_integration;
     .bus_active_o                  (bus_active),
     .data_address_o                (data_address),
     .data_read_o                   (data_read),
+    .data_write_o                  (data_write),
     .data_address_valid_o          (data_address_valid),
     .data_read_data_o              (data_read_data),
+    .data_write_data_o             (data_write_data),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .auxiliary_register_0_o        (auxiliary_register_0),
@@ -108,7 +112,8 @@ module tb_phase_slice_integration;
     program_memory[8] = 16'h7f89;  // ZAC
     program_memory[9] = 16'h7f80;  // NOP
     program_memory[10] = 16'h2403;  // LAC 3,4
-    program_memory[11] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[11] = 16'h5004;  // SACL 4
+    program_memory[12] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -203,13 +208,25 @@ module tb_phase_slice_integration;
     require(accumulator == 32'hffff_f800, "LAC sign extends and shifts");
     require(pc == 12'h00b && cycle_count == 32'd11,
             "LAC consumes one native instruction cycle");
+    require(data_write && data_address_valid && data_address == 8'h84,
+            "SACL exposes its internal write during a normal program read");
+    require(data_write_data == 16'hf800, "SACL exposes ACC low write data");
+    tick();
+    require(phase == 2'd1 && !men_n && data_write,
+            "SACL logical write overlaps an ordinary active MEN phase");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'hffff_f800,
+            "SACL retires without modifying the accumulator");
+    require(pc == 12'h00c && cycle_count == 32'd12,
+            "SACL consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h00b, "trap holds architectural PC");
-    require(program_address == 12'h00b, "trap holds native program address");
-    require(cycle_count == 32'd11, "trap does not count as retired cycle");
+    require(pc == 12'h00c, "trap holds architectural PC");
+    require(program_address == 12'h00c, "trap holds native program address");
+    require(cycle_count == 32'd12, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

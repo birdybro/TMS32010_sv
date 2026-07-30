@@ -63,12 +63,22 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             model.program[address] = word
             expected.append(model.step())
 
-        for word in (0x7000, 0x7100, 0x6880, 0x6E00, 0x7F89, 0x7F8A):
+        for word in (
+            0x7000,
+            0x7100,
+            0x6880,
+            0x6E00,
+            0x7F89,
+            0x7F8A,
+            0x7E5A,
+            0x5005,
+            0x2005,
+        ):
             append_and_step(word)
 
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(506):
-            family = randomizer.randrange(7)
+        for _ in range(503):
+            family = randomizer.randrange(8)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
@@ -104,6 +114,28 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                             else randomizer.randrange(16)
                         )
                         word = 0x2000 | (shift << 8) | address
+            elif family == 5:
+                if randomizer.randrange(2):
+                    address = (
+                        randomizer.randrange(128)
+                        if model.state.status.dp == 0
+                        else randomizer.randrange(16)
+                    )
+                    word = 0x5000 | address
+                else:
+                    selected = model.state.status.arp
+                    if (model.state.ar[selected] & 0xFF) < 144:
+                        control = randomizer.choice(
+                            [0x88, 0xA8, 0x98, 0x80, 0x81, 0xA0, 0xA1, 0x90, 0x91]
+                        )
+                        word = 0x5000 | control
+                    else:
+                        address = (
+                            randomizer.randrange(128)
+                            if model.state.status.dp == 0
+                            else randomizer.randrange(16)
+                        )
+                        word = 0x5000 | address
             else:
                 word = randomizer.choice(choices)
             append_and_step(word)
@@ -134,6 +166,10 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         lines = [line for line in result.stdout.splitlines() if line.startswith("TRACE ")]
         self.assertEqual(len(lines), len(expected))
+        ram_lines = [
+            line for line in result.stdout.splitlines() if line.startswith("RAM ")
+        ]
+        self.assertEqual(len(ram_lines), 144)
 
         for index, (line, model_trace) in enumerate(zip(lines, expected)):
             fields = line.split()
@@ -187,13 +223,16 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 for transaction in model_trace.transactions
                 if transaction.space == "data"
             ]
-            self.assertEqual(
-                bool(int(fields[15], 16)),
-                bool(data_transactions),
-                (SEED, index),
+            expected_read = bool(
+                data_transactions and data_transactions[0].operation == "read"
             )
+            expected_write = bool(
+                data_transactions and data_transactions[0].operation == "write"
+            )
+            self.assertEqual(bool(int(fields[15], 16)), expected_read, (SEED, index))
+            self.assertEqual(bool(int(fields[16], 16)), expected_write, (SEED, index))
             self.assertEqual(
-                bool(int(fields[16], 16)),
+                bool(int(fields[17], 16)),
                 bool(data_transactions),
                 (SEED, index),
             )
@@ -204,10 +243,15 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                     (SEED, index),
                 )
                 self.assertEqual(
-                    int(fields[17], 16),
+                    int(fields[18 if expected_read else 19], 16),
                     data_transactions[0].data,
                     (SEED, index),
                 )
+
+        for index, line in enumerate(ram_lines):
+            fields = line.split()
+            self.assertEqual(int(fields[1], 16), index)
+            self.assertEqual(int(fields[2], 16), model.data[index], (SEED, index))
 
 
 if __name__ == "__main__":

@@ -93,6 +93,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_sacl_data_write_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_sacl_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_sacl_rtl.sv",
+            ],
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

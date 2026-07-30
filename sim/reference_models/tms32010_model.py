@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports LAC, LACK, LARK, LARP, LDPK, NOP, ZAC, ROVM, and
-SOVM. Logical program and internal-data transactions and instruction totals
-are modeled; pin subphases are not yet integrated with this model.
+This partial slice supports LAC, LACK, LARK, LARP, LDPK, NOP, ROVM, SACL,
+SOVM, and ZAC. Logical program and internal-data transactions and instruction
+totals are modeled; pin subphases are not yet integrated with this model.
 """
 
 from __future__ import annotations
@@ -178,7 +178,7 @@ class Tms32010Model:
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
         selected_arp: int | None = None
-        if mnemonic == "LAC":
+        if mnemonic in {"LAC", "SACL"}:
             if operands["indirect"]:
                 selected_arp = self.state.status.arp
                 data_address = self.state.ar[selected_arp] & 0xFF
@@ -193,9 +193,13 @@ class Tms32010Model:
                 Transaction(
                     cycle=self.cycle_count,
                     space="data",
-                    operation="read",
+                    operation="read" if mnemonic == "LAC" else "write",
                     address=data_address,
-                    data=self.data[data_address],
+                    data=(
+                        self.data[data_address]
+                        if mnemonic == "LAC"
+                        else self.state.acc & WORD_MASK
+                    ),
                 )
             )
 
@@ -209,21 +213,10 @@ class Tms32010Model:
                 data_word if data_word < 0x8000 else data_word - 0x10000
             )
             self.state.acc = (signed_word << operands["shift"]) & ACC_MASK
-            if operands["indirect"]:
-                assert selected_arp is not None
-                control = operands["addressing_field"]
-                if control & 0x20:
-                    self.state.ar[selected_arp] = self._modify_counter(
-                        self.state.ar[selected_arp],
-                        1,
-                    )
-                elif control & 0x10:
-                    self.state.ar[selected_arp] = self._modify_counter(
-                        self.state.ar[selected_arp],
-                        -1,
-                    )
-                if (control & 0x08) == 0:
-                    self.state.status.arp = control & 1
+        elif mnemonic == "SACL":
+            self.data[operands["effective_address"]] = (
+                self.state.acc & WORD_MASK
+            )
         elif mnemonic == "LARK":
             register = operands["auxiliary_register"]
             self.state.ar[register] = operands["constant"] & 0xFF
@@ -239,6 +232,22 @@ class Tms32010Model:
             self.state.status.ovm = True
         elif mnemonic != "NOP":
             raise AssertionError(f"decoder returned unhandled mnemonic {mnemonic}")
+
+        if mnemonic in {"LAC", "SACL"} and operands["indirect"]:
+            assert selected_arp is not None
+            control = operands["addressing_field"]
+            if control & 0x20:
+                self.state.ar[selected_arp] = self._modify_counter(
+                    self.state.ar[selected_arp],
+                    1,
+                )
+            elif control & 0x10:
+                self.state.ar[selected_arp] = self._modify_counter(
+                    self.state.ar[selected_arp],
+                    -1,
+                )
+            if (control & 0x08) == 0:
+                self.state.status.arp = control & 1
 
         cycles = 1
         self.cycle_count += cycles
@@ -274,6 +283,17 @@ class Tms32010Model:
             }
         if opcode & 0xFF00 == 0x7E00:
             return "LACK", {"constant": opcode & 0xFF}
+        if opcode & 0xFF00 == 0x5000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SACL", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
         if opcode & 0xFE00 == 0x7000:
             return "LARK", {
                 "auxiliary_register": (opcode >> 8) & 1,

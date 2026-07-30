@@ -8,6 +8,8 @@ module tms32010_internal_ram (
   input  logic [7:0]  address_i,
   output logic [15:0] read_data_o,
   output logic        address_valid_o,
+  input  logic        write_i,
+  input  logic [15:0] write_data_i,
 
   // Explicit, nonarchitectural preload/debug port. Physical reset never
   // initializes this memory, and normal CPU execution must not use this port.
@@ -28,8 +30,12 @@ module tms32010_internal_ram (
   always_ff @(posedge clk_i) begin
     if (debug_write_i && (debug_address_i < 8'd144)) begin
       memory[debug_address_i] <= debug_data_i;
+    end else if (write_i && address_valid_o) begin
+      memory[address_i] <= write_data_i;
     end
+    assert (!(write_i && !address_valid_o));
     assert (!(debug_write_i && (debug_address_i >= 8'd144)));
+    assert (!(write_i && debug_write_i));
   end
 endmodule
 

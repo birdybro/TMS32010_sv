@@ -31,11 +31,12 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the nine supported one-cycle sequential instructions.
-Its `LAC` case also exposes the concurrent internal logical read while keeping
-the physical `MEN` activity a normal program fetch. That is implementation
-evidence for the cited normal-read mapping, not a claim that control flow,
-external data/I/O access, or general pipeline overlap is complete.
+read relationship for the ten supported one-cycle sequential instructions.
+Its `LAC` and `SACL` cases also expose the concurrent internal logical read or
+write while keeping the physical `MEN` activity a normal program fetch. That
+is implementation evidence for the cited normal-read mapping, not a claim that
+control flow, external data/I/O access, or general pipeline overlap is
+complete.
 
 Ordinary data-memory accesses stay inside the chip's 144-word RAM and produce
 no physical memory strobe. Logical data transactions remain observable in the

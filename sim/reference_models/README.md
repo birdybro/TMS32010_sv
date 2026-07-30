@@ -6,9 +6,12 @@ RTL.
 
 Current supported boundary:
 
-- `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ZAC`, `ROVM`, and `SOVM`;
+- `LAC`, `LACK`, `LARK`, `LARP`, `LDPK`, `NOP`, `ROVM`, `SACL`, `SOVM`, and
+  `ZAC`;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
+- `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
+  same post-access auxiliary-register controls;
 - 12-bit PC wrap;
 - deterministic program/data/I/O storage and raw word-image loading;
 - step-boundary reset effects established by TI;

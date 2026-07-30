@@ -32,8 +32,10 @@ module tms32010_synth_top (
   output logic        native_active_o,
   output logic [7:0]  data_address_o,
   output logic        data_read_o,
+  output logic        data_write_o,
   output logic        data_address_valid_o,
-  output logic [15:0] data_read_data_o
+  output logic [15:0] data_read_data_o,
+  output logic [15:0] data_write_data_o
 );
   tms32010_phase_slice phase_slice (
     .clk_i                         (clk_i),
@@ -52,8 +54,10 @@ module tms32010_synth_top (
     .bus_active_o                  (native_active_o),
     .data_address_o                (data_address_o),
     .data_read_o                   (data_read_o),
+    .data_write_o                  (data_write_o),
     .data_address_valid_o          (data_address_valid_o),
     .data_read_data_o              (data_read_data_o),
+    .data_write_data_o             (data_write_data_o),
     .pc_o                          (pc_o),
     .accumulator_o                 (accumulator_o),
     .auxiliary_register_0_o        (auxiliary_register_0_o),
