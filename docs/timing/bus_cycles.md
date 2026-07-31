@@ -118,23 +118,28 @@ data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
 No dedicated original-part pin waveform has been located for the two-word
-branch family. Except for the newly integrated exact `B`, the ordered reads
-below are derived from the primary word/cycle totals, following-word operand
-definitions, normal program-read rules, and legacy directed traces. They
-remain INFERRED as combined pipeline mappings even though the component facts
-are VERIFIED_PRIMARY.
+branch family. Except for the newly integrated exact `B` and `BANZ`, the
+ordered reads below are derived from the primary word/cycle totals,
+following-word operand definitions, normal program-read rules, and legacy
+directed traces. They remain INFERRED as combined pipeline mappings even
+though the component facts are VERIFIED_PRIMARY.
 
-`BANZ` is different from those one-word stack operations: its second cycle
-is the documented second program word. The native sequence is therefore two
-ordinary `MEN` reads at opcode PC and PC+1, followed by a normal read at the
-taken target or sequential PC+2. The condition cannot remove the operand
-cycle because TI lists BANZ as two words/two cycles without a conditional
-exception. Pinned MAME's one-cycle untaken shortcut is recorded as a
-functional-emulator abstraction in `SC-012`, not copied into the RTL
+Exact `BANZ` now has explicit pipeline ownership. Opcode `0xf400` prefetches
+at PC and enters the execute slot. Its canonical operand is read at PC+1
+during execution cycle 1 and is not marked executable. The old selected
+`AR[8:0]` redirects execution cycle 2's normal `MEN` read to the target when
+nonzero or PC+2 when zero. BANZ retains ownership and its counter value until
+that selected instruction is captured, then decrements modulo 512 and
+retires. Both outcomes therefore consume both intervals. A directed test
+stalls the selected read and parks malformed operands before decrement or an
+unsupported speculative fetch. Pinned MAME's one-cycle untaken shortcut is
+recorded as a functional-emulator abstraction in `SC-012`, not copied into
+the RTL
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BANZ`,
 printed pp. 2-2, 2-13, 3-6, and 3-16
 (PDF pp. 26, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for combined pipeline mapping.**
+facts; INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
+implementation.**
 
 Exact `B` now has explicit pipeline ownership. Opcode `0xf900` prefetches at
 PC and enters the execute slot. Its canonical target operand is read at PC+1

@@ -65,6 +65,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_b_retains_execute_ownership_through_target_fetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_b")
 
+    def test_banz_selects_target_or_fallthrough_before_decrement(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_banz")
+
     def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
         self._run_testbench("tb_sequential_pipeline_differential")
 

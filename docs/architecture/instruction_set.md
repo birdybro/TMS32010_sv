@@ -151,15 +151,17 @@ printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
 ti-tms32010-assembly-guide-spru002b, `BANZ` and §4.4, printed pp. 3-16 and
 4-3 (PDF pp. 37 and 85)]. **Confidence: VERIFIED_PRIMARY.**
 
-The qualified program sequence reads the opcode at PC in cycle 1 and the
-following target word at PC+1 in cycle 2. The next normal read is the target
-when the old counter was nonzero or PC+2 when it was zero. This follows TI's
-mandatory two-word/two-cycle definition, its statement that program memory is
-always addressed by PC, and its explicit final-PC cases. Directed model, RTL,
-and native-phase tests cover both outcomes, test-before-decrement, upper-bit
-preservation, low-nine-bit wrap, clock-enable hold in the operand cycle, and
-both program addresses. **Confidence: VERIFIED_PRIMARY for logical address
-order and normal-read phases.**
+The source-derived explicit-pipeline mapping separates the opcode-prefetch
+boundary from BANZ's two execution intervals. Execution cycle 1 reads the
+following target word at PC+1 and uses the old counter to select the next
+fetch: target when nonzero or PC+2 when zero. Execution cycle 2 fetches that
+selected instruction; only at its completion does BANZ decrement the
+counter, retire, and capture the fetched word without executing it. Directed
+model, core, legacy native-phase, and explicit-pipeline tests cover both
+outcomes, test-before-decrement, upper-bit preservation, low-nine-bit wrap,
+selected-fetch clock-enable hold, both selected addresses, and deferred target
+effects. **Confidence: VERIFIED_PRIMARY for the component facts and normal
+read phases; INFERRED for the combined explicit-pipeline mapping.**
 
 The later SPRU013 `BANZ` example prints zero becoming `0xffff`, contrary to
 both the original guide and SPRU013's own §3.4.5 statement that only the low
@@ -180,9 +182,11 @@ ti-tms32010-assembly-guide-spru002b, `B`, printed p. 3-15 (PDF p. 36);
 ti-first-generation-users-guide-1987, Table 4-2 and `B`, printed pp. 4-10 and
 4-20 (PDF pp. 89 and 101)]. **Confidence: VERIFIED_PRIMARY.**
 
-The qualified program sequence reads `0xf900` at PC in cycle 1 and the target
-word at PC+1 in cycle 2, then performs the next normal read at the target.
-Retirement occurs only at the second sample. Directed model, RTL,
+The source-derived explicit-pipeline mapping places `0xf900` in execute
+ownership at opcode-prefetch completion, reads its target operand at PC+1
+during execution cycle 1, and fetches the redirected target instruction
+during execution cycle 2. B retires and captures—but does not execute—that
+target only at the second interval's completion. Directed model, RTL,
 native-phase, and differential tests cover two successive branches, skipped
 fall-through words, PC wrap on the operand fetch, architectural-state
 preservation, a clock-enable stall in the target phase, and trap-before-effects
@@ -190,7 +194,8 @@ for a noncanonical target word. Pinned MAME independently corroborates the PC
 load and fixed two-cycle total
 [mame-tms320c1x-core-030fefc, `tms320c1x_device_base::br`, lines 402–405,
 and opcode table line 842]. **Confidence: VERIFIED_PRIMARY for behavior and
-logical timing; CORROBORATED by independent emulator code.**
+numeric timing; INFERRED for the combined explicit-pipeline mapping;
+CORROBORATED by independent emulator code.**
 
 ## Qualified accumulator-conditional branch slice
 

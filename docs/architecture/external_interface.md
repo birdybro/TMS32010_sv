@@ -43,22 +43,27 @@ IN/OUT instead replace the second-cycle address with the port and assert
 order are also qualified below. Remaining instructions and general
 fetch/execute overlap are not complete.
 
-`BANZ` presents `PC` during its opcode read and `PC+1` during its target-word
-read. At the second falling-edge sample it selects the canonical target when
-the old selected low-nine AR counter is nonzero, or `PC+2` otherwise. Directed
-tests verify identical two-cycle read topology for taken and untaken paths,
-including an active-phase clock-enable stall. This logical sequence is
-primary-backed; it does not infer analog pin delays
+The explicit pipeline prefetches `BANZ` at opcode PC, then reads its canonical
+operand at PC+1 during execution cycle 1. The old selected low-nine AR counter
+chooses execution cycle 2's instruction fetch at target or PC+2 without
+changing the counter. BANZ owns execution until that fetch completes, when it
+decrements modulo 512, retires, and captures the fetched instruction.
+Directed tests verify both outcomes and an active selected-fetch
+clock-enable stall. This digital mapping does not infer analog pin delays
 [ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1 and `BANZ`, printed
 pp. 2-9–2-10, 2-13, and 3-16 (PDF pp. 33–34, 37, and 66)].
-**Confidence: VERIFIED_PRIMARY.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for the combined
+execute-interval mapping; VERIFIED_SIMULATION for the implementation.**
 
-`B` presents `PC` for exact opcode `0xf900`, then `PC+1` for its canonical
-target word, using two normal program reads. At the second falling-edge sample
-it retires and the next address becomes the target. No data or I/O
-transaction accompanies either cycle
+The explicit pipeline prefetches exact B opcode `0xf900` at PC, reads its
+canonical operand at PC+1 during execution cycle 1, and redirects execution
+cycle 2's instruction fetch to the target. B retains ownership until that
+fetch completes, when it retires and captures the target without executing
+it. No data or I/O transaction accompanies either interval
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
-3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY.**
+3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 The six accumulator-conditional branches present their exact opcode at PC and
 canonical target at PC+1 on both outcomes. The second falling-edge sample
@@ -67,14 +72,17 @@ native-phase tests cover taken, untaken, and target-phase stall cases for
 every mnemonic
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
-(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY for
+component facts; INFERRED for the legacy combined transaction/commit
+mapping.**
 
 `BV` likewise presents `0xf500` at PC and its canonical target at PC+1 for
 both OV states. The second falling-edge sample selects target or PC+2 and
 clears OV only on the target path. No data or I/O transaction accompanies
 either BV cycle
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
-3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
+3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for the legacy combined transaction/commit mapping.**
 
 `BIOZ` presents exact opcode `0xf600` at PC and the canonical target at PC+1
 on both input levels. The physical BIO input is active low, sampled every
@@ -84,7 +92,9 @@ change after opcode recognition but before the target sample affects the
 branch. Both paths take two cycles and emit only normal `MEN` reads
 [ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, `BIOZ`, and Appendix A
 BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
-(PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY for component
+facts and BIO sampling; INFERRED for the legacy combined transaction/commit
+mapping.**
 
 `CALL` presents exact opcode `0xf800` at PC and its canonical target at PC+1
 through two ordinary `MEN` reads. At the second sample it pushes opcode-PC+2
@@ -92,7 +102,8 @@ onto the internal stack and selects the target; no `DEN` or `WE` transaction
 occurs
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13, 3-6, and 3-26
-(PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for the legacy combined transaction/commit mapping.**
 
 `DINT` and `EINT` retain the same normal external program fetch and have no
 logical data-memory transaction. The phase wrapper verifies their `INTM`

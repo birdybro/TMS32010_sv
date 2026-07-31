@@ -24,7 +24,7 @@ one intervening port transfer, while a three-cycle `TBLR` spans the
 corresponding boundary via dummy, table-transfer, and repeated-prefetch
 intervals. The legacy phase wrapper preserves those external transactions and
 numeric totals but attaches retirement to fetch samples without a distinct
-execute slot. Only the sequential one-cycle subset and exact `B` currently
+execute slot. Only the sequential one-cycle subset and exact `B`/`BANZ` currently
 have explicit fetch/execute ownership
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
@@ -149,16 +149,19 @@ program mutation
 transactions and numeric total; VERIFIED_SIMULATION for legacy bus order;
 explicit pipeline ownership unqualified.**
 
-Directed `BANZ` tests assert two complete program-read cycles on both taken
-and untaken paths. Cycle 1 samples `0xf400`; cycle 2 samples the target word
-at PC+1; retirement occurs only at the second sample, with cycle count
-increased by two and the next bus address equal to target or PC+2. Tests also
-hold the clock enable during cycle 2 and require every pending state and
-native pin to remain stable
+Legacy `BANZ` tests assert the opcode and operand transactions on both taken
+and untaken paths. The explicit-pipeline test separately primes `0xf400`,
+keeps BANZ in the execute slot during its nonexecutable PC+1 operand fetch,
+and uses the old selected `AR[8:0]` to choose the execution-cycle-2 fetch at
+target or PC+2. BANZ decrements only when that selected fetch completes,
+retires, and captures the fetched instruction. The test covers both
+conditions, modulo-512 wrap with upper-bit preservation, no early decrement
+or fetched-instruction effect, a selected-fetch stall, and malformed-operand
+parking
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BANZ`, printed pp. 3-6 and
 3-16 (PDF pp. 56 and 66)]. **Confidence: VERIFIED_PRIMARY for component
-facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
-unqualified.**
+facts; INFERRED for their combined interval mapping; VERIFIED_SIMULATION for
+the implementation.**
 
 The explicit-pipeline `B` test primes exact opcode `0xf900`, keeps B in the
 execute slot while the canonical PC+1 operand is fetched during execution

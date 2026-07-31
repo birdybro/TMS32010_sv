@@ -55,19 +55,23 @@ The first core-connected use is
 address separate from the core PC. Fetch 0 primes an empty slot; while fetch
 N+1 runs, the core owns and retires one-cycle instruction N. Arbitrary
 clock-enable stalls hold both addresses, and recognized reset empties both
-domains. Exact unconditional `B` is the first integrated multicycle case:
-after its prefetch enters execute ownership, its operand fetch is explicitly
-nonexecutable execution cycle 1; that operand redirects the bus; target fetch
-is execution cycle 2; and only that target-fetch boundary retires B and
-captures the target instruction. A directed test checks this sequence,
-including a target-phase stall, no early target effect, and conservative
-parking on a malformed operand. Another directed test checks the sequential
-boundary explicitly. A differential test runs
+domains. Exact `B` and `BANZ` are the first integrated multicycle cases.
+After either prefetch enters execute ownership, its operand fetch is
+explicitly nonexecutable execution cycle 1. B redirects unconditionally;
+BANZ selects target or fallthrough from the old selected `AR[8:0]`. The
+selected instruction fetch is execution cycle 2, and only its boundary
+retires the branch and captures that instruction. BANZ's selected counter
+decrements modulo 512 only at this retirement boundary. Directed tests check
+both sequences, B's target-phase stall, both BANZ outcomes and selected-fetch
+stall, no early fetched-instruction effect, and conservative parking on
+malformed operands. Another directed test checks the sequential boundary
+explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
 state one retirement apart
 [`sim/bus/tb_sequential_pipeline_slice.sv`,
 `sim/bus/tb_sequential_pipeline_b.sv`,
+`sim/bus/tb_sequential_pipeline_banz.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
@@ -76,9 +80,9 @@ invalid-address word; it does not claim that parking is TMS32010 hardware
 behavior. The legacy phase wrapper retains the separately verified bus order
 for the remaining branch, I/O, table, and interrupt sequences until those
 states are reworked around explicit pipeline ownership. **Confidence:
-VERIFIED_PRIMARY for the required overlap; INFERRED for exact B interval
-ownership because no dedicated B waveform has been located; implementation
-behavior VERIFIED_SIMULATION only within this stated slice.**
+VERIFIED_PRIMARY for the required overlap; INFERRED for exact B/BANZ interval
+ownership because no dedicated branch waveform has been located;
+implementation behavior VERIFIED_SIMULATION only within this stated slice.**
 
 ## Required implementation model
 
@@ -99,10 +103,10 @@ gate topology.
 Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
-one-cycle instructions and exact `B`:
+one-cycle instructions and exact `B`/`BANZ`:
 
-- BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions retain
-  legacy two-read evidence but not yet explicit execute-slot ownership;
+- BIOZ, BV, CALL, and the six accumulator-tested conditions retain legacy
+  two-read evidence but not yet explicit execute-slot ownership;
 - IN and OUT retain the primary opcode-prefetch, mutually exclusive DEN/WE
   transfer, and next-prefetch bus order but not yet explicit execute-slot
   ownership through the next-prefetch boundary;
@@ -155,17 +159,21 @@ control-flow families, IN, OUT, TBLR, and TBLW; it does not convert the
 collapsed fetch-sample implementation into a physical subphase or
 fetch/execute-overlap claim.
 
-`BANZ` now supplies the first qualified two-word control-flow sequence. Cycle
-1 reads exact opcode `0xf400` at PC. Cycle 2 reads the following target word
-at PC+1 regardless of the condition. At the second falling-edge sample, the
-old selected `AR[8:0]` chooses the next address (target when nonzero, PC+2
-when zero), then that nine-bit counter decrements modulo 512. Each read uses
-the normal four-subphase `MEN` sequence; clock-enable stalls hold the active
-phase, address, pending operand state, PC, and AR
+Exact `BANZ` now has the same explicit two-interval ownership structure as B.
+Opcode-prefetch completion places `0xf400` in the execute slot. Its canonical
+PC+1 operand fetch is nonexecutable execution cycle 1. The old selected
+`AR[8:0]` chooses the next fetch—target when nonzero, opcode PC+2 when
+zero—without yet changing the register. That selected instruction fetch is
+execution cycle 2. At its falling-edge boundary BANZ decrements the selected
+nine-bit counter modulo 512, retires, and captures the fetched instruction
+without executing it. Each interval uses the normal four-subphase `MEN`
+sequence; clock-enable stalls hold the active phase, address, ownership, PC,
+and AR
 [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.4.1, and 2.6.1, Table 3-2,
 and `BANZ`, printed pp. 2-2, 2-9–2-10, 2-13, 3-6, and 3-16
 (PDF pp. 26, 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for
-logical ordering and normal-read pin phases.**
+the component facts; INFERRED for this combined execute-interval mapping
+because no dedicated BANZ pin waveform has been located.**
 
 Unconditional `B` supplies the first integrated multicycle ownership trace.
 The `0xf900` opcode prefetch completes at the boundary where B enters the
@@ -182,75 +190,86 @@ progress
 INFERRED for this combined execute-interval mapping because no dedicated B
 pin waveform has been located.**
 
-`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use that same two-read shape.
-At the second sample, a signed/zero test of the unchanged 32-bit ACC selects
-the canonical target or PC+2. Both outcomes retire after the second read;
-clock-enable stalls hold the target phase and condition inputs. Pinned MAME's
+The legacy wrapper gives `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` the
+same opcode/operand/selected-address transaction order. Its operand sample
+tests the unchanged 32-bit ACC and selects the canonical target or PC+2;
+clock-enable stalls hold that phase and condition inputs. Explicit execute
+ownership remains unintegrated. Pinned MAME's
 one-cycle untaken abstraction is disclosed in `SC-013`, not adopted
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
-(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY for
+component facts; INFERRED for the legacy combined transaction/commit
+mapping.**
 
-`BV` uses the same two-read shape and tests unchanged sticky OV at the second
-sample. OV set selects the canonical target and clears OV at retirement; OV
-clear selects PC+2 and remains clear. Both paths consume the second read, and
-a clock-enable stall holds PC, OV, and the target phase. MAME's shorter
+The legacy wrapper gives `BV` the same transaction order and tests unchanged
+sticky OV at its operand sample. OV set selects the canonical target and
+clears OV at legacy retirement; OV clear selects PC+2 and remains clear. Both
+paths consume the operand read, and a clock-enable stall holds PC, OV, and
+that phase. Explicit execute ownership remains unintegrated. MAME's shorter
 untaken abstraction is disclosed in `SC-014`
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
-3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
+3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for the legacy combined transaction/commit mapping.**
 
-`BIOZ` also uses the same two-read shape, but its predicate is the raw
-external active-low BIO level. TI says BIO is sampled every machine cycle and
-is not latched, and the AC table places its setup boundary before falling
-`CLKOUT`. The level at the second, target-word sample therefore selects the
-target or PC+2. Directed tests change BIO between the opcode and target
+The legacy wrapper gives `BIOZ` the same transaction order, but its predicate
+is the raw external active-low BIO level. TI says BIO is sampled every machine
+cycle and is not latched, and the AC table places its setup boundary before
+falling `CLKOUT`. The level at the target-word sample therefore selects target
+or PC+2. Directed tests change BIO between the opcode and target
 samples in both directions, require two cycles in both outcomes, and preserve
-the active target phase across a clock-enable stall. MAME's shorter untaken
-abstraction is disclosed in `SC-015`
+the active target phase across a clock-enable stall. Explicit execute
+ownership remains unintegrated. MAME's shorter untaken abstraction is
+disclosed in `SC-015`
 [ti-tms32010-users-guide-spru001b, §§2.9 and 2.6.1, Table 3-2, `BIOZ`, and
 Appendix A BIO timing, printed pp. 2-13, 2-18, 3-6, 3-19, and data-sheet 20
-(PDF pp. 37, 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 37, 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY for BIO
+sampling and component facts; INFERRED for the legacy combined
+transaction/commit mapping.**
 
-`CALL` uses the same two normal program reads, then commits two architectural
-effects at the target-word sample: opcode-PC+2 is pushed onto the four-level
-stack and the canonical target becomes PC. Directed tests prove no early push
-at the opcode sample, preserve stack/PC during an active target-phase stall,
-and check old-bottom discard and 12-bit return-address wrap
+The legacy wrapper gives `CALL` the same opcode/operand transaction order,
+then commits two architectural effects at its operand sample: opcode-PC+2 is
+pushed onto the four-level stack and the canonical target becomes PC.
+Directed tests prove no earlier push, preserve stack/PC during an active
+target phase, and check old-bottom discard and 12-bit return-address wrap.
+Explicit execute ownership remains unintegrated
 [ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
 printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for instruction
-effects and two-read sequence; implementation commit ownership is qualified
-at the architectural falling-edge boundary only.**
+effects and component facts; INFERRED for the legacy combined
+transaction/commit mapping.**
 
-`IN` and `OUT` are one-word instructions whose two documented cycles have
-different bus ownership. Cycle 1 performs the ordinary MEN opcode read. Cycle
-2 suppresses MEN, drives the three-bit port on A2–A0 with A11–A3 low, and
-asserts DEN for IN or WE for OUT. At the second falling `CLKOUT` sample, IN
-writes the live external word to the pre-update internal-RAM address; OUT has
-held the selected internal-RAM word on the external data bus and completes the
-write. The common indirect AR/ARP update and instruction retirement also
-occur at that boundary. Directed phase tests require MEN, DEN, and WE to be
-mutually exclusive and hold address, control, data, PC, and pending state
-through a disabled clock-enable phase
+`IN` and `OUT` are one-word instructions whose two documented execution
+intervals follow the opcode-prefetch boundary. Execution cycle 1 suppresses
+MEN, drives the three-bit port on A2–A0 with A11–A3 low, and asserts DEN for
+IN or WE for OUT. Execution cycle 2 is the next-instruction prefetch. At the
+port sample, IN writes the live external word to the pre-update internal-RAM
+address; OUT completes the selected internal-RAM-word write. The legacy
+wrapper applies the indirect update and retirement there while presenting the
+next address; explicit ownership through the next-prefetch completion remains
+unintegrated. Directed phase tests require MEN, DEN, and WE to be mutually
+exclusive and hold address, control, data, PC, and pending state through a
+disabled clock-enable phase
 [ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A I/O
 timing, printed pp. 3-6, 3-30, and 3-47 plus data-sheet pp. 17–18
 (PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for
-logical ordering and native pin phases; analog delays are wrapper
-constraints.**
+logical ordering and native pin phases; VERIFIED_SIMULATION for legacy bus
+order; explicit execute ownership unqualified.**
 
-`TBLR` and `TBLW` use a distinct three-cycle pending state. Cycle 1 samples
-the opcode, advances architectural PC to PC+1, and captures `ACC[11:0]` plus
-the old resolved internal-data address. Cycle 2 performs a complete normal
-`MEN` read at PC+1 but discards its input. Cycle 3 drives the captured
-accumulator address and either reads under `MEN` into RAM or writes the
-selected RAM word under `WE`. Only the table sample applies indirect AR/ARP
-updates, the documented final stack-bottom duplication, and retirement. The
-next normal read repeats PC+1; stalls hold each pending phase without
-architectural progress
+`TBLR` and `TBLW` have three execution intervals after their opcode-prefetch
+boundary: a discarded PC+1 prefetch, an ACC-addressed table transfer, and the
+repeated PC+1 instruction prefetch. The legacy wrapper captures
+`ACC[11:0]` and the old resolved internal-data address at its opcode sample,
+then preserves all four ordered transactions. It applies indirect updates,
+the documented final stack-bottom duplication, and retirement at the table
+sample before presenting the repeated PC+1 address. Explicit ownership
+through repeated-prefetch completion remains unintegrated; stalls hold each
+legacy pending phase without architectural progress
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
-(PDF pp. 41 and 114–117)]. **Confidence: VERIFIED_PRIMARY for logical
-ordering and native pin ownership.**
+(PDF pp. 41 and 114–117)]. **Confidence: VERIFIED_PRIMARY for source
+ordering and native pin ownership; VERIFIED_SIMULATION for legacy bus order;
+explicit execute ownership unqualified.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

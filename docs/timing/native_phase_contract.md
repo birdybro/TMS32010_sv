@@ -30,7 +30,7 @@ accounts and retires them at fetch-sample boundaries without a distinct
 execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
-only for sequential one-cycle instructions and exact `B`
+only for sequential one-cycle instructions and exact `B`/`BANZ`
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -171,7 +171,7 @@ VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
-Except for exact `B`, the branch-family tables below describe transaction
+Except for exact `B` and `BANZ`, the branch-family tables below describe transaction
 order in the legacy wrapper. Their numbered read slots are not TI's
 post-prefetch execution-cycle labels. TI establishes two words, two cycles,
 the following target word, and ordinary program-memory fetch behavior, but no
@@ -180,22 +180,24 @@ Consequently, the combined read/execute/commit mapping for these still
 unintegrated families is INFERRED even where each component fact is
 VERIFIED_PRIMARY.
 
-`BANZ` uses two consecutive normal program reads:
+The explicit pipeline drives `BANZ` through these source-derived intervals:
 
-| Legacy read slot | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize `0xf400`; advance PC/address to the following word |
-| 2 | opcode PC + 1 | sample the 12-bit target, test old selected `AR[8:0]`, decrement that field modulo 512, and select the next address |
-| following | target if old counter was nonzero; otherwise opcode PC + 2 | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize `0xf400`; BANZ enters execute ownership |
+| execution cycle 1 | opcode PC + 1 | sample canonical target operand; old selected `AR[8:0]` selects target or fallthrough fetch without decrement |
+| execution cycle 2 | target if old counter was nonzero; otherwise opcode PC + 2 | fetch selected instruction; decrement selected counter modulo 512, retire BANZ, and capture fetched word |
 
-Both condition outcomes consume the second read and retire after two cycles.
-The second word's documented upper nibble is zero. Each of the two reads uses
-the normal address/`MEN`/falling-edge relationship above; BANZ adds no
-`DEN` or `WE` phase
+Both condition outcomes consume both execution intervals. The second word's
+documented upper nibble is zero. Every transaction uses the normal
+address/`MEN`/falling-edge relationship above; BANZ adds no `DEN` or `WE`
+phase. A low clock enable in an active selected-fetch phase holds the bus,
+execute owner, PC, counter, and numeric cycle total
 [ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1, Table 3-2, and `BANZ`,
 printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
 (PDF pp. 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for the
-component facts; INFERRED for combined transaction/commit mapping.**
+component facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the stated implementation.**
 
 ## B
 

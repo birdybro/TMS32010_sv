@@ -1,7 +1,7 @@
 `default_nettype none
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
-// instructions, and exact unconditional B. Program fetch owns a separate
+// instructions, exact B, and exact BANZ. Program fetch owns a separate
 // address from the core PC. Other multicycle, reserved, and
 // invalid-data-address instructions park the wrapper before execution; the
 // legacy phase wrapper remains responsible for their separately qualified
@@ -58,13 +58,14 @@ module tms32010_sequential_pipeline_slice (
   output logic [31:0] cycle_count_o
 );
   localparam logic [5:0] OP_SUBC = 6'd36;
+  localparam logic [5:0] OP_BANZ = 6'd37;
   localparam logic [5:0] OP_B    = 6'd38;
   localparam logic [5:0] OP_SUBH = 6'd52;
 
   typedef enum logic [1:0] {
     PIPELINE_SEQUENTIAL,
-    PIPELINE_B_TARGET,
-    PIPELINE_B_INVALID
+    PIPELINE_CONTROL_TARGET,
+    PIPELINE_CONTROL_INVALID
   } pipeline_state_t;
 
   pipeline_state_t pipeline_state;
@@ -80,9 +81,12 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_decoded_valid;
   logic [5:0]  execute_decoded_operation;
   logic        execute_one_cycle_supported;
+  logic        execute_is_banz;
   logic        execute_is_b;
-  logic        branch_operand_step;
-  logic        branch_target_step;
+  logic        execute_control_supported;
+  logic        control_operand_step;
+  logic        control_target_step;
+  logic [8:0]  banz_counter;
   logic        execute_complete;
   logic        core_instruction_valid;
   logic        execute_ready;
@@ -115,14 +119,20 @@ module tms32010_sequential_pipeline_slice (
     next_fetch_address = 12'h000;
     if (bus_active_o) begin
       next_fetch_address = program_bus_address + 12'h001;
-      if (branch_operand_step) begin
+      if (control_operand_step) begin
         // A documented branch operand has a zero upper nibble. If it does
         // not, hold the sampled operand address and park after the boundary;
         // no undocumented speculative address is generated.
-        next_fetch_address =
-          (program_data_i[15:12] == 4'h0)
-            ? program_data_i[11:0]
-            : program_bus_address;
+        if (program_data_i[15:12] != 4'h0) begin
+          next_fetch_address = program_bus_address;
+        end else if (execute_is_b) begin
+          next_fetch_address = program_data_i[11:0];
+        end else if (execute_is_banz) begin
+          next_fetch_address =
+            (banz_counter != 9'h000)
+              ? program_data_i[11:0]
+              : program_bus_address + 12'h001;
+        end
       end
     end
   end
@@ -133,18 +143,27 @@ module tms32010_sequential_pipeline_slice (
       (execute_decoded_operation <= OP_SUBC) ||
       (execute_decoded_operation == OP_SUBH)
     );
+  assign execute_is_banz =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_BANZ);
   assign execute_is_b =
     execute_valid_o &&
     execute_decoded_valid &&
     (execute_decoded_operation == OP_B);
-  assign branch_operand_step =
-    execute_is_b &&
+  assign execute_control_supported = execute_is_banz || execute_is_b;
+  assign control_operand_step =
+    execute_control_supported &&
     (pipeline_state == PIPELINE_SEQUENTIAL);
-  assign branch_target_step =
-    execute_is_b &&
-    (pipeline_state == PIPELINE_B_TARGET);
+  assign control_target_step =
+    execute_control_supported &&
+    (pipeline_state == PIPELINE_CONTROL_TARGET);
+  assign banz_counter =
+    auxiliary_register_pointer_o
+      ? auxiliary_register_1_o[8:0]
+      : auxiliary_register_0_o[8:0];
   assign core_program_data =
-    branch_target_step
+    control_target_step
       ? branch_operand_word
       : execute_word_o;
   assign execute_ready =
@@ -152,14 +171,14 @@ module tms32010_sequential_pipeline_slice (
     core_instruction_valid &&
     (
       execute_one_cycle_supported ||
-      branch_operand_step ||
-      branch_target_step
+      control_operand_step ||
+      control_target_step
     );
   assign execute_complete =
     execute_ready &&
     (
       execute_one_cycle_supported ||
-      branch_target_step
+      control_target_step
     );
   assign pipeline_blocked_o =
     execute_valid_o &&
@@ -183,7 +202,7 @@ module tms32010_sequential_pipeline_slice (
     (
       !execute_valid_o ||
       execute_one_cycle_supported ||
-      branch_target_step
+      control_target_step
     );
   assign core_reset = pipeline_boundary && rs_i;
   assign core_execute_boundary = fetch_boundary && execute_ready;
@@ -291,13 +310,13 @@ module tms32010_sequential_pipeline_slice (
       if (rs_i) begin
         pipeline_state      <= PIPELINE_SEQUENTIAL;
         branch_operand_word <= 16'h0000;
-      end else if (core_execute_boundary && branch_operand_step) begin
+      end else if (core_execute_boundary && control_operand_step) begin
         branch_operand_word <= program_data_i;
         pipeline_state <=
           (program_data_i[15:12] == 4'h0)
-            ? PIPELINE_B_TARGET
-            : PIPELINE_B_INVALID;
-      end else if (core_execute_boundary && branch_target_step) begin
+            ? PIPELINE_CONTROL_TARGET
+            : PIPELINE_CONTROL_INVALID;
+      end else if (core_execute_boundary && control_target_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
       end
     end
@@ -310,23 +329,34 @@ module tms32010_sequential_pipeline_slice (
       assert (!core_interrupt_pending);
       if (core_execute_boundary) begin
         assert (core_program_read);
-        if (branch_target_step) begin
+        if (control_target_step) begin
           assert (pc_o == execute_address_o + 12'h001);
           assert (core_program_address == pc_o);
-          assert (program_bus_address == branch_operand_word[11:0]);
-          assert (core_program_next_address == branch_operand_word[11:0]);
+          assert (core_program_next_address == program_bus_address);
+          if (execute_is_b) begin
+            assert (program_bus_address == branch_operand_word[11:0]);
+          end else if (execute_is_banz) begin
+            assert (
+              program_bus_address ==
+              (
+                (banz_counter != 9'h000)
+                  ? branch_operand_word[11:0]
+                  : pc_o + 12'h001
+              )
+            );
+          end
         end else begin
           assert (execute_address_o == pc_o);
           assert (core_program_address == execute_address_o);
           assert (core_program_next_address == pc_o + 12'h001);
         end
       end
-      if (branch_operand_step && fetch_boundary) begin
+      if (control_operand_step && fetch_boundary) begin
         assert (!fetched_instruction);
         assert (!execute_complete);
         assert (program_bus_address == execute_address_o + 12'h001);
       end
-      if (branch_target_step && fetch_boundary) begin
+      if (control_target_step && fetch_boundary) begin
         assert (fetched_instruction);
         assert (execute_complete);
       end

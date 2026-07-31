@@ -33,8 +33,9 @@ The second directly targets `tms32010_sequential_pipeline_slice` and writes
 a second decoder, program bus, and fetch/execute register. It is not a
 Quartus resource or timing result and qualifies only the pipeline subset
 documented in `docs/architecture/pipeline.md`. After exact B integration,
-Yosys 0.67+111 reports 14,213 generic cells, 41 retained checks, and zero
-structural-check problems.
+the checkpoint was 14,213 generic cells and 41 checks. With exact BANZ
+integrated, Yosys 0.67+111 reports 14,276 generic cells, 42 retained checks,
+and zero structural-check problems.
 
 ## Quartus
 

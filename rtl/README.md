@@ -46,9 +46,9 @@ a flush and overwriting an incomplete instruction. Directed simulation covers
 pipeline priming, sequential overlap, stalls, multicycle retention, branch
 redirect, interrupt dummy/vector flow, and recognized reset. Standalone Yosys
 synthesis finds 29 flip-flops, 68 generic cells including two retained checks,
-and no structural problems. The block does not alter current integrated-core
-behavior until the surrounding sequencer can classify every fetched,
-operand, and dummy transaction.
+and no structural problems. The block alone does not prove integrated-core
+behavior; its surrounding sequencer must classify every fetched, operand, and
+dummy transaction.
 A 12-step bounded formal harness proves its capture, hold, replacement,
 bubble, reset, and flush transitions for arbitrary words and boundary timing
 under the block's two explicit legal-input contracts. The non-vacuity cover
@@ -60,11 +60,14 @@ integration. A separate fetch address primes word 0 without retirement, then
 stays one word ahead while the core retires decoded one-cycle instructions.
 Directed tests cover stalls and reset recovery; a 43-retirement offset
 differential spans all 38 already-qualified one-cycle operation families and
-compares the complete exposed architectural state. A multicycle, reserved, or
-invalid-address execute word parks the wrapper at phase zero with a visible
-`pipeline_blocked_o`; this is a qualification mechanism, not claimed hardware
-behavior. Branch, I/O, table, and interrupt overlap remain in the legacy
-wrapper and are not pipeline-integrated.
+compares the complete exposed architectural state. Exact B and BANZ also
+retain execute ownership through nonexecutable operand fetch and selected
+instruction fetch; BANZ selects target/fallthrough from the old nine-bit
+counter and decrements only at branch retirement. Other multicycle, reserved,
+or invalid-address execute words park the wrapper at phase zero with a
+visible `pipeline_blocked_o`; this is a qualification mechanism, not claimed
+hardware behavior. Other branch, I/O, table, and interrupt overlap remains in
+the legacy wrapper and is not pipeline-integrated.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one
@@ -73,7 +76,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the 37 currently qualified one-cycle sequential instructions it samples
+For the 38 currently qualified one-cycle operation families it samples
 and retires on the same falling boundary. B, BANZ, BIOZ, BV, CALL, and the six
 qualified accumulator branches instead fetch their following target words through a
 second complete, independently stallable

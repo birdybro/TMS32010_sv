@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 13 native bus/phase tests, including three explicit pipeline tests; one
+  tests; 14 native bus/phase tests, including four explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -34,9 +34,9 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 14,213 generic cells with 41 retained checks and
-  no structural problems after exact B integration; this is not a Quartus fit
-  or complete-pipeline result
+  independently passes at 14,276 generic cells with 42 retained checks and
+  no structural problems after exact B/BANZ integration; this is not a
+  Quartus fit or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -159,11 +159,15 @@
   SUBC affects OV but ignores OVM, and does not specify either violation
   behavior or the exact overflow-producing stage; BANZ is exact opcode
   `0xf400` followed by a canonical 12-bit target word and always consumes two
-  normal program-read cycles; it tests the old selected AR[8:0], decrements
-  that counter modulo 512 while preserving AR[15:9], and selects the target
-  or `PC+2` at the second sample; original SPRU001B and later architectural
-  prose support the low-nine-bit wrap, while a later-guide example and MAME's
-  one-cycle untaken abstraction remain disclosed as `SC-011`/`SC-012`; B is
+  execution intervals; its INFERRED explicit-pipeline mapping holds BANZ
+  ownership through the nonexecutable operand and condition-selected
+  target/fallthrough fetch, tests the old selected AR[8:0], and defers the
+  modulo-512 decrement with AR[15:9] preservation until retirement; directed
+  evidence covers both conditions, selected-fetch stalls, no early mutation
+  or fetched-instruction effect, and malformed-operand parking; original
+  SPRU001B and later architectural prose support the low-nine-bit wrap, while
+  a later-guide example and MAME's one-cycle untaken abstraction remain
+  disclosed as `SC-011`/`SC-012`; B is
   exact opcode `0xf900`, followed by a canonical absolute 12-bit target word,
   and unconditionally loads PC after two normal program-read cycles while
   preserving all other architectural state; original TI sources and pinned
@@ -229,7 +233,7 @@
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
 - **Unresolved issues:** pipeline ownership beyond sequential one-cycle
-  instructions and exact B, interrupt execute-overlap
+  instructions and exact B/BANZ, interrupt execute-overlap
   ownership and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
@@ -242,10 +246,11 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend explicit pipeline ownership from exact B to BANZ under
-  a directed operand/condition/target-fetch contract, preserving the
-  modulo-512 decrement and both outcomes without promoting the inferred
-  branch timing synthesis to primary proof; then continue
+- **Next task:** extend explicit pipeline ownership to the six
+  accumulator-conditional branches under a directed zero/positive/negative
+  predicate and target/fallthrough-fetch contract, while retaining their
+  interval mapping as INFERRED and moving the unsupported-scope sentinel
+  forward; then continue
   `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
@@ -264,4 +269,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `8115fcf`
+  `e93ac3c`

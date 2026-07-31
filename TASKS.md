@@ -391,6 +391,8 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/pipeline.md`
 - **Tests:** `sim/bus/tb_phase_slice_integration.sv`,
   `sim/bus/tb_sequential_pipeline_slice.sv`,
+  `sim/bus/tb_sequential_pipeline_b.sv`,
+  `sim/bus/tb_sequential_pipeline_banz.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -414,8 +416,9 @@ objective passing evidence.
   only on the table sample; the next program cycle repeats PC+1.
   Interrupt control now includes active-low request latching, one-instruction
   pipeline deferral, MPY/MPYK extension, a non-retiring return-PC dummy read,
-  stack entry, mask/flag acknowledge effects, and vector-2 selection. General
-  fetch/execute overlap does not exist yet. A four-case native test now
+  stack entry, mask/flag acknowledge effects, and vector-2 selection.
+  Complete fetch/execute overlap still does not exist; the narrow explicit
+  ownership slice is described below. A four-case native test now
   asserts falling-boundary request ownership from each modeled subphase,
   including a stalled pre-sample phase, while leaving physical setup/CDC
   behavior unclaimed. A 32-case core matrix exhausts arrival at every
@@ -434,16 +437,20 @@ objective passing evidence.
   interrupt-dummy/vector, and recognized-reset tests plus independent Yosys
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
   it to the core for reset priming, decoded one-cycle operation families, and
-  exact unconditional B. B retains execute ownership across a nonexecutable
-  PC+1 operand fetch and the redirected target-instruction fetch, retires only
-  as the target enters the execute slot, and cannot apply the target's effects
-  until the following fetch interval. A directed test covers target-fetch
-  stall, no early target effect, and conservative malformed-operand parking.
-  This combined interval mapping is INFERRED from Figure 2-2, Table 3-2, and
-  the B page because no dedicated B pin waveform has been located.
+  exact B and BANZ. Both retain execute ownership across a nonexecutable PC+1
+  operand fetch and the selected target/fallthrough-instruction fetch, retire
+  only as that instruction enters the execute slot, and cannot apply its
+  effects until the following fetch interval. BANZ selects from the old
+  selected `AR[8:0]` and defers its modulo-512 decrement until branch
+  retirement. Directed tests cover both conditions, target/fallthrough
+  addresses, selected-fetch stalls, no early register or fetched-instruction
+  effects, and conservative malformed-operand parking. These combined
+  interval mappings are INFERRED from Figure 2-2, Table 3-2, and the
+  instruction pages because no dedicated branch pin waveform has been
+  located.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
-  parking on unsupported `BANZ`, and reset recovery. An offset differential runs the full
+  parking on unsupported `BGEZ`, and reset recovery. An offset differential runs the full
   existing 43-word/38-family one-cycle program and compares PC, ACC, T, P,
   both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count, and illegal
   state after every pipelined retirement. Other branch, I/O, table, and
@@ -474,8 +481,9 @@ objective passing evidence.
   traps and stalls. Every legacy-qualified control-flow path verifies
   opcode/target addresses and target-read stalls; conditional branches cover
   both outcomes, but those tests do not establish separate execute ownership.
-  The explicit pipeline now covers exact B's operand and redirected target
-  fetches, including target stall and no early target execution.
+  The explicit pipeline now covers exact B/BANZ operand and selected
+  target/fallthrough fetches, including stalls, both BANZ conditions, deferred
+  counter mutation, and no early fetched-instruction execution.
   CALL also verifies no early push and its target-sample stack commit. IN/OUT
   verify an ordinary opcode read before the distinct I/O cycle without
   changing the qualified normal-program-read primitive. TBLR/TBLW verify
@@ -828,11 +836,12 @@ objective passing evidence.
   Primary Figures 2-9/2-10 label opcode prefetch separately from the numbered
   execution intervals; the legacy wrapper preserves the bus sequence and
   totals but does not yet retain IN/OUT or TBL execute ownership through the
-  following/repeated prefetch. Exact B is the first multicycle case mapped
-  into explicit ownership: operand fetch is execution cycle 1 and target
-  instruction fetch is execution cycle 2. The mapping is INFERRED from
-  primary component facts and directed-tested, not presented as a dedicated
-  primary pin waveform.
+  following/repeated prefetch. Exact B and BANZ are the first multicycle cases
+  mapped into explicit ownership: operand fetch is execution cycle 1 and the
+  selected instruction fetch is execution cycle 2. BANZ selects target or
+  fallthrough from its old counter and decrements only at retirement. The
+  mappings are INFERRED from primary component facts and directed-tested, not
+  presented as dedicated primary pin waveforms.
   Other control flow remains. CALA is model-asserted as a
   primary-confirmed one-word/two-cycle computed call, but its second-cycle
   external sequence remains open under `OQ-007`. PUSH/POP are model-asserted as
@@ -989,8 +998,8 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,514 generic cells/26 checks) and the exact-B pipeline slice
-  (14,213 cells/41 checks), each with zero structural problems. Full-core
+  harness (13,514 generic cells/26 checks) and the exact-B/BANZ pipeline slice
+  (14,276 cells/42 checks), each with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
