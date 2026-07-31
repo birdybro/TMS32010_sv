@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fifty-five model/tool encodings.
+  mnemonics and fully describes the first fifty-six model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -242,6 +242,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   assembler/disassembler round trips, and directed model tests for low-12-bit
   push, zero-extending pop, complete four-level shifts, PC wrap, preserved
   state, repeated over-push/over-pop behavior, and two-cycle totals.
+- Primary-cited exact `CALA=0x7f8c` database/fixture support, assembler and
+  disassembler round trips, and directed model tests for opcode-PC+1 stack
+  push, `ACC[11:0]` target selection, upper-ACC exclusion, PC wrap, nested
+  old-bottom loss, state preservation, and two-cycle totals.
 
 ### Changed
 
@@ -276,9 +280,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
-- The model/tool boundary now contains 55 instructions while RTL/differential
-  remains at 52. RET/PUSH/POP second external cycles are not fabricated in
-  model transaction traces and remain outside RTL under `OQ-007`/`OQ-016`.
+- The model/tool boundary now contains 56 instructions while RTL/differential
+  remains at 52. CALA/RET/PUSH/POP second external cycles are not fabricated
+  in model transaction traces and remain outside RTL under
+  `OQ-007`/`OQ-016`.
 
 ### Fixed
 
@@ -581,7 +586,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The same formal stack passes a 20-step direct-MPY/repeated-chain BMC across
   arbitrary clock-enable choices; its cover reaches completed entry at step
   12 after checking three exact signed products.
-- The complete current regression passes 93 repository/ISA/tool tests, 207
+- The complete current regression passes 95 repository/ISA/tool tests, 210
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -590,7 +595,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- Fifty-five of 60 documented instruction mnemonics have model/tool evidence;
+- Fifty-six of 60 documented instruction mnemonics have model/tool evidence;
   only fifty-two also have RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
@@ -622,6 +627,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   `CTRL-002`/`OQ-004`/`OQ-007`. RET's functional model behavior is qualified,
   but TI's located instruction pages do not identify its second cycle's
   external address or `MEN` behavior.
+- CALA's state effects and numeric two-cycle total are model/tool-qualified,
+  but its located pages likewise do not identify the second cycle's external
+  address or `MEN` behavior; RTL/native qualification remains `OQ-007`.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.

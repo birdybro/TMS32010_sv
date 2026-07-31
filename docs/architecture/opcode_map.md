@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its current fifty-five-instruction model/tool boundary is intentionally partial
+Its current fifty-six-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -31,6 +31,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `SOVM` | `0x7f8b` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `DINT` | `0x7f81` | `0xffff` | 1 | 1 | individual `DINT` page, printed p. 3-27 |
 | `EINT` | `0x7f82` | `0xffff` | 1 | 1 | individual `EINT` page, printed p. 3-29 |
+| `CALA` | `0x7f8c` | `0xffff` | 1 | 2 | individual `CALA` page, printed p. 3-25 |
 | `RET` | `0x7f8d` | `0xffff` | 1 | 2 | individual `RET` page, printed p. 3-51 |
 | `POP` | `0x7f9d` | `0xffff` | 1 | 2 | individual `POP` page, printed p. 3-49 |
 | `PUSH` | `0x7f9c` | `0xffff` | 1 | 2 | individual `PUSH` page, printed p. 3-50 |
@@ -67,9 +68,9 @@ documented mnemonics so missing coverage remains machine-visible.
 | `BZ pma` | `0xff00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BZ` page, printed p. 3-24 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-29,
 3-31–3-44, 3-46, 3-48–3-51, 3-53–3-56, 3-58, 3-60–3-61, 3-63–3-68, and
-3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–74, 76–79, 81–94, 96, 98–101,
+3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–79, 81–94, 96, 98–101,
 103–106, 108, 110–118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
@@ -115,6 +116,16 @@ timing qualification
 printed pp. 4-55–4-56 (PDF pp. 136–137)].
 **Confidence: VERIFIED_PRIMARY for encoding, size, and cycle total; UNKNOWN
 for extra-cycle external subphases.**
+
+`CALA` is primary-transcribed exact word `0x7f8c`, with no operand field. It
+is one word and two cycles, pushes opcode-PC+1, and selects the program
+address in `ACC[11:0]`. It is in the model/tool and independent hand-fixture
+boundary, but its second native program-bus cycle remains unknown under
+`OQ-007`
+[ti-tms32010-users-guide-spru001b, `CALA`, printed p. 3-25 (PDF p. 75);
+ti-tms32010-assembly-guide-spru002b, `CALA`, printed p. 3-25 (PDF p. 46)].
+**Confidence: VERIFIED_PRIMARY for encoding, size, state effects, and cycle
+total; UNKNOWN for the second-cycle external subphases.**
 
 `DINT` and `EINT` are exact adjacent fixed words `0x7f81` and `0x7f82`,
 respectively. They have no variable operand bits or aliases. The next word

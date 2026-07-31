@@ -110,15 +110,15 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and local assembler/disassembler support 55 mnemonics:
+The executable model and local assembler/disassembler support 56 mnemonics:
 `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
-`BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`,
+`BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`,
 `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
 `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
-differential support the same set except POP, PUSH, and RET, for 52 shared
-mnemonics. Their architectural effects and two-cycle totals are
+differential support the same set except CALA, POP, PUSH, and RET, for 52
+shared mnemonics. Their architectural effects and two-cycle totals are
 model-qualified, while their second external cycles remain unresolved under
 `OQ-007`/`OQ-016`. The 24 common-address
 data/table instructions have independent
@@ -133,9 +133,9 @@ previously-disabled following-instruction deferral and MPY/MPYK's protection,
 dummy-fetch the return PC, push it, mask and clear the request, and select
 vector 2. Directed native testing verifies the Figure 2-12 external address
 order. Complete fetch/execute overlap, every multicycle request arrival,
-native/RTL RET resumption, PUSH/POP second-cycle sequencing, and provisional
-DINT-at-final-boundary ordering remain outside a cycle-accuracy claim under
-`OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+native/RTL CALA/RET sequencing, PUSH/POP second-cycle sequencing, and
+provisional DINT-at-final-boundary ordering remain outside a cycle-accuracy
+claim under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 PUSH and POP have primary-cited model/tool state and two-cycle evidence, but
 their second native program cycles and all RTL/differential behavior remain
 outside the qualified boundary under `OQ-016`.

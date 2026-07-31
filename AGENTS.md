@@ -235,15 +235,16 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, and local
-tools support fifty-five instructions:
-`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+tools support fifty-six instructions:
+`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
 `IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
 `SUBC`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
-RET's primary-defined stack pop/PC load and PUSH/POP's primary-defined stack
-effects at their two-cycle model boundaries.
-RTL and seeded differential support the same set except POP, PUSH, and RET,
-for fifty-two shared instructions; their second external cycles remain
+CALA's primary-defined computed-call effects, RET's primary-defined stack
+pop/PC load, and PUSH/POP's primary-defined stack effects at their two-cycle
+model boundaries.
+RTL and seeded differential support the same set except CALA, POP, PUSH, and
+RET, for fifty-two shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
 The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
@@ -281,8 +282,8 @@ retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. Complete fetch/execute
-overlap, exhaustive multicycle arrival coverage, native/RTL RET resumption,
-PUSH/POP second-cycle sequencing, and the provisional
+overlap, exhaustive multicycle arrival coverage, native/RTL CALA/RET
+sequencing, PUSH/POP second-cycle sequencing, and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
@@ -314,6 +315,10 @@ MAME's shorter untaken path.
 normal program cycle, pushes opcode-PC+2 onto the four-level 12-bit stack at
 retirement, and then selects the target. Stack overflow discards the old
 bottom without an exception.
+`CALA=0x7f8c` has model/tool evidence for a wrapped opcode-PC+1 stack push,
+`ACC[11:0]` target selection, and a two-cycle total. Its second external
+program cycle remains unknown, so RTL/native and differential support are
+deferred under `OQ-007`.
 `PUSH=0x7f9c` and `POP=0x7f9d` have model/tool evidence for their complete
 four-level stack transformations, PC+1 sequencing, and two-cycle totals.
 Their second external program cycles remain unknown, so RTL/native and

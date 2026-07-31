@@ -41,7 +41,8 @@ resolved for:
   mutually exclusive DEN or WE I/O cycle;
 - TBLR and TBLW are now qualified as opcode read, discarded PC+1 read, and
   ACC-addressed table transfer, followed by a repeated PC+1 read;
-- `CALA`, RET's externally unresolved second cycle, plus the second cycle of
+- CALA and RET have model-qualified state/cycle behavior but externally
+  unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
 - complete implementation of the now-transcribed interrupt fetch/execute
   overlap and exhaustive multicycle arrival matrix (`OQ-004`);

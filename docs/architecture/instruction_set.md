@@ -286,6 +286,35 @@ return-address wrap, state preservation, and malformed-target
 trap-before-push. Pinned MAME independently agrees on the push, target, and
 fixed two-cycle total.
 
+## Qualified `CALA` architectural/model slice
+
+`CALA` is exact opcode `0x7f8c`, one word, and two cycles. It pushes wrapped
+opcode-PC+1 onto the top of the four-level, 12-bit stack, shifts older entries
+one level deeper while discarding the old bottom, and loads PC from
+`ACC[11:0]`. ACC and all other non-PC, non-stack architectural state remain
+unchanged
+[ti-tms32010-users-guide-spru001b, §2.6.1, Table 3-2, and `CALA`, printed
+pp. 2-13, 3-6, and 3-25 (PDF pp. 37, 56, and 75);
+ti-tms32010-assembly-guide-spru002b, `CALA` and §4.7, printed pp. 3-25 and
+4-7 (PDF pp. 46 and 100); ti-first-generation-users-guide-1987, Table 4-2
+and `CALA`, printed pp. 4-10 and 4-30 (PDF pp. 89 and 111)].
+**Confidence: VERIFIED_PRIMARY for opcode, architectural effects, word count,
+and cycle total.**
+
+The independent model, assembler, and disassembler implement only those
+facts. Directed tests cover accumulator upper-bit exclusion, PC+1 wrap,
+nested calls, old-bottom loss, preserved state, exact implied-word round
+trips, two-cycle totals, and a logical trace containing only the known opcode
+fetch. Pinned MAME independently corroborates the push, accumulator-derived
+target, and fixed two-cycle total
+[mame-tms320c1x-core-030fefc, `cala()` and `s_opcode_7F`, lines 501–505 and
+849]. **Confidence: CORROBORATED for functional behavior and total.**
+
+The instruction pages do not identify CALA's external address or `MEN`
+behavior in the second cycle. RTL/native and differential support therefore
+remain deferred under `OQ-007`; no sequential prefetch or idle phase is
+invented. **Confidence: UNKNOWN for the second external cycle.**
+
 ## Qualified `RET` architectural/model slice
 
 `RET` is exact opcode `0x7f8d`, one word, and two cycles. It loads PC from

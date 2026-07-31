@@ -1,15 +1,15 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
-BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
+BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
 POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR,
 TBLW, XOR, ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O
 transactions and instruction totals are modeled; pin subphases are not
-integrated with this model. The primary-defined POP, PUSH, and RET state
-transitions and cycle totals are modeled, but their unresolved second external
-cycles are deliberately absent from the logical transaction trace under
-OQ-007/OQ-016.
+integrated with this model. The primary-defined CALA, POP, PUSH, and RET state
+transitions and cycle totals are modeled, but their unresolved second
+external cycles are deliberately absent from the logical transaction trace
+under OQ-007/OQ-016.
 """
 
 from __future__ import annotations
@@ -248,6 +248,27 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
+        if mnemonic == "CALA":
+            return_address = (pc + 1) & PC_MASK
+            self.state.stack = [
+                return_address,
+                self.state.stack[0] & PC_MASK,
+                self.state.stack[1] & PC_MASK,
+                self.state.stack[2] & PC_MASK,
+            ]
+            self.state.pc = self.state.acc & PC_MASK
+            cycles = 2
+            self.cycle_count += cycles
+            self._advance_interrupt_pipeline(mnemonic)
+            return StepTrace(
+                pc=pc,
+                opcode=opcode,
+                mnemonic=mnemonic,
+                operands=operands,
+                cycles=cycles,
+                transactions=tuple(transactions),
+                state_after=self.architectural_state(),
+            )
         if mnemonic in {"POP", "PUSH", "RET"}:
             if mnemonic in {"POP", "RET"}:
                 old_top = self.state.stack[0] & PC_MASK
@@ -1228,6 +1249,7 @@ class Tms32010Model:
             0x7F89: "ZAC",
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",
+            0x7F8C: "CALA",
             0x7F8D: "RET",
             0x7F8E: "PAC",
             0x7F8F: "APAC",

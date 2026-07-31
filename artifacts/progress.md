@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** PUSH/POP architectural/model/tool qualification
+- **Current milestone:** CALA architectural/model/tool qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 93 repository/provenance/document/ISA/toolchain tests; 207
+- **Tests passing:** 95 repository/provenance/document/ISA/toolchain tests; 210
   directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -166,14 +166,19 @@
   remaining stack upward with old-bottom duplication, and is protected after
   EINT before a pending interrupt can reenter; RET's second external address
   and MEN behavior remain unknown, so model/tool support does not imply
-  RTL/native qualification; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
+  RTL/native qualification; CALA is exact word `0x7f8c`, one word/two cycles,
+  pushes wrapped opcode-PC+1 while discarding the old stack bottom, and loads
+  PC from `ACC[11:0]`; directed model tests cover upper-ACC exclusion, PC
+  wrap, state preservation, and nested old-bottom loss, while its unknown
+  second external address and MEN behavior keep it outside RTL/native
+  qualification; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
   one word/two cycles, with low-12-bit push/old-bottom discard and
   zero-extending pop/old-bottom duplication respectively; model/tool tests
   cover repeated overflow/underflow and PC wrap, while their second external
   program cycles remain unknown under `OQ-016`
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
-  ownership and exhaustive multicycle arrival cases, RET's second external
-  cycle and native/RTL resumption,
+  ownership and exhaustive multicycle arrival cases, CALA/RET second external
+  cycles and native/RTL resumption,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -182,11 +187,12 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify CALA's primary-defined architectural
-  state/cycle behavior without inventing its unresolved external second cycle
-  under `OQ-007`, then continue `FORMAL-001` with indirect-MPY/address-update
-  scenarios and `CTRL-002` with an exhaustive supported-multicycle arrival
-  matrix; preserve the distinction between model-qualified RET/PUSH/POP
+- **Next task:** research `SUBH` across original TI revisions and either
+  qualify its arithmetic/status behavior or record the precise primary-source
+  ambiguity without inference; then continue `FORMAL-001` with
+  indirect-MPY/address-update scenarios and `CTRL-002` with an exhaustive
+  supported-multicycle arrival matrix; preserve the distinction between
+  model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing, and between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
@@ -199,4 +205,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `d8edbf7`
+  `551ac13`

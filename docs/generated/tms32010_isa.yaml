@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1851,6 +1851,41 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "CALA",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f8c",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["accumulator_indirect_program"],
+      "registers_read": ["PC", "ACC[11:0]", "old top three stack levels"],
+      "registers_written": ["PC", "all four stack levels"],
+      "memory_accesses": ["instruction_fetch", "unresolved_second_cycle_program_activity"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable; ACC[11:0] is used as an unsigned 12-bit program address",
+      "shift_behavior": "none",
+      "overflow_behavior": "none; stack overflow is not detected and the old bottom level is discarded",
+      "result_behavior": "push wrapped opcode PC plus one onto the four-level 12-bit stack, shifting old entries one level deeper and discarding the old bottom",
+      "branch_behavior": "unconditional computed subroutine call to the program address in ACC[11:0]",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt arrival within the unresolved second cycle remains outside the model boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-007"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.1, Table 3-2, and CALA instruction description", "printed_page": "2-13, 3-6, and 3-25", "pdf_page": "37, 56, and 75"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "CALA instruction description and 4.7 CALA Instruction", "printed_page": "3-25 and 4-7", "pdf_page": "46 and 100"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and CALA instruction description", "printed_page": "4-10 and 4-30", "pdf_page": "89 and 111"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004", "OQ-007"]
     },
     {
       "mnemonic": "RET",

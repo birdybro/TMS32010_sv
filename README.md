@@ -14,12 +14,12 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model and local tools currently support fifty-five
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model and local tools currently support fifty-six
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
 `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
-boundary support the same set except POP, PUSH, and RET,
+boundary support the same set except CALA, POP, PUSH, and RET,
 for fifty-two shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
 The 144-word internal RAM exposes verification-visible logical
@@ -85,6 +85,10 @@ path is disclosed as `SC-015`.
 At the second normal program-read sample it pushes opcode-PC+2 onto the
 four-level 12-bit stack and selects the target. Nested-call, stack-overflow,
 target-stall, return-address-wrap, and malformed-target cases are automated.
+`CALA=0x7f8c` has primary-cited model/tool coverage for pushing opcode-PC+1
+and selecting `ACC[11:0]` in two cycles. Its second external program cycle is
+unknown, so it has no RTL/native or differential qualification under
+`OQ-007`.
 `PUSH=0x7f9c` and `POP=0x7f9d` now have primary-cited model/tool coverage for
 their complete four-level stack effects and two-cycle totals. Their second
 external program cycle is unknown, so neither has RTL/native or differential

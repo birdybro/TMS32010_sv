@@ -26,6 +26,14 @@ for the unresolved extra internal cycle under `OQ-016`
 (PDF pp. 99–100)]. **Confidence: VERIFIED_PRIMARY for the numeric cycle
 count; UNKNOWN for the second-cycle external subphases.**
 
+The individual `CALA` page likewise establishes a one-word/two-cycle total,
+opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model tests assert
+that total and state transition while reporting only the known opcode fetch.
+No native second-cycle program activity is claimed under `OQ-007`
+[ti-tms32010-users-guide-spru001b, `CALA`, printed p. 3-25 (PDF p. 75)].
+**Confidence: VERIFIED_PRIMARY for the numeric cycle count and state effects;
+UNKNOWN for the second-cycle external subphases.**
+
 ## Qualified timing tests
 
 The current native-phase integration tests observe one complete four-subphase
@@ -195,7 +203,7 @@ IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
   `IN` write and `OUT` read;
 - table-operation discarded fetch order;
 - complete interrupt fetch/execute overlap, every request arrival point in
-  every multicycle instruction, native/RTL RET-based resumption, and the
+  every multicycle instruction, native/RTL CALA/RET sequencing, and the
   provisional DINT-at-final-boundary ordering (`OQ-004`, `OQ-007`,
   `OQ-019`);
 - board-level phase stretching in the absence of a READY pin.

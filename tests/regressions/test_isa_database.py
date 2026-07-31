@@ -67,6 +67,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "BV",
                 "BIOZ",
                 "CALL",
+                "CALA",
                 "RET",
                 "POP",
                 "PUSH",
@@ -122,7 +123,7 @@ class IsaDatabaseTests(unittest.TestCase):
 
     def test_adjacent_unimplemented_control_opcode_does_not_decode(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x7F83))
-        self.assertIsNone(decode_word(self.database, 0x7F8C))
+        self.assertIsNone(decode_word(self.database, 0x7F87))
         self.assertIsNone(decode_word(self.database, 0x6882))
         self.assertIsNone(decode_word(self.database, 0x6E02))
 
@@ -265,6 +266,21 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(instruction["conditional_cycle_differences"], [])
         self.assertIn("all four stack levels", instruction["registers_written"])
         self.assertIsNone(decode_word(self.database, 0xF801))
+
+    def test_cala_is_exact_two_cycle_accumulator_indirect_call(self) -> None:
+        decoded = decode_word(self.database, 0x7F8C)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        instruction, operands = decoded
+        self.assertEqual(instruction["mnemonic"], "CALA")
+        self.assertEqual(operands, {})
+        self.assertEqual(instruction.get("word_count", 1), 1)
+        self.assertEqual(instruction["documented_cycle_count"], 2)
+        self.assertEqual(instruction["status_flags_affected"], [])
+        self.assertEqual(instruction["conditional_cycle_differences"], [])
+        self.assertIn("ACC[11:0]", instruction["registers_read"])
+        self.assertIn("all four stack levels", instruction["registers_written"])
+        self.assertIn("OQ-007", instruction["unresolved_questions"])
 
     def test_ret_is_exact_two_cycle_stack_control_flow(self) -> None:
         decoded = decode_word(self.database, 0x7F8D)

@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
   `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
   `XOR`, `ZAC`, `ZALH`, and `ZALS`;
@@ -38,6 +38,10 @@ Current supported boundary:
   two mandatory program transactions, and unchanged architectural state;
 - `CALL` canonical target fetch, opcode-PC+2 return-address push, four-level
   stack shift with old-bottom discard, and a two-cycle total;
+- `CALA` exact implied decode, opcode-PC+1 stack push, `ACC[11:0]` target
+  selection, old-bottom discard, PC wrap, nested calls, and a two-cycle total;
+  its unresolved second external cycle is deliberately absent from the
+  logical transaction trace (`OQ-007`);
 - `RET` exact implied decode, old-top PC load, four-level pop with old-bottom
   duplication, a two-cycle total, and completion after EINT before pending
   interrupt reentry; its unresolved second external cycle is deliberately not

@@ -694,6 +694,22 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "no operands"):
             self.assembler.assemble_text("RET 1\n")
 
+    def test_cala_round_trips_exact_implied_word(self) -> None:
+        result = self.assembler.assemble_text("CALA\n")
+        self.assertEqual(result.words, {0: 0x7F8C})
+        self.assertEqual(
+            self.disassembler.disassemble_word(0x7F8C),
+            "CALA",
+        )
+        source = self.disassembler.disassemble_source([0x7F8C, 0x7F80])
+        self.assertEqual(source, "CALA\nNOP\n")
+        self.assertEqual(
+            list(self.assembler.assemble_text(source).words.values()),
+            [0x7F8C, 0x7F80],
+        )
+        with self.assertRaisesRegex(AssemblyError, "no operands"):
+            self.assembler.assemble_text("CALA 1\n")
+
     def test_push_pop_round_trip_exact_implied_words(self) -> None:
         result = self.assembler.assemble_text("PUSH\nPOP\n")
         self.assertEqual(result.words, {0: 0x7F9C, 1: 0x7F9D})
