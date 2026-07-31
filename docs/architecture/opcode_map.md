@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial twenty-nine-instruction model/tool boundary is intentionally partial
+Its initial thirty-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -21,6 +21,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `MPYK K` | `0x8000` | `0xe000` | 1 | 1 | individual `MPYK` page, printed p. 3-44 |
 | `PAC` | `0x7f8e` | `0xffff` | 1 | 1 | individual `PAC` page, printed p. 3-48 |
 | `APAC` | `0x7f8f` | `0xffff` | 1 | 1 | individual `APAC` page, printed p. 3-14 |
+| `SPAC` | `0x7f90` | `0xffff` | 1 | 1 | individual `SPAC` page, printed p. 3-58 |
 | `NOP` | `0x7f80` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `ZAC` | `0x7f89` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-5 |
 | `ROVM` | `0x7f8a` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
@@ -42,8 +43,9 @@ documented mnemonics so missing coverage remains machine-visible.
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
 descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-31–3-39, 3-42–3-44,
-3-46, 3-48, 3-53–3-56, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF pp. 55–57, 60,
-62–64, 81–89, 92–94, 96, 98, 103–106, 110, 113, 118, and 120–121)].
+3-46, 3-48, 3-53–3-56, 3-58, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF
+pp. 55–57, 60, 62–64, 81–89, 92–94, 96, 98, 103–106, 108, 110, 113, 118,
+and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `APAC` is the exact fixed word `0x7f8f`. No operand fields or aliases are
@@ -51,6 +53,12 @@ defined, so neighboring fixed words remain unsupported unless separately
 qualified
 [ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64);
 ti-tms32010-assembly-guide-spru002b, `APAC`, printed p. 3-14 (PDF p. 35)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`SPAC` is the exact fixed word `0x7f90`. It has no operand fields or aliases;
+adjacent words remain unsupported unless independently qualified
+[ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108);
+ti-tms32010-assembly-guide-spru002b, `SPAC`, printed p. 3-58 (PDF p. 79)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and

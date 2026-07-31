@@ -113,7 +113,7 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
-`SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
+`SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
 `ZALS`. The seventeen common-address data instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
@@ -150,6 +150,8 @@ also performs no data-memory access.
 APAC adds all 32 P bits to ACC, leaves P unchanged, applies sticky signed
 overflow and OVM-controlled wrap or endpoint saturation, and performs no
 data-memory access.
+SPAC subtracts all 32 P bits from ACC with the same P preservation,
+sticky-overflow, OVM result, and program-only transaction rules.
 TI's separate rule deferring interrupt service through the instruction after
 MPY or MPYK is documented but cannot yet be execution-tested because
 interrupt entry does not exist.

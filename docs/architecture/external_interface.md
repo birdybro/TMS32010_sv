@@ -31,7 +31,7 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the twenty-nine supported one-cycle sequential
+read relationship for the thirty supported one-cycle sequential
 instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `MPY`, `OR`, `SUB`,
 `XOR`, `ZALH`, `ZALS`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
@@ -52,6 +52,11 @@ its only data movement is the internal full-width P-to-ACC transfer
 `APAC` has the same program-only interface behavior while the internal ALU
 adds the full-width P value to ACC
 [ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`SPAC` also preserves this program-only interface behavior while the internal
+ALU subtracts the full-width P value from ACC
+[ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `MAR` also retains the normal external program read but exposes no logical

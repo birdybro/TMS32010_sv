@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY", "MPYK", "PAC", "APAC",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -603,6 +603,40 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.2.1.1, 2.2.2.1, and APAC instruction description", "printed_page": "2-4 through 2-5 and 3-14", "pdf_page": "28-29 and 64"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "APAC instruction description", "printed_page": "3-14", "pdf_page": 35},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and APAC instruction description", "printed_page": "3-19 through 3-20 and 4-19", "pdf_page": "48-49 and 100"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "SPAC",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f90",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": ["ACC", "P", "OVM", "OV"],
+      "registers_written": ["ACC", "OV on overflow"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["OV"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "P is used as a complete signed 32-bit operand",
+      "shift_behavior": "none",
+      "overflow_behavior": "signed overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
+      "result_behavior": "ACC receives the 32-bit difference ACC minus P subject to OVM; P is unchanged",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special SPAC interaction documented; when SPAC follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; SPAC has no data-memory transaction"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.2.1.1, 2.2.2.1, and SPAC instruction description", "printed_page": "2-4 through 2-5 and 3-58", "pdf_page": "28-29 and 108"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "SPAC instruction description", "printed_page": "3-58", "pdf_page": 79},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and SPAC instruction description", "printed_page": "3-19 through 3-20 and 4-64", "pdf_page": "48-49 and 145"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []

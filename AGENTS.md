@@ -235,10 +235,10 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support twenty-nine instructions:
+tools, RTL, and seeded differential boundary support thirty instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-`SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
@@ -257,7 +257,8 @@ through that same address/update path. MPYK sign-extends its signed 13-bit
 program-word constant and multiplies it by T into P without a data-memory
 access. PAC copies P into ACC without a data-memory access or arithmetic
 status change. APAC adds P to ACC with sticky signed overflow and
-OVM-controlled wrapping or saturation, also without a data-memory access.
+OVM-controlled wrapping or saturation. SPAC applies the same arithmetic policy
+while subtracting P from ACC; neither operation has a data-memory access.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

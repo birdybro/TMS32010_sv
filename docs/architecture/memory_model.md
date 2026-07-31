@@ -74,6 +74,11 @@ registers, and the full-width P-plus-ACC operation has no data-memory access
 [ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`SPAC` likewise operates only on internal ACC and P state, so its full-width
+ACC-minus-P operation requires no data-memory access
+[ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108)].
+**Confidence: VERIFIED_PRIMARY.**
+
 The current array has an asynchronous read because the temporary execution
 slice samples program data and commits a one-cycle instruction at one
 boundary. This is an implementation convenience, not evidence about the

@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current twenty-nine-instruction
+The checked-in projects synthesize the current thirty-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.

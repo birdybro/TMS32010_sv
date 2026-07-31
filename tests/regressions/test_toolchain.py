@@ -43,6 +43,7 @@ class ToolchainSliceTests(unittest.TestCase):
             MPYK 4095
             PAC
             APAC
+            SPAC
             LARK AR0,0
             LARK AR0,255
             LARK AR1,0
@@ -153,6 +154,7 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x8FFF,
                 0x7F8E,
                 0x7F8F,
+                0x7F90,
                 0x7000,
                 0x70FF,
                 0x7100,
@@ -246,6 +248,7 @@ class ToolchainSliceTests(unittest.TestCase):
             0x8FFF,
             0x7F8E,
             0x7F8F,
+            0x7F90,
             0x6F00,
             0x6F7F,
             0x6F88,

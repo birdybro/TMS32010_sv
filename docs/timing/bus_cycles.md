@@ -67,6 +67,12 @@ behavior are internal to the processor
 [ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`SPAC` has the same program-only bus boundary while subtracting P from ACC;
+the operation, P source, overflow status, and OVM result selection are
+internal
+[ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms

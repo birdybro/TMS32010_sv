@@ -305,6 +305,34 @@ states. As with PAC, an APAC immediately after MPY or MPYK reaches the
 documented interrupt-deferral boundary; interrupt recognition at that point
 remains outside current evidence under `INT-001`.
 
+## Qualified `SPAC` functional slice
+
+`SPAC` is the implied fixed word `0x7f90`. It performs full-width two's
+complement subtraction `(ACC) - (P) -> ACC`, leaves P unchanged, and is one
+word and one cycle. TI's worked example subtracts P=36 from ACC=60 to produce
+ACC=24
+[ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108);
+ti-tms32010-assembly-guide-spru002b, `SPAC`, printed p. 3-58 (PDF p. 79)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Signed overflow sets sticky `OV`. With `OVM=0`, the wrapped 32-bit result is
+stored; with `OVM=1`, positive overflow stores `0x7fffffff` and negative
+overflow stores `0x80000000`. P is always treated as a signed 32-bit operand,
+and a nonoverflowing SPAC does not clear an already set `OV`
+[ti-tms32010-users-guide-spru001b, §§2.2.1.1–2.2.2.1, printed pp. 2-4–2-5
+(PDF pp. 28–29); ti-first-generation-users-guide-1987, §3.5.2 and `SPAC`,
+printed pp. 3-19–3-20 and 4-64 (PDF pp. 48–49 and 145)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests cover TI's worked example, both signed-overflow
+directions, OVM-clear wrapping, OVM-set endpoint saturation, sticky-OV
+preservation, unchanged P/T/address state, one-cycle retirement, exact
+fixed-word decode, and absence of a logical data-memory transaction.
+Native-phase and seeded differential tests cover the ordinary program fetch
+and randomized arithmetic states. A SPAC immediately after MPY or MPYK
+reaches the documented interrupt-deferral boundary; recognition at that point
+remains outside current evidence under `INT-001`.
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory
