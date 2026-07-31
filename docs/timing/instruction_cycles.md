@@ -17,6 +17,15 @@ This is evidence for architectural cycle totals, not yet for pin-level
 subphases. Every individual row, addressing mode, conditional outcome, and bus
 trace still needs an automated assertion before `TIMING-001` can complete.
 
+The individual `PUSH` and `POP` pages independently confirm two cycles and one
+word. Their exact stack results are transcribed in
+`docs/architecture/instruction_set.md`, but no automated cycle assertion is
+claimed because the native program-bus behavior of the extra internal cycle
+remains unresolved under `OQ-016`
+[ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
+(PDF pp. 99–100)]. **Confidence: VERIFIED_PRIMARY for the numeric cycle
+count; UNKNOWN for the second-cycle external subphases.**
+
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase

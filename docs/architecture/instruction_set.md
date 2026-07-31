@@ -90,6 +90,36 @@ logical-transaction boundary. This evidence does not qualify `SST`, whose
 reserved output bit 1 remains blocked by conflicting TI diagrams under
 `OQ-003`/`SC-008`.
 
+## Researched, RTL-deferred `PUSH`/`POP`
+
+`PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the
+four-level, 12-bit hardware stack after shifting each old entry one level
+deeper. The former bottom entry is discarded and ACC remains unchanged.
+`POP` is exact word `0x7f9d`; it zero-extends the old top entry into ACC,
+shifts each deeper entry one level upward, and duplicates the old bottom entry
+into the new bottom. Thus repeated over-pops eventually fill all four levels
+with the previous bottom value; no overflow/underflow indication exists.
+Neither instruction description identifies a status-register effect.
+Both instructions are one word and two cycles, and ordinary PC sequencing
+advances by one word
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2 and `POP`/`PUSH`, printed
+pp. 2-13–2-14 and 3-49–3-50 (PDF pp. 37–38 and 99–100);
+ti-tms32010-assembly-guide-spru002b, `POP`/`PUSH`, printed pp. 3-49–3-50
+(PDF pp. 70–71); ti-first-generation-users-guide-1987, §3.6.1 and
+`POP`/`PUSH`, printed pp. 3-23–3-24 and 4-55–4-56
+(PDF pp. 52–53 and 136–137)]. **Confidence: VERIFIED_PRIMARY for encodings,
+state transformations, overflow/underflow behavior, word count, and cycle
+count.**
+
+No located original-part waveform states the external program address and
+`MEN` behavior during the extra cycle of these single-word instructions.
+The IN/OUT figures demonstrate that some two-cycle instructions insert an
+external transfer between instruction and next-instruction prefetches, but
+that does not establish the bus-idle or prefetch behavior of an internal
+stack operation. `PUSH` and `POP` therefore remain outside the qualified
+database/model/tool/RTL boundary until `OQ-016` is resolved sufficiently to
+implement their two-cycle sequencer without fabricating observable timing.
+
 ## Deferred `ABS` research
 
 `ABS` is an implied one-word, one-cycle instruction encoded as `0x7f88`. If

@@ -34,6 +34,14 @@ No READY pin appears in the original pinout. There is therefore no verified
 native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
+`PUSH` and `POP` each consume two cycles despite carrying only one program
+word. No located original-part timing figure shows whether `MEN` is inactive,
+the current address is held, or the next instruction is prefetched during the
+extra internal cycle. The IN/OUT two-cycle figures cannot prove stack-cycle
+behavior because those instructions use their extra cycle for an external
+data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
+invented here.
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

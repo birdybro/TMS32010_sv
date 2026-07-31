@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** LST status-load qualification
+- **Current milestone:** PUSH/POP stack and two-cycle sequencing research
 - **Completed task IDs:** REPO-001, REF-001
 - **Tests passing:** 69 repository/provenance/document/ISA/toolchain tests; 151
   directed model tests; 25 RTL instruction/decode tests; 1 interrupt-mask RTL
@@ -89,16 +89,22 @@
   ARP, and DP from bits 15, 14, 8, and 0 while preserving INTM, resolves direct
   and indirect addresses from old status, and applies counter updates to the
   old selected AR; original-part sources do not specify whether loaded ARP or
-  encoded next ARP wins, while later TI and pinned MAME agree on loaded ARP
+  encoded next ARP wins, while later TI and pinned MAME agree on loaded ARP;
+  PUSH is exact opcode `0x7f9c` and pushes ACC[11:0] onto a four-level,
+  12-bit stack while discarding the old bottom; POP is exact opcode `0x7f9d`,
+  zero-extends the old top into ACC and duplicates the old bottom while
+  shifting upward; neither detects overflow/underflow, and both are one word
+  and two cycles
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
-  simultaneous indirect
+  PUSH/POP second-cycle program-bus sequencing, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research `PUSH`/`POP` stack behavior and two-cycle sequencing
-  while keeping `SST` outside the qualified boundary until reserved output
+- **Next task:** research and qualify the one-cycle `SUBC` arithmetic family
+  while keeping PUSH/POP RTL outside the boundary until `OQ-016` supplies the
+  second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
   precedence labeled PROVISIONAL under `OQ-015`; keep interrupt recognition,
   EINT's following-instruction service deferral, and entry outside the claim
@@ -106,4 +112,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `f879787`
+  `c43d6f6`

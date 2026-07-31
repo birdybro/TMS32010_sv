@@ -62,6 +62,17 @@ PROVISIONAL under `OQ-015`
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88);
 ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59)].
 
+`PUSH` and `POP` are primary-transcribed exact words `0x7f9c` and `0x7f9d`.
+Each is one word and two cycles with no operand fields. They remain outside
+the machine-readable supported list and hand-fixture decode boundary because
+the second-cycle native program-bus sequence is not yet established under
+`OQ-016`; recording an exact opcode does not imply implementation
+[ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
+(PDF pp. 99–100); ti-first-generation-users-guide-1987, `POP`/`PUSH`,
+printed pp. 4-55–4-56 (PDF pp. 136–137)].
+**Confidence: VERIFIED_PRIMARY for encoding, size, and cycle total; UNKNOWN
+for extra-cycle external subphases.**
+
 `DINT` and `EINT` are exact adjacent fixed words `0x7f81` and `0x7f82`,
 respectively. They have no variable operand bits or aliases. The next word
 `0x7f83` remains outside the qualified map and traps; no behavior is inferred

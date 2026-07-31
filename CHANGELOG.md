@@ -151,6 +151,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   RTL, native-phase integration, and differential trace. Memory-sourced ARP
   precedence over an encoded next ARP remains PROVISIONAL under
   `OQ-015`/`SC-009`.
+- Primary-source `PUSH=0x7f9c` and `POP=0x7f9d` research covering their exact
+  four-level stack transformations, accumulator effect, overflow/underflow
+  behavior, one-word size, and two-cycle totals without prematurely adding
+  them to the supported implementation boundary.
 
 ### Changed
 
@@ -424,6 +428,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   encoded next-ARP precedence. The implemented memory-word precedence is
   PROVISIONAL under `OQ-015`; later TI and MAME evidence corroborates but does
   not prove original silicon behavior.
+- The located original PUSH/POP pages do not show the program-address and
+  `MEN` sequence during their extra internal cycle. Native two-cycle stack
+  sequencing remains deferred under `OQ-016`; no repeated or speculative
+  prefetch has been assigned.
 - DINT/EINT architectural mask changes are verified, but the core has no
   interrupt input, pending latch, EINT following-instruction service deferral,
   stack entry, or vector fetch; those remain under `CTRL-002`/`OQ-004`.
