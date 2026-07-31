@@ -35,6 +35,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LARP",
                 "LDP",
                 "LDPK",
+                "LT",
                 "LAC",
                 "SACL",
                 "SACH",
@@ -124,6 +125,12 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertIsNone(decode_word(self.database, 0x6F00 | control))
         self.assertIsNotNone(decode_word(self.database, 0x6F7F))
         self.assertIsNotNone(decode_word(self.database, 0x6FA1))
+
+    def test_lt_rejects_reserved_indirect_controls(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6A00 | control))
+        self.assertIsNotNone(decode_word(self.database, 0x6A7F))
+        self.assertIsNotNone(decode_word(self.database, 0x6AA1))
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))

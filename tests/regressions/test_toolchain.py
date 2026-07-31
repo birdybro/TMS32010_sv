@@ -25,6 +25,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LDP *
             LDP *+,AR1
             LDP *-,0
+            LT 0
+            LT 127
+            LT *
+            LT *+,AR1
+            LT *-,0
             LARK AR0,0
             LARK AR0,255
             LARK AR1,0
@@ -117,6 +122,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6F88,
                 0x6FA1,
                 0x6F90,
+                0x6A00,
+                0x6A7F,
+                0x6A88,
+                0x6AA1,
+                0x6A90,
                 0x7000,
                 0x70FF,
                 0x7100,
@@ -353,19 +363,21 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "AR0 or AR1"):
             self.assembler.assemble_text("LARK AR2,1\n")
 
-    def test_ldp_operand_diagnostics_and_noncanonical_alias(self) -> None:
-        for source, message in (
-            ("LDP 128\n", "direct address"),
-            ("LDP *+,2\n", "next ARP"),
-            ("LDP 0,1\n", "only with indirect"),
-        ):
-            with self.subTest(source=source):
-                with self.assertRaisesRegex(AssemblyError, message):
-                    self.assembler.assemble_text(source)
-        source = self.disassembler.disassemble_source([0x6F89])
-        self.assertEqual(source, ".word 0x6f89\n")
-        rebuilt = self.assembler.assemble_text(source)
-        self.assertEqual(list(rebuilt.words.values()), [0x6F89])
+    def test_ldp_and_lt_operand_diagnostics_and_noncanonical_aliases(self) -> None:
+        for mnemonic, noncanonical in (("LDP", 0x6F89), ("LT", 0x6A89)):
+            for operand, message in (
+                ("128", "direct address"),
+                ("*+,2", "next ARP"),
+                ("0,1", "only with indirect"),
+            ):
+                source = f"{mnemonic} {operand}\n"
+                with self.subTest(source=source):
+                    with self.assertRaisesRegex(AssemblyError, message):
+                        self.assembler.assemble_text(source)
+            source = self.disassembler.disassemble_source([noncanonical])
+            self.assertEqual(source, f".word 0x{noncanonical:04x}\n")
+            rebuilt = self.assembler.assemble_text(source)
+            self.assertEqual(list(rebuilt.words.values()), [noncanonical])
 
     def test_lar_encodings_round_trip_and_diagnose_operands(self) -> None:
         result = self.assembler.assemble_text(

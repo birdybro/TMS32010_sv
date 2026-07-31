@@ -23,6 +23,7 @@ module tb_phase_slice_integration;
   logic [15:0] debug_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
+  logic [15:0] t_register;
   logic [15:0] auxiliary_register_0;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
@@ -59,6 +60,7 @@ module tb_phase_slice_integration;
     .data_write_data_o             (data_write_data),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
+    .t_register_o                  (t_register),
     .auxiliary_register_0_o        (auxiliary_register_0),
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
@@ -129,7 +131,8 @@ module tb_phase_slice_integration;
     program_memory[23] = 16'h3004;  // SAR AR0,4
     program_memory[24] = 16'h6890;  // MAR *-,AR0
     program_memory[25] = 16'h6f03;  // LDP 3
-    program_memory[26] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[26] = 16'h6a03;  // LT 3
+    program_memory[27] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -137,6 +140,9 @@ module tb_phase_slice_integration;
     debug_data_write   = 1'b1;
     debug_data_address = 8'h83;
     debug_data         = 16'hff80;
+    tick();
+    debug_data_address = 8'h03;
+    debug_data         = 16'hbeef;
     tick();
     debug_data_write = 1'b0;
     initialize = 1'b0;
@@ -379,13 +385,24 @@ module tb_phase_slice_integration;
             "LDP preserves arithmetic status");
     require(pc == 12'h01a && cycle_count == 32'd26,
             "LDP consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h03 && data_read_data == 16'hbeef,
+            "LT presents its internal read beside normal program phases");
+
+    advance_to_sample();
+    require(retired && t_register == 16'hbeef,
+            "LT loads the complete selected data word into T");
+    require(!overflow_flag && overflow_mode,
+            "LT preserves arithmetic status");
+    require(pc == 12'h01b && cycle_count == 32'd27,
+            "LT consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h01a, "trap holds architectural PC");
-    require(program_address == 12'h01a, "trap holds native program address");
-    require(cycle_count == 32'd26, "trap does not count as retired cycle");
+    require(pc == 12'h01b, "trap holds architectural PC");
+    require(program_address == 12'h01b, "trap holds native program address");
+    require(cycle_count == 32'd27, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

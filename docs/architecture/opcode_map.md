@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial twenty-four-instruction model/tool boundary is intentionally partial
+Its initial twenty-five-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -16,6 +16,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `MAR dma` | `0x6800` | `0xff00` plus alias/addressing constraints | 1 | 1 | individual `MAR` page, printed p. 3-42 |
 | `LDP dma` | `0x6f00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LDP` page, printed p. 3-36 |
 | `LDPK K` | `0x6e00` | `0xfffe` | 1 | 1 | individual `LDPK` page, printed p. 3-37 |
+| `LT dma` | `0x6a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LT` page, printed p. 3-39 |
 | `NOP` | `0x7f80` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `ZAC` | `0x7f89` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-5 |
 | `ROVM` | `0x7f8a` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
@@ -36,9 +37,9 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-13, 3-31–3-37, 3-42,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-13, 3-31–3-39, 3-42,
 3-46, 3-53–3-56, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF pp. 55–57, 60, 62–63,
-81–87, 92, 96, 103–106, 110, 113, 118, and 120–121)].
+81–89, 92, 96, 103–106, 110, 113, 118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and
@@ -70,6 +71,15 @@ lossless noncanonical-preserve policy match the qualified no-shift data
 instructions. The selected word's bit 0 replaces DP after address resolution
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LDP`, printed
 pp. 3-2–3-3 and 3-36 (PDF pp. 52–53 and 86)].
+**Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
+UNKNOWN.**
+
+`LT` fixes bits 15:8 to `0x6a`; bit 7 and bits 6:0 use the same constrained
+common address form as LDP. Every legal word transfers the complete selected
+16-bit RAM word into T. The decoder rejects reserved indirect controls and
+simultaneous increment/decrement under the same `OQ-010` policy
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LT`, printed
+pp. 3-2–3-3 and 3-39 (PDF pp. 52–53 and 89)].
 **Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
 UNKNOWN.**
 

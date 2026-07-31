@@ -171,6 +171,29 @@ ti-tms32010-assembly-guide-spru002b, `LDP`, printed p. 3-36
 (PDF p. 57)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
 update bits.**
 
+## Qualified `LT` research slice
+
+`LT` fixes bits 15:8 to `0x6a`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. It copies all 16 bits of the selected
+internal RAM word into the T register without sign extension or shifting. The
+instruction is one word and one cycle and does not modify `ACC`, `OV`, `OVM`,
+or DP
+[ti-tms32010-users-guide-spru001b, `LT`, printed p. 3-39 (PDF p. 89);
+ti-first-generation-users-guide-1987, `LT`, printed p. 4-44
+(PDF p. 125)]. **Confidence: VERIFIED_PRIMARY.**
+
+Direct addressing resolves the source through the old DP. Indirect addressing
+reads through the AR selected by the old ARP, then applies the ordinary
+optional nine-bit AR increment/decrement and next-ARP replacement. Directed
+model and RTL tests cover zero and nonzero full-width values, direct page-one
+selection, pre-modification indirect reads, counter wrap, ARP replacement,
+one-cycle retirement, and unresolved-address trapping
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LT`, printed
+pp. 3-2–3-3 and 3-39 (PDF pp. 52–53 and 89);
+ti-tms32010-assembly-guide-spru002b, `LT`, printed p. 3-39
+(PDF p. 60)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
+update bits.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

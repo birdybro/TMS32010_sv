@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first twenty-four model/tool encodings.
+  mnemonics and fully describes the first twenty-five model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the twenty-four-instruction slice.
+  clock-enable execution core for the twenty-five-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the twenty-four supported
+- Sequential native-phase wrapper that retires the twenty-five supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -102,6 +102,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   native-phase, and differential support for loading DP from an internal
   data-word LSB after old-DP/old-AR address selection and before ordinary
   indirect AR/ARP post-modification.
+- Primary-cited `LT` database, model, assembler/disassembler, RTL,
+  native-phase, and differential support for loading all 16 bits of an
+  internal data word into T through the common address/update path.
 
 ### Changed
 
@@ -111,9 +114,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated twenty-four-instruction phase/RAM slice in
-  1,616 ALMs/2,435 registers with +3.699 ns worst setup and +0.165 ns worst
-  hold slack at 50 MHz and 61.35 MHz worst slow-corner internal Fmax; 221
+- Quartus 17.0.2 fits the integrated twenty-five-instruction phase/RAM slice in
+  1,662 ALMs/2,451 registers with +4.038 ns worst setup and +0.137 ns worst
+  hold slack at 50 MHz and 62.65 MHz worst slow-corner internal Fmax; 237
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -126,8 +129,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers twenty-four of 60 documented
-  mnemonics and fifteen common-address data-operation families.
+- The qualified model/tool/RTL boundary now covers twenty-five of 60 documented
+  mnemonics and sixteen common-address data-operation families.
 
 ### Fixed
 
@@ -138,6 +141,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   violations; synthesis evidence now scopes itself to internal timing.
 - Added the OV diagnostic output to the Quartus virtual-pin set after a rejected
   fit exposed an unintended physical harness pin assignment.
+- Added the T diagnostic output to the Quartus SDC exclusions after rejecting
+  an otherwise successful fit with 16 unconstrained output ports.
 - Corrected the architecture baseline's logic-datapath description: all three
   operations combine the RAM operand with `ACC[15:0]`; `AND` clears the upper
   half, while `OR` and `XOR` preserve it.
@@ -242,7 +247,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.33 synthesizes the twenty-four-instruction hierarchy to 8,250 generic
+- Yosys 0.33 synthesizes the twenty-five-instruction hierarchy to 8,281 generic
   cells with eight assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   five scoped harness warnings.
@@ -272,10 +277,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The seeded 512-step differential and native-phase integration compare LDP's
   logical data read, DP result, indirect updates, and unchanged external
   program-read sequence.
+- Hand fixtures and directed model/RTL tests verify LT full-width loads,
+  old-DP direct selection, indirect old-AR reads, low-nine-bit counter wrap,
+  ARP replacement, status preservation, one-cycle retirement, and
+  unresolved-address/reserved-control traps.
+- The seeded 512-step differential now compares T on every boundary and
+  includes deterministic/randomized LT reads; native-phase integration
+  verifies that LT retains the normal external program-read sequence.
 
 ### Known Issues
 
-- Only twenty-four of 60 documented instruction mnemonics have model, tool, and
+- Only twenty-five of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through

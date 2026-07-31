@@ -13,6 +13,7 @@ module tms32010_synth_top (
 
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
+  output logic [15:0] t_register_o,
   output logic [15:0] auxiliary_register_0_o,
   output logic [15:0] auxiliary_register_1_o,
   output logic        auxiliary_register_pointer_o,
@@ -61,6 +62,7 @@ module tms32010_synth_top (
     .data_write_data_o             (data_write_data_o),
     .pc_o                          (pc_o),
     .accumulator_o                 (accumulator_o),
+    .t_register_o                  (t_register_o),
     .auxiliary_register_0_o        (auxiliary_register_0_o),
     .auxiliary_register_1_o        (auxiliary_register_1_o),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer_o),

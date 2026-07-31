@@ -305,6 +305,7 @@ class Assembler:
             "ADDS",
             "AND",
             "LDP",
+            "LT",
             "MAR",
             "OR",
             "SUBS",

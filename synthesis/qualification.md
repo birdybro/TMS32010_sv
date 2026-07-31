@@ -2,7 +2,7 @@
 
 ## 2026-07-30 Quartus fits
 
-These results cover the twenty-four-instruction RTL, 144-word internal data RAM, and
+These results cover the twenty-five-instruction RTL, 144-word internal data RAM, and
 first program-bus phase engine. They are not complete-core resource or
 interface-timing results.
 
@@ -15,21 +15,28 @@ interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,616 ALMs (4%).
-- Registers: 2,435.
+- Logic: 1,662 ALMs (4%).
+- Registers: 2,451.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 0.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +3.699 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 61.35 MHz at 100 °C, 61.61 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +4.038 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.137 ns.
+- Slow-corner internal Fmax: 62.65 MHz at 100 °C, 62.93 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
-The I/O categories report zero because each of the 221 harness-only interface
+The I/O categories report zero because each of the 237 harness-only interface
 pins is explicitly excluded, not because portable-core I/O timing is closed.
 The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
 setup, hold, and Fmax figures above are scoped to internal register paths.
+
+The first LT fit exposed the newly added 16-bit T diagnostic port without
+matching SDC exclusions. TimeQuest reported all 16 outputs unconstrained, so
+that run was rejected even though place-and-route succeeded. Adding the exact
+T port to the synthesis-harness false-path list restored zero unconstrained
+categories in the full rerun. This exclusion remains harness-scoped and is not
+a claim of wrapper I/O timing.
 
 The reports contain no latch diagnostic. The five warnings are the expected
 synthesis-harness notices: the currently constant interrupt-mask diagnostic,
@@ -82,7 +89,7 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.33 from Ubuntu 24.04 successfully elaborates and synthesizes the same
 integrated partial hierarchy. Both pre- and post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, eight RTL assertions
-remain represented, and the generic result contains 8,250 cells. The
+remain represented, and the generic result contains 8,281 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 2,318 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate.

@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
+- `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LT`,
   `MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`,
   `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
@@ -27,6 +27,8 @@ Current supported boundary:
   logical data-memory transaction, with `MAR *,0/1` decoded canonically as LARP;
 - `LDP` direct/indirect reads, source-LSB-to-DP transfer, and old-address
   ordering before common indirect AR/ARP updates;
+- `LT` direct/indirect full-word loads into T with the same old-address and
+  post-access AR/ARP ordering;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of

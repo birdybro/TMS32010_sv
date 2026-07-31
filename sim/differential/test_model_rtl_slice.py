@@ -107,12 +107,15 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             0x6F00,
             0x6F01,
             0x6F0F,
+            0x6A00,
+            0x6A01,
+            0x6A0F,
         ):
             append_and_step(word)
 
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(469):
-            family = randomizer.randrange(22)
+        for _ in range(466):
+            family = randomizer.randrange(23)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
@@ -382,6 +385,28 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                             else randomizer.randrange(16)
                         )
                         word = 0x6F00 | address
+            elif family == 20:
+                if randomizer.randrange(2):
+                    address = (
+                        randomizer.randrange(128)
+                        if model.state.status.dp == 0
+                        else randomizer.randrange(16)
+                    )
+                    word = 0x6A00 | address
+                else:
+                    selected = model.state.status.arp
+                    if (model.state.ar[selected] & 0xFF) < 144:
+                        control = randomizer.choice(
+                            [0x88, 0xA8, 0x98, 0x80, 0x81, 0xA0, 0xA1, 0x90, 0x91]
+                        )
+                        word = 0x6A00 | control
+                    else:
+                        address = (
+                            randomizer.randrange(128)
+                            if model.state.status.dp == 0
+                            else randomizer.randrange(16)
+                        )
+                        word = 0x6A00 | address
             else:
                 word = randomizer.choice(choices)
             append_and_step(word)
@@ -439,6 +464,11 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             self.assertEqual(
                 bool(int(fields[20], 16)),
                 model_trace.state_after["status"]["ov"],
+                (SEED, index),
+            )
+            self.assertEqual(
+                int(fields[21], 16),
+                model_trace.state_after["t"],
                 (SEED, index),
             )
             self.assertEqual(

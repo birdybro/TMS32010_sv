@@ -63,6 +63,7 @@ class Disassembler:
             "ADDS",
             "AND",
             "LDP",
+            "LT",
             "MAR",
             "OR",
             "SUBS",

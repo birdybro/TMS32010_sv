@@ -25,7 +25,8 @@ package tms32010_pkg;
     OP_LAR  = 5'd20,
     OP_SAR  = 5'd21,
     OP_MAR  = 5'd22,
-    OP_LDP  = 5'd23
+    OP_LDP  = 5'd23,
+    OP_LT   = 5'd24
   } tms32010_operation_t;
 endpackage
 

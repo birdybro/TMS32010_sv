@@ -1,6 +1,6 @@
 `default_nettype none
 
-module tb_ldp_rtl;
+module tb_lt_rtl;
   logic        clk;
   logic        initialize;
   logic        reset;
@@ -89,26 +89,26 @@ module tb_ldp_rtl;
     program_memory[0]  = 16'h7ea5;  // LACK 0xa5
     program_memory[1]  = 16'h7f8b;  // SOVM
     program_memory[2]  = 16'h6e01;  // LDPK 1
-    program_memory[3]  = 16'h6f0f;  // LDP 15, old DP selects address 143
-    program_memory[4]  = 16'h6f7f;  // LDP 127, new DP selects address 127
+    program_memory[3]  = 16'h6a0f;  // LT 15, old DP selects address 143
+    program_memory[4]  = 16'h6e00;  // LDPK 0
     program_memory[5]  = 16'h708f;  // LARK AR0,143
     program_memory[6]  = 16'h6880;  // LARP 0
-    program_memory[7]  = 16'h6fa1;  // LDP *+,AR1
-    program_memory[8]  = 16'h717f;  // LARK AR1,127
-    program_memory[9]  = 16'h6f90;  // LDP *-,AR0
+    program_memory[7]  = 16'h6aa1;  // LT *+,AR1
+    program_memory[8]  = 16'h7100;  // LARK AR1,0
+    program_memory[9]  = 16'h6a90;  // LT *-,AR0
     program_memory[10] = 16'h6e01;  // LDPK 1
-    program_memory[11] = 16'h6f10;  // unresolved physical address 144
+    program_memory[11] = 16'h6a10;  // unresolved physical address 144
 
     initialize         = 1'b1;
     reset              = 1'b1;
     clock_enable       = 1'b1;
     debug_data_write   = 1'b1;
     debug_data_address = 8'd143;
-    debug_data         = 16'hfffe;
+    debug_data         = 16'hfedc;
     tick();
     initialize = 1'b0;
-    debug_data_address = 8'd127;
-    debug_data         = 16'h8001;
+    debug_data_address = 8'd0;
+    debug_data         = 16'h0000;
     tick();
     debug_data_write = 1'b0;
     require(!program_read && interrupt_mask,
@@ -118,57 +118,52 @@ module tb_ldp_rtl;
     tick();
     tick();
     tick();
-    require(data_page_pointer && data_read && !data_write &&
-            data_address_valid && data_address == 8'd143,
-            "direct LDP resolves its address through the old page pointer");
-    require(data_read_data == 16'hfffe,
-            "direct LDP exposes the complete internal source word");
-    require(data_write_data == 16'h00a5,
-            "inactive write datapath reflects the preserved accumulator low word");
+    require(data_page_pointer &&
+            data_read && !data_write && data_address_valid &&
+            data_address == 8'd143 && data_read_data == 16'hfedc,
+            "direct LT resolves the old page and exposes its full source");
 
     tick();
-    require(!data_page_pointer,
-            "LDP ignores source bits 15:1 and loads an even LSB");
-    require(data_read && data_address == 8'd127 &&
-            data_read_data == 16'h8001,
-            "following direct LDP uses the newly loaded page zero");
-
+    require(t_register == 16'hfedc,
+            "direct LT loads all sixteen source bits into T");
     tick();
-    require(data_page_pointer,
-            "LDP loads one when the selected source LSB is set");
     tick();
     tick();
     require(data_read && data_address == 8'd143,
-            "indirect LDP reads through the old selected AR");
+            "indirect LT reads through the old selected AR");
 
     tick();
-    require(!data_page_pointer && auxiliary_register_0 == 16'd144 &&
+    require(t_register == 16'hfedc &&
+            auxiliary_register_0 == 16'd144 &&
             auxiliary_register_pointer,
-            "indirect LDP updates DP, then AR0 and requested ARP");
+            "LT loads T before common increment and ARP replacement");
     tick();
-    require(data_read && data_address == 8'd127,
-            "second indirect LDP reads through newly selected AR1");
+    require(data_read && data_address == 8'd0 &&
+            data_read_data == 16'h0000,
+            "second indirect LT reads through newly selected AR1");
 
     tick();
-    require(data_page_pointer && auxiliary_register_1 == 16'd126 &&
+    require(t_register == 16'h0000 &&
+            auxiliary_register_1 == 16'h01ff &&
             !auxiliary_register_pointer,
-            "indirect decrement and ARP replacement follow the read");
+            "LT preserves zero and applies nine-bit decrement wrap");
     require(accumulator == 32'h0000_00a5 && overflow_mode && !overflow_flag,
-            "LDP preserves accumulator and arithmetic status");
+            "LT preserves accumulator and arithmetic status");
 
     tick();
     require(data_read && !data_address_valid && !instruction_valid,
-            "unresolved direct LDP read is visible but cannot execute");
+            "unresolved direct LT read is visible but cannot execute");
     require(data_address == 8'd144,
-            "unresolved LDP address is not aliased into physical RAM");
+            "unresolved LT address is not aliased into physical RAM");
     tick();
     require(illegal && !retired && pc == 12'd11,
-            "unresolved LDP traps without advancing PC");
-    require(cycle_count == 32'd11,
-            "every accepted LDP and setup instruction consumes one cycle");
+            "unresolved LT traps without advancing PC");
+    require(t_register == 16'h0000 && cycle_count == 32'd11,
+            "failed LT leaves T unchanged and counts only accepted cycles");
+    require(data_write_data == 16'h00a5,
+            "inactive write datapath remains independent of T");
 
-    require(t_register == 16'h0000, "LDP preserves initialized T");
-    $display("PASS tb_ldp_rtl");
+    $display("PASS tb_lt_rtl");
     $finish;
   end
 endmodule

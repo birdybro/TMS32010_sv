@@ -27,6 +27,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "debug_data_address_i[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "debug_data_i[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "pc_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "accumulator_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "t_register_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_0_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_1_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to auxiliary_register_pointer_o

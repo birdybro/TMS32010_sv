@@ -19,6 +19,7 @@ module tb_zero_loads_rtl;
   logic [15:0] debug_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
+  logic [15:0] t_register;
   logic [15:0] auxiliary_register_0;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
@@ -51,6 +52,7 @@ module tb_zero_loads_rtl;
     .debug_data_i                  (debug_data),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
+    .t_register_o                  (t_register),
     .auxiliary_register_0_o        (auxiliary_register_0),
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
@@ -187,6 +189,7 @@ module tb_zero_loads_rtl;
     require(cycle_count == 32'd13,
             "every accepted ZALH and ZALS consumes one architectural cycle");
 
+    require(t_register == 16'h0000, "zero loads preserve initialized T");
     $display("PASS tb_zero_loads_rtl");
     $finish;
   end

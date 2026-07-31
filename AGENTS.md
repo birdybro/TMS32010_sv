@@ -235,11 +235,11 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support twenty-four instructions:
+tools, RTL, and seeded differential boundary support twenty-five instructions:
 `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
-`MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`,
+`LT`, `MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes `ADD`/`ADDS`/`AND`/`LAC`/
-`LAR`/`LDP`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and
+`LAR`/`LDP`/`LT`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
 wrap/saturation, and sticky-OV evidence. ADDS and SUBS have directed unsigned
@@ -250,7 +250,8 @@ different-target post-modification, and SAR's post-modified same-source store
 at the old address. MAR modifies only AR/ARP in indirect form, is a direct-form
 NOP, and produces no data-memory transaction. LDP loads DP from a selected
 data-word LSB using the old DP or selected AR for address resolution. The
-phase wrapper qualifies
+LT path loads all 16 selected data-word bits into T through the same
+old-address and post-access update order. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt
 entry, or complete pin timing exists.
 The project must not be called instruction-complete or cycle-accurate. Consult

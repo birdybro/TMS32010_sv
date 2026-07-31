@@ -10,6 +10,7 @@ module tb_initial_rtl_slice;
   logic [15:0] program_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
+  logic [15:0] t_register;
   logic [15:0] auxiliary_register_0;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
@@ -52,6 +53,7 @@ module tb_initial_rtl_slice;
     .debug_data_i      (debug_data),
     .pc_o              (pc),
     .accumulator_o     (accumulator),
+    .t_register_o      (t_register),
     .auxiliary_register_0_o (auxiliary_register_0),
     .auxiliary_register_1_o (auxiliary_register_1),
     .auxiliary_register_pointer_o (auxiliary_register_pointer),
@@ -184,6 +186,8 @@ module tb_initial_rtl_slice;
     tick();
     require(overflow_mode, "reset preserves set OVM");
 
+    require(t_register == 16'h0000,
+            "qualified control slice preserves initialized T");
     $display("PASS tb_initial_rtl_slice");
     $finish;
   end

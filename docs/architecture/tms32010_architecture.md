@@ -112,8 +112,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`,
-`SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The fifteen
+`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `NOP`, `OR`, `ROVM`, `SACL`,
+`SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The
+sixteen
 common-address data instructions have independent fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -136,6 +137,8 @@ MAR verifies direct no-operation forms and indirect AR/ARP modification
 without a logical or physical data-memory access; its two LARP alias words
 retain canonical LARP decode. Unresolved addresses trap rather than alias.
 LDP reads through the old DP or selected AR, transfers source bit 0 to DP, and
+then applies the ordinary indirect AR/ARP post-update.
+LT reads through the same address path, transfers all 16 source bits to T, and
 then applies the ordinary indirect AR/ARP post-update.
 This is partial RTL support only.
 The sequential native-phase wrapper covers normal program reads only.
