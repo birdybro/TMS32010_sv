@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial forty-eight-instruction model/tool boundary is intentionally partial
+Its current fifty-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -34,6 +34,8 @@ documented mnemonics so missing coverage remains machine-visible.
 | `LST dma` | `0x7b00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LST` page, printed p. 3-38 |
 | `LAC dma,s` | `0x2000` | `0xf000` plus addressing constraints | 1 | 1 | individual `LAC` page, printed p. 3-31 |
 | `LAR AR,dma` | `0x3800` | `0xfe00` plus addressing constraints | 1 | 1 | individual `LAR` page, printed p. 3-33 |
+| `IN dma,PA` | `0x4000` | `0xf800` plus addressing constraints | 1 | 2 | individual `IN` page, printed p. 3-30 |
+| `OUT dma,PA` | `0x4800` | `0xf800` plus addressing constraints | 1 | 2 | individual `OUT` page, printed p. 3-47 |
 | `SAR AR,dma` | `0x3000` | `0xfe00` plus addressing constraints | 1 | 1 | individual `SAR` pages, printed pp. 3-55–3-56 |
 | `SACL dma` | `0x5000` | `0xff00` plus addressing constraints | 1 | 1 | individual `SACL` page, printed p. 3-54 |
 | `SACH dma,s` | `0x5800` | `0xf800` plus legal-shift/addressing constraints | 1 | 1 | individual `SACH` page, printed p. 3-53 |
@@ -65,6 +67,18 @@ descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29
 pp. 55–57, 60, 62–64, 66, 76–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
 and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
+
+`IN` and `OUT` fix bits 15:11 to `01000` and `01001`, respectively. Bits
+10:8 select port 0–7; bit 7 and bits 6:0 retain the qualified common
+direct/indirect data-address form. The same reserved indirect controls and
+simultaneous-increment/decrement policy therefore apply. IN transfers the
+selected external port to internal data memory; OUT transfers internal data
+memory to the selected port. Both are one word and two cycles
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `IN`/`OUT`, printed
+pp. 3-6, 3-30, and 3-47 (PDF pp. 56, 80, and 97);
+ti-tms32010-assembly-guide-spru002b, `IN`/`OUT`, printed pp. 3-30 and 3-47
+(PDF pp. 51 and 68)]. **Confidence: VERIFIED_PRIMARY except the rejected
+simultaneous-update case, which is UNKNOWN under `OQ-010`.**
 
 `LST` fixes bits 15:8 to `0x7b`; its low byte uses the common qualified
 direct/indirect address field. Its encoding, operands, one-word size, and

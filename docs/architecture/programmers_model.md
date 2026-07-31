@@ -109,6 +109,19 @@ zero and decrementing zero produces `0x1ff`, while `AR[15:9]` is unchanged
 [ti-tms32010-users-guide-spru001b, §2.4.1 and Figure 2-3, printed
 pp. 2-9–2-10 (PDF pp. 33–34)]. **Confidence: VERIFIED_PRIMARY.**
 
+`IN` and `OUT` combine that same direct/indirect internal-data address with a
+separate three-bit port number. `IN` samples all 16 external data bits from
+the selected port and writes them unchanged to the old resolved internal-RAM
+address. `OUT` reads the old resolved internal-RAM address and drives all 16
+bits unchanged to the selected port. Either instruction applies the encoded
+indirect AR/ARP update only after using the old address. The port appears on
+physical address pins A2–A0 during the second machine cycle; A11–A3 are zero,
+so it is an eight-port I/O space rather than an extension of internal data
+memory
+[ti-tms32010-users-guide-spru001b, `IN`/`OUT` and Appendix A I/O timing,
+printed pp. 3-30 and 3-47 plus data-sheet pp. 17–18
+(PDF pp. 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Program sequencing
 
 Program address 0 is the reset entry and address 2 is the interrupt vector.

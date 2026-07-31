@@ -330,6 +330,16 @@ class Assembler:
                 location=location,
                 line=line,
             )
+        elif operation in {"IN", "OUT"}:
+            word |= self._io_port(operands[1], line) << 8
+            word |= self._encode_data_address(
+                operation,
+                operands,
+                next_arp_index=2,
+                symbols=symbols,
+                location=location,
+                line=line,
+            )
         elif operation in {
             "ADDS",
             "AND",
@@ -448,6 +458,21 @@ class Assembler:
             raise line.error(
                 f"auxiliary register must be AR0 or AR1, got {text!r}"
             ) from error
+
+    @staticmethod
+    def _io_port(text: str, line: SourceLine) -> int:
+        normalized = text.strip().upper()
+        if normalized.startswith("PA"):
+            normalized = normalized[2:]
+        try:
+            value = int(normalized, 0)
+        except ValueError as error:
+            raise line.error(
+                f"I/O port must be PA0 through PA7 or 0 through 7, got {text!r}"
+            ) from error
+        if not 0 <= value <= 7:
+            raise line.error(f"I/O port out of range 0..7: {value}")
+        return value
 
     @staticmethod
     def _statement(text: str) -> str:

@@ -1,11 +1,11 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
-BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP,
-LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH,
-SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
-Logical program and internal-data transactions and instruction totals are
-modeled; pin subphases are not yet integrated with this model.
+BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
+LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
+ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and
+ZALS. Logical program, internal-data, and I/O transactions and instruction
+totals are modeled; pin subphases are not integrated with this model.
 """
 
 from __future__ import annotations
@@ -294,6 +294,7 @@ class Tms32010Model:
             "ADDS",
             "AND",
             "DMOV",
+            "IN",
             "LAC",
             "LAR",
             "LDP",
@@ -303,6 +304,7 @@ class Tms32010Model:
             "LTD",
             "MPY",
             "OR",
+            "OUT",
             "SACL",
             "SACH",
             "SAR",
@@ -331,7 +333,9 @@ class Tms32010Model:
             operands["effective_address"] = data_address
             if mnemonic in {"DMOV", "LTD"}:
                 operands["move_address"] = data_address + 1
-            if mnemonic in {
+            if mnemonic == "IN":
+                transaction_data = self.io_input[operands["port"]] & WORD_MASK
+            elif mnemonic in {
                 "ADD",
                 "ADDS",
                 "AND",
@@ -345,6 +349,7 @@ class Tms32010Model:
                 "LTD",
                 "MPY",
                 "OR",
+                "OUT",
                 "SUB",
                 "SUBC",
                 "SUBS",
@@ -373,40 +378,79 @@ class Tms32010Model:
             else:
                 shifted = (self.state.acc << operands["shift"]) & ACC_MASK
                 transaction_data = shifted >> 16
-            transactions.append(
-                Transaction(
-                    cycle=self.cycle_count,
-                    space="data",
-                    operation=(
-                        "read"
-                        if mnemonic
-                        in {
-                            "ADD",
-                            "ADDS",
-                            "AND",
-                            "LAC",
-                            "LAR",
-                            "LDP",
-                            "LST",
-                            "LT",
-                            "LTA",
-                            "DMOV",
-                            "LTD",
-                            "MPY",
-                            "OR",
-                            "SUB",
-                            "SUBC",
-                            "SUBS",
-                            "XOR",
-                            "ZALH",
-                            "ZALS",
-                        }
-                        else "write"
-                    ),
-                    address=data_address,
-                    data=transaction_data,
+            if mnemonic == "IN":
+                transactions.extend(
+                    (
+                        Transaction(
+                            cycle=self.cycle_count + 1,
+                            space="io",
+                            operation="read",
+                            address=operands["port"],
+                            data=transaction_data,
+                        ),
+                        Transaction(
+                            cycle=self.cycle_count + 1,
+                            space="data",
+                            operation="write",
+                            address=data_address,
+                            data=transaction_data,
+                        ),
+                    )
                 )
-            )
+            elif mnemonic == "OUT":
+                transactions.extend(
+                    (
+                        Transaction(
+                            cycle=self.cycle_count + 1,
+                            space="data",
+                            operation="read",
+                            address=data_address,
+                            data=transaction_data,
+                        ),
+                        Transaction(
+                            cycle=self.cycle_count + 1,
+                            space="io",
+                            operation="write",
+                            address=operands["port"],
+                            data=transaction_data,
+                        ),
+                    )
+                )
+            else:
+                transactions.append(
+                    Transaction(
+                        cycle=self.cycle_count,
+                        space="data",
+                        operation=(
+                            "read"
+                            if mnemonic
+                            in {
+                                "ADD",
+                                "ADDS",
+                                "AND",
+                                "LAC",
+                                "LAR",
+                                "LDP",
+                                "LST",
+                                "LT",
+                                "LTA",
+                                "DMOV",
+                                "LTD",
+                                "MPY",
+                                "OR",
+                                "SUB",
+                                "SUBC",
+                                "SUBS",
+                                "XOR",
+                                "ZALH",
+                                "ZALS",
+                            }
+                            else "write"
+                        ),
+                        address=data_address,
+                        data=transaction_data,
+                    )
+                )
             if mnemonic in {"DMOV", "LTD"}:
                 transactions.append(
                     Transaction(
@@ -454,6 +498,14 @@ class Tms32010Model:
         elif mnemonic == "DMOV":
             data_word = self.data[operands["effective_address"]]
             self.data[operands["move_address"]] = data_word
+        elif mnemonic == "IN":
+            self.data[operands["effective_address"]] = (
+                self.io_input[operands["port"]] & WORD_MASK
+            )
+        elif mnemonic == "OUT":
+            self.io_output[operands["port"]] = (
+                self.data[operands["effective_address"]] & WORD_MASK
+            )
         elif mnemonic == "MPY":
             data_word = self.data[operands["effective_address"]]
             if self.state.t == 0x8000 and data_word == 0x8000:
@@ -573,6 +625,7 @@ class Tms32010Model:
                 "ADDS",
                 "AND",
                 "DMOV",
+                "IN",
                 "LAC",
                 "LAR",
                 "LDP",
@@ -583,6 +636,7 @@ class Tms32010Model:
                 "MAR",
                 "MPY",
                 "OR",
+                "OUT",
                 "SACL",
                 "SACH",
                 "SAR",
@@ -615,7 +669,7 @@ class Tms32010Model:
             if (control & 0x08) == 0 and mnemonic != "LST":
                 self.state.status.arp = control & 1
 
-        cycles = 1
+        cycles = 2 if mnemonic in {"IN", "OUT"} else 1
         self.cycle_count += cycles
         return StepTrace(
             pc=pc,
@@ -726,6 +780,18 @@ class Tms32010Model:
             return "BIOZ", {}
         if opcode == 0xF800:
             return "CALL", {}
+        if (opcode & 0xF800) in {0x4000, 0x4800}:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return ("IN" if (opcode & 0xF800) == 0x4000 else "OUT"), {
+                "port": (opcode >> 8) & 0x7,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
         if opcode & 0xF000 == 0x0000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

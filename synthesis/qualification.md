@@ -2,9 +2,9 @@
 
 ## 2026-07-31 Quartus fits
 
-These results cover the forty-eight-instruction RTL, signed multiplier,
-144-word internal data RAM, and first program-bus phase engine. They are not
-complete-core resource or interface-timing results.
+These results cover the fifty-instruction RTL, signed multiplier, 144-word
+internal data RAM, program-bus phase engine, and native IN/OUT phase paths.
+They are not complete-core resource or interface-timing results.
 
 - Tool: Quartus Prime Lite 17.0.2 Build 602, 2017-07-19.
 - Target: Cyclone V `5CSEBA6U23I7` (DE10-Nano FPGA).
@@ -15,17 +15,17 @@ complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,973 ALMs (5%).
-- Registers: 2,539.
+- Logic: 2,036 ALMs (5%).
+- Registers: 2,563.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +3.482 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.166 ns.
-- Slow-corner internal Fmax: 60.92 MHz at 100 °C, 60.54 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.013 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.167 ns.
+- Slow-corner internal Fmax: 55.60 MHz at 100 °C, 56.09 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
-The I/O categories report zero because each of the 327 harness-only interface
+The I/O categories report zero because each of the 366 harness-only interface
 pins is explicitly excluded, not because portable-core I/O timing is closed.
 The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
@@ -47,7 +47,7 @@ synthesis-harness notices: a Lite-only LogicLock notice, incomplete I/O
 assignments, and the sole physical clock's intentionally absent package
 location. Quartus separately
 reports as information that the 144-word array cannot infer RAM because its
-read is asynchronous, so it maps to registers and logic. The fit uses 327
+read is asynchronous, so it maps to registers and logic. The fit uses 366
 virtual pins and one physical clock pin; the expected critical warning says
 that clock has no package location.
 This is not a deployable board image, and the generated `.sof` is deliberately
@@ -93,8 +93,8 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
-passes report zero problems; no latches are inferred, 11 RTL assertions
-remain represented, and the generic result contains 12,690 cells. The
+passes report zero problems; no latches are inferred, 15 RTL assertions
+remain represented, and the generic result contains 12,902 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone

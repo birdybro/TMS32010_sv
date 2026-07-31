@@ -32,13 +32,15 @@ pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
 read relationship for the 37 supported one-cycle sequential instructions and
-both cycles of `B`, `BANZ`, `BIOZ`, `BV`, `CALL`, and the six accumulator-conditional
-branches. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
-`SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent internal logical reads, while
-`SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
-activity from a normal program fetch. That is implementation evidence for the
-cited normal-read mapping, not a claim that remaining control flow, external
-data/I/O access, or general pipeline overlap is complete.
+both cycles of `B`, `BANZ`, `BIOZ`, `BV`, `CALL`, the six
+accumulator-conditional branches, `IN`, and `OUT`. Its `ADD`, `ADDS`, `AND`,
+`DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
+`SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent
+internal logical reads, while `SACL`, `SACH`, and `SAR` expose writes,
+without changing the physical `MEN` activity from a normal program fetch.
+IN/OUT instead replace the second-cycle address with the port and assert
+`DEN` or `WE`. This is not a claim that table operations, remaining control
+flow, interrupt entry, or general pipeline overlap is complete.
 
 `BANZ` presents `PC` during its opcode read and `PC+1` during its target-word
 read. At the second falling-edge sample it selects the canonical target when
@@ -172,6 +174,35 @@ For an I/O operation the selected three-bit port address appears on
 16-bit ports [ti-tms32010-users-guide-spru001b, §2.3.2, printed
 pp. 2-15–2-16 (PDF pp. 39–40)]. **Confidence: VERIFIED_PRIMARY.**
 
+The qualified portable interface exposes `io_port_o`, `io_read_o`,
+`io_write_o`, `io_write_data_o`, and `io_read_data_i` separately from
+program and internal-data signals. The native phase wrapper additionally
+exposes active-low `den_n_o` and `we_n_o` and multiplexes
+`program_address_o` to `{9'b0, io_port_o}` during the port cycle. This naming
+does not merge the I/O space into program memory: logical direction and
+transaction ownership remain explicit.
+
+For both `IN` and `OUT`, the opcode is read at PC under `MEN` in cycle 1. At
+that falling-edge sample, PC advances to PC+1 and the instruction enters a
+pending I/O state without retiring. During cycle 2, MEN is inactive.
+Phase zero establishes the zero-extended port address with all strobes high;
+phases 1–3 assert only DEN for IN or only WE for OUT. IN keeps its external
+input live through the enabled falling-edge sample and then writes the
+selected internal-RAM word. OUT reads the selected RAM word combinationally,
+drives it before WE asserts, and holds it through the sample. Indirect AR/ARP
+post-modification and retirement occur at that boundary. The following
+phase-zero address is PC+1
+[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
+IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+
+`sim/bus/tb_io_phase.sv` checks every native phase, strobe exclusivity,
+clock-enable hold, input sampling, output stability, and prefetch resumption.
+`sim/instruction/tb_io_rtl.sv` checks direct/indirect address effects and
+trap-before-effects, while the focused differential compares model and RTL
+cycles, transactions, state, and final RAM. The core exposes no READY input
+because the original pinout contains none.
+
 ## No documented READY pin
 
 The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.
@@ -188,9 +219,9 @@ behavior and divergence will be tested and labeled. TASKS milestone
 `TIMING-002` must be revised around evidence rather than presuming a READY
 protocol.
 
-## Candidate native RTL signals
+## Native RTL signal groups
 
-This is a design target, not final port naming:
+The current qualified slice retains:
 
 | Group | Information retained |
 |---|---|

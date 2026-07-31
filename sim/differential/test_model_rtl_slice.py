@@ -768,6 +768,132 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             self.assertEqual(int(fields[1], 16), index)
             self.assertEqual(int(fields[2], 16), model.data[index], (SEED, index))
 
+    def test_io_cycles_state_ram_and_transactions_match_model(self) -> None:
+        words = [
+            0x7008,  # LARK AR0,8
+            0x7128,  # LARK AR1,40
+            0x6880,  # LARP AR0
+            0x41A1,  # IN *+,PA1,AR1
+            0x4D98,  # OUT *-,PA5, preserve ARP
+            0x4307,  # IN 7,PA3
+            0x4F07,  # OUT 7,PA7
+            0x7F80,  # NOP
+        ]
+        data_words = [0] * 144
+        data_words[40] = 0xCAFE
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        model.data[:] = data_words
+        model.io_input[:] = [0x1000 + port for port in range(8)]
+        expected = [model.step() for _ in words]
+        machine_cycles = sum(trace.cycles for trace in expected)
+        self.assertEqual(machine_cycles, 12)
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    f"+COUNT={machine_cycles}",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line.split()
+            for line in result.stdout.splitlines()
+            if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), machine_cycles)
+        ram_lines = [
+            line.split()
+            for line in result.stdout.splitlines()
+            if line.startswith("RAM ")
+        ]
+        self.assertEqual(len(ram_lines), 144)
+
+        cycle_base = 0
+        for model_trace in expected:
+            retire_index = cycle_base + model_trace.cycles - 1
+            rtl = lines[retire_index]
+            self.assertEqual(int(rtl[3], 16), model_trace.state_after["pc"])
+            self.assertEqual(int(rtl[6], 16), model_trace.state_after["ar"][0])
+            self.assertEqual(int(rtl[7], 16), model_trace.state_after["ar"][1])
+            self.assertEqual(
+                int(rtl[8], 16),
+                model_trace.state_after["status"]["arp"],
+            )
+            self.assertEqual(
+                int(rtl[9], 16),
+                model_trace.state_after["status"]["dp"],
+            )
+            self.assertEqual(int(rtl[11], 16), 1)
+            self.assertEqual(
+                int(rtl[13], 16),
+                model_trace.state_after["cycle_count"],
+            )
+            if model_trace.cycles == 2:
+                opcode_cycle = lines[cycle_base]
+                self.assertEqual(
+                    [int(opcode_cycle[index], 16) for index in (15, 16, 31, 32)],
+                    [0, 0, 0, 0],
+                )
+                transaction_cycle = lines[retire_index]
+                io_transaction = next(
+                    transaction
+                    for transaction in model_trace.transactions
+                    if transaction.space == "io"
+                )
+                self.assertEqual(
+                    int(transaction_cycle[30], 16),
+                    io_transaction.address,
+                )
+                self.assertEqual(
+                    int(transaction_cycle[31], 16),
+                    int(io_transaction.operation == "read"),
+                )
+                self.assertEqual(
+                    int(transaction_cycle[32], 16),
+                    int(io_transaction.operation == "write"),
+                )
+                self.assertEqual(
+                    int(transaction_cycle[33], 16),
+                    io_transaction.data,
+                )
+                self.assertEqual(
+                    [int(transaction_cycle[index], 16) for index in (15, 16)],
+                    (
+                        [0, 1]
+                        if io_transaction.operation == "read"
+                        else [1, 0]
+                    ),
+                )
+            cycle_base += model_trace.cycles
+
+        for index, line in enumerate(ram_lines):
+            self.assertEqual(int(line[1], 16), index)
+            self.assertEqual(int(line[2], 16), model.data[index])
+        self.assertEqual(model.data[8], 0x1001)
+        self.assertEqual(model.data[7], 0x1003)
+        self.assertEqual(model.io_output[5], 0xCAFE)
+        self.assertEqual(model.io_output[7], 0x1003)
+
     def test_banz_two_cycle_taken_and_untaken_trace_matches_model(self) -> None:
         words = [
             0x7000,  # LARK AR0,0

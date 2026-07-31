@@ -1,23 +1,25 @@
 # Progress summary
 
-- **Current milestone:** direct-call and architectural-stack qualification
-- **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 83 repository/provenance/document/ISA/toolchain tests; 183
-  directed model tests; 32 RTL instruction/decode tests; 1 interrupt-mask RTL
-  test; 8 native bus/phase tests; one 512-instruction seeded
+- **Current milestone:** native IN/OUT I/O-space qualification
+- **Completed task IDs:** REPO-001, REF-001, BUS-003
+- **Tests passing:** 86 repository/provenance/document/ISA/toolchain tests; 189
+  directed model tests; 33 RTL instruction/decode tests; 1 interrupt-mask RTL
+  test; 9 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 16 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
-  CALL, and all six accumulator-conditional-branch model/RTL traces
+  CALL, and all six accumulator-conditional-branch model/RTL traces; focused
+  IN/OUT cycle/state/RAM/transaction differential
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the forty-eight-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,973 ALMs, 2,539 registers, 0 RAM blocks,
-  1 DSP block, 60.54 MHz worst slow-corner internal Fmax, +3.482 ns setup
-  slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the fifty-instruction partial core, multiplier, 144-word RAM, and
+  program/I/O phase engine on `5CSEBA6U23I7`: 2,036 ALMs, 2,563 registers,
+  0 RAM blocks, 1 DSP block, 55.60 MHz worst slow-corner internal Fmax,
+  +2.013 ns setup slack, and +0.167 ns worst hold slack at 50 MHz. TimeQuest
+  reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 12,690 generic cells with 11 assertions and lowering the
+  producing 12,902 generic cells with 15 assertions and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
@@ -131,7 +133,12 @@
   12-bit stack at target-word retirement, shifts older entries toward the
   bottom, discards the old bottom, and then selects the target; original TI
   sources and pinned MAME agree on the architectural behavior and two-cycle
-  total
+  total; IN and OUT are one-word/two-cycle opcode families with three-bit
+  ports and the common direct/indirect internal-data address; both first read
+  the opcode under MEN, then drive A11–A3 low and the port on A2–A0; IN
+  asserts DEN and samples all 16 live input bits into the old resolved RAM
+  address, while OUT asserts WE and drives all 16 selected RAM bits; indirect
+  AR/ARP changes occur only at second-cycle retirement
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -140,10 +147,11 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify `IN`/`OUT` as the first complete native
-  I/O-space slice, including exact encodings, port/address fields, data
-  direction, both documented cycles, phase ownership, clock-enable stalls,
-  model transactions, and external strobes;
+- **Next task:** research and qualify `TBLR`/`TBLW` as the next complete
+  external-transfer slice, including exact encodings, accumulator-derived
+  program address, RAM address/update ordering, three documented cycles,
+  native MEN/DEN/WE ownership, stalls, model transactions, and table
+  read/write direction;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
@@ -153,4 +161,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `95f75bb`
+  `3fc7df6`

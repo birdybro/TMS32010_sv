@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "IN", "OUT",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1851,6 +1851,112 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "IN",
+      "aliases": [],
+      "opcode": {
+        "match": "0x4000",
+        "mask": "0xf800",
+        "variable_fields": [
+          {"name": "port", "lsb": 8, "width": 3, "signed": false},
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "port", "kind": "io_port", "width": 3},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["DP for direct addressing", "ARP and selected AR for indirect addressing", "external port selected by PA2-PA0"],
+      "registers_written": ["selected internal data-memory word", "selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "external_io_read", "internal_data_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; all sixteen external input bits are stored unchanged",
+      "shift_behavior": "none; common indirect post-increment or post-decrement changes the selected AR low nine bits after using its old address",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "the 16-bit word sampled from the selected one of eight external input ports is written into the selected internal data-memory word",
+      "branch_behavior": "none; PC advances by one word",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-recognition interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word IN opcode with MEN active"},
+        {"space": "io", "operation": "read", "count": 1, "phase_detail": "second machine cycle drives A2-A0 with the port, A11-A3 low, asserts DEN low, and samples the external word at the falling CLKOUT boundary"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2, IN instruction description, and Appendix A IN timing", "printed_page": "3-6, 3-30, and data-sheet 17", "pdf_page": "56, 80, and 373"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "IN instruction description", "printed_page": "3-30", "pdf_page": 51},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and IN instruction description", "printed_page": "4-10 and 4-35", "pdf_page": "89 and 116"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-004", "OQ-010"]
+    },
+    {
+      "mnemonic": "OUT",
+      "aliases": [],
+      "opcode": {
+        "match": "0x4800",
+        "mask": "0xf800",
+        "variable_fields": [
+          {"name": "port", "lsb": 8, "width": 3, "signed": false},
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "port", "kind": "io_port", "width": 3},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["selected internal data-memory word", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["external port selected by PA2-PA0", "selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read", "external_io_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; all sixteen internal data-memory bits are driven unchanged",
+      "shift_behavior": "none; common indirect post-increment or post-decrement changes the selected AR low nine bits after using its old address",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "the selected internal data-memory word is driven to the selected one of eight external output ports",
+      "branch_behavior": "none; PC advances by one word",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-recognition interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word OUT opcode with MEN active"},
+        {"space": "io", "operation": "write", "count": 1, "phase_detail": "second machine cycle drives A2-A0 with the port, A11-A3 low, presents the selected word on D15-D0, and asserts WE low through the falling CLKOUT boundary"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2, OUT instruction description, and Appendix A OUT timing", "printed_page": "3-6, 3-47, and data-sheet 18", "pdf_page": "56, 97, and 374"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "OUT instruction description", "printed_page": "3-47", "pdf_page": 68},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and OUT instruction description", "printed_page": "4-10 and 4-52", "pdf_page": "89 and 133"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-004", "OQ-010"]
     },
     {
       "mnemonic": "BGEZ",

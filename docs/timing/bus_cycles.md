@@ -34,6 +34,27 @@ No READY pin appears in the original pinout. There is therefore no verified
 native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
+`IN` and `OUT` now have a qualified native sequence. The first cycle is the
+ordinary one-word opcode fetch under `MEN`. At that falling-edge sample the
+architectural PC advances by one but the instruction remains pending. During
+the second cycle `A11..A3` are zero and `PA2..PA0` carry the encoded port.
+`IN` asserts only `DEN`, samples the external 16-bit word at the falling
+boundary, and writes it to the already-resolved old data-memory address.
+`OUT` reads that internal word, drives it during address setup, and asserts
+only `WE` through the falling boundary. Indirect AR/ARP updates and retirement
+occur only at that second sample; the following normal read uses opcode PC+1
+[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
+timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed native testing separately holds active `DEN` and `WE` phases with
+the FPGA clock enable low and requires phase, address, strobe, PC, and cycle
+count to remain stable. It also proves that input data remains live until the
+enabled sample and that `OUT` data remains unchanged throughout its hold and
+completion phases. This validates the synchronous emulation contract but does
+not assert that an NMOS TMS32010 may be stopped arbitrarily or that a
+READY/wait pin exists.
+
 `PUSH` and `POP` each consume two cycles despite carrying only one program
 word. No located original-part timing figure shows whether `MEN` is inactive,
 the current address is held, or the next instruction is prefetched during the
@@ -176,7 +197,8 @@ internal
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms
-are transcribed. Remaining work must identify:
+are transcribed; normal fetch, IN, OUT, and reset now have directed phase
+tests. Remaining work must identify:
 
 - branch/call/return prefetch address order;
 - complete interrupt entry and vector-fetch order;

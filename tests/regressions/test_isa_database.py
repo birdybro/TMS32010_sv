@@ -67,6 +67,8 @@ class IsaDatabaseTests(unittest.TestCase):
                 "BV",
                 "BIOZ",
                 "CALL",
+                "IN",
+                "OUT",
                 "B",
                 "BGEZ",
                 "BGZ",
@@ -241,6 +243,30 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(instruction["conditional_cycle_differences"], [])
         self.assertIn("all four stack levels", instruction["registers_written"])
         self.assertIsNone(decode_word(self.database, 0xF801))
+
+    def test_io_families_cover_ports_and_reject_reserved_controls(self) -> None:
+        for base, mnemonic, operation in (
+            (0x4000, "IN", "read"),
+            (0x4800, "OUT", "write"),
+        ):
+            direct = decode_word(self.database, base | 0x077F)
+            indirect = decode_word(self.database, base | 0x05A1)
+            self.assertIsNotNone(direct)
+            self.assertIsNotNone(indirect)
+            assert direct is not None and indirect is not None
+            self.assertEqual(direct[0]["mnemonic"], mnemonic)
+            self.assertEqual(
+                direct[1],
+                {"port": 7, "indirect": 0, "addressing_field": 0x7F},
+            )
+            self.assertEqual(
+                indirect[1],
+                {"port": 5, "indirect": 1, "addressing_field": 0x21},
+            )
+            self.assertEqual(direct[0]["documented_cycle_count"], 2)
+            self.assertEqual(direct[0]["external_bus_cycles"][1]["operation"], operation)
+            for control in (0xC8, 0x8A, 0xB8):
+                self.assertIsNone(decode_word(self.database, base | control))
 
     def test_accumulator_branches_are_exact_two_word_opcodes(self) -> None:
         expected = {

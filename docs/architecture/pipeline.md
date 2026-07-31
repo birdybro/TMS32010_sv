@@ -37,6 +37,8 @@ resolved for:
 
 - B, BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions are now
   qualified; indirect call/return sequences remain (`OQ-007`);
+- IN and OUT are now qualified as one opcode-read cycle followed by one
+  mutually exclusive DEN or WE I/O cycle;
 - `CALA` and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -105,6 +107,22 @@ printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for instruction
 effects and two-read sequence; implementation commit ownership is qualified
 at the architectural falling-edge boundary only.**
+
+`IN` and `OUT` are one-word instructions whose two documented cycles have
+different bus ownership. Cycle 1 performs the ordinary MEN opcode read. Cycle
+2 suppresses MEN, drives the three-bit port on A2–A0 with A11–A3 low, and
+asserts DEN for IN or WE for OUT. At the second falling `CLKOUT` sample, IN
+writes the live external word to the pre-update internal-RAM address; OUT has
+held the selected internal-RAM word on the external data bus and completes the
+write. The common indirect AR/ARP update and instruction retirement also
+occur at that boundary. Directed phase tests require MEN, DEN, and WE to be
+mutually exclusive and hold address, control, data, PC, and pending state
+through a disabled clock-enable phase
+[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A I/O
+timing, printed pp. 3-6, 3-30, and 3-47 plus data-sheet pp. 17–18
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for
+logical ordering and native pin phases; analog delays are wrapper
+constraints.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

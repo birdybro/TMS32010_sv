@@ -72,6 +72,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_call_pushes_on_the_second_native_program_read(self) -> None:
         self._run_testbench("tb_call_phase")
 
+    def test_io_uses_distinct_two_cycle_den_and_we_waveforms(self) -> None:
+        self._run_testbench("tb_io_phase")
+
     def test_accumulator_branches_use_two_stallable_native_reads(self) -> None:
         self._run_testbench("tb_accumulator_branches_phase")
 

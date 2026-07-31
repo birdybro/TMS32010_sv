@@ -33,6 +33,19 @@ class Disassembler:
             return f"LACK {operands['constant']}"
         if mnemonic == "MPYK":
             return f"MPYK {operands['constant']}"
+        if mnemonic in {"IN", "OUT"}:
+            port = operands["port"]
+            if not operands["indirect"]:
+                return (
+                    f"{mnemonic} {operands['addressing_field']},{port}"
+                )
+            control = operands["addressing_field"]
+            modifier = {0x00: "*", 0x20: "*+", 0x10: "*-"}[control & 0x30]
+            if control & 0x08:
+                if control & 1:
+                    return f".word 0x{word:04x}"
+                return f"{mnemonic} {modifier},{port}"
+            return f"{mnemonic} {modifier},{port},{control & 1}"
         if mnemonic in {"ADD", "LAC", "SUB"}:
             shift = operands["shift"]
             if not operands["indirect"]:

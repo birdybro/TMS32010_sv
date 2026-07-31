@@ -95,8 +95,8 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Forty-eight encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
-  `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
+- **Notes:** Fifty encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
+  `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBS`) are
   primary-transcribed in the opcode research table. The twenty-two
@@ -104,8 +104,10 @@ objective passing evidence.
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
-  decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 19,062 supported words without collisions; the remaining 12
+  IN and OUT add 2,240 legal direct/indirect port/address combinations under
+  those same common indirect constraints. The decoder exhaustively classifies
+  all 65,536 words against this partial set, accepting 21,302 supported words
+  without collisions; the remaining 10
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -150,9 +152,9 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
-  `PAC`,
+  `OUT`, `PAC`,
   `ROVM`, `SACL`, `SACH`,
   `SAR`, `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
@@ -223,9 +225,13 @@ objective passing evidence.
   records both mandatory reads, and preserves all architectural state but PC.
   `CALL` pushes wrapped opcode-PC+2 onto a top-first four-level stack, discards
   the old bottom, selects its canonical target, and records both reads.
+  `IN` and `OUT` resolve the common internal-data address before updates,
+  transfer all 16 bits between that word and one of eight distinct I/O ports,
+  apply indirect AR/ARP controls at completion, record an opcode fetch plus
+  second-cycle I/O and internal-data transactions, and count two cycles.
   Out-of-range
-  original-RAM addresses and unsupported words trap. Remaining memory/I/O
-  instructions and pin phases remain unimplemented.
+  original-RAM addresses and unsupported words trap. Remaining table-memory
+  instructions, interrupt entry, and pin phases remain unimplemented.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -242,7 +248,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same forty-eight instructions as the
+- **Notes:** Qualified slice supports the same fifty instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -250,12 +256,13 @@ objective passing evidence.
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
   ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
+  checked `IN`/`OUT` data-address plus numeric or PA0–PA7 port syntax,
   plus the complete signed 13-bit MPYK immediate range and implied
   PAC/APAC/SPAC/DINT/EINT and two-word
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 12
+  directed-tested. The remaining 10
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -275,7 +282,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  forty-eight-instruction slice. `LAC`
+  fifty-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty-two common-address data instructions verify direct/indirect read/write
@@ -312,6 +319,9 @@ objective passing evidence.
   wrap, and both saturation endpoints for their respective arithmetic.
   SUBS verifies zero-extended subtraction, negative wrap/saturation, and
   sticky OV.
+  IN writes a live external 16-bit port word into RAM and OUT reads a RAM word
+  for external drive through the same old-address/post-update path; both keep
+  the I/O space distinct from the internal data transaction.
   SUBC verifies unsigned operand alignment, both conditional result paths, and
   the 16-step 65/7 divide. The intermediate-subtraction OV stage remains
   provisional under `OQ-018` and ignores OVM as TI documents.
@@ -348,6 +358,10 @@ objective passing evidence.
   separate normal program reads, retirement occurs only on the target-word
   sample, and next-address selection aligns PC with the native bus across
   stalls. CALL additionally pushes opcode-PC+2 only at target-word retirement.
+  IN/OUT use a separate pending state after the opcode sample: the next
+  enabled falling boundary completes a DEN read or WE write, commits the
+  internal RAM effect and indirect AR/ARP update, advances PC, and retires.
+  Program MEN is suppressed throughout that I/O cycle.
   General overlap, remaining branch/multi-cycle, and interrupt control
   do not exist yet. SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
@@ -380,7 +394,9 @@ objective passing evidence.
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Every qualified control-flow path verifies opcode/target
   addresses and target-read stalls; conditional branches cover both outcomes.
-  CALL also verifies no early push and its target-sample stack commit. Table
+  CALL also verifies no early push and its target-sample stack commit. IN/OUT
+  verify an ordinary opcode read before the distinct I/O cycle without
+  changing the qualified normal-program-read primitive. Table
   cycles, remaining indirect-call/return,
   general pipeline overlap, and interrupt sequences remain. Do not collapse Harvard spaces in the native
   interface.
@@ -417,16 +433,27 @@ objective passing evidence.
 
 ### BUS-003 — Native I/O-space transactions
 
-- **Status:** IMPLEMENTING
+- **Status:** COMPLETE
 - **Priority:** P0
 - **Dependencies:** RTL-002, ARCH-001
-- **Description:** Implement documented I/O address, data, strobes, ready, and
+- **Description:** Implement documented I/O address, data, strobes, and
   cycle behavior separately from program and data spaces.
-- **Acceptance criteria:** all IN/OUT timing and wait cases match automated
-  primary-sourced traces.
+- **Acceptance criteria:** all IN/OUT timing, data-direction, address, and
+  clock-enable-stall cases match automated primary-sourced traces.
 - **Documentation:** `docs/architecture/external_interface.md`
-- **Tests:** `sim/bus/tb_io_bus.sv`
-- **Notes:** Hard Drivin' mappings belong in an integration wrapper.
+- **Tests:** `sim/bus/tb_io_phase.sv`, `sim/instruction/tb_io_rtl.sv`,
+  `sim/unit/test_model_io.py`,
+  `sim/differential/test_model_rtl_slice.py`
+- **Notes:** IN/OUT each perform one normal MEN opcode cycle followed by one
+  port cycle with A11–A3 low and A2–A0 equal to the encoded port. IN asserts
+  DEN, samples the live external word at falling CLKOUT, and stores it into
+  the old resolved internal-RAM address. OUT asserts WE and holds the old
+  resolved RAM word as write data. Directed tests cover all bus-strobe
+  exclusions, direct/indirect ordering, AR/ARP commit, stable active phases,
+  two-cycle retirement, traps, and model/RTL transaction agreement. The
+  original 40-pin part has no READY input; clock-enable holding is a wrapper
+  adaptation and not a claimed native wait protocol. Hard Drivin' mappings
+  belong in an integration wrapper.
 
 ## Milestone 12 — Reset and initialization behavior
 
@@ -649,6 +676,9 @@ objective passing evidence.
   states and places the taken clear at second-cycle retirement. BIOZ asserts
   both active-low paths and changes the pin between its samples. CALL asserts
   two reads, no opcode-sample push, target-sample push, and target-phase stall.
+  IN/OUT assert one MEN opcode read followed by one mutually exclusive DEN/WE
+  cycle, live input sampling or stable output data, old-address ownership,
+  second-cycle indirect updates, retirement, and phase stalls.
   Other control flow remains. PUSH/POP are primary-confirmed as one-word/two-cycle
   instructions with exact state effects, but their second-cycle external
   sequence remains open under `OQ-016`. SUBC's one-cycle total is asserted
@@ -727,6 +757,9 @@ objective passing evidence.
   A focused CALL differential compares two nested calls, every opcode/target
   read, second-cycle retirement, cumulative cycles, PC, and all four stack
   levels at each commit.
+  A focused IN/OUT differential compares direct and indirect transfers,
+  opcode-plus-I/O transaction order, exact two-cycle totals, RAM results,
+  port/data direction, PC, and AR/ARP post-updates.
   MAME comparison and
   legal randomized full-ISA streams
   remain. MAME disagreement

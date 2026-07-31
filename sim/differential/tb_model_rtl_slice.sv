@@ -36,11 +36,17 @@ module tb_model_rtl_slice;
   logic        data_write_address_valid;
   logic [15:0] data_read_data;
   logic [15:0] data_write_data;
+  logic [2:0]  io_port;
+  logic        io_read;
+  logic        io_write;
+  logic [15:0] io_write_data;
+  logic [15:0] io_read_data;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
   logic [15:0] program_memory [0:4095];
   logic [15:0] data_memory [0:143];
+  logic [15:0] io_input [0:7];
 
   string image_path;
   string data_path;
@@ -57,6 +63,11 @@ module tb_model_rtl_slice;
     .program_next_address_o (),
     .program_read_o    (program_read),
     .program_data_i    (program_data),
+    .io_port_o                     (io_port),
+    .io_read_o                     (io_read),
+    .io_write_o                    (io_write),
+    .io_write_data_o               (io_write_data),
+    .io_read_data_i                (io_read_data),
     .data_address_o    (data_address),
     .data_read_o       (data_read),
     .data_write_o      (data_write),
@@ -90,6 +101,7 @@ module tb_model_rtl_slice;
   );
 
   assign program_data = program_memory[program_address];
+  assign io_read_data = io_input[io_port];
 
   initial clk = 1'b0;
   always #5 clk = ~clk;
@@ -109,6 +121,9 @@ module tb_model_rtl_slice;
     bio = bio_value != 0;
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
+    end
+    for (int unsigned index = 0; index < 8; index++) begin
+      io_input[index] = 16'h1000 + index[15:0];
     end
     $readmemh(image_path, program_memory);
     $readmemh(data_path, data_memory);
@@ -150,6 +165,10 @@ module tb_model_rtl_slice;
       logic        data_write_address_valid_before;
       logic [15:0] data_read_data_before;
       logic [15:0] data_write_data_before;
+      logic [2:0]  io_port_before;
+      logic        io_read_before;
+      logic        io_write_before;
+      logic [15:0] io_transfer_data_before;
       pc_before     = program_address;
       opcode_before = program_data;
       data_address_before       = data_address;
@@ -160,10 +179,15 @@ module tb_model_rtl_slice;
       data_write_address_valid_before = data_write_address_valid;
       data_read_data_before     = data_read_data;
       data_write_data_before    = data_write_data;
+      io_port_before            = io_port;
+      io_read_before            = io_read;
+      io_write_before           = io_write;
+      io_transfer_data_before   =
+        io_read ? io_read_data : io_write_data;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x %03x %03x %03x %03x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x %03x %03x %03x %03x %01x %01x %01x %04x",
         pc_before,
         opcode_before,
         pc,
@@ -192,7 +216,11 @@ module tb_model_rtl_slice;
         stack_top,
         stack_level_1,
         stack_level_2,
-        stack_bottom
+        stack_bottom,
+        io_port_before,
+        io_read_before,
+        io_write_before,
+        io_transfer_data_before
       );
     end
     for (int unsigned index = 0; index < 144; index++) begin

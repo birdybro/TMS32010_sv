@@ -10,6 +10,7 @@ module tb_decode_exhaustive;
   logic [12:0]          immediate_13;
   logic                 auxiliary_register;
   logic [3:0]           shift;
+  logic [2:0]           port;
   logic                 indirect;
   logic [6:0]           addressing_field;
   int unsigned          valid_count;
@@ -22,6 +23,7 @@ module tb_decode_exhaustive;
     .immediate_13_o (immediate_13),
     .auxiliary_register_o (auxiliary_register),
     .shift_o       (shift),
+    .port_o        (port),
     .indirect_o    (indirect),
     .addressing_field_o (addressing_field)
   );
@@ -31,6 +33,8 @@ module tb_decode_exhaustive;
     for (int unsigned word = 0; word < 65536; word++) begin
       logic expected_valid;
       logic expected_lac;
+      logic expected_in;
+      logic expected_out;
       logic expected_sacl;
       logic expected_sach;
       logic expected_zalh;
@@ -69,6 +73,26 @@ module tb_decode_exhaustive;
       #1;
       expected_lac =
         (instruction[15:12] == 4'h2) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
+      expected_in =
+        (instruction[15:11] == 5'b01000) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
+      expected_out =
+        (instruction[15:11] == 5'b01001) &&
         (
           !instruction[7] ||
           (
@@ -318,7 +342,8 @@ module tb_decode_exhaustive;
         (instruction[15:8] >= 8'hfa) &&
         (instruction[7:0] == 8'h00);
       expected_valid =
-        expected_lac || expected_sacl || expected_sach ||
+        expected_lac || expected_in || expected_out ||
+        expected_sacl || expected_sach ||
         expected_zalh || expected_zals || expected_adds ||
         expected_xor || expected_and || expected_or || expected_add ||
         expected_sub || expected_subs || expected_subc ||
@@ -352,6 +377,16 @@ module tb_decode_exhaustive;
             indirect != word[7] ||
             addressing_field != word[6:0]) begin
           $fatal(1, "LAC decode mismatch at %04x", word);
+        end
+      end
+      if (expected_in || expected_out) begin
+        if (
+          operation != (expected_in ? OP_IN : OP_OUT) ||
+          port != word[10:8] ||
+          indirect != word[7] ||
+          addressing_field != word[6:0]
+        ) begin
+          $fatal(1, "I/O decode mismatch at %04x", word);
         end
       end
       if (expected_sacl) begin
@@ -581,8 +616,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 19062) begin
-      $fatal(1, "expected 19062 supported words, got %0d", valid_count);
+    if (valid_count != 21302) begin
+      $fatal(1, "expected 21302 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

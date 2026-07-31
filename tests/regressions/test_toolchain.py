@@ -1160,6 +1160,66 @@ class ToolchainSliceTests(unittest.TestCase):
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), original)
 
+    def test_io_encodings_and_pa_aliases_round_trip(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            IN 0,PA0
+            IN 127,5
+            IN *-,PA1,0
+            IN *+,7,AR1
+            OUT 0,0
+            OUT 120,PA7
+            OUT *,PA5
+            OUT *+,5,0
+            """
+        )
+        expected = [
+            0x4000,
+            0x457F,
+            0x4190,
+            0x47A1,
+            0x4800,
+            0x4F78,
+            0x4D88,
+            0x4DA0,
+        ]
+        self.assertEqual(list(result.words.values()), expected)
+
+        source = self.disassembler.disassemble_source(expected)
+        self.assertEqual(
+            source,
+            "IN 0,0\n"
+            "IN 127,5\n"
+            "IN *-,1,0\n"
+            "IN *+,7,1\n"
+            "OUT 0,0\n"
+            "OUT 120,7\n"
+            "OUT *,5\n"
+            "OUT *+,5,0\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), expected)
+
+    def test_io_operand_diagnostics_and_noncanonical_aliases(self) -> None:
+        cases = (
+            ("IN 0,8\n", "port out of range"),
+            ("OUT 0,PAX\n", "I/O port"),
+            ("IN 128,0\n", "direct address"),
+            ("OUT *+,0,2\n", "next ARP"),
+            ("IN 0,0,1\n", "only with indirect"),
+            ("OUT 0\n", "2 to 3 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+        original = [0x4089, 0x4F89]
+        source = self.disassembler.disassemble_source(original)
+        self.assertEqual(source, ".word 0x4089\n.word 0x4f89\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), original)
+
     def test_unsupported_documented_instruction_is_explicit(self) -> None:
         with self.assertRaisesRegex(
             AssemblyError,

@@ -91,6 +91,30 @@ and upper address pins are zero.
 The same physical `WE` pin is used for `OUT` and `TBLW`; address context
 distinguishes I/O from program-space writes.
 
+The qualified synchronous phase mapping is:
+
+| Machine cycle / phase | Address | Active-low strobe | Boundary effect |
+|---|---|---|---|
+| opcode, phase 0 | opcode PC | none | address setup |
+| opcode, phases 1–3 | opcode PC | `MEN` | sample opcode at phase-3 falling boundary |
+| port, phase 0 | `{9'b0, ppp}` | none | port/address and output-data setup |
+| port, phases 1–3 | `{9'b0, ppp}` | `DEN` for `IN`; `WE` for `OUT` | sample input or complete output at phase-3 falling boundary |
+| following, phase 0 | opcode PC + 1 | none | next program-address setup |
+
+The opcode sample advances architectural PC to PC+1 but does not retire the
+instruction. The port-cycle sample performs the internal RAM write for `IN`
+or completes the RAM-read-to-port transfer for `OUT`, applies indirect AR/ARP
+post-modification, increments the architectural cycle total a second time,
+and retires. A low FPGA clock enable holds the current native phase, address,
+strobe, pending operation, write data, and architectural state; this is a
+synchronous emulation control, not an undocumented original READY pin.
+
+`sim/bus/tb_io_phase.sv` asserts every row above, including mutually
+exclusive `MEN`/`DEN`/`WE`, input changes before the enabled sample, stable
+output data, and the next program address. Analog delay values remain wrapper
+constraints rather than RTL delays. **Confidence: VERIFIED_PRIMARY for the
+logical waveform; VERIFIED_HARDWARE is not claimed.**
+
 ## BANZ
 
 `BANZ` uses two consecutive normal program reads:

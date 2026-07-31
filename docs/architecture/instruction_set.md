@@ -284,6 +284,60 @@ return-address wrap, state preservation, and malformed-target
 trap-before-push. Pinned MAME independently agrees on the push, target, and
 fixed two-cycle total.
 
+## Qualified `IN`/`OUT` I/O slice
+
+`IN` and `OUT` are one-word, two-cycle common-address instructions. Their
+exact first-word layouts are:
+
+```text
+IN   01000 ppp i ccccccc
+OUT  01001 ppp i ccccccc
+```
+
+`ppp` selects external port 0 through 7. With `i=0`, `ccccccc` is the direct
+seven-bit data-memory address and pre-instruction DP supplies bit 7. With
+`i=1`, the field uses the same old-ARP/old-AR address selection, low-nine-bit
+post-increment/decrement, optional next-ARP, and reserved-control rules as the
+other common-address instructions. The old selected address is used for the
+transfer before either AR or ARP changes
+[ti-tms32010-users-guide-spru001b, `IN`/`OUT`, printed pp. 3-30 and 3-47
+(PDF pp. 80 and 97); ti-tms32010-assembly-guide-spru002b, `IN`/`OUT`,
+printed pp. 3-30 and 3-47 (PDF pp. 51 and 68)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`IN` samples all 16 external input bits from the selected port and writes
+them unchanged to the selected internal-RAM word. `OUT` reads all 16 bits of
+the selected internal-RAM word and drives them unchanged to the selected
+output port. Neither instruction changes ACC, T, P, OV, OVM, DP, stack, or
+INTM; indirect forms can change the selected AR and ARP as encoded. Each
+advances PC by one word
+[ti-first-generation-users-guide-1987, `IN`/`OUT`, printed pp. 4-35 and
+4-52 (PDF pp. 116 and 133)]. **Confidence: VERIFIED_PRIMARY.**
+
+Cycle 1 is the opcode program read under active-low `MEN`. Cycle 2 drives
+`A11..A3=0` and the port on `PA2..PA0`; `IN` asserts active-low `DEN` and
+samples input at the falling-`CLKOUT` boundary, whereas `OUT` asserts
+active-low `WE` with output data valid through that boundary. The following
+program read begins at opcode PC+1. `MEN`, `DEN`, and `WE` remain mutually
+exclusive
+[ti-tms32010-users-guide-spru001b, Table 3-2 and Appendix A IN/OUT timing,
+printed p. 3-6 and data-sheet pp. 17–18 (PDF pp. 56 and 373–374)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Hand fixtures cover all port-field extremes and direct/indirect forms.
+Directed model and RTL tests cover both directions, DP addressing,
+old-address/post-update ordering, reserved controls, unresolved-address
+trap-before-effects, exact two-cycle totals, and clock-enable stalls. A
+native waveform test asserts phase-zero address setup, `DEN`-only and
+`WE`-only active phases, live input sampling, stable output data, strobe
+mutual exclusion, and resumption at the prefetched PC. A focused
+model/RTL differential compares cycle totals, RAM effects, AR/ARP state, and
+each I/O transaction. Pinned MAME independently agrees on data direction,
+common addressing, port selection, and two-cycle table entries; it remains a
+functional corroborator, not pin-timing proof
+[mame-tms320c1x-core-030fefc, `in_p()`/`out_p()` and opcode table,
+lines 530–535, 654–659, and 818–825]. **Confidence: CORROBORATED.**
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

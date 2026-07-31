@@ -8,6 +8,7 @@ module tms32010_decode (
   output logic [12:0] immediate_13_o,
   output logic        auxiliary_register_o,
   output logic [3:0]  shift_o,
+  output logic [2:0]  port_o,
   output logic        indirect_o,
   output logic [6:0]  addressing_field_o
 );
@@ -62,6 +63,8 @@ module tms32010_decode (
   localparam logic [5:0] OP_BV   = 6'd45;
   localparam logic [5:0] OP_BIOZ = 6'd46;
   localparam logic [5:0] OP_CALL = 6'd47;
+  localparam logic [5:0] OP_IN   = 6'd48;
+  localparam logic [5:0] OP_OUT  = 6'd49;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -70,6 +73,7 @@ module tms32010_decode (
     immediate_13_o       = instruction_i[12:0];
     auxiliary_register_o = instruction_i[8];
     shift_o              = instruction_i[11:8];
+    port_o               = instruction_i[10:8];
     indirect_o           = instruction_i[7];
     addressing_field_o   = instruction_i[6:0];
 
@@ -90,6 +94,21 @@ module tms32010_decode (
       end
     end else if (instruction_i[15:12] == 4'h2) begin
       operation_o = OP_LAC;
+      if (!instruction_i[7]) begin
+        valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
+      end
+    end else if (
+      (instruction_i[15:11] == 5'b01000) ||
+      (instruction_i[15:11] == 5'b01001)
+    ) begin
+      operation_o =
+        (instruction_i[15:11] == 5'b01000) ? OP_IN : OP_OUT;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
       end else if (
@@ -398,6 +417,7 @@ module tms32010_decode (
           immediate_o          = 8'h00;
           auxiliary_register_o = 1'b0;
           shift_o              = 4'h0;
+          port_o               = 3'h0;
           indirect_o           = 1'b0;
           addressing_field_o   = 7'h00;
         end

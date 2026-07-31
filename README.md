@@ -14,9 +14,9 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support forty-eight
+The reference model, local tools, and partial RTL currently support fifty
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
-`LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+`IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
@@ -71,11 +71,18 @@ path is disclosed as `SC-015`.
 At the second normal program-read sample it pushes opcode-PC+2 onto the
 four-level 12-bit stack and selects the target. Nested-call, stack-overflow,
 target-stall, return-address-wrap, and malformed-target cases are automated.
+`IN` and `OUT` each perform an ordinary opcode read followed by a distinct
+I/O-space cycle. IN asserts DEN and stores the live 16-bit port input into the
+old resolved internal-RAM address; OUT asserts WE and drives the selected RAM
+word. Both expose the three-bit port separately, apply indirect updates only
+at second-cycle retirement, and have directed state, cycle, stall, bus-phase,
+and differential tests.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
-instructions and eleven qualified two-cycle control-flow instructions; it is not a general pipeline or
-cycle-accuracy claim.
+instructions, eleven two-cycle control-flow instructions, and the two
+qualified I/O instructions; it is not a general pipeline or cycle-accuracy
+claim.
 
 ## Design principles
 

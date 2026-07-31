@@ -422,6 +422,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_io_two_cycle_transfers_addressing_and_stalls(self) -> None:
+        self._run_testbench(
+            "tb_io_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_io_rtl.sv",
+            ],
+        )
+
     def test_accumulator_branch_predicates_and_two_cycle_timing(self) -> None:
         self._run_testbench(
             "tb_accumulator_branches_rtl",

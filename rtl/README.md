@@ -1,9 +1,9 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
+`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
-`ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`,
+`OUT`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
 one supported one-cycle instruction. Unsupported words, undocumented SACH
@@ -53,8 +53,14 @@ only on a taken second-cycle retirement. This is not a general sequencer: the
 raw active-low `bio_i` level at BIOZ's second falling boundary owns its
 predicate; the opcode cycle does not latch the pin. CALL shifts opcode-PC+2
 into the exposed four-level 12-bit stack only at second-cycle retirement. The
-remaining branches, other multi-cycle instructions,
-external data/I/O, table, and interrupt sequences remain absent.
+IN/OUT pending state instead changes the second cycle from a program read to
+one mutually exclusive native I/O transaction: `io_port_o` drives A2–A0,
+`io_read_o`/DEN samples the live `io_read_data_i` word into RAM for IN, and
+`io_write_o`/WE drives `io_write_data_o` from RAM for OUT. Address, controls,
+write data, PC, and pending indirect updates hold across clock-enable stalls;
+the old internal address is used before AR/ARP commit at retirement. The
+remaining branches, other multi-cycle instructions, table, and interrupt
+sequences remain absent.
 
 SUBC retires through this same path only in legally scheduled test streams
 whose following instruction does not read ACC. Immediate internal ACC commit

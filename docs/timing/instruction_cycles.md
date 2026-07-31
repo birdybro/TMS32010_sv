@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-forty-eight-instruction subset, then check retirement on the falling-edge
+fifty-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -143,6 +143,18 @@ target trap-before-push
 printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed `IN`/`OUT` tests assert one opcode `MEN` cycle followed by exactly
+one port cycle. The opcode sample advances PC without retirement. The second
+sample performs the selected `DEN` input or `WE` output transaction, commits
+the internal RAM effect and any common indirect AR/ARP update, increments the
+cycle total to two, and retires. Native tests cover address setup, all three
+mutually exclusive strobes, a stalled active phase, live input data, stable
+output data, and resumption at opcode PC+1. Model/RTL differential traces
+compare both logical cycles and the I/O transaction data
+[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
+IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
@@ -150,7 +162,8 @@ printed pp. 2-13–2-14, 3-6, and 3-26
   sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
-  `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
+  `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
+  `IN` write and `OUT` read;
 - table-operation discarded fetch order;
 - interrupt entry latency, recognition boundary, and MPY/MPYK's documented
   one-following-instruction deferral;

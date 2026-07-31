@@ -5,6 +5,7 @@ module tms32010_program_bus (
   input  logic        initialize_i,
   input  logic        rs_i,
   input  logic        clock_enable_i,
+  input  logic        program_read_i,
   input  logic [11:0] next_address_i,
 
   output logic [1:0]  phase_o,
@@ -17,7 +18,8 @@ module tms32010_program_bus (
   logic release_boundary_seen;
 
   assign clkout_o = phase_o[1];
-  assign men_n_o  = ~active_o | (phase_o == 2'd0);
+  assign men_n_o =
+    ~active_o | ~program_read_i | (phase_o == 2'd0);
 
   always_ff @(posedge clk_i) begin
     sample_o <= 1'b0;

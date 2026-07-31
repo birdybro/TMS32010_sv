@@ -18,6 +18,7 @@ module tb_program_bus_phase;
     .initialize_i   (initialize),
     .rs_i           (rs),
     .clock_enable_i (clock_enable),
+    .program_read_i (1'b1),
     .next_address_i (next_address),
     .phase_o        (phase),
     .clkout_o       (clkout),
