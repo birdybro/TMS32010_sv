@@ -261,6 +261,11 @@ The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
+Recognized core reset now has dedicated actual-core simulation and a 10-step
+bounded proof for TI-defined PC/INTM/interrupt-flag/control effects, inactive
+transactions/instruction qualification, clock-enable priority, documented OVM
+retention, and explicitly PROVISIONAL retention of TI-unlisted state under
+`OQ-012`. Do not promote that implementation retention to physical behavior.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 41 already-qualified one-cycle operation families, and
 exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and

@@ -566,7 +566,7 @@ module tms32010_core (
     end
   end
   always_comb begin
-    if (interrupt_entry_pending) begin
+    if (initialize_i || reset_i || interrupt_entry_pending) begin
       instruction_valid_o = 1'b0;
     end else if (control_operand_pending) begin
       instruction_valid_o =

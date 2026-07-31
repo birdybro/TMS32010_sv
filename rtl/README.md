@@ -156,6 +156,9 @@ only the source-backed control effects; unlisted state receives no arbitrary
 reset value. `CLKOUT` phases continue while `rs_i` is held, matching the
 data-sheet reset waveform. Retention of unlisted state is an implementation
 policy pending `OQ-012`, not a physical-device reset claim.
+The core also forces its nonphysical `instruction_valid_o` qualification low
+during deterministic initialization and recognized physical reset so inactive
+program-data pins cannot advertise executable ownership.
 
 The synthesizable code:
 
@@ -169,6 +172,8 @@ The synthesizable code:
   preserving `INTM`; indirect next-ARP precedence is provisional under
   `OQ-015`;
 - preserves `OVM` through physical reset as TI documents;
+- suppresses instruction qualification and every transaction class while
+  recognized physical reset is active;
 - exposes sticky `OV` for ADD/ADDS/APAC/LTA/LTD/SPAC/SUB/SUBS
   wrap/saturation verification and a separately labeled provisional
   intermediate-subtraction `OV` path for nonsaturating SUBC;

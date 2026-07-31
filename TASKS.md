@@ -675,12 +675,21 @@ objective passing evidence.
   documented unknowns; assertions show no unintended unknown control state.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/bus/tb_program_bus_phase.sv`, `sim/unit/tb_reset.sv`,
-  `formal/reset/`
+  `formal/tms32010_reset.sby`
 - **Notes:** Appendix A verifies five-machine-cycle minimum assertion,
   synchronized response, inactive strobes/high-Z data, PC/address clear after
   the next full cycle, and first address-0 read one full cycle after release.
   The standalone phase test covers these external reset phases; architectural
-  state/pipeline integration and formal reset properties remain.
+  core and explicit-pipeline tests cover recognized-boundary PC/INTM/IF/control
+  reset, execute-slot invalidation, trap recovery, clock-enable priority, and
+  first-fetch priming. A dedicated actual-core test establishes nonzero ACC,
+  T, P, AR0/AR1, ARP, DP, stack, OV, OVM, interrupt-pending, trap, and RAM
+  state before reset; it distinguishes TI-defined effects from provisional
+  retention under `OQ-012`. A 10-step BMC proves the exposed core reset
+  transition for arbitrary reset/clock-enable inputs and reaches a nonzero-
+  ACC/OVM reset cover at step 5. `instruction_valid_o` is now explicitly low
+  during initialization/reset. Full native-wrapper formalization and physical
+  values for TI-unlisted state remain; no complete reset claim is made.
   FPGA-deterministic behavior, if any, must be separately labeled.
 
 ## Milestone 13 — Interrupt behavior
@@ -1134,6 +1143,14 @@ objective passing evidence.
   execution of rewritten `LACK 0x44`; cover reaches step 35. This is one
   direct synchronous-memory scenario, not an indirect, arbitrary-data,
   interrupt-arrival, or electrical-memory proof.
+  An eighth 10-step actual-core configuration leaves recognized reset and
+  clock enable arbitrary. It proves deterministic initialization, reset
+  priority, PC/INTM/IF/trap/cycle effects, inactive transaction/instruction
+  qualification, documented OVM retention, and the explicitly provisional
+  retention bundle under `OQ-012`. Its fixed `SOVM; LACK 0x5a` cover reaches
+  nonzero retained ACC/OVM after reset at step 5. It does not prove native RS
+  phasing, internal-RAM retention, or original-silicon values for unlisted
+  state.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general
@@ -1162,9 +1179,9 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,866 generic cells/26 checks) and the
+  harness (13,877 generic cells/26 checks) and the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (15,686 cells/103 checks), each with zero structural
+  pipeline slice (15,733 cells/103 checks), each with zero structural
   problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.

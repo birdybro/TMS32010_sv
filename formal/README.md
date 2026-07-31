@@ -11,6 +11,25 @@ the 2026-07-29 OSS CAD Suite, and Bitwuzla 0.9.1:
 PATH=/path/to/oss-cad-suite/bin:$PATH make formal
 ```
 
+## Architectural reset-boundary harness
+
+`tms32010_reset.sby` checks the actual portable core with a 10-step BMC and
+cover. The already-recognized `reset_i` input remains arbitrary, as does
+`clock_enable_i`; native active-low `RS` duration, falling-`CLKOUT`
+recognition, and first-fetch timing remain properties of the separately tested
+program-bus phase engine. Assertions prove that initialization is
+deterministic, recognized reset clears PC, the interrupt flag, trap/control
+bookkeeping, and cycle count, sets `INTM`, suppresses every transaction and
+instruction-valid output, and has priority over clock enable.
+
+The same proof checks OVM retention as documented by TI. It also checks the
+current retention implementation for ACC, T, P, AR0/AR1, ARP, DP, stack, and
+OV, but that bundle is explicitly only PROVISIONAL FPGA policy under
+`OQ-012`; the proof does not promote it to original-silicon behavior. A fixed
+`SOVM; LACK 0x5a` path makes this boundary nonvacuous, and the reset-retention
+cover is reached at step 5. Internal-RAM retention is directed-tested rather
+than formally quantified by this harness.
+
 ## Interrupt-entry harness
 
 `tms32010_interrupt.sby` checks the actual portable core, not a replacement
@@ -192,7 +211,7 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The seven harnesses leave DINT ordering, formal coverage of the represented
+The eight harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

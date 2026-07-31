@@ -42,8 +42,10 @@ integrated, the checkpoint was 14,715 generic cells and 47 retained checks.
 With the basic Figure 2-12 interrupt path integrated, the current checkpoint
 was 15,129 generic cells and 78 retained checks. With exact TBLR/TBLW
 discarded-prefetch, program-transfer, and repeated-prefetch ownership, plus
-ABS, SST, and ADDH execution, the current checkpoint is 15,686 generic cells,
-103 retained checks, and zero
+ABS, SST, and ADDH execution, the checkpoint was 15,686 generic cells.
+Explicit reset-time instruction qualification and the loop-free recognized-
+reset boundary bring the current checkpoint to 15,733 generic cells, 103
+retained checks, and zero
 structural-check problems.
 
 ## Quartus

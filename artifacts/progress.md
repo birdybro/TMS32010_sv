@@ -1,9 +1,10 @@
 # Progress summary
 
-- **Current milestone:** instruction encoding database
+- **Current milestone:** reset and initialization behavior
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 229
-  directed model tests; one standalone fetch/execute RTL unit; 38 RTL
+- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 230
+  directed model/unit tests, including standalone fetch/execute and
+  architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
   tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
   one
@@ -20,22 +21,22 @@
   subphase arrivals with a stalled phase-2 case and falling-boundary ownership
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-six-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,170
-  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 56.96 MHz worst
-  slow-corner internal Fmax, +2.445 ns setup slack, and +0.166 ns worst hold
+  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,188
+  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 57.66 MHz worst
+  slow-corner internal Fmax, +2.656 ns setup slack, and +0.166 ns worst hold
   slack at 50 MHz. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,866 generic cells with 26 retained checks and lowering the
+  producing 13,877 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,686 generic cells with 103 retained checks and
+  independently passes at 15,733 generic cells with 103 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration;
   this is not a
@@ -65,7 +66,11 @@
   an explicit enabled phase-3 synchronous program-memory contract. It proves
   the old PC+1 word persists until the exact write boundary, address 2 receives
   `0x7e44` exactly once, and only the repeated replacement fetch executes as
-  `LACK 0x44`; its complete cover reaches step 35.
+  `LACK 0x44`; its complete cover reaches step 35. An eighth 10-step
+  actual-core BMC proves recognized-reset controls, transaction and
+  instruction-valid suppression, clock-enable priority, documented OVM
+  retention, and the explicitly provisional retention bundle under `OQ-012`;
+  its nonzero-ACC/OVM reset cover reaches step 5.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -343,10 +348,11 @@
   promoting primary-unlisted words to reserved behavior; resolve the 372
   simultaneous-update combinations only from further primary or physical
   evidence under `OQ-010`. Continue with the next unblocked P0 architecture or
-  RTL task. Keep PUSH/POP outside RTL
+  RTL task. For `CTRL-001`, extend reset proof through the native phase wrapper
+  without assigning values to TI-unlisted state. Keep PUSH/POP outside RTL
   until `OQ-016` gains the measured address/word-ownership trace; keep LST's
   loaded-ARP precedence PROVISIONAL under `OQ-015`; keep DMOV/LTD source-
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `6a9c132`
+  `6e8b8a8`

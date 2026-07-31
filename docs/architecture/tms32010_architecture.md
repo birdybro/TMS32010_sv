@@ -108,6 +108,18 @@ physical-device claim
 [ti-tms32010-users-guide-spru001b, Appendix A reset timing, printed data-sheet
 p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
+A dedicated actual-core test now establishes nonzero ACC, T, P, AR0/AR1,
+ARP, DP, stack, OV, and OVM state before reset. It verifies the documented PC,
+interrupt-mask/flag, and inactive-transaction effects, proves that reset has
+priority over the core clock enable, and checks the explicitly labeled
+provisional retention policy, including internal RAM. A 10-step bounded proof
+independently checks the exposed register/control transition relation and
+reaches a nonzero-ACC/OVM reset cover at step 5. These are implementation
+checks at an already-recognized reset boundary; they do not establish unknown
+original-silicon register values or replace the separate native phase test
+[`sim/unit/tb_reset.sv`, `formal/tms32010_reset.sby`,
+`sim/bus/tb_program_bus_phase.sv`].
+
 ## Current qualification boundary
 
 The executable model and local assembler/disassembler support all 60

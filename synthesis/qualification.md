@@ -16,14 +16,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 2,170 ALMs (5%).
+- Logic: 2,188 ALMs (5%).
 - Registers: 2,588.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +2.445 ns at 50 MHz.
+- Worst internal setup slack across analyzed corners: +2.656 ns at 50 MHz.
 - Worst internal hold slack across analyzed corners: +0.166 ns.
-- Slow-corner internal Fmax: 57.65 MHz at 100 °C, 56.96 MHz at -40 °C.
+- Slow-corner internal Fmax: 57.83 MHz at 100 °C, 57.66 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 385 harness-only interface
@@ -95,7 +95,7 @@ Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 26 RTL checks
-remain represented, and the generic result contains 13,866 cells. The
+remain represented, and the generic result contains 13,877 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -108,14 +108,17 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, it passes both structural checks with zero reported problems, retains
-103 RTL checks, and contains 15,686 generic cells. The ADDH increment adds 75
+103 RTL checks, and contains 15,733 generic cells. Reset-time instruction
+qualification and direct recognized-boundary derivation add 47 cells to the
+previous 15,686-cell checkpoint without changing the retained-check count.
+The ADDH increment added 75
 cells without adding or removing retained checks; SST added 76 cells and ABS
-added 170 cells in the preceding checkpoints. This result is 557 cells and
-25 checks above the pre-table 15,129-cell/78-check checkpoint, 651 cells and
-36 checks above the IN/OUT 15,035-cell/67-check checkpoint, 908 cells/54 checks
-above the exact-CALL 14,778-cell/49-check checkpoint, 971 cells/56 checks
-above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,410 cells/61 checks
-above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,746 cells/71
+added 170 cells in the preceding checkpoints. This result is 604 cells and
+25 checks above the pre-table 15,129-cell/78-check checkpoint, 698 cells and
+36 checks above the IN/OUT 15,035-cell/67-check checkpoint, 955 cells/54 checks
+above the exact-CALL 14,778-cell/49-check checkpoint, 1,018 cells/56 checks
+above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,457 cells/61 checks
+above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,793 cells/71
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an

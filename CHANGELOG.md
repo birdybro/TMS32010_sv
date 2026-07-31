@@ -343,6 +343,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   internal-RAM writes, all 32 combinations of defined status fields, and all
   28 legal encodings. Reserved bit 1 is stored high at CORROBORATED confidence
   under resolved `SC-008`/`OQ-003` and remains reserved to software.
+- A dedicated actual-core reset regression that seeds every exposed datapath,
+  address, stack, status, pending/trap, and internal-RAM category before reset,
+  then checks TI-defined control effects separately from `OQ-012`'s
+  provisional retention policy.
+- A 10-step actual-core reset BMC/cover proving reset priority, inactive
+  transactions/instruction qualification, exact documented control effects,
+  and the implementation-scoped retention transition; its nonzero ACC/OVM
+  cover reaches step 5.
 
 ### Changed
 
@@ -366,9 +374,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
 - Quartus 17.0.2 fits the integrated fifty-six-instruction
-  phase/RAM/multiplier/I/O/table/interrupt-entry slice in 2,170 ALMs/2,588
-  registers and one DSP block, with +2.445 ns worst setup and +0.166 ns worst
-  hold slack at 50 MHz and 56.96 MHz worst slow-corner internal Fmax; 385
+  phase/RAM/multiplier/I/O/table/interrupt-entry slice in 2,188 ALMs/2,588
+  registers and one DSP block, with +2.656 ns worst setup and +0.166 ns worst
+  hold slack at 50 MHz and 57.66 MHz worst slow-corner internal Fmax; 385
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -403,6 +411,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Prevented inactive program-data pins from asserting the nonphysical
+  `instruction_valid_o` qualification during initialization or recognized
+  reset.
 - Corrected project spelling and naming in the README.
 - Corrected reset duration from five crystal clocks to five complete `CLKOUT`
   machine cycles after reviewing the Appendix A timing table.
@@ -424,6 +435,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Recognized core reset clears PC, pending interrupt, trap state, and cycle
+  count, sets INTM, suppresses all transaction classes, overrides a disabled
+  clock enable, and preserves OVM. Directed testing also guards the explicitly
+  provisional retention implementation for all other exposed state and RAM;
+  it is not evidence of original-silicon reset values.
+- Yosys 0.67+111 reports zero structural problems after the reset change:
+  13,877 generic cells/26 checks for the legacy phase harness and 15,733
+  cells/103 checks for the explicit sequential pipeline harness.
 - Cross-checked SPRU001B's every-machine-cycle `MEN` rule with SPRU013's
   program-counter/stack description and PUSH/POP Execution blocks. Pinned
   IKA32010 instead suppresses its first PUSH/POP bus microcycle, now preserved

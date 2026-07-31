@@ -516,7 +516,12 @@ module tms32010_sequential_pipeline_slice (
         )
       )
     );
-  assign core_reset = pipeline_boundary && rs_i;
+  // Reset makes bus_clock_enable independent of pipeline_blocked_o, so its
+  // recognized boundary is exactly the enabled falling-CLKOUT boundary.
+  // Express it directly to keep reset qualification out of the core-valid /
+  // pipeline-blocked combinational path.
+  assign core_reset =
+    clock_enable_i && (phase_o == 2'd3) && rs_i;
   assign core_execute_boundary =
     fetch_boundary &&
     (execute_ready || interrupt_vector_step);
