@@ -11,6 +11,29 @@ the 2026-07-29 OSS CAD Suite, and Bitwuzla 0.9.1:
 PATH=/path/to/oss-cad-suite/bin:$PATH make formal
 ```
 
+## Exhaustive decoder-safety harness
+
+`tms32010_decode.sby` leaves the complete 16-bit instruction word
+unconstrained in a one-step BMC. A compact family-envelope predicate, arranged
+differently from the RTL priority chain, checks the exact valid/invalid result
+for all 65,536 words. It includes common direct/indirect field constraints,
+AR0/AR1 selection, sparse SACH shifts, direct SST range, MPYK, LDPK, LARK,
+LACK, supported fixed controls, and exact-low-byte two-word controls.
+
+Additional assertions bound the dense partial-RTL operation value and check
+immediate, shift, port, auxiliary-register, indirect, and address-field
+projections where those fields are meaningful. The four model/tool-only exact
+words CALA, RET, PUSH, and POP are required to remain invalid until their
+native second-cycle ownership is qualified. Eight step-0 covers independently
+reach legal direct/indirect words, a primary-reserved indirect field,
+simultaneous increment/decrement, a branch-pattern mismatch, a primary-unlisted
+fixed-control gap, model-only CALA, and the upper MPYK boundary.
+
+This proves the partial RTL's validity predicate and field-safety invariants.
+It does not replace the primary-cited ISA database or hand fixtures as the
+mnemonic/operand authority, qualify silicon behavior for unsupported words,
+or prove execution, timing, or bus behavior.
+
 ## Exhaustive multiplier harness
 
 `tms32010_multiplier.sby` checks the standalone combinational multiplier with
@@ -279,7 +302,7 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The eleven harnesses leave DINT ordering, formal coverage of the represented
+The twelve harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** internal data-memory formal qualification
+- **Current milestone:** exhaustive RTL decoder safety
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 230
   directed model/unit tests, including standalone fetch/execute and
@@ -91,7 +91,14 @@
   reach word 0, word `0x8f`, a non-target write, and invalid reads at `0x90`
   and `0xff`. Original-silicon `OQ-002`, physical power-up contents,
   instruction address selection, electrical timing, and technology mapping
-  remain outside that proof.
+  remain outside that proof. A twelfth one-step decoder BMC leaves all 16
+  instruction bits arbitrary and proves the partial RTL's exact valid set
+  against a compact family/field predicate, operation bounds, and meaningful
+  operand projections. Eight step-0 covers reach legal direct/indirect,
+  primary-reserved, simultaneous-update, pattern-mismatch, primary-unlisted,
+  model-only CALA, and upper-MPYK cases. Mnemonic authority remains with the
+  database/fixtures; execution, timing, and unsupported-silicon behavior are
+  excluded.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -377,4 +384,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `882d95d`
+  `c435b7c`

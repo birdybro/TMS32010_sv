@@ -118,7 +118,13 @@ objective passing evidence.
   increment/decrement controls under `OQ-010`, 3,637 documented-pattern
   mismatches, and 28,656 encodings absent from TI's explicitly complete
   original instruction summary. Generated counts and boundary vectors are
-  regression-checked. The primary-documentation partition is complete, but
+  regression-checked. A one-step symbolic RTL harness independently exhausts
+  all 65,536 input words against a compact family/field-validity predicate,
+  checks meaningful operand projections, and reaches eight classification
+  boundaries. It proves the partial decoder's 21,891-word acceptance set;
+  mnemonic identity remains grounded in the database, fixtures, and exhaustive
+  simulation rather than the formal predicate. The primary-documentation
+  partition is complete, but
   full reserved-region qualification remains incomplete: only the explicit
   indirect-bit class is called reserved, while mismatches/primary-unlisted
   words receive no invented behavior. Exact
@@ -465,7 +471,7 @@ objective passing evidence.
   `sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
-  `formal/sequencer/`
+  `formal/tms32010_decode.sby`, `formal/sequencer/`
 - **Notes:** Temporary clock-enable execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
   retires each of 41 supported one-cycle instructions, including all
@@ -1193,10 +1199,19 @@ objective passing evidence.
   covers reach word 0, word `0x8f`, non-target writes, and invalid `0x90`/`0xff`
   reads. It does not resolve original-silicon `OQ-002`, power-up contents,
   instruction address selection, electrical timing, or technology mapping.
+  A twelfth one-step decoder configuration leaves all 16 instruction bits
+  arbitrary and proves the exact partial-RTL valid predicate against a compact
+  family/field formula, plus dense-operation and meaningful operand-projection
+  invariants. Eight covers reach legal direct/indirect, primary-reserved,
+  simultaneous-update, pattern-mismatch, primary-unlisted, model-only CALA,
+  and MPYK-extreme words at step 0. This does not prove mnemonic identity,
+  execution, timing, unsupported silicon behavior, or the four deferred native
+  cycles.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general
-  general decode/FSM and remaining integrated RAM/arithmetic properties, and liveness
+  general FSM and remaining integrated decode/RAM/arithmetic properties, and
+  liveness
   assumptions remain.
   Never describe bounded checks as complete proof.
 

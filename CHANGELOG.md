@@ -435,6 +435,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 65,536 partial-RTL decoder inputs match a compact family/field-validity
+  predicate in a one-step symbolic proof. Operand projections and operation
+  bounds hold, eight classification covers reach step 0, and deferred
+  CALA/RET/PUSH/POP words remain invalid. Database/fixture authority,
+  execution, timing, and unsupported-silicon behavior are explicitly outside
+  this proof.
 - Standalone 144-word internal RAM passes a six-step base case and temporal
   induction over a symbolic qualified word, arbitrary initial contents, and
   arbitrary legal CPU/debug writes. Both read-after-write paths, non-target

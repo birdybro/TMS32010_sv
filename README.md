@@ -123,6 +123,10 @@ indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
 `formal/README.md`. A one-step standalone proof exhaustively checks all 2^32
 signed multiplier operand pairs, including TI's unique most-negative-square
 exception; this is a combinational RTL result, not physical-timing evidence.
+A second one-step symbolic proof exhausts all 65,536 decoder inputs against a
+compact legal-family predicate and keeps CALA/RET/PUSH/POP outside RTL until
+their native second cycles are qualified; opcode identity still comes from
+the primary-cited database, hand fixtures, and exhaustive simulation.
 A 10-step actual-core reset harness separately proves the
 documented reset controls and explicitly provisional unlisted-state retention,
 with a nonzero-ACC/OVM cover at step 5. A separate 40-step native-program-bus
