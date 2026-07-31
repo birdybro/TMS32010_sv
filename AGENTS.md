@@ -270,9 +270,14 @@ DMOV performs that same unchanged-word next-address copy without the LTD
 T-load or ACC-plus-P effects and preserves ACC, T, P, OV, OVM, and DP.
 Its endpoint policy is equally provisional under `OQ-002`/`OQ-014`.
 `DINT` and `EINT` set and clear `INTM` at their one-cycle retirement
-boundaries without a data transaction. The core does not yet recognize
-interrupts or implement EINT's following-instruction service deferral, stack
-entry, or vector fetch.
+boundaries without a data transaction. The core samples active-low `INT`,
+retains masked requests, implements the qualified EINT and MPY/MPYK
+deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
+INTM, clears the request, and selects vector 2. Directed native-phase evidence
+matches TI Figure 2-12's external address order. Complete fetch/execute
+overlap, exhaustive multicycle arrival coverage, RET resumption, and the
+provisional DINT-at-final-boundary ordering remain outside the qualified
+boundary under `OQ-004`/`OQ-019`.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.
@@ -306,9 +311,11 @@ bottom without an exception.
 cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
 write, followed by another PC+1 fetch. Table retirement also reproduces the
 documented old-stack-bottom loss and old-level-2 duplication.
-Both multiply instructions' interrupt-deferral rule remains unverified
-until interrupt entry exists. The phase wrapper qualifies
-their normal sequential program reads, but no general pipeline, interrupt
-entry, or complete pin timing exists.
+Both multiply instructions' interrupt-deferral rule has directed
+model/RTL/native coverage through the following instruction. A 12-step
+bounded formal harness checks the EINT/protected-instruction/dummy/vector
+slice with arbitrary clock-enable stalls and reaches the vector cover point.
+This is not a complete formal proof; no general pipeline, exhaustive
+interrupt entry matrix, or complete pin timing exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

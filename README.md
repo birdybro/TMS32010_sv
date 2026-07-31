@@ -44,6 +44,10 @@ request, and selects vector 2. A native-phase test matches TI Figure 2-12's
 external read order. Complete fetch/execute overlap, every multicycle arrival
 case, RET resumption, and the provisional DINT-at-final-boundary ordering
 remain outside any cycle-accuracy claim.
+A bounded actual-core formal harness checks the fixed
+EINT/protected-instruction/dummy/vector slice across arbitrary clock-enable
+stalls and includes a reachable vector cover; its 12-step scope is documented
+in `formal/README.md` and is not a general interrupt proof.
 `LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
 provisional under `OQ-015`, based on later TI and independent MAME
@@ -110,12 +114,13 @@ a general pipeline or cycle-accuracy claim.
 
 Requirements are detected by the build. Python 3 and GNU Make are sufficient
 for documentation and model tests; Verilator is used for RTL lint and
-simulation; Yosys and Quartus are optional until their qualification
-milestones.
+simulation; SymbiYosys plus an SMT solver run bounded formal checks; Yosys and
+Quartus provide synthesis qualification.
 
 ```sh
 make test
 make lint
+make formal
 make synth-yosys
 ```
 

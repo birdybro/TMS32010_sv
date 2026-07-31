@@ -1279,8 +1279,8 @@ module tms32010_core (
   end
 
   always_ff @(posedge clk_i) begin
-    assert (!(retired_o && illegal_o));
     if (!reset_i && !initialize_i) begin
+      assert (!(retired_o && illegal_o));
       assert (!(debug_data_write_i && clock_enable_i));
       if (control_operand_pending) begin
         assert (!(

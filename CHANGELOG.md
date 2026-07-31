@@ -226,6 +226,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   DINT cancellation, EINT's previously-disabled qualification, multiply
   extension, two-cycle-branch completion, dummy-bus exclusion, and vector
   entry.
+- A SymbiYosys actual-core interrupt harness with a 12-step BMC task over
+  arbitrary clock-enable stalls and a separate non-vacuity cover task for
+  EINT, protected execution, dummy entry, and vector execution.
 
 ### Changed
 
@@ -278,6 +281,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Held the logical next program address during the pending IN/OUT cycle; the
   native phase test exposed that the initial integration would otherwise skip
   the instruction after an I/O transfer at second-cycle retirement.
+- Scoped the mutually exclusive retired/illegal invariant to initialized,
+  non-reset operation after the first bounded run correctly exposed
+  unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
 
@@ -380,7 +386,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   cases, and one-cycle retirement without changing the external program-read
   sequence.
 - Yosys 0.67+111 synthesizes the fifty-two-instruction hierarchy and partial
-  interrupt-entry sequencer to 13,396 generic cells with 26 retained checks,
+  interrupt-entry sequencer to 13,391 generic cells with 26 retained checks,
   zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
@@ -551,6 +557,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   tests independently assert masked-pulse persistence, one protected
   instruction, MPY/MPYK extension, stack push, INTM set, pending clear, and
   no retirement or data/I/O traffic during the dummy fetch.
+- SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1 pass the 12-step actual-core
+  interrupt BMC across arbitrary clock-enable choices; the separate cover
+  reaches completed vector execution at step 6.
 - The complete current regression passes 89 repository/ISA/tool tests, 201
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
@@ -591,6 +600,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.
+- Formal evidence currently covers only one fixed interrupt-entry program at
+  a 12-step bound. It excludes DINT, multiply extension, multicycle arrival
+  positions, held-low relatching, RET, the general pipeline, and broad
+  decode/datapath properties.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.

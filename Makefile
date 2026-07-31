@@ -54,7 +54,11 @@ formal:
 	@configs="$$(find formal -type f -name '*.sby' -print)"; \
 	if [ -n "$$configs" ]; then \
 	  command -v "$(SBY)" >/dev/null 2>&1 || { echo "ERROR: SymbiYosys is required"; exit 1; }; \
-	  for config in $$configs; do "$(SBY)" -f "$$config" || exit 1; done; \
+	  mkdir -p build/formal; \
+	  for config in $$configs; do \
+	    name="$$(basename "$$config" .sby)"; \
+	    "$(SBY)" -f --prefix "build/formal/$$name" "$$config" || exit 1; \
+	  done; \
 	else \
 	  echo "SKIP-EVIDENCE: no formal configurations exist yet"; \
 	fi

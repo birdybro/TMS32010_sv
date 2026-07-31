@@ -95,7 +95,7 @@ Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 26 RTL checks
-remain represented, and the generic result contains 13,396 cells. The
+remain represented, and the generic result contains 13,391 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone

@@ -811,7 +811,7 @@ objective passing evidence.
 
 ### FORMAL-001 — Bounded safety and liveness properties
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P1
 - **Dependencies:** RTL-001, RTL-002, TIMING-002
 - **Description:** Prove reset, decode, FSM, bus, stack, PC, repeat, interrupt,
@@ -820,7 +820,15 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Never describe bounded checks as complete proof.
+- **Notes:** The first actual-core configuration passes a 12-step BMC over
+  arbitrary clock-enable sequences for the fixed
+  EINT/protected-LACK/dummy/vector fixture and reaches its vector-execution
+  cover at step 6. It checks initialization, pending retention, program-only
+  entry, stack/vector/INTM effects, bus exclusion, and stall stability.
+  SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
+  MPY/MPYK, multicycle arrival points, held-low relatching, RET, general
+  decode/FSM/RAM/arithmetic properties, and liveness assumptions remain.
+  Never describe bounded checks as complete proof.
 
 ## Milestone 19 — FPGA synthesis and timing
 

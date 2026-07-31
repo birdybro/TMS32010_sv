@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** interrupt recognition and vector-entry qualification
+- **Current milestone:** bounded interrupt-entry formal foundation
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 89 repository/provenance/document/ISA/toolchain tests; 201
   directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
@@ -22,10 +22,15 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,396 generic cells with 26 retained checks and lowering the
+  producing 13,391 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
+- **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes a
+  12-step actual-core BMC for the fixed EINT/protected-LACK/dummy/vector
+  fixture across arbitrary clock-enable choices. A separate cover reaches
+  completed vector execution at step 6. This is bounded scenario evidence,
+  not a complete interrupt or core proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -163,8 +168,9 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` with bounded interrupt FSM/bus properties,
-  an exhaustive supported-multicycle arrival matrix, and research for
+- **Next task:** expand `FORMAL-001` to the MPY/MPYK extension and held-low
+  relatch paths, then continue `CTRL-002` with an exhaustive
+  supported-multicycle arrival matrix and research for
   `OQ-019` plus RET-based resumption; preserve the distinction between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
@@ -177,4 +183,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `d4aa604`
+  `94a00da`

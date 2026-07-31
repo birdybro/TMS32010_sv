@@ -46,12 +46,15 @@ clock, synchronous enables, and no gated clocks. Run:
 ```sh
 make test
 make lint
+make formal
 make synth-yosys
 ```
 
 Additional focused targets are listed by `make help`.
 
 GitHub Actions repeats the documentation, unit, Verilator regression/lint, and
-Yosys smoke-synthesis checks from a clean Ubuntu 24.04 checkout. It deliberately
-does not acquire manuals, ROMs, or legacy binary tools. Quartus remains a local
+Yosys smoke-synthesis checks from a clean Ubuntu 24.04 checkout. The bounded
+formal suite currently runs in the qualified local OSS CAD Suite environment;
+a pinned CI installation remains backlog work. CI deliberately does not
+acquire manuals, ROMs, or legacy binary tools. Quartus remains a local
 licensed-tool qualification step.
