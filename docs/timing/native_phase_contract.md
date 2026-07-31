@@ -280,6 +280,16 @@ is sampled only at enabled falling-edge boundaries; a later integration
 wrapper must provide explicit CDC logic if `INT` originates in another FPGA
 clock domain.
 
+The directed native INT sampling test starts a low level in each of modeled
+phases 0 through 3 and retains it through an enabled phase-3-to-phase-0
+falling boundary. It requires the pending latch and architectural cycle count
+to remain unchanged before that boundary; one phase-2 case holds
+`clock_enable_i` low for five FPGA clocks before release. All four cases then
+verify one protected retirement, the nonretiring return-PC dummy sample, and
+vector-2 selection. This is an assertion about the explicit digital phase
+mapping. A phase-3 transition in this simulation is not evidence that a
+physical pin transition violating the 50 ns setup time would be recognized.
+
 ## RTL mapping status
 
 The standalone `tms32010_program_bus` primitive represents the normal read
@@ -304,4 +314,5 @@ retirement, branch target-word fetch and second-boundary retirement, stalls,
 traps, and recognized reset. It has not been qualified for indirect call/return,
 other unimplemented multi-cycle operations, or the complete fetch/execute
 pipeline. Table, I/O, and the cited interrupt program-read sequence now have
-directed native-phase tests.
+directed native-phase tests, including INT ownership at the enabled falling
+boundary for all four modeled arrival phases.

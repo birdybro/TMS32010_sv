@@ -93,7 +93,11 @@ accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each
 instruction reaches its documented two- or three-cycle retirement before
 deferral, then permits one protected instruction and performs the dummy/vector
 sequence. This exhausts the currently modeled multicycle machine-cycle
-boundaries, not native subphase ownership or the missing overlapped pipeline.
+boundaries, not the missing overlapped pipeline. A separate native test drives
+a held-low INT beginning in each of the four modeled subphases and proves the
+digital phase engine changes pending state only at the enabled falling
+boundary, including across a phase-2 stall. It does not model the 50 ns pin
+setup aperture or a physical asynchronous synchronizer.
 Directed `LST` tests assert one-cycle direct/indirect reads, old-DP and
 old-ARP address selection, post-read nine-bit counter updates, `INTM`
 preservation, all four loaded status fields, clock-enable hold, and

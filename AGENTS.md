@@ -285,9 +285,11 @@ deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. A 32-case core matrix
 exhausts arrival at every represented machine cycle of all 15 supported
-multicycle families. Complete fetch/execute overlap, native-subphase arrival
-ownership, native/RTL CALA/RET sequencing, PUSH/POP second-cycle sequencing,
-and the provisional
+multicycle families. A four-case native test also proves the current digital
+wrapper samples a held-low request only at the enabled falling boundary from
+each modeled subphase, including a phase stall. Complete fetch/execute
+overlap, physical setup/synchronizer behavior, native/RTL CALA/RET sequencing,
+PUSH/POP second-cycle sequencing, and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 For Atari integration specifically, production drawing A044427 Rev A holds the

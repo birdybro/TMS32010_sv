@@ -252,7 +252,7 @@
         {"source_id": "ti-first-generation-users-guide-1987", "section": "EINT instruction description", "printed_page": "4-34", "pdf_page": 115}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
-      "unresolved_questions": ["OQ-004: complete overlapped execute ownership and native-subphase arrival ownership; all represented supported-multicycle machine-cycle arrivals are qualified"]
+      "unresolved_questions": ["OQ-004: complete overlapped execute ownership and physical setup/synchronizer behavior; all represented supported-multicycle machine-cycle arrivals and four modeled digital subphases are qualified"]
     },
     {
       "mnemonic": "LST",

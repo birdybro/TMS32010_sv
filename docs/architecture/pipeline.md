@@ -15,6 +15,21 @@ constraints, not synthesizable delay statements
 [ti-tms32010-users-guide-spru001b, Appendix A data sheet, clock characteristics
 and AC timing tables]. **Confidence: VERIFIED_PRIMARY.**
 
+Figure 2-2 makes the overlap structurally explicit. At falling `CLKOUT`, the
+PC selects the next instruction to prefetch while the previously fetched
+instruction is decoded and begins execution. The fetch continues while that
+instruction executes, and the following fetch can begin while work from the
+two preceding instructions remains in the internal pipeline
+[ti-tms32010-users-guide-spru001b, §2.1.1 and Figure 2-2, printed p. 2-3
+(PDF p. 27)]. **Confidence: VERIFIED_PRIMARY.**
+
+Consequently, a fetched word and the instruction effects observed during the
+same external program-read cycle are not generally the same pipeline item.
+The final sequencer must retain distinct fetch and execute validity/address
+state and must flush or suppress fetched words for branches, table operations,
+and interrupts. Merely renaming the current falling-edge execution boundary
+would not implement TI's pipeline.
+
 ## Required implementation model
 
 The portable RTL will use one FPGA clock and explicit phase/state enables. It
@@ -74,7 +89,14 @@ The wrapper still executes each supported fetched word at its sample boundary;
 it does not yet contain separate general fetch and execute registers. Thus the
 address sequence is qualified, while the complete overlapped execution row is
 still an implementation requirement rather than a cycle-accuracy claim.
-`OQ-004` retains that distinction. A separate 32-case core matrix exhausts
+`OQ-004` retains that distinction. A native-phase test now drives INT low
+starting at each of the four modeled subphases and holds it through the next
+enabled falling boundary. The request remains invisible before that boundary,
+including across a five-FPGA-clock stall in phase 2, then follows the
+protected-instruction/dummy/vector sequence. This qualifies digital phase
+ownership only; it does not model the data sheet's 50 ns setup aperture or
+prove how an asynchronous transition maps into a physical synchronizer.
+A separate 32-case core matrix exhausts
 arrival at every represented machine cycle of the 11 supported two-word
 control-flow families, IN, OUT, TBLR, and TBLW; it does not convert the
 collapsed fetch-sample implementation into a physical subphase or

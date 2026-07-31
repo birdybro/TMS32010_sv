@@ -57,8 +57,15 @@ test independently observes the external address sequence `N`, `N+1`, dummy
 return PC, `0x002` with ordinary `MEN` phases
 [`sim/interrupt/tb_interrupt_entry.sv`,
 `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`,
+`sim/interrupt/tb_interrupt_native_sampling.sv`,
 `sim/interrupt/tb_interrupt_phase.sv`,
 `sim/differential/test_interrupt_model_rtl.py`].
+The native sampling test also begins a held-low request at each of the four
+modeled phases. It asserts no pending state before the enabled falling
+boundary, checks a stalled phase-2 hold, and then verifies the same protected,
+dummy, and vector sequence. These are digital phase-engine assertions, not an
+analog claim that a transition without the documented 50 ns setup is
+recognized.
 The instruction-boundary model additionally verifies the primary-described
 `EINT; RET` sequence: RET loads the saved PC and pops the stack before a
 previously pending request can schedule another dummy entry. RET remains
@@ -70,8 +77,9 @@ fetched word's effect to its program-sample boundary rather than maintaining
 TI's separate fetch and execute registers. It reproduces the cited external
 read order and architectural entry effects for the tested paths, and the
 matrix exhausts arrival at each machine-cycle boundary represented by every
-currently supported multicycle core state. It does not establish arrival
-ownership within the four native subphases, the full Figure 2-12
+currently supported multicycle core state. The four-phase test establishes
+the current digital wrapper's enabled falling-boundary sampling rule, but it
+does not establish physical synchronizer/setup behavior, the full Figure 2-12
 fetch/execute-overlap timeline, unsupported CALA/RET/PUSH/POP cycles,
 native/RTL return through `RET`, or analog input timing. Those dimensions
 remain outside the qualified boundary (`CTRL-002`, `OQ-004`, `OQ-007`,

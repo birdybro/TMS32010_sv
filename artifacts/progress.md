@@ -1,10 +1,9 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' Rev-A interrupt/BIO schematic
-  qualification
+- **Current milestone:** native interrupt sampling and pipeline ownership
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
-  directed model tests; 35 RTL instruction/decode tests; 4 interrupt RTL/phase
+  directed model tests; 35 RTL instruction/decode tests; 5 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -14,7 +13,8 @@
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
   EINT/protected-instruction/dummy-entry/vector model/RTL differential; 32
   directed request-arrival cases across every represented machine cycle
-  of all 15 currently supported multicycle core families
+  of all 15 currently supported multicycle core families; four native
+  subphase arrivals with a stalled phase-2 case and falling-boundary ownership
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-three-instruction partial core, multiplier, 144-word RAM, and
   program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,098
@@ -63,6 +63,9 @@
   net `PR1`/`R26` with no loaded active driver, generates `/320BIO` from
   1 MHz divider logic, and resamples it through a `CLKOUT`-clocked LS74 as
   `/BIOS`; the separate `320IRQ` net serves the 68000-side interrupt path;
+  TI Figure 2-2 explicitly launches the next prefetch while a previously
+  fetched instruction begins/continues execution, requiring distinct
+  fetch/execute validity and address state in the final sequencer;
   ADD sign-extends and left-shifts its RAM operand before
   full-accumulator addition, applies sticky OV, wraps with OVM clear, and
   saturates at either signed endpoint with OVM set; SUB uses the same signed
@@ -203,9 +206,9 @@
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
-  ownership and native-subphase arrival ownership, CALA/RET second external
-  cycles and native/RTL resumption, unsupported CALA/RET/PUSH/POP arrival
-  cycles,
+  ownership and physical interrupt setup/synchronizer behavior, CALA/RET
+  second external cycles and native/RTL resumption, unsupported
+  CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -215,8 +218,11 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` by separating Figure 2-12 fetch/execute
-  ownership from the now-qualified core machine-cycle arrival matrix, and
+- **Next task:** design distinct fetch/execute validity and address state from
+  TI Figure 2-2, then introduce it incrementally without changing the already
+  qualified branch/table/interrupt bus traces; continue `CTRL-002` by
+  separating Figure 2-12 fetch/execute ownership from the now-qualified core
+  machine-cycle and digital-subphase arrival matrices, and
   extend `FORMAL-001` only with bounded cases whose architectural ordering is
   already documented; preserve the
   distinction between model-qualified CALA/RET/PUSH/POP
@@ -232,4 +238,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `3f01a36`
+  `c3a224b`

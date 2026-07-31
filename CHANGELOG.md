@@ -37,6 +37,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   of all 15 currently supported multicycle core families, with logical bus,
   retirement, protected-instruction, dummy-fetch, stack, acknowledge, and
   vector assertions.
+- A four-case native INT sampling matrix covering each modeled subphase,
+  including a stalled pre-sample phase, with no early pending/cycle change and
+  exact falling-boundary, protected-instruction, dummy, stack, and vector
+  assertions.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -152,7 +156,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   transaction. Directed interrupt tests additionally cover request retention,
   EINT's following-instruction service deferral, vector entry, and all
   represented supported-multicycle arrival positions; complete overlapped
-  execute/native-subphase ownership remains outside the qualified boundary.
+  execution and physical setup/synchronizer behavior remain outside the
+  qualified boundary.
 - Acquired and hash-pinned TI's 1986 preliminary TMS320C25 guide as
   explicitly later-variant evidence for the otherwise unresolved indirect
   LST next-ARP precedence; it is not treated as original-part authority.
@@ -653,11 +658,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Interrupt external fetch order and directed entry state are verified, but
   the partial core still collapses fetch and execution at sample boundaries.
   The 32 represented multicycle machine-cycle arrival points are qualified;
-  complete Figure 2-12 execute overlap, native-subphase arrival ownership,
-  unsupported CALA/RET/PUSH/POP cycles, and native/RTL RET-based resumption
-  remain under `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`. RET's functional model
-  behavior is qualified, but TI's located instruction pages do not identify
-  its second cycle's external address or `MEN` behavior.
+  the current wrapper's four digital subphases now have falling-boundary
+  sampling assertions. Complete Figure 2-12 execute overlap, physical
+  setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP cycles, and
+  native/RTL RET-based resumption remain under
+  `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`. RET's functional model behavior is
+  qualified, but TI's located instruction pages do not identify its second
+  cycle's external address or `MEN` behavior.
 - CALA's state effects and numeric two-cycle total are model/tool-qualified,
   but its located pages likewise do not identify the second cycle's external
   address or `MEN` behavior; RTL/native qualification remains `OQ-007`.

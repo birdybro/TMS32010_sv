@@ -46,7 +46,9 @@ deferrals, dummy-fetches and stacks the return PC, masks and clears the
 request, and selects vector 2. A native-phase test matches TI Figure 2-12's
 external read order. A 32-case core matrix exhausts request arrival at every
 represented machine cycle of all 15 currently supported multicycle families.
-Complete fetch/execute overlap, native-subphase arrival ownership, unsupported
+A four-case native test also checks the enabled falling-boundary sample from
+each modeled subphase, including a stalled phase. Complete fetch/execute
+overlap, physical pin setup/synchronizer behavior, unsupported
 CALA/RET/PUSH/POP cycles, RET resumption, and the provisional
 DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
 Bounded actual-core formal harnesses check fixed EINT entry,

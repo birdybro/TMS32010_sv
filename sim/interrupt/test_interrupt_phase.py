@@ -9,13 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class InterruptPhaseRtlTests(unittest.TestCase):
-    def test_native_dummy_fetch_and_vector_bus_order(self) -> None:
+    def _run_testbench(self, name: str) -> str:
         verilator = shutil.which("verilator")
         if verilator is None:
             raise RuntimeError(
                 "Verilator is required once architectural RTL exists"
             )
-        name = "tb_interrupt_phase"
         build = ROOT / "build" / "verilator" / name
         build.mkdir(parents=True, exist_ok=True)
         sources = [
@@ -26,7 +25,7 @@ class InterruptPhaseRtlTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",
-            ROOT / "sim" / "interrupt" / "tb_interrupt_phase.sv",
+            ROOT / "sim" / "interrupt" / f"{name}.sv",
         ]
         compile_result = subprocess.run(
             [
@@ -64,6 +63,14 @@ class InterruptPhaseRtlTests(unittest.TestCase):
             run_result.stdout + run_result.stderr,
         )
         self.assertIn(f"PASS {name}", run_result.stdout)
+        return run_result.stdout
+
+    def test_native_dummy_fetch_and_vector_bus_order(self) -> None:
+        self._run_testbench("tb_interrupt_phase")
+
+    def test_int_is_sampled_at_enabled_falling_boundary(self) -> None:
+        output = self._run_testbench("tb_interrupt_native_sampling")
+        self.assertIn("(4 arrival phases)", output)
 
 
 if __name__ == "__main__":
