@@ -117,7 +117,7 @@ class IsaDatabaseTests(unittest.TestCase):
             0x5AC8: ("PRIMARY_RESERVED_INDIRECT_FIELD", ["SACH"]),
             0x7C10: ("DOCUMENTED_PATTERN_MISMATCH", ["SST"]),
             0xF401: ("DOCUMENTED_PATTERN_MISMATCH", ["BANZ"]),
-            0x7F83: ("UNCLASSIFIED", []),
+            0x7F83: ("PRIMARY_UNLISTED_ENCODING", []),
         }
         for word, (classification, mnemonics) in cases.items():
             with self.subTest(word=word):

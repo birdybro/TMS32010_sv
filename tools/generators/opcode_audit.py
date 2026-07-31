@@ -43,8 +43,8 @@ def render_report(
         [
             f"| **Total** | **{sum(actual.values())}** | Complete 16-bit partition. |",
             "",
-            "The partition is exhaustive, but the audit is not complete: `UNCLASSIFIED`",
-            "does not mean reserved, illegal, inert, or trapped. Likewise, a pattern",
+            "The partition is exhaustive, but primary-unlisted does not mean reserved,",
+            "illegal, inert, or trapped. Likewise, a pattern",
             "mismatch establishes only that the word is not the documented legal",
             "encoding. See `docs/architecture/opcode_map.md` for primary citations and",
             "the live qualification boundary.",

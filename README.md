@@ -182,7 +182,8 @@ stack-bottom side effect.
 The exhaustive opcode audit partitions all 65,536 words, including 21,895
 documented-legal words and 10,976 words that set TI's explicitly reserved
 indirect-address bits. Another 372 simultaneous-update words remain under
-`OQ-010`, and 28,656 words remain unclassified. Unsupported opcodes,
+`OQ-010`; 28,656 more are absent from TI's explicitly complete instruction
+summary but are not called reserved. Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses currently trap as a
 conservative project policy, not a claim about original-silicon behavior. A
 separate native-phase wrapper qualifies the normal reads for all 41 supported

@@ -29,8 +29,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Provenance-aware exhaustive opcode audit and generated count report. All
   65,536 words are partitioned into documented legal encodings, explicitly
   reserved indirect fields, unresolved simultaneous AR updates, documented-
-  pattern mismatches, and unclassified words without assigning unsupported
-  silicon behavior.
+  pattern mismatches, and encodings absent from TI's explicitly complete
+  instruction summary without assigning unsupported silicon behavior.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -354,6 +354,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   evidence-scoped classifications. Only words setting TI's explicitly
   reserved indirect bits are labeled reserved; fixed-pattern mismatches and
   map gaps retain narrower or unknown labels.
+- Reclassified the 28,656 remaining map gaps as
+  `PRIMARY_UNLISTED_ENCODING` after locating TI's explicit statement that the
+  original Table 3-2 is the complete instruction-set summary. This is a
+  documentation classification only, not a reserved-behavior claim.
 
 - Replaced the initial placeholder README with an evidence-oriented project
   overview.
@@ -427,9 +431,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Exhaustively classified all 65,536 instruction words with stable counts:
   21,895 documented legal, 10,976 primary-reserved indirect-field, 372
   unresolved simultaneous-update, 3,637 documented-pattern mismatch, and
-  28,656 unclassified. Boundary tests distinguish legal ADD, reserved
+  28,656 primary-unlisted. Boundary tests distinguish legal ADD, reserved
   indirect ADD, ambiguous update, unsupported SACH/SST/branch fields, and an
-  unclassified fixed-control gap.
+  unlisted fixed-control gap.
+- Corroborated original-guide instruction-set completeness against SPRU013's
+  independently complete first-generation summary and individual-description
+  contract. All 28,656 no-pattern words can therefore be called primary-
+  unlisted while their silicon behavior remains UNKNOWN.
 
 - Original-part `ADDH=0x60xx` encoding, one-cycle/common-address behavior,
   modulo high-half result, and unconditional low-half preservation through
@@ -817,10 +825,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 - All 60 documented instruction mnemonics have model/tool evidence; fifty-six
   also have RTL/differential evidence. CALA, RET, PUSH, and POP remain outside
   RTL/native qualification because their second external cycles are unresolved.
-- The exhaustive opcode partition still contains 28,656 `UNCLASSIFIED` words
-  and 372 simultaneous-update words under `OQ-010`. The audit is therefore
-  not a completed reserved-opcode map; unsupported execution behavior remains
-  unclaimed and the model/RTL trap is only conservative project policy.
+- The exhaustive primary-documentation partition contains 28,656
+  `PRIMARY_UNLISTED_ENCODING` words and 372 simultaneous-update words under
+  `OQ-010`. It is not a completed reserved-behavior map: TI's complete
+  instruction summary proves those words are unlisted, not that silicon treats
+  them as reserved. Unsupported execution behavior remains unclaimed and the
+  model/RTL trap is only conservative project policy.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).

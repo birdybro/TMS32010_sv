@@ -19,7 +19,7 @@ and is checked by `make docs`.
 | `PRIMARY_RESERVED_INDIRECT_FIELD` | 10,976 | A documented indirect data-address pattern sets bit 6, 2, or 1, which TI explicitly says is reserved and must be zero. |
 | `UNRESOLVED_SIMULTANEOUS_UPDATE` | 372 | Reserved bits and every other enumerated field are legal, but both AR increment and decrement are set; the combination remains `OQ-010`. |
 | `DOCUMENTED_PATTERN_MISMATCH` | 3,637 | The word is inside a documented pattern envelope but violates a fixed/enumerated field, such as a nonzero branch-opcode low byte, an unsupported SACH shift, or an out-of-range direct SST field. TI does not call this whole class reserved. |
-| `UNCLASSIFIED` | 28,656 | No qualified instruction or declared pattern envelope covers the word. Nothing is inferred about silicon behavior. |
+| `PRIMARY_UNLISTED_ENCODING` | 28,656 | No qualified instruction or declared pattern envelope covers the word, and TI's explicitly complete original instruction-set summary lists no instruction for it. This says nothing about silicon behavior. |
 
 TI explicitly reserves indirect-format bits 6, 2, and 1 and directs software
 to program them to zero
@@ -36,14 +36,27 @@ The eleven two-word branches have explicit `0xff00` audit envelopes because
 their primary encoding diagrams fix the low opcode byte to zero and place the
 12-bit target in the following program word. A word such as `0xf401` is thus a
 documented-pattern mismatch for BANZ, not a legal BANZ alias and not silently
-called reserved. Fixed-control gaps such as `0x7f83` remain `UNCLASSIFIED`
-because adjacency to DINT/EINT supplies no envelope or behavior.
+called reserved. Fixed-control gaps such as `0x7f83` are
+`PRIMARY_UNLISTED_ENCODING` because adjacency to DINT/EINT supplies no
+instruction pattern or behavior.
+
+SPRU001B §3.4 explicitly calls Table 3-2 the “complete instruction set
+summary,” and §3.4.3 says every instruction in that summary is described in
+the following pages. SPRU013 independently uses the same completeness wording
+for the first-generation family
+[ti-tms32010-users-guide-spru001b, §§3.4 and 3.4.3, printed pp. 3-3 and 3-8
+(PDF pp. 53 and 58); ti-first-generation-users-guide-1987, §§4.2 and 4.3,
+printed pp. 4-6 and 4-11 (PDF pp. 85 and 92)]. This supports
+`PRIMARY_UNLISTED_ENCODING` as a documentation fact. It does not turn an
+unlisted word into an explicitly reserved encoding or establish whether
+silicon aliases, traps, or performs some undocumented operation.
 
 This partition improves provenance and test generation, but
-`reserved_encoding_audit_complete` remains false while 28,656 words are
-unclassified and `OQ-010` remains open. Classification priority is legal,
+`reserved_encoding_audit_complete` remains false because 28,656 words are
+primary-unlisted rather than explicitly reserved and `OQ-010` remains open.
+Classification priority is legal,
 explicitly reserved indirect bit, otherwise-legal simultaneous update,
-documented-pattern mismatch, then unclassified. Thus a word that sets a
+documented-pattern mismatch, then primary-unlisted. Thus a word that sets a
 primary-reserved bit retains that strongest label even if another field also
 mismatches. The architectural model and RTL still
 trap unsupported words as a conservative implementation policy; that trap is

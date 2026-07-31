@@ -315,10 +315,12 @@
   evidence-scoped classification: 21,895 documented legal, 10,976 setting
   TI's explicitly reserved indirect-address bits 6/2/1, 372 otherwise legal-
   pattern simultaneous increment/decrement combinations held under `OQ-010`,
-  3,637 documented-pattern mismatches, and 28,656 unclassified. A generated
+  3,637 documented-pattern mismatches, and 28,656 encodings absent from TI's
+  explicitly complete primary instruction summary. A generated
   report and boundary tests guard the counts. Pattern mismatches and
-  unclassified words are not called reserved and receive no original-silicon
-  behavior; the audit therefore remains partial.
+  primary-unlisted words are not called reserved and receive no original-
+  silicon behavior; the documentation partition is complete while reserved-
+  behavior qualification remains partial.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -335,14 +337,16 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY; the opcode audit still has 28,656
-  unclassified words and 372 unresolved simultaneous-update words
-- **Next task:** continue `ISA-001` by reducing the 28,656-word
-  `UNCLASSIFIED` set only where primary opcode diagrams establish a defensible
-  pattern envelope; add no blanket reserved label and retain the 372
-  simultaneous-update combinations under `OQ-010`. Keep PUSH/POP outside RTL
+  primary-unlisted words with unknown silicon behavior and 372 unresolved
+  simultaneous-update words
+- **Next task:** retain the complete opcode documentation partition without
+  promoting primary-unlisted words to reserved behavior; resolve the 372
+  simultaneous-update combinations only from further primary or physical
+  evidence under `OQ-010`. Continue with the next unblocked P0 architecture or
+  RTL task. Keep PUSH/POP outside RTL
   until `OQ-016` gains the measured address/word-ownership trace; keep LST's
   loaded-ARP precedence PROVISIONAL under `OQ-015`; keep DMOV/LTD source-
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `46fb578`
+  `6a9c132`

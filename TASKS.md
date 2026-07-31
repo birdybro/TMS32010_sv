@@ -116,10 +116,12 @@ objective passing evidence.
   words into 21,895 documented-legal encodings, 10,976 words that set TI's
   explicitly reserved indirect bits 6/2/1, 372 unresolved simultaneous
   increment/decrement controls under `OQ-010`, 3,637 documented-pattern
-  mismatches, and 28,656 unclassified words. Generated counts and boundary
-  vectors are regression-checked. Full reserved-region classification remains
-  incomplete: only the explicit indirect-bit class is called reserved, while
-  mismatches/unclassified words receive no invented behavior. Exact
+  mismatches, and 28,656 encodings absent from TI's explicitly complete
+  original instruction summary. Generated counts and boundary vectors are
+  regression-checked. The primary-documentation partition is complete, but
+  full reserved-region qualification remains incomplete: only the explicit
+  indirect-bit class is called reserved, while mismatches/primary-unlisted
+  words receive no invented behavior. Exact
   `ABS=0x7f88`, accumulator result, OVM-selected
   most-negative wrap/saturation, and one-cycle program-only boundary are
   primary-verified. Original-part OV preservation is `CORROBORATED` by

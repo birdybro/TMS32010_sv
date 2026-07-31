@@ -24,7 +24,7 @@
     "reserved_encoding_audit_complete": false
   },
   "opcode_space_audit": {
-    "status": "PARTIAL_PRIMARY_CLASSIFICATION",
+    "status": "COMPLETE_PRIMARY_DOCUMENTATION_PARTITION",
     "claim_boundary": "Classification records why a word is outside the documented legal decoder; it does not assign execution behavior to unsupported words.",
     "classification_definitions": [
       {
@@ -57,9 +57,11 @@
         ]
       },
       {
-        "name": "UNCLASSIFIED",
-        "meaning": "No qualified instruction entry or declared documented-pattern envelope covers the word. No reserved, no-op, trap, or silicon behavior is inferred.",
-        "source_citations": []
+        "name": "PRIMARY_UNLISTED_ENCODING",
+        "meaning": "No qualified instruction entry or declared documented-pattern envelope covers the word, and the original guide's explicitly complete instruction-set summary lists no instruction for it. This does not mean TI calls the word reserved or defines silicon behavior.",
+        "source_citations": [
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.4 complete instruction set summary and 3.4.3 Instruction Descriptions", "printed_page": "3-3 through 3-8", "pdf_page": "53-58"}
+        ]
       }
     ],
     "expected_counts": {
@@ -67,7 +69,7 @@
       "PRIMARY_RESERVED_INDIRECT_FIELD": 10976,
       "UNRESOLVED_SIMULTANEOUS_UPDATE": 372,
       "DOCUMENTED_PATTERN_MISMATCH": 3637,
-      "UNCLASSIFIED": 28656
+      "PRIMARY_UNLISTED_ENCODING": 28656
     }
   },
   "instructions": [

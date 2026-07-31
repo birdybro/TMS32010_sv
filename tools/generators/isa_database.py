@@ -46,7 +46,7 @@ OPCODE_CLASSIFICATIONS = {
     "PRIMARY_RESERVED_INDIRECT_FIELD",
     "UNRESOLVED_SIMULTANEOUS_UPDATE",
     "DOCUMENTED_PATTERN_MISMATCH",
-    "UNCLASSIFIED",
+    "PRIMARY_UNLISTED_ENCODING",
 }
 
 
@@ -190,7 +190,7 @@ def classify_word(database: dict[str, Any], word: int) -> dict[str, Any]:
                 {entry["mnemonic"] for entry in pattern_candidates}
             ),
         }
-    return {"classification": "UNCLASSIFIED", "mnemonics": []}
+    return {"classification": "PRIMARY_UNLISTED_ENCODING", "mnemonics": []}
 
 
 def audit_opcode_space(database: dict[str, Any]) -> dict[str, int]:
