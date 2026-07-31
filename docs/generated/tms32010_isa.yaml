@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "RET", "IN", "OUT", "TBLR", "TBLW",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1886,6 +1886,76 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004", "OQ-007"]
+    },
+    {
+      "mnemonic": "POP",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f9d",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": ["PC", "all four stack levels"],
+      "registers_written": ["PC", "ACC", "all four stack levels"],
+      "memory_accesses": ["instruction_fetch", "unresolved_second_cycle_program_activity"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "the old 12-bit top of stack is zero-extended into the 32-bit accumulator",
+      "shift_behavior": "the three deeper stack entries shift one level toward the top and the old bottom is duplicated",
+      "overflow_behavior": "none; stack underflow is not detected",
+      "result_behavior": "zero-extend the old top of stack into ACC, then pop all four levels by shifting each lower level upward and duplicating the old bottom",
+      "branch_behavior": "none; PC advances by one word",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt arrival within the unresolved second cycle remains outside the model boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-016"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.2, Table 3-2, and POP instruction description", "printed_page": "2-14, 3-7, and 3-49", "pdf_page": "38, 57, and 99"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "POP instruction description", "printed_page": "3-49", "pdf_page": 70},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and POP instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-55", "pdf_page": "52-53, 90, and 136"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004", "OQ-016"]
+    },
+    {
+      "mnemonic": "PUSH",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f9c",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": ["PC", "ACC[11:0]", "old top three stack levels"],
+      "registers_written": ["PC", "all four stack levels"],
+      "memory_accesses": ["instruction_fetch", "unresolved_second_cycle_program_activity"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable; only ACC[11:0] is copied",
+      "shift_behavior": "the old top three stack entries shift one level toward the bottom and the old bottom is discarded",
+      "overflow_behavior": "none; stack overflow is not detected",
+      "result_behavior": "push ACC[11:0] onto the four-level 12-bit stack, shifting old entries one level deeper and discarding the old bottom",
+      "branch_behavior": "none; PC advances by one word",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt arrival within the unresolved second cycle remains outside the model boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-016"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.1, Table 3-2, and PUSH instruction description", "printed_page": "2-13, 3-7, and 3-50", "pdf_page": "37, 57, and 100"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "PUSH instruction description", "printed_page": "3-50", "pdf_page": 71},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and PUSH instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-56", "pdf_page": "52-53, 90, and 137"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004", "OQ-016"]
     },
     {
       "mnemonic": "IN",

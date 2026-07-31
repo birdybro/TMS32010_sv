@@ -694,6 +694,22 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "no operands"):
             self.assembler.assemble_text("RET 1\n")
 
+    def test_push_pop_round_trip_exact_implied_words(self) -> None:
+        result = self.assembler.assemble_text("PUSH\nPOP\n")
+        self.assertEqual(result.words, {0: 0x7F9C, 1: 0x7F9D})
+        self.assertEqual(
+            self.disassembler.disassemble_source([0x7F9C, 0x7F9D]),
+            "PUSH\nPOP\n",
+        )
+        rebuilt = self.assembler.assemble_text(
+            self.disassembler.disassemble_source([0x7F9C, 0x7F9D])
+        )
+        self.assertEqual(list(rebuilt.words.values()), [0x7F9C, 0x7F9D])
+        for invalid in ("PUSH 1\n", "POP 1\n"):
+            with self.subTest(invalid=invalid):
+                with self.assertRaisesRegex(AssemblyError, "no operands"):
+                    self.assembler.assemble_text(invalid)
+
     def test_accumulator_branches_round_trip_targets_and_diagnostics(
         self,
     ) -> None:

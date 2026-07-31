@@ -8,7 +8,7 @@ Current supported boundary:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-  `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
+  `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
   `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
   and positive saturation with `OVM=1`;
@@ -42,6 +42,11 @@ Current supported boundary:
   duplication, a two-cycle total, and completion after EINT before pending
   interrupt reentry; its unresolved second external cycle is deliberately not
   invented in the logical transaction trace (`OQ-007`);
+- `PUSH`/`POP` exact implied decode, low-12-bit push or zero-extending pop,
+  four-level shifting, old-bottom discard or duplication, repeated
+  overflow/underflow behavior, PC wrap, and two-cycle totals; their unresolved
+  second external cycles are deliberately absent from the logical transaction
+  trace (`OQ-016`);
 - `IN`/`OUT` direct/indirect internal-data selection, old-address ordering,
   eight-port I/O addressing, unchanged 16-bit transfers, common AR/ARP
   post-updates, one program plus one I/O transaction, and a two-cycle total;

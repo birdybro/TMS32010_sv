@@ -3,12 +3,13 @@
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
-RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR, TBLW, XOR,
-ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O transactions and
-instruction totals are modeled; pin subphases are not integrated with this
-model. RET's primary-defined state transition and cycle total are modeled,
-but its unresolved second external cycle is deliberately absent from the
-logical transaction trace under OQ-007.
+POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR,
+TBLW, XOR, ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O
+transactions and instruction totals are modeled; pin subphases are not
+integrated with this model. The primary-defined POP, PUSH, and RET state
+transitions and cycle totals are modeled, but their unresolved second external
+cycles are deliberately absent from the logical transaction trace under
+OQ-007/OQ-016.
 """
 
 from __future__ import annotations
@@ -247,16 +248,29 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
-        if mnemonic == "RET":
-            return_address = self.state.stack[0] & PC_MASK
-            old_bottom = self.state.stack[3] & PC_MASK
-            self.state.stack = [
-                self.state.stack[1] & PC_MASK,
-                self.state.stack[2] & PC_MASK,
-                old_bottom,
-                old_bottom,
-            ]
-            self.state.pc = return_address
+        if mnemonic in {"POP", "PUSH", "RET"}:
+            if mnemonic in {"POP", "RET"}:
+                old_top = self.state.stack[0] & PC_MASK
+                old_bottom = self.state.stack[3] & PC_MASK
+                self.state.stack = [
+                    self.state.stack[1] & PC_MASK,
+                    self.state.stack[2] & PC_MASK,
+                    old_bottom,
+                    old_bottom,
+                ]
+                if mnemonic == "POP":
+                    self.state.acc = old_top
+                    self.state.pc = (pc + 1) & PC_MASK
+                else:
+                    self.state.pc = old_top
+            else:
+                self.state.stack = [
+                    self.state.acc & PC_MASK,
+                    self.state.stack[0] & PC_MASK,
+                    self.state.stack[1] & PC_MASK,
+                    self.state.stack[2] & PC_MASK,
+                ]
+                self.state.pc = (pc + 1) & PC_MASK
             cycles = 2
             self.cycle_count += cycles
             self._advance_interrupt_pipeline(mnemonic)
@@ -1218,6 +1232,8 @@ class Tms32010Model:
             0x7F8E: "PAC",
             0x7F8F: "APAC",
             0x7F90: "SPAC",
+            0x7F9C: "PUSH",
+            0x7F9D: "POP",
         }
         mnemonic = fixed.get(opcode)
         if mnemonic is None:

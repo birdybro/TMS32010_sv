@@ -30,8 +30,11 @@ state without an assigned reset value; retention is provisional under
 Project traces and RTL diagnostics order the four stack entries as
 `[top, level_1, level_2, bottom]`. A push inserts the new 12-bit value at
 `top`, moves the former top through level 1 toward the bottom, and discards
-the former bottom. These names describe the documented stack order without
-assigning undocumented physical register indices
+the former bottom. A pop copies the old top out before shifting deeper entries
+toward the top and duplicating the old bottom. Directed model tests now cover
+both transformations, including repeated over-push and over-pop behavior.
+These names describe the documented stack order without assigning
+undocumented physical register indices
 [ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, printed pp. 2-13–2-14
 (PDF pp. 37–38)]. **Confidence: VERIFIED_PRIMARY.**
 

@@ -416,7 +416,7 @@ stack-bottom duplication, but is not used as pin-timing proof
 [mame-tms320c1x-core-030fefc, table handlers and opcode table, lines
 761–772 and 823–826]. **Confidence: CORROBORATED.**
 
-## Researched, RTL-deferred `PUSH`/`POP`
+## Model/tool-qualified, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the
 four-level, 12-bit hardware stack after shifting each old entry one level
@@ -437,14 +437,21 @@ ti-tms32010-assembly-guide-spru002b, `POP`/`PUSH`, printed pp. 3-49–3-50
 state transformations, overflow/underflow behavior, word count, and cycle
 count.**
 
+The canonical database and independent hand fixtures now include both exact
+words. Directed model tests cover low-12-bit PUSH, old-bottom discard,
+zero-extending POP, old-bottom duplication, PC wrap, state preservation, and
+repeated overflow/underflow behavior. Assembler/disassembler tests cover exact
+implied-word round trips. The model counts the primary-defined two cycles but
+reports only the known opcode fetch in its logical transaction trace.
+
 No located original-part waveform states the external program address and
 `MEN` behavior during the extra cycle of these single-word instructions.
 The IN/OUT figures demonstrate that some two-cycle instructions insert an
 external transfer between instruction and next-instruction prefetches, but
 that does not establish the bus-idle or prefetch behavior of an internal
-stack operation. `PUSH` and `POP` therefore remain outside the qualified
-database/model/tool/RTL boundary until `OQ-016` is resolved sufficiently to
-implement their two-cycle sequencer without fabricating observable timing.
+stack operation. `PUSH` and `POP` therefore remain outside the RTL/native and
+differential qualification boundary until `OQ-016` is resolved sufficiently
+to implement their two-cycle sequencer without fabricating observable timing.
 
 ## Deferred `ABS` research
 

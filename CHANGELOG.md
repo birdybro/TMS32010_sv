@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fifty-three model/tool encodings.
+  mnemonics and fully describes the first fifty-five model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -153,8 +153,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   `OQ-015`/`SC-009`.
 - Primary-source `PUSH=0x7f9c` and `POP=0x7f9d` research covering their exact
   four-level stack transformations, accumulator effect, overflow/underflow
-  behavior, one-word size, and two-cycle totals without prematurely adding
-  them to the supported implementation boundary.
+  behavior, one-word size, and two-cycle totals.
 - Primary-cited `SUBC` database/model/tool/RTL/native-phase slice with hand
   fixtures, common direct/indirect addressing, both conditional result paths,
   TI's 16-step 65-divided-by-7 example, seeded direct/indirect randomized
@@ -239,6 +238,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   disassembler round trips, and directed model tests for the old-TOS PC load,
   four-level pop with old-bottom duplication, two-cycle total, state
   preservation, and protected `EINT; RET` pending-interrupt reentry.
+- Primary-cited exact `PUSH=0x7f9c` and `POP=0x7f9d` database/fixture support,
+  assembler/disassembler round trips, and directed model tests for low-12-bit
+  push, zero-extending pop, complete four-level shifts, PC wrap, preserved
+  state, repeated over-push/over-pop behavior, and two-cycle totals.
 
 ### Changed
 
@@ -273,9 +276,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
-- The model/tool boundary now contains 53 instructions while RTL/differential
-  remains at 52. RET's second external cycle is not fabricated in the model
-  transaction trace and remains outside RTL under `OQ-007`.
+- The model/tool boundary now contains 55 instructions while RTL/differential
+  remains at 52. RET/PUSH/POP second external cycles are not fabricated in
+  model transaction traces and remain outside RTL under `OQ-007`/`OQ-016`.
 
 ### Fixed
 
@@ -578,7 +581,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The same formal stack passes a 20-step direct-MPY/repeated-chain BMC across
   arbitrary clock-enable choices; its cover reaches completed entry at step
   12 after checking three exact signed products.
-- The complete current regression passes 91 repository/ISA/tool tests, 203
+- The complete current regression passes 93 repository/ISA/tool tests, 207
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -587,7 +590,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- Fifty-three of 60 documented instruction mnemonics have model/tool evidence;
+- Fifty-five of 60 documented instruction mnemonics have model/tool evidence;
   only fifty-two also have RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
@@ -603,9 +606,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   PROVISIONAL under `OQ-015`; later TI and MAME evidence corroborates but does
   not prove original silicon behavior.
 - The located original PUSH/POP pages do not show the program-address and
-  `MEN` sequence during their extra internal cycle. Native two-cycle stack
-  sequencing remains deferred under `OQ-016`; no repeated or speculative
-  prefetch has been assigned.
+  `MEN` sequence during their extra internal cycle. Their state effects and
+  numeric two-cycle totals are model/tool-qualified, but native/RTL sequencing
+  remains deferred under `OQ-016`; no repeated or speculative prefetch has
+  been assigned.
 - TI requires the instruction after SUBC not to use ACC but does not establish
   observable behavior for a violation; current same-boundary result commit is
   an implementation convenience under `OQ-017`. TI also says SUBC affects OV

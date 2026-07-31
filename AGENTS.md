@@ -235,14 +235,16 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, and local
-tools support fifty-three instructions:
+tools support fifty-five instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
-`IN`, `OUT`, `PAC`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
+`IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
 `SUBC`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
-RET's primary-defined stack pop, PC load, and two-cycle model boundary.
-RTL and seeded differential support the same set except RET, for fifty-two
-shared instructions; RET's second external cycle remains `OQ-007`.
+RET's primary-defined stack pop/PC load and PUSH/POP's primary-defined stack
+effects at their two-cycle model boundaries.
+RTL and seeded differential support the same set except POP, PUSH, and RET,
+for fifty-two shared instructions; their second external cycles remain
+`OQ-007`/`OQ-016`.
 The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
@@ -280,8 +282,9 @@ deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. Complete fetch/execute
 overlap, exhaustive multicycle arrival coverage, native/RTL RET resumption,
-and the provisional DINT-at-final-boundary ordering remain outside the
-qualified boundary under `OQ-004`/`OQ-007`/`OQ-019`.
+PUSH/POP second-cycle sequencing, and the provisional
+DINT-at-final-boundary ordering remain outside the qualified boundary under
+`OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.
@@ -311,6 +314,10 @@ MAME's shorter untaken path.
 normal program cycle, pushes opcode-PC+2 onto the four-level 12-bit stack at
 retirement, and then selects the target. Stack overflow discards the old
 bottom without an exception.
+`PUSH=0x7f9c` and `POP=0x7f9d` have model/tool evidence for their complete
+four-level stack transformations, PC+1 sequencing, and two-cycle totals.
+Their second external program cycles remain unknown, so RTL/native and
+differential support are deferred under `OQ-016`.
 `IN`/`OUT` use distinct two-cycle I/O transactions. `TBLR`/`TBLW` use three
 cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
 write, followed by another PC+1 fetch. Table retirement also reproduces the

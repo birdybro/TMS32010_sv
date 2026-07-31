@@ -68,6 +68,8 @@ class IsaDatabaseTests(unittest.TestCase):
                 "BIOZ",
                 "CALL",
                 "RET",
+                "POP",
+                "PUSH",
                 "IN",
                 "OUT",
                 "TBLR",
@@ -277,6 +279,28 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(instruction["conditional_cycle_differences"], [])
         self.assertIn("all four stack levels", instruction["registers_read"])
         self.assertIn("OQ-007", instruction["unresolved_questions"])
+
+    def test_push_pop_are_exact_two_cycle_stack_operations(self) -> None:
+        for word, mnemonic in ((0x7F9C, "PUSH"), (0x7F9D, "POP")):
+            with self.subTest(mnemonic=mnemonic):
+                decoded = decode_word(self.database, word)
+                self.assertIsNotNone(decoded)
+                assert decoded is not None
+                instruction, operands = decoded
+                self.assertEqual(instruction["mnemonic"], mnemonic)
+                self.assertEqual(operands, {})
+                self.assertEqual(instruction.get("word_count", 1), 1)
+                self.assertEqual(instruction["documented_cycle_count"], 2)
+                self.assertEqual(instruction["status_flags_affected"], [])
+                self.assertEqual(
+                    instruction["conditional_cycle_differences"],
+                    [],
+                )
+                self.assertIn(
+                    "all four stack levels",
+                    instruction["registers_written"],
+                )
+                self.assertIn("OQ-016", instruction["unresolved_questions"])
 
     def test_io_families_cover_ports_and_reject_reserved_controls(self) -> None:
         for base, mnemonic, operation in (

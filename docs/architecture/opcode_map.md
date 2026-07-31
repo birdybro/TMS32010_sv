@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its current fifty-three-instruction model/tool boundary is intentionally partial
+Its current fifty-five-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -32,6 +32,8 @@ documented mnemonics so missing coverage remains machine-visible.
 | `DINT` | `0x7f81` | `0xffff` | 1 | 1 | individual `DINT` page, printed p. 3-27 |
 | `EINT` | `0x7f82` | `0xffff` | 1 | 1 | individual `EINT` page, printed p. 3-29 |
 | `RET` | `0x7f8d` | `0xffff` | 1 | 2 | individual `RET` page, printed p. 3-51 |
+| `POP` | `0x7f9d` | `0xffff` | 1 | 2 | individual `POP` page, printed p. 3-49 |
+| `PUSH` | `0x7f9c` | `0xffff` | 1 | 2 | individual `PUSH` page, printed p. 3-50 |
 | `LST dma` | `0x7b00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LST` page, printed p. 3-38 |
 | `LAC dma,s` | `0x2000` | `0xf000` plus addressing constraints | 1 | 1 | individual `LAC` page, printed p. 3-31 |
 | `LAR AR,dma` | `0x3800` | `0xfe00` plus addressing constraints | 1 | 1 | individual `LAR` page, printed p. 3-33 |
@@ -66,9 +68,9 @@ documented mnemonics so missing coverage remains machine-visible.
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
 descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29,
-3-31–3-44, 3-46, 3-48, 3-51, 3-53–3-56, 3-58, 3-60–3-61, 3-63–3-68, and
-3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–74, 76–79, 81–94, 96, 98,
-101, 103–106, 108, 110–118, and 120–121)].
+3-31–3-44, 3-46, 3-48–3-51, 3-53–3-56, 3-58, 3-60–3-61, 3-63–3-68, and
+3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–74, 76–79, 81–94, 96, 98–101,
+103–106, 108, 110–118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `IN` and `OUT` fix bits 15:11 to `01000` and `01001`, respectively. Bits
@@ -103,10 +105,11 @@ PROVISIONAL under `OQ-015`
 ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59)].
 
 `PUSH` and `POP` are primary-transcribed exact words `0x7f9c` and `0x7f9d`.
-Each is one word and two cycles with no operand fields. They remain outside
-the machine-readable supported list and hand-fixture decode boundary because
-the second-cycle native program-bus sequence is not yet established under
-`OQ-016`; recording an exact opcode does not imply implementation
+Each is one word and two cycles with no operand fields. Both are now in the
+machine-readable model/tool list and independent hand-fixture boundary. Their
+second-cycle native program-bus sequence is still not established under
+`OQ-016`; model/tool decode and state qualification do not imply RTL/native
+timing qualification
 [ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
 (PDF pp. 99–100); ti-first-generation-users-guide-1987, `POP`/`PUSH`,
 printed pp. 4-55–4-56 (PDF pp. 136–137)].

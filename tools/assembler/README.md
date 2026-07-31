@@ -5,7 +5,7 @@ complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `OUT`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
+  `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -41,8 +41,8 @@ provisional under `OQ-015`.
 
 `MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.
-`PAC`, `APAC`, `SPAC`, `DINT`, and `EINT` are implied instructions with no
-operands.
+`PAC`, `APAC`, `SPAC`, `DINT`, `EINT`, `POP`, and `PUSH` are implied
+instructions with no operands.
 
 `ADD` and `SUB` accept the same address and shift syntax as `LAC`, for example
 `ADD 6,4`, `SUB 6,4`, or `SUB *+,8,AR1`.
@@ -82,6 +82,8 @@ two-word location accounting with exact opcode `0xf900`.
 `CALL` uses that target workflow with exact opcode `0xf800`.
 
 `RET` is the exact implied word `0x7f8d`; it accepts no operands.
+`PUSH` and `POP` are the exact implied words `0x7f9c` and `0x7f9d`;
+they accept no operands.
 
 `IN` and `OUT` take a common data operand followed by a checked port, for
 example `IN 6,PA0`, `IN *+,7,AR1`, `OUT 24,3`, or `OUT *-,PA5`.

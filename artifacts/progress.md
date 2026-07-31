@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** data-memory MPY/repeated-chain formal qualification
+- **Current milestone:** PUSH/POP architectural/model/tool qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 91 repository/provenance/document/ISA/toolchain tests; 203
+- **Tests passing:** 93 repository/provenance/document/ISA/toolchain tests; 207
   directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -166,7 +166,11 @@
   remaining stack upward with old-bottom duplication, and is protected after
   EINT before a pending interrupt can reenter; RET's second external address
   and MEN behavior remain unknown, so model/tool support does not imply
-  RTL/native qualification
+  RTL/native qualification; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
+  one word/two cycles, with low-12-bit push/old-bottom discard and
+  zero-extending pop/old-bottom duplication respectively; model/tool tests
+  cover repeated overflow/underflow and PC wrap, while their second external
+  program cycles remain unknown under `OQ-016`
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
   ownership and exhaustive multicycle arrival cases, RET's second external
   cycle and native/RTL resumption,
@@ -178,10 +182,11 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** continue `FORMAL-001` with DINT and indirect-MPY/address-update
-  scenarios, then continue `CTRL-002` with an exhaustive
-  supported-multicycle arrival matrix and research for `OQ-019` plus RET's unresolved external
-  cycle under `OQ-007`; preserve the distinction between model-qualified RET
+- **Next task:** research and qualify CALA's primary-defined architectural
+  state/cycle behavior without inventing its unresolved external second cycle
+  under `OQ-007`, then continue `FORMAL-001` with indirect-MPY/address-update
+  scenarios and `CTRL-002` with an exhaustive supported-multicycle arrival
+  matrix; preserve the distinction between model-qualified RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing, and between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
@@ -194,4 +199,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `e64e616`
+  `d8edbf7`

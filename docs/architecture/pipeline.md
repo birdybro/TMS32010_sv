@@ -177,10 +177,11 @@ tracked as `OQ-017`
 violation behavior.**
 
 `PUSH` and `POP` are primary-defined one-word, two-cycle instructions. Their
-architectural stack transformations are fully specified, but the located
-original documentation contains no dedicated external-bus waveform for their
-second cycle. Do not implement the extra cycle by merely refetching the same
-opcode or by assuming a next-word prefetch: both would create an unsupported
-external sequence. This is tracked as `OQ-016`
+architectural stack transformations and numeric cycle totals are now
+model/tool-qualified, but the located original documentation contains no
+dedicated external-bus waveform for their second cycle. Do not implement an
+RTL/native extra cycle by merely refetching the same opcode or by assuming a
+next-word prefetch: both would create an unsupported external sequence. This
+is tracked as `OQ-016`
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `POP`/`PUSH`, printed
 pp. 3-7 and 3-49–3-50 (PDF pp. 57 and 99–100)].
