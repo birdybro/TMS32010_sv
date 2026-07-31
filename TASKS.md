@@ -595,9 +595,11 @@ objective passing evidence.
   `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
   `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,
   one-cycle/program-only/clock-enable checks, native-phase retirement, and
-  seeded INTM differential comparison. Interrupt recognition and EINT's
-  following-instruction service deferral remain unimplemented under
-  `CTRL-002`/`OQ-004`.
+  seeded INTM differential comparison. Interrupt recognition, EINT's
+  following-instruction service deferral, Figure 2-12 external read order,
+  and every represented supported-multicycle arrival position now pass
+  directed checks under `CTRL-002`; complete execute-overlap and
+  native-subphase ownership remain open under `OQ-004`.
   `LST` now passes primary-cited database/tool support, exhaustive model
   status-field tests, directed RTL address/order/cycle/stall/trap checks,
   native-phase retirement, and seeded differential comparison. Original
@@ -769,8 +771,10 @@ objective passing evidence.
   internal-data instructions plus MAR, including all three logic operations, is
   asserted through the partial native-phase
   integration. Figure 2-12 interrupt program reads, entry effects, EINT
-  deferral, and multiply deferral are directed-tested, while complete
-  execute-overlap ownership and the exhaustive arrival matrix remain.
+  deferral, multiply deferral, and a 32-case matrix over every represented
+  cycle of all 15 supported multicycle families are directed-tested, while
+  complete execute-overlap/native-subphase ownership and unsupported
+  CALA/RET/PUSH/POP arrivals remain.
   BANZ's two-word/two-cycle opcode and following-target
   normal reads, taken/untaken selection, second-cycle stall, and retirement
   are asserted. B's unconditional two-word/two-cycle target load and the same
@@ -968,9 +972,14 @@ objective passing evidence.
   DAC traces without copyrighted ROMs.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`
-- **Notes:** Initial sheets 3–7 inventory and MAME comparison exist; INT net,
-  exact arbitration phases, DAC polarity, and synthetic smoke tests remain.
-  User-supplied ROM hashes may enable local tests; ROMs are never committed.
+- **Notes:** Atari production drawing A044427 Rev A is identified. Its
+  TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
+  by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
+  resampled by `CLKOUT` before reaching `/BIOS`. The distinct `320IRQ` net
+  feeds the 68000-side interrupt path. Exact program-RAM arbitration phases,
+  complete BIO divider state, DAC polarity, board-variant audit, and synthetic
+  smoke tests remain. User-supplied ROM hashes may enable local tests; ROMs
+  are never committed.
 
 ## Milestone 22 — Release qualification
 

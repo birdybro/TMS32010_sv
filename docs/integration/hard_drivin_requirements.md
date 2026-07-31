@@ -60,18 +60,57 @@ after the analog sheet net polarities are fully transcribed.
 
 ## Reset, BIO, and interrupt
 
-The board supplies `/320RES` and external BIO synchronizer logic. MAME starts
-the DSP halted and associates host latch control with reset/halt release; it
-also generates periodic BIO behavior. These emulator mechanisms are useful
-for trace comparison but do not establish real pin phase timing
-[atari-driver-sound-board-schematic, drawing A044427, sheets 4–5, PDF
-pp. 7–10; mame-harddriv-audio-030fefc, device configuration and BIO
-callback]. **Confidence: primary wiring VERIFIED_PRIMARY, behavioral timing
-PROVISIONAL.**
+The board supplies `/320RES` to DSP pin 4. MAME starts the DSP halted and
+associates host latch control with reset/halt release. That emulator mechanism
+is useful for trace comparison but does not establish physical reset-pin phase
+timing [atari-driver-sound-board-schematic, drawing A044427, sheet 4 of 10,
+PDF p. 7; mame-harddriv-audio-030fefc, device reset and device
+configuration]. **Confidence: primary wiring VERIFIED_PRIMARY; reset timing
+PROVISIONAL pending a complete board-control trace.**
 
-The schematic net entering DSP `INT` appears as `PR1`; whether this is a
-fixed rail remains `OQ-005`. No Hard Drivin' wrapper interrupt behavior will
-be invented until resolved.
+### TMS32010 interrupt input
+
+The active-low TMS32010 `INT` pin 5 connects to net `PR1` on sheet 4. Sheet 1
+pulls `PR1` to +5 V through `R26`, 1 kΩ. A complete text/net-name search of
+the ten-sheet production drawing found no loaded active driver: subsequent
+uses are logic inputs, and the only switching network attached to `PR1` is in
+a boxed `NOT LOADED` option on sheet 7. The production Rev-A board therefore
+holds DSP `INT` inactive-high through a resistor; it is not a direct rail
+strap [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 1 of
+10, PDF pp. 1–2; sheet 4 of 10, PDF p. 7; sheet 7 of 10, PDF p. 14].
+**Confidence: VERIFIED_PRIMARY for the reviewed production Rev-A drawing.**
+
+This resolves `OQ-005` for A044427 Rev A. A Hard Drivin'-specific wrapper
+should default the DSP interrupt input high while retaining an overridable
+external input for board variants and diagnostics. This does not relax the
+generic core's interrupt requirements.
+
+The similarly named `320IRQ` is a different net. It participates in the
+sound-board 68000 interrupt path and does not connect to the TMS32010 `INT`
+pin [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of
+10, PDF pp. 3–4; sheet 5 of 10, PDF p. 9].
+**Confidence: VERIFIED_PRIMARY.**
+
+### BIO path
+
+Sheet 2 generates `/320BIO` from 1 MHz counter/divider logic and an LS74
+flip-flop cleared by `/RESET`. Sheet 4 applies `/320BIO` to the D input of
+LS74 `70S`, clocks that flip-flop with the TMS32010 `CLKOUT`, and routes its Q
+output `/BIOS` to active-low DSP `BIO` pin 9. The resynchronizer's asynchronous
+controls use pulled-high net `PR5` and are inactive in the production
+configuration [atari-driver-sound-board-schematic, drawing A044427 Rev A,
+sheet 1 of 10, PDF p. 2; sheet 2 of 10, PDF p. 4; sheet 4 of 10, PDF
+pp. 7–8]. **Confidence: VERIFIED_PRIMARY for connectivity and clock source;
+the complete divider state sequence is not yet transcribed.**
+
+Pinned MAME independently models this as a periodic BIO event derived from a
+1 MHz divided-by-50 rate and binds only that callback to the DSP pin. It does
+not configure a DSP interrupt source. MAME's callback advances an
+instruction-cycle budget rather than reproducing the LS74/`CLKOUT` waveform,
+so it corroborates function and approximate cadence only
+[mame-harddriv-audio-030fefc, `BIO_FREQUENCY`,
+`hdsnddsp_get_bio`, and device configuration].
+**Confidence: CORROBORATED; not pin-timing proof.**
 
 ## Integration acceptance path
 

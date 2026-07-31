@@ -16,6 +16,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   instruction, and timing research baselines.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
+- Primary schematic qualification of the A044427 Rev-A TMS32010 pin paths:
+  `/INT` is held inactive-high through `PR1`/`R26`, `/320BIO` is resampled by
+  `CLKOUT` into `/BIOS`, and the separate `320IRQ` net belongs to the
+  68000-side interrupt path.
 - Partial machine-readable ISA database that enumerates all 60 documented
   mnemonics and fully describes the first fifty-seven model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
@@ -145,8 +149,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Primary-cited exact `DINT=0x7f81` and `EINT=0x7f82` database entries, hand
   fixtures, model, assembler/disassembler, RTL, native-phase, and differential
   support for one-cycle `INTM` set/clear effects with no data-memory
-  transaction. Interrupt recognition, EINT's following-instruction service
-  deferral, and vector entry remain explicitly outside this functional slice.
+  transaction. Directed interrupt tests additionally cover request retention,
+  EINT's following-instruction service deferral, vector entry, and all
+  represented supported-multicycle arrival positions; complete overlapped
+  execute/native-subphase ownership remains outside the qualified boundary.
 - Acquired and hash-pinned TI's 1986 preliminary TMS320C25 guide as
   explicitly later-variant evidence for the otherwise unresolved indirect
   LST next-ARP precedence; it is not treated as original-part authority.

@@ -290,6 +290,11 @@ ownership, native/RTL CALA/RET sequencing, PUSH/POP second-cycle sequencing,
 and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+For Atari integration specifically, production drawing A044427 Rev A holds the
+TMS32010 active-low interrupt input inactive through the `PR1`/`R26` 1 kΩ
+pull-up. Its board-generated `/320BIO` signal is resampled by `CLKOUT` into
+`/BIOS`; the similarly named `320IRQ` is instead part of the 68000-side
+interrupt path. These are board-wrapper facts, not generic-core behavior.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

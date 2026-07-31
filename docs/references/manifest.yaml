@@ -202,9 +202,9 @@
       "id": "atari-driver-sound-board-schematic",
       "title": "Hard Drivin'/Race Drivin' Driver Sound Board Schematics",
       "author_or_organization": "Atari Games Corporation; hosted by board engineer Jed Margolin",
-      "publication_number": "drawing numbers to be transcribed during schematic review",
+      "publication_number": "A044427",
       "publication_date": "circa 1988-1989",
-      "revision": "multiple sheets; verify title blocks",
+      "revision": "production release Rev A, ten sheets",
       "source_url": "https://www.jmargolin.com/schem/HD_Sound.pdf",
       "retrieval_date": "2026-07-30",
       "local_filename": "atari/HD_Sound_Driver_Sound_Board_Schematics.pdf",
@@ -217,7 +217,9 @@
       "notes": "Lawfully public engineer-hosted copy; access does not grant repository redistribution.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Drawing A044427, sheets 3 through 7 of 10 (PDF pages 5-14): TMS32010, program RAM/host path, BIO/reset, I/O decode, and DAC"
+        "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
+        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): /320BIO generator and distinct 320IRQ/68000 path",
+        "Drawing A044427 Rev A, sheets 3 through 7 of 10 (PDF pages 5-14): TMS32010 pins, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, optional not-loaded PR1 switching, and DAC"
       ],
       "status": "acquired",
       "download": {
@@ -387,7 +389,7 @@
       "notes": "Independent oracle only. Current source configures TMS320C10 at 20 MHz although game comments call the slave TMS32010; investigate device-label distinction against schematics.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "sounddsp_program_map, sounddsp_io_map, BIO callback, I/O handlers, and device configuration"
+        "sounddsp_program_map, sounddsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration"
       ],
       "status": "acquired",
       "download": {

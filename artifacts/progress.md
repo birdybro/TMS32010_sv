@@ -1,8 +1,9 @@
 # Progress summary
 
-- **Current milestone:** supported-multicycle interrupt-arrival qualification
+- **Current milestone:** Hard Drivin' Rev-A interrupt/BIO schematic
+  qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 97 repository/provenance/document/ISA/toolchain tests; 217
+- **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
   directed model tests; 35 RTL instruction/decode tests; 4 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -57,8 +58,12 @@
   wraps with OVM clear, and positively saturates with OVM set; TI SPRU013
   resolves the older OVM-clear prose contradiction; AND/OR/XOR combine the
   internal word with `ACC[15:0]`, cannot overflow, and preserve OV/OVM; AND
-  clears `ACC[31:16]`, whereas OR and XOR preserve it; Atari A044427 labels a
-  TMS32010 at 20 MHz; ADD sign-extends and left-shifts its RAM operand before
+  clears `ACC[31:16]`, whereas OR and XOR preserve it; Atari A044427 Rev A
+  labels a TMS32010 at 20 MHz, connects its active-low `INT` pin to pull-up
+  net `PR1`/`R26` with no loaded active driver, generates `/320BIO` from
+  1 MHz divider logic, and resamples it through a `CLKOUT`-clocked LS74 as
+  `/BIOS`; the separate `320IRQ` net serves the 68000-side interrupt path;
+  ADD sign-extends and left-shifts its RAM operand before
   full-accumulator addition, applies sticky OV, wraps with OVM clear, and
   saturates at either signed endpoint with OVM set; SUB uses the same signed
   source extension and shift path, subtracts it from ACC, sets sticky OV,
@@ -207,8 +212,9 @@
   OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
-  DMOV/LTD source-`0x8f` destination behavior,
-  Hard Drivin' INT net, and safe phase adaptation without READY
+  DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
+  divider state and program-RAM arbitration, board-revision equivalence, and
+  safe phase adaptation without READY
 - **Next task:** continue `CTRL-002` by separating Figure 2-12 fetch/execute
   ownership from the now-qualified core machine-cycle arrival matrix, and
   extend `FORMAL-001` only with bounded cases whose architectural ordering is
@@ -226,4 +232,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `9fd2241`
+  `3f01a36`

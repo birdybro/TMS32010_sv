@@ -62,6 +62,28 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("No documented READY pin", interface)
         self.assertIn("must not be described as original", interface)
 
+    def test_hard_drivin_int_and_bio_nets_remain_distinct(self) -> None:
+        integration = (
+            DOCS / "integration" / "hard_drivin_requirements.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "A044427 Rev A",
+            "`PR1`",
+            "`R26`, 1 kΩ",
+            "`NOT LOADED`",
+            "`/320BIO`",
+            "`CLKOUT`",
+            "`/BIOS`",
+            "`320IRQ` is a different net",
+        ):
+            self.assertIn(required, integration)
+        self.assertRegex(
+            integration.lower(),
+            r"does\s+not configure a dsp interrupt source",
+        )
+        self.assertIn("default the DSP interrupt input high", integration)
+        self.assertIn("not pin-timing proof", integration)
+
 
 if __name__ == "__main__":
     unittest.main()
