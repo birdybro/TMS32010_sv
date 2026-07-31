@@ -1,22 +1,23 @@
 # Progress summary
 
-- **Current milestone:** unconditional B two-cycle control-flow qualification
+- **Current milestone:** accumulator-tested conditional-branch qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 75 repository/provenance/document/ISA/toolchain tests; 169
-  directed model tests; 28 RTL instruction/decode tests; 1 interrupt-mask RTL
-  test; 4 native bus/phase tests; one 512-instruction seeded
+- **Tests passing:** 77 repository/provenance/document/ISA/toolchain tests; 172
+  directed model tests; 29 RTL instruction/decode tests; 1 interrupt-mask RTL
+  test; 5 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   distinct logical source/write addresses, and all 144 final RAM words; 16
-  reference hashes; focused two-cycle B and BANZ model/RTL traces
+  reference hashes; focused two-cycle B, BANZ, and all six
+  accumulator-conditional-branch model/RTL traces
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-nine-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,870 ALMs, 2,491 registers, 0 RAM blocks,
-  1 DSP block, 57.18 MHz worst slow-corner internal Fmax, +2.511 ns setup
-  slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the forty-five-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,927 ALMs, 2,491 registers, 0 RAM blocks,
+  1 DSP block, 55.94 MHz worst slow-corner internal Fmax, +2.123 ns setup
+  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 12,470 generic cells with 11 assertions and lowering the
+  producing 12,557 generic cells with 11 assertions and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
@@ -111,7 +112,12 @@
   exact opcode `0xf900`, followed by a canonical absolute 12-bit target word,
   and unconditionally loads PC after two normal program-read cycles while
   preserving all other architectural state; original TI sources and pinned
-  MAME agree on its behavior and cycle total
+  MAME agree on its behavior and cycle total; BLZ, BLEZ, BGZ, BGEZ, BNZ, and
+  BZ are exact opcodes `0xfa00` through `0xff00`, test the complete signed
+  32-bit accumulator, and always consume their canonical target word and a
+  second program-read cycle whether or not the branch is taken; MAME instead
+  skips that read/cycle on untaken paths, recorded as `SC-013`, so project
+  timing follows the original TI two-word/two-cycle definitions
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -120,9 +126,9 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** qualify the accumulator-tested conditional branch family
-  (`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BZ`) using primary instruction pages
-  and the established two-word control-flow sequencer;
+- **Next task:** qualify `BV` using its primary instruction pages and the
+  established two-word control-flow sequencer, including its taken-path
+  overflow-clear side effect and mandatory target-word read;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
@@ -132,4 +138,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `3696e70`
+  `d9f0eb5`

@@ -2,7 +2,7 @@
 
 ## 2026-07-30 Quartus fits
 
-These results cover the thirty-nine-instruction RTL, signed multiplier,
+These results cover the forty-five-instruction RTL, signed multiplier,
 144-word internal data RAM, and first program-bus phase engine. They are not
 complete-core resource or interface-timing results.
 
@@ -15,14 +15,14 @@ complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,870 ALMs (4%).
+- Logic: 1,927 ALMs (5%).
 - Registers: 2,491.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +2.511 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.166 ns.
-- Slow-corner internal Fmax: 57.18 MHz at 100 °C, 57.48 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.123 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.165 ns.
+- Slow-corner internal Fmax: 57.0 MHz at 100 °C, 55.94 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 278 harness-only interface
@@ -94,7 +94,7 @@ Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 11 RTL assertions
-remain represented, and the generic result contains 12,470 cells. The
+remain represented, and the generic result contains 12,557 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone

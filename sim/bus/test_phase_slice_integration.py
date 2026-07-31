@@ -63,6 +63,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_b_uses_two_stallable_native_program_reads(self) -> None:
         self._run_testbench("tb_b_phase")
 
+    def test_accumulator_branches_use_two_stallable_native_reads(self) -> None:
+        self._run_testbench("tb_accumulator_branches_phase")
+
 
 if __name__ == "__main__":
     unittest.main()

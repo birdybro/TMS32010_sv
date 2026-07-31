@@ -95,7 +95,7 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Thirty-nine encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Forty-five encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBS`) are
@@ -105,7 +105,7 @@ objective passing evidence.
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 19,053 supported words without collisions; the remaining 21
+  accepting 19,059 supported words without collisions; the remaining 15
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -124,6 +124,9 @@ objective passing evidence.
   B exact opcode `0xf900`, canonical following target word, unconditional
   two-cycle target load, and two normal program reads are primary-verified and
   independently corroborated by pinned MAME.
+  Exact `BLZ=0xfa00`, `BLEZ=0xfb00`, `BGZ=0xfc00`, `BGEZ=0xfd00`,
+  `BNZ=0xfe00`, and `BZ=0xff00` encodings, canonical target words, signed/zero
+  predicates, and unconditional two-cycle totals are primary-verified.
 
 ## Milestone 5 — Executable reference model
 
@@ -138,7 +141,7 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
@@ -203,6 +206,8 @@ objective passing evidence.
   `B` uses the same two program reads and canonical-target trap policy,
   unconditionally loads PC at the second transaction, and preserves every
   other modeled architectural state item.
+  The six accumulator branches test all signed/zero boundaries, select target
+  or PC+2 after the mandatory second read, and preserve non-PC state.
   Out-of-range
   original-RAM addresses and unsupported words trap. Remaining memory/I/O
   instructions and pin phases remain unimplemented.
@@ -222,7 +227,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same thirty-nine instructions as the
+- **Notes:** Qualified slice supports the same forty-five instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -231,10 +236,10 @@ objective passing evidence.
   syntax, MAR direct/indirect syntax and LARP aliases, and
   ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC/DINT/EINT and two-word `B target`/`BANZ target`.
+  PAC/APAC/SPAC/DINT/EINT and two-word `B`/`BANZ`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 21
+  directed-tested. The remaining 15
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -254,7 +259,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  thirty-nine-instruction slice. `LAC`
+  forty-five-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty-two common-address data instructions verify direct/indirect read/write
@@ -319,8 +324,8 @@ objective passing evidence.
 - **Notes:** Temporary clock-enable execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
   retires each of 37 supported one-cycle instructions, including all
-  twenty-two internal-data operations, on its falling-edge sample. B and BANZ
-  share the first two-cycle state: opcode and following target receive
+  twenty-two internal-data operations, on its falling-edge sample. B, BANZ,
+  and six accumulator branches share the first two-cycle state: opcode and following target receive
   separate normal program reads, retirement occurs only on the target-word
   sample, and next-address selection aligns PC with the native bus across
   stalls. General overlap, remaining branch/multi-cycle, and interrupt control
@@ -350,10 +355,11 @@ objective passing evidence.
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
   release delay. A partial wrapper integrates those phases with all 37
-  supported one-cycle instructions plus both cycles of B and BANZ, checks that internal logical data
+  supported one-cycle instructions plus both cycles of eight qualified branches, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
-  traps and stalls. B and BANZ verify opcode/target addresses and target-read
-  stalls; BANZ covers both outcomes. Table cycles, remaining branch/call/return,
+  traps and stalls. Every qualified branch verifies opcode/target addresses
+  and target-read stalls; conditional branches cover both outcomes. Table
+  cycles, remaining branch/call/return,
   general pipeline overlap, and interrupt sequences remain. Do not collapse Harvard spaces in the native
   interface.
 
@@ -480,6 +486,9 @@ objective passing evidence.
   `B` now passes exact encoding/database/tool support, directed model and RTL
   state/timing/trap tests, two-read native-phase and target-stall tests, and a
   focused instruction-boundary-model versus per-cycle-RTL differential trace.
+  `BGEZ`/`BGZ`/`BLEZ`/`BLZ`/`BNZ`/`BZ` now pass the same path with signed/zero
+  boundary matrices and both outcomes for every mnemonic. `SC-013` preserves
+  MAME's untaken timing disagreement without changing TI-backed behavior.
   Cycle evidence
   is qualified only for the current sequential native-phase boundary. `LAC`
   now passes primary-cited database/model/tool tests, directed RTL cycle and
@@ -599,7 +608,8 @@ objective passing evidence.
   ownership remain. BANZ's two-word/two-cycle opcode and following-target
   normal reads, taken/untaken selection, second-cycle stall, and retirement
   are asserted. B's unconditional two-word/two-cycle target load and the same
-  second-cycle stall/retirement boundary are asserted. Other control flow
+  second-cycle stall/retirement boundary are asserted. The six accumulator
+  branches assert that boundary for both outcomes. Other control flow
   remains. PUSH/POP are primary-confirmed as one-word/two-cycle
   instructions with exact state effects, but their second-cycle external
   sequence remains open under `OQ-016`. SUBC's one-cycle total is asserted
@@ -669,6 +679,8 @@ objective passing evidence.
   A focused B differential applies the same alignment to two successive
   branches and compares both program reads, skipped fall-through words,
   retirement, cumulative cycles, target PC, and preserved state.
+  A focused accumulator-branch differential chains taken and untaken cases
+  for all six predicates and compares every program transaction and commit.
   MAME comparison and
   legal randomized full-ISA streams
   remain. MAME disagreement

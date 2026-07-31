@@ -12,7 +12,9 @@ from typing import Iterable
 from tools.generators.isa_database import load_database, parse_int
 
 PROGRAM_WORDS = 4096
-TWO_WORD_BRANCHES = frozenset({"B", "BANZ"})
+TWO_WORD_BRANCHES = frozenset(
+    {"B", "BANZ", "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"}
+)
 LABEL_PATTERN = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 TI_HEX_PATTERN = re.compile(r"(?<![A-Za-z0-9_])>([0-9A-Fa-f]+)")
 

@@ -198,3 +198,21 @@ electrical result of an out-of-range access.
   timing is not a cycle or pin oracle.
 - **Confidence:** VERIFIED_PRIMARY for the project timing; documented
   secondary-source disagreement.
+
+## SC-013 — MAME accumulator-branch untaken cycle abstraction
+
+- **Primary sources:** SPRU001B Table 3-2 and the individual `BGEZ`, `BGZ`,
+  `BLEZ`, `BLZ`, `BNZ`, and `BZ` pages define every instruction as two words
+  and two cycles without a taken/untaken exception. Each operation either
+  loads the following word's target or advances PC past both words.
+- **Independent oracle:** pinned MAME gives each family member a one-cycle
+  base cost, reads the target and charges an additional branch cycle only when
+  the predicate is true, and merely increments PC when false
+  [mame-tms320c1x-core-030fefc, predicate handlers, lines 420–500; opcode
+  table and `add_branch_cycle()`, lines 841–857].
+- **Current treatment:** follow TI's unconditional two-word/two-cycle total
+  and perform the second normal program read on both paths. MAME corroborates
+  the signed/zero predicates but is not used as a timing oracle for untaken
+  paths.
+- **Confidence:** VERIFIED_PRIMARY for project timing and predicates;
+  documented secondary-source timing disagreement.

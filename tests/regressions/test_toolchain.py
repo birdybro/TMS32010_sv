@@ -412,6 +412,18 @@ class ToolchainSliceTests(unittest.TestCase):
             0x035A,
             0xF900,
             0x0123,
+            0xFA00,
+            0x0200,
+            0xFB00,
+            0x0201,
+            0xFC00,
+            0x0202,
+            0xFD00,
+            0x0203,
+            0xFE00,
+            0x0204,
+            0xFF00,
+            0x0205,
         ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
@@ -524,6 +536,62 @@ class ToolchainSliceTests(unittest.TestCase):
             with self.subTest(source=invalid):
                 with self.assertRaisesRegex(AssemblyError, message):
                     self.assembler.assemble_text(invalid)
+
+    def test_accumulator_branches_round_trip_targets_and_diagnostics(
+        self,
+    ) -> None:
+        branches = {
+            "BLZ": 0xFA00,
+            "BLEZ": 0xFB00,
+            "BGZ": 0xFC00,
+            "BGEZ": 0xFD00,
+            "BNZ": 0xFE00,
+            "BZ": 0xFF00,
+        }
+        for mnemonic, opcode in branches.items():
+            with self.subTest(mnemonic=mnemonic):
+                result = self.assembler.assemble_text(
+                    f"{mnemonic} TARGET\nZAC\nTARGET: NOP\n"
+                )
+                self.assertEqual(
+                    result.words,
+                    {
+                        0: opcode,
+                        1: 0x0003,
+                        2: 0x7F89,
+                        3: 0x7F80,
+                    },
+                )
+                self.assertEqual(result.symbols["TARGET"], 3)
+                source = self.disassembler.disassemble_source(
+                    [opcode, 0x035A, 0x7F80]
+                )
+                self.assertEqual(source, f"{mnemonic} 0x35a\nNOP\n")
+                self.assertEqual(
+                    self.disassembler.disassemble_listing(
+                        [opcode, 0x035A],
+                        origin=0x100,
+                    ),
+                    f"100 {opcode:04x}  {mnemonic} 0x35a\n"
+                    f"101 035a  .word 0x035a ; {mnemonic} target\n",
+                )
+                self.assertEqual(
+                    list(self.assembler.assemble_text(source).words.values()),
+                    [opcode, 0x035A, 0x7F80],
+                )
+                self.assertEqual(
+                    self.disassembler.disassemble_word(opcode),
+                    f".word 0x{opcode:04x}",
+                )
+
+                for invalid, message in (
+                    (f"{mnemonic} -1\n", "program address"),
+                    (f"{mnemonic} 4096\n", "program address"),
+                    (f"{mnemonic}\n", "1 operand"),
+                    (f"{mnemonic} 1,2\n", "1 operand"),
+                ):
+                    with self.assertRaisesRegex(AssemblyError, message):
+                        self.assembler.assemble_text(invalid)
 
     def test_labels_origin_words_expressions_and_listing(self) -> None:
         result = self.assembler.assemble_text(

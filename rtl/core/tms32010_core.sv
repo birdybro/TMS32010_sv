@@ -80,6 +80,45 @@ module tms32010_core (
   localparam logic [5:0] OP_SUBC = 6'd36;
   localparam logic [5:0] OP_BANZ = 6'd37;
   localparam logic [5:0] OP_B    = 6'd38;
+  localparam logic [5:0] OP_BGEZ = 6'd39;
+  localparam logic [5:0] OP_BGZ  = 6'd40;
+  localparam logic [5:0] OP_BLEZ = 6'd41;
+  localparam logic [5:0] OP_BLZ  = 6'd42;
+  localparam logic [5:0] OP_BNZ  = 6'd43;
+  localparam logic [5:0] OP_BZ   = 6'd44;
+
+  function automatic logic is_two_word_branch(input logic [5:0] operation);
+    case (operation)
+      OP_B,
+      OP_BANZ,
+      OP_BGEZ,
+      OP_BGZ,
+      OP_BLEZ,
+      OP_BLZ,
+      OP_BNZ,
+      OP_BZ: is_two_word_branch = 1'b1;
+      default: is_two_word_branch = 1'b0;
+    endcase
+  endfunction
+
+  function automatic logic accumulator_branch_taken(
+    input logic [5:0]  operation,
+    input logic [31:0] accumulator
+  );
+    case (operation)
+      OP_BGEZ: accumulator_branch_taken = ~accumulator[31];
+      OP_BGZ:  accumulator_branch_taken =
+        ~accumulator[31] && (accumulator != 32'h0000_0000);
+      OP_BLEZ: accumulator_branch_taken =
+        accumulator[31] || (accumulator == 32'h0000_0000);
+      OP_BLZ: accumulator_branch_taken = accumulator[31];
+      OP_BNZ: accumulator_branch_taken =
+        accumulator != 32'h0000_0000;
+      OP_BZ: accumulator_branch_taken =
+        accumulator == 32'h0000_0000;
+      default: accumulator_branch_taken = 1'b0;
+    endcase
+  endfunction
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -212,6 +251,20 @@ module tms32010_core (
               program_next_address_o = pc_o + 12'h001;
             end
           end
+          OP_BGEZ,
+          OP_BGZ,
+          OP_BLEZ,
+          OP_BLZ,
+          OP_BNZ,
+          OP_BZ: begin
+            program_next_address_o =
+              accumulator_branch_taken(
+                pending_branch_operation,
+                accumulator_o
+              )
+                ? program_data_i[11:0]
+                : pc_o + 12'h001;
+          end
           default: begin
           end
         endcase
@@ -319,10 +372,7 @@ module tms32010_core (
     if (branch_operand_pending) begin
       instruction_valid_o =
         (program_data_i[15:12] == 4'h0) &&
-        (
-          (pending_branch_operation == OP_B) ||
-          (pending_branch_operation == OP_BANZ)
-        );
+        is_two_word_branch(pending_branch_operation);
     end else begin
       instruction_valid_o =
         decoded_valid &&
@@ -456,6 +506,20 @@ module tms32010_core (
                     : pc_o + 12'h001;
               end
             end
+            OP_BGEZ,
+            OP_BGZ,
+            OP_BLEZ,
+            OP_BLZ,
+            OP_BNZ,
+            OP_BZ: begin
+              pc_o <=
+                accumulator_branch_taken(
+                  pending_branch_operation,
+                  accumulator_o
+                )
+                  ? program_data_i[11:0]
+                  : pc_o + 12'h001;
+            end
             default: begin
             end
           endcase
@@ -470,10 +534,7 @@ module tms32010_core (
         pc_o          <= pc_o + 12'h001;
         illegal_o     <= 1'b0;
         cycle_count_o <= cycle_count_o + 32'h0000_0001;
-        if (
-          (decoded_operation == OP_B) ||
-          (decoded_operation == OP_BANZ)
-        ) begin
+        if (is_two_word_branch(decoded_operation)) begin
           branch_operand_pending   <= 1'b1;
           pending_branch_operation <= decoded_operation;
         end else begin
@@ -651,6 +712,18 @@ module tms32010_core (
           OP_BANZ: begin
           end
           OP_B: begin
+          end
+          OP_BGEZ: begin
+          end
+          OP_BGZ: begin
+          end
+          OP_BLEZ: begin
+          end
+          OP_BLZ: begin
+          end
+          OP_BNZ: begin
+          end
+          OP_BZ: begin
           end
           default: begin
             // All enum values are covered above.

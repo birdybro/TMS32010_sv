@@ -65,6 +65,12 @@ class IsaDatabaseTests(unittest.TestCase):
                 "MAR",
                 "BANZ",
                 "B",
+                "BGEZ",
+                "BGZ",
+                "BLEZ",
+                "BLZ",
+                "BNZ",
+                "BZ",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -191,6 +197,26 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(decoded[0]["word_count"], 2)
         self.assertEqual(decoded[0]["documented_cycle_count"], 2)
         self.assertIsNone(decode_word(self.database, 0xF901))
+
+    def test_accumulator_branches_are_exact_two_word_opcodes(self) -> None:
+        expected = {
+            0xFA00: "BLZ",
+            0xFB00: "BLEZ",
+            0xFC00: "BGZ",
+            0xFD00: "BGEZ",
+            0xFE00: "BNZ",
+            0xFF00: "BZ",
+        }
+        for word, mnemonic in expected.items():
+            with self.subTest(mnemonic=mnemonic):
+                decoded = decode_word(self.database, word)
+                self.assertIsNotNone(decoded)
+                assert decoded is not None
+                self.assertEqual(decoded[0]["mnemonic"], mnemonic)
+                self.assertEqual(decoded[1], {})
+                self.assertEqual(decoded[0]["word_count"], 2)
+                self.assertEqual(decoded[0]["documented_cycle_count"], 2)
+                self.assertIsNone(decode_word(self.database, word | 1))
 
     def test_dmov_uses_common_data_addressing_without_reserved_controls(
         self,

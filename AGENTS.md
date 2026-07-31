@@ -235,8 +235,8 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support thirty-nine instructions:
-`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+tools, RTL, and seeded differential boundary support forty-five instructions:
+`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
@@ -288,6 +288,9 @@ later-guide and MAME timing evidence remains visible as `SC-011`/`SC-012`.
 `B` is exact opcode `0xf900` and uses the same canonical second-word target
 fetch. It unconditionally loads PC and retires at the second sample without
 changing other architectural state.
+`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` test signed/zero ACC through
+the same two-word/two-cycle state. Both outcomes perform the second program
+read; MAME's untaken timing disagreement is `SC-013`.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

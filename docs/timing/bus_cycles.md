@@ -61,6 +61,16 @@ next normal read at the target. Both cycles assert only `MEN`; no `DEN` or
 printed pp. 2-2, 2-13, 3-6, and 3-15
 (PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY.**
 
+`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` also use two ordinary
+program reads at opcode PC and PC+1 on both outcomes. The next read is the
+target when the ACC predicate is true or opcode PC+2 when false. No `DEN` or
+`WE` phase occurs. MAME's untaken shortcut is recorded in `SC-013` and is not
+used as bus evidence
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
+individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
+and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
+**Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

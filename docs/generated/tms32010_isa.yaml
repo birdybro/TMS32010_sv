@@ -17,7 +17,8 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B"
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B",
+      "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -1733,6 +1734,234 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and B instruction description", "printed_page": "3-6 and 3-15", "pdf_page": "56 and 65"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "B instruction description", "printed_page": "3-15", "pdf_page": 36},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and B instruction description", "printed_page": "4-10 and 4-20", "pdf_page": "89 and 101"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BGEZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xfd00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when signed ACC is greater than or equal to zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BGEZ instruction description", "printed_page": "3-6 and 3-17", "pdf_page": "56 and 67"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BGEZ instruction description", "printed_page": "3-17", "pdf_page": 38},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BGEZ instruction description", "printed_page": "4-10 and 4-22", "pdf_page": "89 and 103"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BGZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xfc00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when signed ACC is greater than zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BGZ instruction description", "printed_page": "3-6 and 3-18", "pdf_page": "56 and 68"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BGZ instruction description", "printed_page": "3-18", "pdf_page": 39},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BGZ instruction description", "printed_page": "4-10 and 4-23", "pdf_page": "89 and 104"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BLEZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xfb00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when signed ACC is less than or equal to zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BLEZ instruction description", "printed_page": "3-6 and 3-20", "pdf_page": "56 and 70"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BLEZ instruction description", "printed_page": "3-20", "pdf_page": 41},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BLEZ instruction description", "printed_page": "4-10 and 4-25", "pdf_page": "89 and 106"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BLZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xfa00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when signed ACC is less than zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BLZ instruction description", "printed_page": "3-6 and 3-21", "pdf_page": "56 and 71"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BLZ instruction description", "printed_page": "3-21", "pdf_page": 42},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BLZ instruction description", "printed_page": "4-10 and 4-26", "pdf_page": "89 and 107"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BNZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xfe00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when ACC is not zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BNZ instruction description", "printed_page": "3-6 and 3-22", "pdf_page": "56 and 72"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BNZ instruction description", "printed_page": "3-22", "pdf_page": 43},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BNZ instruction description", "printed_page": "4-10 and 4-27", "pdf_page": "89 and 108"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xff00",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["ACC"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "ACC is tested as a signed 32-bit value",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when ACC is zero; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when taken or opcode PC plus two when not taken"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BZ instruction description", "printed_page": "3-6 and 3-24", "pdf_page": "56 and 74"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BZ instruction description", "printed_page": "3-24", "pdf_page": 45},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BZ instruction description", "printed_page": "4-10 and 4-29", "pdf_page": "89 and 110"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]

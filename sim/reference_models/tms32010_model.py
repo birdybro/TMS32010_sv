@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, DINT, DMOV, EINT,
-LAC, LACK, LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK,
-NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC,
-ZALH, and ZALS.
+This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BLEZ,
+BLZ, BNZ, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP, LDPK, LST,
+LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM,
+SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -21,6 +21,8 @@ PC_MASK = 0x0FFF
 PROGRAM_WORDS = 4096
 DATA_WORDS = 144
 IO_PORTS = 8
+ACCUMULATOR_BRANCHES = frozenset({"BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"})
+TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ"}
 
 
 class UnsupportedOpcode(RuntimeError):
@@ -194,7 +196,7 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
-        if mnemonic in {"B", "BANZ"}:
+        if mnemonic in TWO_WORD_BRANCHES:
             operand_address = (pc + 1) & PC_MASK
             operand_word = self.program[operand_address] & WORD_MASK
             if operand_word & 0xF000:
@@ -231,8 +233,17 @@ class Tms32010Model:
                 self.state.pc = (
                     target if branch_taken else (pc + 2) & PC_MASK
                 )
-            else:
+            elif mnemonic == "B":
                 self.state.pc = target
+            else:
+                branch_taken = self._accumulator_branch_taken(
+                    mnemonic,
+                    self.state.acc,
+                )
+                operands["branch_taken"] = int(branch_taken)
+                self.state.pc = (
+                    target if branch_taken else (pc + 2) & PC_MASK
+                )
             cycles = 2
             self.cycle_count += cycles
             return StepTrace(
@@ -643,8 +654,38 @@ class Tms32010Model:
             self.state.acc = ((intermediate << 1) | 1) & ACC_MASK
 
     @staticmethod
+    def _accumulator_branch_taken(mnemonic: str, accumulator: int) -> bool:
+        """Test one primary-defined signed/zero accumulator branch."""
+        value = accumulator & ACC_MASK
+        negative = bool(value & 0x8000_0000)
+        zero = value == 0
+        if mnemonic == "BGEZ":
+            return not negative
+        if mnemonic == "BGZ":
+            return not negative and not zero
+        if mnemonic == "BLEZ":
+            return negative or zero
+        if mnemonic == "BLZ":
+            return negative
+        if mnemonic == "BNZ":
+            return not zero
+        if mnemonic == "BZ":
+            return zero
+        raise ValueError(f"not an accumulator branch: {mnemonic}")
+
+    @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
+        accumulator_branches = {
+            0xFA00: "BLZ",
+            0xFB00: "BLEZ",
+            0xFC00: "BGZ",
+            0xFD00: "BGEZ",
+            0xFE00: "BNZ",
+            0xFF00: "BZ",
+        }
+        if opcode in accumulator_branches:
+            return accumulator_branches[opcode], {}
         if opcode == 0xF900:
             return "B", {}
         if opcode == 0xF400:

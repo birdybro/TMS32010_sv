@@ -35,8 +35,8 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
 resolved for:
 
-- conditional branches other than the now-qualified `BANZ` sequence
-  (`OQ-007`);
+- `BIOZ` and `BV`; B, BANZ, and the six accumulator-tested conditions are
+  now qualified (`OQ-007`);
 - `CALL`, `CALA`, and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -65,6 +65,15 @@ a clock-enable stall holds the second phase without architectural progress
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
 3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY for logical
 ordering and normal-read pin phases.**
+
+`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use that same two-read shape.
+At the second sample, a signed/zero test of the unchanged 32-bit ACC selects
+the canonical target or PC+2. Both outcomes retire after the second read;
+clock-enable stalls hold the target phase and condition inputs. Pinned MAME's
+one-cycle untaken abstraction is disclosed in `SC-013`, not adopted
+[ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
+printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
+(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

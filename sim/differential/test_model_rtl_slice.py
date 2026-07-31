@@ -947,6 +947,122 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             self.assertEqual(int(rtl[7], 16), model_state["ar"][1])
             self.assertEqual(int(rtl[13], 16), model_state["cycle_count"])
 
+    def test_accumulator_branch_family_trace_matches_model(self) -> None:
+        cases = [
+            ("BLZ", 0xFA00, 0x2000, True),
+            ("BLZ", 0xFA00, 0x7F89, False),
+            ("BLEZ", 0xFB00, 0x7F89, True),
+            ("BLEZ", 0xFB00, 0x7E01, False),
+            ("BGZ", 0xFC00, 0x7E01, True),
+            ("BGZ", 0xFC00, 0x7F89, False),
+            ("BGEZ", 0xFD00, 0x7F89, True),
+            ("BGEZ", 0xFD00, 0x2000, False),
+            ("BNZ", 0xFE00, 0x7E01, True),
+            ("BNZ", 0xFE00, 0x7F89, False),
+            ("BZ", 0xFF00, 0x7F89, True),
+            ("BZ", 0xFF00, 0x7E01, False),
+        ]
+        words: list[int] = []
+        for _, opcode, setup, expected_taken in cases:
+            base = len(words)
+            words.extend(
+                [
+                    setup,
+                    opcode,
+                    base + (4 if expected_taken else 5),
+                    0x7F80,
+                ]
+            )
+        words.append(0x7F80)
+
+        data_words = [0] * 144
+        data_words[0] = 0xFFFF
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        model.data[:] = data_words
+        expected = []
+        for mnemonic, _, _, expected_taken in cases:
+            expected.append(model.step())
+            branch = model.step()
+            expected.append(branch)
+            self.assertEqual(branch.mnemonic, mnemonic)
+            self.assertEqual(
+                branch.operands["branch_taken"],
+                int(expected_taken),
+            )
+            if not expected_taken:
+                expected.append(model.step())
+        expected.append(model.step())
+
+        transactions = [
+            transaction
+            for trace in expected
+            for transaction in trace.transactions
+            if transaction.space == "program"
+        ]
+        machine_cycles = sum(trace.cycles for trace in expected)
+        self.assertEqual(machine_cycles, len(transactions))
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    f"+COUNT={machine_cycles}",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line for line in result.stdout.splitlines() if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), machine_cycles)
+        fields = [line.split() for line in lines]
+        self.assertEqual(
+            [int(field[1], 16) for field in fields],
+            [transaction.address for transaction in transactions],
+        )
+        self.assertEqual(
+            [int(field[2], 16) for field in fields],
+            [transaction.data for transaction in transactions],
+        )
+        self.assertEqual(
+            [int(field[13], 16) for field in fields],
+            list(range(1, machine_cycles + 1)),
+        )
+        self.assertTrue(all(int(field[10], 16) for field in fields))
+        self.assertTrue(all(not int(field[12], 16) for field in fields))
+
+        cumulative_cycles = 0
+        for trace in expected:
+            cumulative_cycles += trace.cycles
+            rtl = fields[cumulative_cycles - 1]
+            self.assertEqual(int(rtl[11], 16), 1)
+            self.assertEqual(int(rtl[3], 16), trace.state_after["pc"])
+            self.assertEqual(int(rtl[4], 16), trace.state_after["acc"])
+            self.assertEqual(
+                int(rtl[13], 16),
+                trace.state_after["cycle_count"],
+            )
+            if trace.cycles == 2:
+                self.assertEqual(int(fields[cumulative_cycles - 2][11], 16), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

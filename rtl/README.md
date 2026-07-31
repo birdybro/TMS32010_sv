@@ -1,7 +1,7 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
+`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
 `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
@@ -44,8 +44,9 @@ documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
 For the 37 currently qualified one-cycle sequential instructions it samples
-and retires on the same falling boundary. B and BANZ instead fetch their
-following target words through a second complete, independently stallable
+and retires on the same falling boundary. B, BANZ, and the six qualified
+accumulator branches instead fetch their following target words through a
+second complete, independently stallable
 normal read and retire only at that second falling boundary. All paths keep PC and native
 address aligned and hold state on traps or clock-enable stalls. It is not a
 general sequencer: the remaining branches, other multi-cycle instructions,

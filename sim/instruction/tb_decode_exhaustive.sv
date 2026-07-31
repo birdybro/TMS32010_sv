@@ -61,6 +61,7 @@ module tb_decode_exhaustive;
       logic expected_lst;
       logic expected_banz;
       logic expected_b;
+      logic expected_accumulator_branch;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -307,6 +308,9 @@ module tb_decode_exhaustive;
         );
       expected_banz = instruction == 16'hf400;
       expected_b = instruction == 16'hf900;
+      expected_accumulator_branch =
+        (instruction[15:8] >= 8'hfa) &&
+        (instruction[7:0] == 8'h00);
       expected_valid =
         expected_lac || expected_sacl || expected_sach ||
         expected_zalh || expected_zals || expected_adds ||
@@ -319,7 +323,7 @@ module tb_decode_exhaustive;
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
         expected_dint || expected_eint || expected_lst ||
-        expected_banz || expected_b ||
+        expected_banz || expected_b || expected_accumulator_branch ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
         ((instruction & 16'hfe00) == 16'h7000) ||
@@ -514,6 +518,29 @@ module tb_decode_exhaustive;
       if (expected_b && operation != OP_B) begin
         $fatal(1, "B decode mismatch at %04x", word);
       end
+      if (expected_accumulator_branch) begin
+        case (instruction)
+          16'hfa00: if (operation != OP_BLZ) begin
+            $fatal(1, "BLZ decode mismatch");
+          end
+          16'hfb00: if (operation != OP_BLEZ) begin
+            $fatal(1, "BLEZ decode mismatch");
+          end
+          16'hfc00: if (operation != OP_BGZ) begin
+            $fatal(1, "BGZ decode mismatch");
+          end
+          16'hfd00: if (operation != OP_BGEZ) begin
+            $fatal(1, "BGEZ decode mismatch");
+          end
+          16'hfe00: if (operation != OP_BNZ) begin
+            $fatal(1, "BNZ decode mismatch");
+          end
+          16'hff00: if (operation != OP_BZ) begin
+            $fatal(1, "BZ decode mismatch");
+          end
+          default: $fatal(1, "unexpected accumulator branch");
+        endcase
+      end
       if ((instruction & 16'hff00) == 16'h7e00) begin
         if (operation != OP_LACK || immediate != word[7:0]) begin
           $fatal(1, "LACK decode mismatch at %04x", word);
@@ -537,8 +564,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 19053) begin
-      $fatal(1, "expected 19053 supported words, got %0d", valid_count);
+    if (valid_count != 19059) begin
+      $fatal(1, "expected 19059 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

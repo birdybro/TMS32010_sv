@@ -386,6 +386,21 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_accumulator_branch_predicates_and_two_cycle_timing(self) -> None:
+        self._run_testbench(
+            "tb_accumulator_branches_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT
+                / "sim"
+                / "instruction"
+                / "tb_accumulator_branches_rtl.sv",
+            ],
+        )
+
     def test_logic_halves_status_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_logic_rtl",

@@ -8,7 +8,9 @@ from typing import Iterable
 
 from tools.generators.isa_database import decode_word, load_database
 
-TWO_WORD_BRANCHES = frozenset({"B", "BANZ"})
+TWO_WORD_BRANCHES = frozenset(
+    {"B", "BANZ", "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"}
+)
 
 
 class Disassembler:

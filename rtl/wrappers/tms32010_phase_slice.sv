@@ -1,7 +1,8 @@
 `default_nettype none
 
 // Integration wrapper for the qualified one-cycle sequential slice and
-// two-cycle B/BANZ reads. This is not yet the complete TMS32010 fetch pipeline.
+// qualified two-cycle branch reads. This is not yet the complete TMS32010
+// fetch pipeline.
 module tms32010_phase_slice (
   input  logic        clk_i,
   input  logic        initialize_i,

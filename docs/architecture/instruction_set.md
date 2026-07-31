@@ -190,6 +190,38 @@ load and fixed two-cycle total
 and opcode table line 842]. **Confidence: VERIFIED_PRIMARY for behavior and
 logical timing; CORROBORATED by independent emulator code.**
 
+## Qualified accumulator-conditional branch slice
+
+Six exact two-word instructions test the full 32-bit ACC:
+
+| Mnemonic | Opcode | Taken predicate |
+|---|---:|---|
+| `BLZ` | `0xfa00` | signed ACC < 0 |
+| `BLEZ` | `0xfb00` | signed ACC <= 0 |
+| `BGZ` | `0xfc00` | signed ACC > 0 |
+| `BGEZ` | `0xfd00` | signed ACC >= 0 |
+| `BNZ` | `0xfe00` | ACC != 0 |
+| `BZ` | `0xff00` | ACC == 0 |
+
+Each exact opcode is followed by a canonical 12-bit absolute target. Taken
+loads that target into PC; untaken advances to opcode PC+2. Both outcomes
+consume two words and two cycles, and no ACC, T, P, AR, stack, RAM, or status
+state changes
+[ti-tms32010-users-guide-spru001b, Table 3-2 and individual descriptions,
+printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
+(PDF pp. 56, 67–68, 70–72, and 74);
+ti-tms32010-assembly-guide-spru002b, individual descriptions, printed
+pp. 3-17–3-18, 3-20–3-22, and 3-24
+(PDF pp. 38–39, 41–43, and 45)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed model tests exercise every predicate at zero, positive one, negative
+one, maximum positive, and most-negative ACC. RTL tests cover both outcomes
+for every mnemonic, second-cycle stalls, preserved ACC, no data transaction,
+and malformed target trap-before-effects. Native-phase and differential tests
+verify opcode/target reads and target/fallthrough address selection. Pinned
+MAME corroborates every predicate but shortens untaken paths; the project does
+not copy that timing abstraction (`SC-013`).
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-thirty-nine-instruction subset, then check retirement on the falling-edge
+forty-five-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -106,10 +106,20 @@ trap-before-effects for a noncanonical target
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
 3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed `BGEZ`/`BGZ`/`BLEZ`/`BLZ`/`BNZ`/`BZ` tests assert the same two
+complete program reads and second-sample retirement for both predicate
+outcomes. The RTL matrix distinguishes zero, positive, and negative ACC for
+every mnemonic; the model additionally covers maximum-positive and
+most-negative boundaries. Native tests assert the ordinary `MEN` target phase
+and clock-enable stability for every taken and untaken case
+[ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
+printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
+(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
-  other than the now-qualified B and BANZ sequences;
+  other than the now-qualified B, BANZ, and accumulator-condition sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
