@@ -311,8 +311,16 @@ The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.
 The initial user-guide and data-sheet review has therefore found no native
 per-transaction wait-state handshake
 [ti-tms32010-users-guide-spru001b, §2.3 and Appendix A pin assignments].
-**Confidence: VERIFIED_PRIMARY for the pinout; `OQ-001` remains open for any
-documented clock-stretching rule.**
+**Confidence: VERIFIED_PRIMARY for the pinout.**
+
+TI's external-clock timing requirements bound the TMS32010-20 master-clock
+period to 48.78–150 ns and its pulse duration to 47.5–52.5% of that period.
+Because `CLKOUT` is one fourth of the input frequency, a conforming physical
+machine cycle is 195.12–600 ns. There is no specified indefinite stop or
+transaction-selected extension
+[ti-tms32010-users-guide-spru001b, §2.12 and Appendix A data sheet, Clock
+Characteristics and Timing, printed pp. 2-20 and data-sheet pp. 10–11 (PDF
+pp. 44 and 366–367)]. **Confidence: VERIFIED_PRIMARY.**
 
 Consequently a modern `ready` input must not be described as original
 TMS32010 behavior. If integration needs slow memory, a separate adapter may
@@ -322,7 +330,8 @@ I/O, and table transactions: retained address/control/write-data state does
 not advance, sample/retirement events remain inactive, and re-enabling resumes
 the same transaction. This is **VERIFIED_SIMULATION** platform behavior, not
 evidence that an NMOS TMS32010 clock may be stopped at an arbitrary point.
-Physical clock-stretching legality remains `OQ-001`.
+`OQ-001` therefore resolves to bounded physical slowing within the TI clock
+envelope, not arbitrary clock stretching.
 
 ## Native RTL signal groups
 

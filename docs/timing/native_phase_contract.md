@@ -408,8 +408,15 @@ is stable.
 
 This contract supports a synchronous slow-memory adapter that eventually
 re-enables the host phase. It neither asserts unbounded liveness without that
-environment condition nor resolves whether physical TMS32010 clock stretching
-is electrically safe. That silicon question remains `OQ-001`.
+environment condition nor describes a pin-compatible physical pause. TI
+requires the TMS32010-20 external master-clock period to remain between
+48.78 and 150 ns and each pulse to occupy 47.5–52.5% of that period; because
+`CLKOUT` divides by four, the corresponding machine-cycle range is
+195.12–600 ns. An indefinite level hold violates that rated envelope
+[ti-tms32010-users-guide-spru001b, §2.12 and Appendix A data sheet, Clock
+Characteristics and Timing, printed pp. 2-20 and data-sheet pp. 10–11 (PDF
+pp. 44 and 366–367)]. `OQ-001` is therefore resolved for pin-compatible
+design: only bounded slowing within those requirements is primary-supported.
 
 ## RTL mapping status
 

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** portable synchronous phase-pause qualification
+- **Current milestone:** original TMS32010 physical clock-envelope qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003, TIMING-002
 - **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 231
   directed model/unit tests, including standalone fetch/execute and
@@ -108,8 +108,15 @@
   the zero-pause PC/ACC/RAM/program-memory result. The standalone 40-step bus
   proof additionally checks held `CLKOUT` and conditionally held `MEN` under
   arbitrary enable choices. This is synchronous FPGA evidence only; physical
-  clock stretching remains open as `OQ-001` and no unbounded liveness theorem
-  is claimed.
+  timing is governed separately by the primary clock envelope and no unbounded
+  liveness theorem is claimed.
+- **Physical clock evidence:** SPRU001B specifies the TMS32010-20 external
+  master-clock period as 48.78–150 ns and pulse duration as 47.5–52.5% of the
+  period. With four master periods per `CLKOUT`, the rated physical machine
+  cycle spans 195.12–600 ns. `OQ-001` is resolved: bounded slowing is allowed,
+  but an arbitrary or indefinite physical phase stop is outside specified
+  conditions. TI does not separately qualify dynamic modulation between
+  otherwise conforming periods.
 - **Status-word evidence:** SPRU001B defines exactly five architectural status
   bits. Its overview, LST, and SST figures agree that stored-word bits 12:9
   and 7:2 are ones; LST ignores bit 13 and every non-field position. Only bit
@@ -119,7 +126,10 @@
   the RTL test checks the full `0x1efe` constant mask. Stored bit 1 remains
   CORROBORATED under `OQ-003`/`SC-008`; no hidden writable status is inferred.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
-  words and no READY pin; reset requires at least five machine cycles and leaves
+  words and no READY pin; the TMS32010-20 external master clock must remain
+  within 48.78–150 ns and 47.5–52.5% pulse duty, bounding `CLKOUT` machine
+  cycles to 195.12–600 ns rather than permitting a stopped physical clock;
+  reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
   transfers are three; falling CLKOUT samples program/I/O data, INT, and BIO;
   reset release waits one full cycle then fetches addresses 0 and 1; `LAC`
@@ -387,13 +397,13 @@
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
-  divider state and program-RAM arbitration, board-revision equivalence, and
-  physical TMS32010 clock-stretching legality without READY; the opcode audit
+  divider state and program-RAM arbitration, and board-revision equivalence;
+  the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
 - **Next task:** continue the next unblocked P0 architecture or RTL timing task
-  without treating the remaining physical-clock question as a native wait
-  protocol. Retain the
+  without treating bounded physical clock slowing as a native wait protocol.
+  Retain the
   complete opcode documentation partition without promoting primary-unlisted
   words to reserved behavior; resolve the 372 simultaneous-update combinations
   only from further primary or physical evidence under `OQ-010`. For
@@ -405,4 +415,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `fb6f5d2`
+  `a98a410`

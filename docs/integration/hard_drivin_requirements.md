@@ -16,8 +16,11 @@ capacitors, and straps `MC/MP` for microprocessor operation
 pp. 7–8]. **Confidence: VERIFIED_PRIMARY.**
 
 At 20 MHz input the TMS32010 machine cycle is nominally four input clocks, or
-5 MHz/200 ns [ti-tms32010-users-guide-spru001b, Appendix A clock
-characteristics]. **Confidence: VERIFIED_PRIMARY.**
+5 MHz/200 ns. This is inside the TMS32010-20's specified 48.78–150 ns
+master-period envelope and does not create a board-level wait mechanism
+[ti-tms32010-users-guide-spru001b, Appendix A data sheet, Clock
+Characteristics and Timing, printed p. 11 (PDF p. 367)]. **Confidence:
+VERIFIED_PRIMARY.**
 
 ## Memory and host path
 

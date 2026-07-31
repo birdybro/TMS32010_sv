@@ -41,8 +41,16 @@ than raw OCR. **Treatment: resolved as OCR artifacts; VERIFIED_PRIMARY.**
 
 The requested qualification includes READY/wait-state behavior, but the
 original TMS32010 40-pin interface has no READY/WAIT pin in SPRU001B. A
-wrapper-level phase pause may still be useful, but it cannot be labeled a
-native protocol without clocking evidence. **Treatment: open as OQ-001.**
+wrapper-level phase pause is useful but cannot be labeled a native protocol.
+The original TMS32010-20 external-clock table resolves the physical boundary:
+48.78–150 ns master-clock periods, 47.5–52.5% pulse duration, and four input
+periods per `CLKOUT` machine cycle. Thus bounded slowing is specified, while
+an arbitrary or indefinite phase stop is not
+[ti-tms32010-users-guide-spru001b, §2.12 and Appendix A data sheet, Clock
+Characteristics and Timing, printed pp. 2-20 and data-sheet pp. 10–11 (PDF
+pp. 44 and 366–367)]. **Treatment: resolved under
+`OQ-001`; keep FPGA phase pause explicitly platform-only. Confidence:
+VERIFIED_PRIMARY for the clock envelope.**
 
 ## SC-005 — Data-page-one upper bound
 

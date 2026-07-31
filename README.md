@@ -139,7 +139,10 @@ directed zero-pause/multiple-pause regression holds ordinary program, IN,
 OUT, TBLR, and TBLW phases for a total of 16 host clocks and obtains the same
 architectural and memory result with exactly 16 clocks of extension. This is
 a synchronous FPGA adaptation through `clock_enable_i`, not a native READY
-protocol or proof that a physical NMOS clock can be stopped arbitrarily.
+protocol. TI's original external-clock table instead limits the TMS32010-20
+master period to 48.78–150 ns with 47.5–52.5% pulse duration; a physical
+clock cannot be held indefinitely while remaining inside specified operating
+conditions.
 A 40-step integrated-pipeline harness also checks one direct TBLR
 discarded/transfer/repeated-fetch sequence and
 reaches its LACK/TBLR/LAC/NOP cover at step 34. A complementary 40-step direct-TBLW

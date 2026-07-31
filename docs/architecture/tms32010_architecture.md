@@ -85,6 +85,26 @@ documented ways; those phase sequences are not yet fully transcribed
 (PDF pp. 25, 55–57)]. **Confidence: VERIFIED_PRIMARY for overlap and listed
 cycle counts; UNKNOWN for the complete phase-level matrix.**
 
+## Physical clock envelope
+
+The original TMS32010-20 accepts either a 6.7–20.5 MHz crystal or an external
+master clock. For the external-clock option, TI requires a 48.78–150 ns
+master-clock period and a high/low pulse duration within 47.5–52.5% of that
+period. `CLKOUT` is four master-clock periods, so the corresponding specified
+machine-cycle envelope is 195.12–600 ns. These are timing requirements over
+recommended operating conditions, not nominal suggestions
+[ti-tms32010-users-guide-spru001b, §2.12 and Appendix A data sheet, Clock
+Characteristics and Timing, printed pp. 2-20 and data-sheet pp. 10–11 (PDF
+pp. 44 and 366–367)]. **Confidence: VERIFIED_PRIMARY.**
+
+Consequently a physical device may be slowed only while every input-clock
+period and pulse width remains inside that envelope. A stopped clock or an
+arbitrarily extended high/low phase is outside TI's specified conditions;
+there is no native transaction-by-transaction wait handshake. The RTL
+`clock_enable_i` pause remains a platform emulation feature and must not be
+used as a pin-compatible electrical claim. TI does not separately characterize
+dynamic frequency modulation between otherwise conforming periods.
+
 ## Reset baseline
 
 `RS` is active low and must remain low for at least five complete `CLKOUT`

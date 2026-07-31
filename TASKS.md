@@ -84,6 +84,9 @@ objective passing evidence.
   under `OQ-016`. TI's every-cycle `MEN` rule narrows the strobe behavior, but
   does not distinguish a repeated/discarded next-word read from an advancing
   prefetch; `SC-018` and the physical experiment preserve that boundary.
+  `OQ-001` is resolved from the original TMS32010-20 AC table: physical
+  master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
+  duration, so arbitrary clock stops remain outside specified conditions.
   Physical pin timing and logical transaction timing must remain distinct.
 
 ## Milestone 4 — Instruction encoding database
@@ -1034,8 +1037,9 @@ objective passing evidence.
   resolving original-device trace.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
-  behavior remains `OQ-017`. Electrical delays are wrapper
-  constraints, not RTL delays.
+  behavior remains `OQ-017`. The original TMS32010-20 clock envelope is now
+  primary-qualified as 48.78–150 ns per master period and 47.5–52.5% pulse
+  duration; electrical delays are wrapper constraints, not RTL delays.
 
 ## Milestone 16 — External wait-state behavior
 
@@ -1059,8 +1063,10 @@ objective passing evidence.
   `formal/tms32010_pipeline_table.sby`,
   `formal/tms32010_pipeline_table_write.sby`
 - **Notes:** Original 40-pin TMS32010 has no READY/WAIT input. Research safe
-  physical clock adaptation remains under OQ-001; do not invent a native wait
-  protocol. The unified directed test inserts 16 host clocks across ordinary
+  physical clock adaptation is resolved under OQ-001 to bounded slowing only:
+  TMS32010-20 master-clock periods must remain 48.78–150 ns with 47.5–52.5%
+  pulse duration. Do not invent a native wait protocol. The unified directed
+  test inserts 16 host clocks across ordinary
   MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases and compares the final
   state with a zero-pause run. Existing transaction-specific tests independently
   exercise live-read sampling and deferred commit.

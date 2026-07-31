@@ -159,8 +159,7 @@ accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
   vector path, MPY/MPYK protected-slot extension, and matching 32-case
   core/explicit arrival matrices for the 15 supported multicycle families
-  (`OQ-004`);
-- any external cycle stretching (`OQ-001`).
+  (`OQ-004`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
 the project does not claim cycle accuracy.

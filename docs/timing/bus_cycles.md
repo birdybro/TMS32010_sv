@@ -69,9 +69,13 @@ remain live until the enabled sample. The 40-step standalone program-bus BMC
 proves phase/address/transaction retention for arbitrary clock-enable choices;
 the integrated TBLR/TBLW BMCs cover their fixed programs under arbitrary
 holds. None of this proves a native wait protocol, arbitrary physical clock
-stoppage, electrical timing, or unbounded liveness. **Confidence:
-VERIFIED_SIMULATION for the FPGA phase-pause adaptation; UNKNOWN for physical
-clock stretching under `OQ-001`.**
+stoppage, electrical timing, or unbounded liveness. TI separately limits the
+TMS32010-20 external master clock to 48.78–150 ns with a 47.5–52.5% pulse
+window, so pin-compatible timing cannot hold one level indefinitely
+[ti-tms32010-users-guide-spru001b, Appendix A data sheet, Clock
+Characteristics and Timing, printed p. 11 (PDF p. 367)]. **Confidence:
+VERIFIED_SIMULATION for the FPGA phase-pause adaptation; VERIFIED_PRIMARY for
+the bounded physical clock envelope resolved under `OQ-001`.**
 
 `IN` and `OUT` have a primary-defined native transaction sequence. The
 ordinary one-word opcode prefetch uses `MEN`. At that falling-edge sample the
@@ -366,5 +370,4 @@ identify:
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
   discarded-N+2/vector path, MPY/MPYK extension, and the matching 32-case
   core/explicit matrices for the 15 supported multicycle families;
-- any internal conflict that changes an otherwise normal read;
-- safe wrapper phase pause, if one exists, despite the absence of READY.
+- any internal conflict that changes an otherwise normal read.

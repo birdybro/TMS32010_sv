@@ -344,8 +344,10 @@ VERIFIED_SIMULATION for explicit and legacy implementations.**
   protected/dummy/vector path, MPY/MPYK protected-slot extension, table
   repeated-prefetch ownership, and all 32 represented arrival intervals in
   both the core and explicit pipeline are qualified;
-- board-level phase stretching in the absence of a READY pin.
+- electrical wrapper constraints for the primary-resolved 48.78–150 ns
+  TMS32010-20 master-clock and 47.5–52.5% pulse envelope.
 
-These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is
+These map to `OQ-004` and `OQ-007`; `OQ-001` is resolved against arbitrary
+physical clock stretching. Reset-to-first-fetch timing is
 resolved and tested through both the standalone native phase engine and the
 partial sequential integration.

@@ -444,8 +444,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   currently represented external transaction class. The complete native
   bus/phase suite now passes 24 tests. The 40-step program-bus BMC also proves
   held `CLKOUT` and conditionally held `MEN` when its wrapper-owned read
-  qualifier is stable. Physical clock stretching and unbounded liveness remain
-  outside this evidence under `OQ-001`.
+  qualifier is stable. Unbounded liveness remains outside this evidence.
+- Original SPRU001B electrical timing resolves `OQ-001`: a TMS32010-20
+  external master clock must remain within 48.78–150 ns with each pulse at
+  47.5–52.5% of the period. Since `CLKOUT` divides by four, the corresponding
+  physical machine-cycle envelope is 195.12–600 ns. This permits bounded
+  slowing but not an indefinite pin-compatible phase stop; the RTL pause stays
+  explicitly platform-only.
 - Original status-word evidence now separates the five architectural fields
   from the 16-bit LST/SST representation. SPRU001B agrees that SST bits 12:9
   and 7:2 are ones and LST ignores every non-field source bit; model tests

@@ -23,7 +23,7 @@
       "sections_or_pages_used": [
         "Sections 2.1-2.10, printed pages 2-1 through 2-19 (PDF pages 25-43)",
         "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDH/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALA/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SST/SUB/SUBC/SUBH/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-44, 3-46 through 3-51, 3-53 through 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-94, 96-101, 103-113, 118, and 120-121)",
-        "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
+        "Section 2.12 clock/oscillator, printed page 2-20 (PDF page 44), and Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 10-20 (PDF pages 366-376)"
       ],
       "status": "acquired",
       "download": {

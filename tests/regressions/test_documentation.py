@@ -61,6 +61,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         self.assertIn("No documented READY pin", interface)
         self.assertIn("must not be described as original", interface)
+        self.assertIn("48.78–150 ns", interface)
+        self.assertIn("47.5–52.5%", interface)
+        self.assertIn("195.12–600 ns", interface)
+        self.assertIn("not arbitrary clock stretching", interface)
 
     def test_hard_drivin_int_and_bio_nets_remain_distinct(self) -> None:
         integration = (
