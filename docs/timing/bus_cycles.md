@@ -30,22 +30,32 @@ samples the word at the next falling edge
 [ti-tms32010-users-guide-spru001b, Appendix A data sheet, printed
 pp. 13–20 (PDF pp. 369–376)]. **Confidence: VERIFIED_PRIMARY.**
 
+Figures 2-9 and 2-10 label the opcode transaction as “instruction prefetch”
+and number the execution intervals after its completion. The next
+instruction's prefetch is the final interval of the current multicycle
+instruction. Legacy phase tests preserve the transaction order and elapsed
+periods, but their retirement-mapped cycle counter is not evidence of
+distinct execute ownership. See `docs/timing/native_phase_contract.md`.
+
 No READY pin appears in the original pinout. There is therefore no verified
 native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
-`IN` and `OUT` now have a qualified native sequence. The first cycle is the
-ordinary one-word opcode fetch under `MEN`. At that falling-edge sample the
+`IN` and `OUT` have a primary-defined native transaction sequence. The
+ordinary one-word opcode prefetch uses `MEN`. At that falling-edge sample the
 architectural PC advances by one but the instruction remains pending. During
-the second cycle `A11..A3` are zero and `PA2..PA0` carry the encoded port.
+the following port interval `A11..A3` are zero and `PA2..PA0` carry the encoded port.
 `IN` asserts only `DEN`, samples the external 16-bit word at the falling
 boundary, and writes it to the already-resolved old data-memory address.
 `OUT` reads that internal word, drives it during address setup, and asserts
-only `WE` through the falling boundary. Indirect AR/ARP updates and retirement
-occur only at that second sample; the following normal read uses opcode PC+1
+only `WE` through the falling boundary. The following normal read uses opcode
+PC+1 and completes the second documented execution interval. The legacy
+wrapper applies indirect AR/ARP updates and retirement at the port sample;
+explicit execute ownership through the following prefetch remains unqualified
 [ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
 timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
-(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for the
+waveform; VERIFIED_SIMULATION for legacy bus order.**
 
 Directed native testing separately holds active `DEN` and `WE` phases with
 the FPGA clock enable low and requires phase, address, strobe, PC, and cycle
@@ -55,20 +65,23 @@ completion phases. This validates the synchronous emulation contract but does
 not assert that an NMOS TMS32010 may be stopped arbitrarily or that a
 READY/wait pin exists.
 
-`TBLR` and `TBLW` now have the corresponding qualified three-cycle native
-sequence. Both begin with an opcode `MEN` read at PC and a second `MEN` read
-at PC+1 whose word is discarded. Cycle 3 replaces the external address with
+`TBLR` and `TBLW` have the corresponding primary-defined transaction
+sequence. Both begin with an opcode `MEN` prefetch at PC and a second `MEN`
+read at PC+1 whose word is discarded. The next interval replaces the external address with
 captured `ACC[11:0]`: TBLR keeps `MEN` active and writes the sampled 16-bit
 program word into the pre-resolved internal-RAM address; TBLW suppresses
 `MEN`, reads that RAM word, and asserts `WE` while driving it. At the table
-sample the instruction applies indirect AR/ARP updates, duplicates old stack
-level 2 into the bottom after the documented temporary push/pop, and retires.
-The following normal cycle returns to PC+1, so even a TBLW that overwrites
-that address changes the word subsequently executed
+sample the legacy wrapper applies indirect AR/ARP updates, duplicates old
+stack level 2 into the bottom after the documented temporary push/pop, and
+retires. The following normal read returns to PC+1 and completes the third
+documented execution interval, so even a TBLW that overwrites that address
+changes the word subsequently executed. Explicit execute ownership through
+that repeated prefetch remains unqualified
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10,
 `TBLR`/`TBLW`, and Appendix A table timing, printed pp. 2-17 and
 3-64–3-67 plus data-sheet pp. 15–16
-(PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY for the
+waveform; VERIFIED_SIMULATION for legacy bus order.**
 
 Directed native testing holds both the discarded `MEN` phase and active table
 `MEN`/`WE` phases under a low FPGA clock enable and requires phase, address,
@@ -104,6 +117,13 @@ behavior because those instructions use their extra cycle for an external
 data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
+No dedicated original-part pin waveform has been located for the two-word
+branch family. Except for the newly integrated exact `B`, the ordered reads
+below are derived from the primary word/cycle totals, following-word operand
+definitions, normal program-read rules, and legacy directed traces. They
+remain INFERRED as combined pipeline mappings even though the component facts
+are VERIFIED_PRIMARY.
+
 `BANZ` is different from those one-word stack operations: its second cycle
 is the documented second program word. The native sequence is therefore two
 ordinary `MEN` reads at opcode PC and PC+1, followed by a normal read at the
@@ -113,15 +133,22 @@ exception. Pinned MAME's one-cycle untaken shortcut is recorded as a
 functional-emulator abstraction in `SC-012`, not copied into the RTL
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BANZ`,
 printed pp. 2-2, 2-13, 3-6, and 3-16
-(PDF pp. 26, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for combined pipeline mapping.**
 
-`B` has the same two ordinary program-read cycles without BANZ's counter
-condition: exact opcode `0xf900` at PC, canonical target at PC+1, then the
-next normal read at the target. Both cycles assert only `MEN`; no `DEN` or
-`WE` transaction occurs
+Exact `B` now has explicit pipeline ownership. Opcode `0xf900` prefetches at
+PC and enters the execute slot. Its canonical target operand is read at PC+1
+during execution cycle 1 and is not marked executable. The operand redirects
+the normal `MEN` read during execution cycle 2 to the target. B retains
+execute ownership until that target word is captured, then retires; the
+target cannot execute until the following fetch interval. A directed test
+also stalls the active target read and parks malformed operands before any
+unsupported speculative fetch. No `DEN` or `WE` transaction occurs
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `B`,
 printed pp. 2-2, 2-13, 3-6, and 3-15
-(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
+implementation.**
 
 `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` also use two ordinary
 program reads at opcode PC and PC+1 on both outcomes. The next read is the
@@ -131,7 +158,8 @@ used as bus evidence
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
-**Confidence: VERIFIED_PRIMARY.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
+pipeline mapping.**
 
 `BV` also reads its opcode and following target at PC and PC+1 regardless of
 OV. The next read is the target when OV was set or PC+2 when clear. OV clears
@@ -139,7 +167,8 @@ at the taken second-cycle retirement boundary; neither cycle emits `DEN` or
 `WE`. MAME's untaken shortcut is recorded in `SC-014`
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
 printed pp. 2-2, 2-13, 3-6, and 3-23
-(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for combined pipeline mapping.**
 
 `BIOZ` likewise reads exact opcode `0xf600` at PC and its following target at
 PC+1 on both pin levels. Both are normal `MEN` reads; neither emits `DEN` or
@@ -149,7 +178,8 @@ MAME shortens the untaken path; `SC-015` records that emulator abstraction
 [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
 `BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
-**Confidence: VERIFIED_PRIMARY.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
+pipeline mapping.**
 
 `CALL` reads exact opcode `0xf800` at PC and its canonical target at PC+1 as
 two ordinary `MEN` program reads. The following normal read is at the target.
@@ -157,7 +187,8 @@ The target-word retirement pushes opcode-PC+2 onto the internal return stack;
 neither CALL cycle emits `DEN` or `WE`
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13, 3-6, and 3-26
-(PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for combined pipeline mapping.**
 
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,

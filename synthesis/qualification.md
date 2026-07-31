@@ -102,16 +102,26 @@ is a portability smoke test, not an FPGA resource estimate. The standalone
 signed multiplier accounts for 1,753 of those generic cells; unlike Quartus,
 generic Yosys synthesis does not map it to a target DSP resource.
 
+The second checked-in script directly synthesizes
+`tms32010_sequential_pipeline_slice`. After exact B integration it passes both
+structural checks with zero reported problems, retains 41 RTL checks, and
+contains 14,213 generic cells. This is 273 cells and nine checks above the
+prior one-cycle-only 13,940-cell/32-check pipeline checkpoint. The result is
+a portability smoke test for the narrow explicit-pipeline subset, not a
+Quartus fit or an instruction-complete resource estimate.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
-The successful run prepended an already installed OSS CAD Suite tool
-directory:
+The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
+release after verifying its published SHA-256
+`89ea1152ea84bc600f18cc685f721d534d1f018e09831662787865a3d79ce4aa`:
 
 ```sh
-PATH=/path/to/oss-cad-suite/bin:$PATH make synth-yosys
+make YOSYS=/path/to/oss-cad-suite/bin/yosys synth-yosys
 ```
 
-The ignored output is `build/yosys/tms32010.json`. Tool-version differences
+The ignored outputs are `build/yosys/tms32010.json` and
+`build/yosys/tms32010_sequential_pipeline.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.

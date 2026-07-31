@@ -1,6 +1,6 @@
 `default_nettype none
 
-module tb_sequential_pipeline_slice;
+module tb_sequential_pipeline_b;
   logic        clk;
   logic        initialize;
   logic        rs;
@@ -19,7 +19,6 @@ module tb_sequential_pipeline_slice;
   logic [11:0] pc;
   logic [31:0] accumulator;
   logic [15:0] auxiliary_register_0;
-  logic [15:0] auxiliary_register_1;
   logic        retired;
   logic        illegal;
   logic [31:0] cycle_count;
@@ -57,7 +56,7 @@ module tb_sequential_pipeline_slice;
     .t_register_o                  (),
     .product_register_o            (),
     .auxiliary_register_0_o        (auxiliary_register_0),
-    .auxiliary_register_1_o        (auxiliary_register_1),
+    .auxiliary_register_1_o        (),
     .auxiliary_register_pointer_o  (),
     .data_page_pointer_o           (),
     .stack_top_o                    (),
@@ -104,12 +103,13 @@ module tb_sequential_pipeline_slice;
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end
-    program_memory[0] = 16'h7012;  // LARK AR0,0x12
-    program_memory[1] = 16'h7134;  // LARK AR1,0x34
-    program_memory[2] = 16'h7ea5;  // LACK 0xa5
-    program_memory[3] = 16'h7f80;  // NOP
-    program_memory[4] = 16'hf400;  // BANZ: valid, but outside this slice
-    program_memory[5] = 16'h0123;  // branch operand must not execute
+    program_memory[0] = 16'h7ea5;  // LACK 0xa5
+    program_memory[1] = 16'hf900;  // B
+    program_memory[2] = 16'h0005;  // canonical target
+    program_memory[3] = 16'h7f89;  // skipped ZAC
+    program_memory[4] = 16'h7f8b;  // skipped SOVM
+    program_memory[5] = 16'h702a;  // LARK AR0,0x2a
+    program_memory[6] = 16'h7f80;  // NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -120,129 +120,153 @@ module tb_sequential_pipeline_slice;
     repeat (20) begin
       tick();
       require(!bus_active && men_n, "reset keeps program bus inactive");
-      require(!execute_valid && !retired, "reset keeps execute slot empty");
     end
 
     rs = 1'b0;
     advance_to_sample();
-    require(sample && !retired, "first fetch primes without retirement");
     require(
       execute_valid &&
       execute_address == 12'h000 &&
-      execute_word == 16'h7012,
-      "address-zero word enters the execute slot"
-    );
-    require(
-      pc == 12'h000 &&
-      program_address == 12'h001 &&
+      execute_word == 16'h7ea5 &&
+      !retired &&
       cycle_count == 32'd0,
-      "fetch PC advances independently while execute PC remains at zero"
-    );
-
-    tick();
-    require(
-      phase == 2'd1 &&
-      !men_n &&
-      execute_address == 12'h000 &&
-      pc == 12'h000,
-      "next fetch overlaps ownership of instruction zero"
-    );
-    clock_enable = 1'b0;
-    repeat (4) begin
-      tick();
-      require(
-        phase == 2'd1 &&
-        program_address == 12'h001 &&
-        execute_address == 12'h000 &&
-        pc == 12'h000,
-        "clock-enable stall holds distinct fetch and execute addresses"
-      );
-      require(!sample && !retired, "stall cannot sample or retire");
-    end
-    clock_enable = 1'b1;
-
-    advance_to_sample();
-    require(
-      sample && retired &&
-      auxiliary_register_0 == 16'h0012 &&
-      pc == 12'h001 &&
-      cycle_count == 32'd1,
-      "second fetch boundary retires instruction zero"
-    );
-    require(
-      execute_address == 12'h001 &&
-      execute_word == 16'h7134 &&
-      program_address == 12'h002,
-      "fetch one becomes execute while bus advances to fetch two"
-    );
-
-    advance_to_sample();
-    require(
-      retired &&
-      auxiliary_register_1 == 16'h0034 &&
-      pc == 12'h002 &&
-      execute_address == 12'h002 &&
-      program_address == 12'h003,
-      "third fetch boundary retires instruction one with one-cycle overlap"
+      "first fetch primes the one-cycle predecessor"
     );
 
     advance_to_sample();
     require(
       retired &&
       accumulator == 32'h0000_00a5 &&
-      pc == 12'h003 &&
-      execute_address == 12'h003 &&
-      program_address == 12'h004,
-      "LACK consumes execute word two while fetch owns address four"
+      execute_address == 12'h001 &&
+      execute_word == 16'hf900 &&
+      program_address == 12'h002 &&
+      pc == 12'h001 &&
+      cycle_count == 32'd1 &&
+      !pipeline_blocked,
+      "predecessor retires while B prefetch becomes execute ownership"
+    );
+
+    advance_to_sample();
+    require(
+      sample &&
+      !retired &&
+      execute_address == 12'h001 &&
+      execute_word == 16'hf900 &&
+      program_address == 12'h005 &&
+      pc == 12'h002 &&
+      cycle_count == 32'd2 &&
+      !pipeline_blocked,
+      "operand fetch completes B cycle one without becoming executable"
+    );
+    require(
+      auxiliary_register_0 == 16'h0000,
+      "target instruction has not executed during operand fetch"
+    );
+
+    tick();
+    require(
+      phase == 2'd1 &&
+      !men_n &&
+      program_address == 12'h005 &&
+      execute_address == 12'h001,
+      "B retains execute ownership while target fetch is active"
+    );
+    clock_enable = 1'b0;
+    repeat (3) begin
+      tick();
+      require(
+        phase == 2'd1 &&
+        !men_n &&
+        program_address == 12'h005 &&
+        execute_address == 12'h001 &&
+        pc == 12'h002 &&
+        cycle_count == 32'd2 &&
+        !sample &&
+        !retired,
+        "target-fetch stall holds branch, bus, PC, and cycle ownership"
+      );
+    end
+    clock_enable = 1'b1;
+
+    advance_to_sample();
+    require(
+      sample &&
+      retired &&
+      execute_address == 12'h005 &&
+      execute_word == 16'h702a &&
+      program_address == 12'h006 &&
+      pc == 12'h005 &&
+      cycle_count == 32'd3 &&
+      auxiliary_register_0 == 16'h0000 &&
+      !pipeline_blocked &&
+      !illegal,
+      "target fetch retires B and only primes the target instruction"
     );
 
     advance_to_sample();
     require(
       retired &&
-      pc == 12'h004 &&
+      execute_address == 12'h006 &&
+      program_address == 12'h007 &&
+      pc == 12'h006 &&
       cycle_count == 32'd4 &&
-      execute_address == 12'h004 &&
-      execute_word == 16'hf400 &&
-      program_address == 12'h005,
-      "NOP retires while unsupported BANZ enters execute ownership"
-    );
-    require(
-      pipeline_blocked && !illegal,
-      "unsupported multicycle word parks before timing is invented"
+      auxiliary_register_0 == 16'h002a,
+      "target instruction executes during the following fetch"
     );
 
-    repeat (8) begin
+    rs = 1'b1;
+    repeat (12) begin
+      tick();
+    end
+    require(
+      !bus_active &&
+      !execute_valid &&
+      pc == 12'h000 &&
+      cycle_count == 32'd0,
+      "recognized reset empties branch and fetch ownership"
+    );
+
+    program_memory[0] = 16'hf900;  // B
+    program_memory[1] = 16'hf123;  // malformed upper nibble
+    rs = 1'b0;
+    advance_to_sample();
+    require(
+      execute_valid &&
+      execute_address == 12'h000 &&
+      execute_word == 16'hf900 &&
+      program_address == 12'h001 &&
+      !pipeline_blocked,
+      "malformed case still primes the exact B opcode"
+    );
+
+    advance_to_sample();
+    require(
+      !retired &&
+      execute_address == 12'h000 &&
+      execute_word == 16'hf900 &&
+      program_address == 12'h001 &&
+      pc == 12'h001 &&
+      cycle_count == 32'd1 &&
+      pipeline_blocked &&
+      !illegal,
+      "malformed operand parks before an unsupported speculative fetch"
+    );
+    repeat (4) begin
       tick();
       require(
         phase == 2'd0 &&
-        program_address == 12'h005 &&
-        execute_address == 12'h004 &&
-        pc == 12'h004 &&
-        cycle_count == 32'd4,
-        "blocked slice parks fetch, execute, and architectural ownership"
+        program_address == 12'h001 &&
+        execute_address == 12'h000 &&
+        pc == 12'h001 &&
+        cycle_count == 32'd1 &&
+        pipeline_blocked &&
+        !sample &&
+        !retired,
+        "malformed B remains visibly parked without another bus cycle"
       );
-      require(
-        pipeline_blocked && men_n && !sample && !retired && !illegal,
-        "blocked slice cannot access or retire the BANZ operand"
-      );
-      require(accumulator == 32'h0000_00a5,
-              "parked BANZ operand cannot affect the accumulator");
     end
 
-    rs = 1'b1;
-    repeat (4) begin
-      tick();
-    end
-    require(
-      !pipeline_blocked &&
-      !execute_valid &&
-      !bus_active &&
-      pc == 12'h000 &&
-      cycle_count == 32'd0,
-      "recognized reset recovers a parked pipeline and empties ownership"
-    );
-
-    $display("PASS tb_sequential_pipeline_slice");
+    $display("PASS tb_sequential_pipeline_b");
     $finish;
   end
 endmodule

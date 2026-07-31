@@ -65,11 +65,15 @@ formal:
 
 synth-yosys:
 	@if [ -f synthesis/yosys/tms32010.ys ]; then \
-	  command -v "$(YOSYS)" >/dev/null 2>&1 || { echo "ERROR: Yosys is required"; exit 1; }; \
-	  mkdir -p build/yosys; \
-	  "$(YOSYS)" -s synthesis/yosys/tms32010.ys; \
+		command -v "$(YOSYS)" >/dev/null 2>&1 || { echo "ERROR: Yosys is required"; exit 1; }; \
+		mkdir -p build/yosys; \
+		for script in \
+			synthesis/yosys/tms32010.ys \
+			synthesis/yosys/tms32010_sequential_pipeline.ys; do \
+			"$(YOSYS)" -s "$$script" || exit 1; \
+		done; \
 	else \
-	  echo "SKIP-EVIDENCE: no Yosys synthesis script exists yet"; \
+		echo "SKIP-EVIDENCE: no Yosys synthesis script exists yet"; \
 	fi
 
 synth-quartus:

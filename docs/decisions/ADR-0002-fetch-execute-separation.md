@@ -33,10 +33,13 @@ The final sequencer will represent fetch and execute ownership explicitly:
   boundary;
 - validity, not a convenient no-op word, represents bubbles and dummy cycles.
 
-The first implementation is the standalone synthesizable
-`tms32010_fetch_execute` register. It is not yet connected to
-`tms32010_core`; integration will proceed only when directed traces preserve
-the already qualified branch, I/O, table, reset, and interrupt bus sequences.
+The first implementation was the standalone synthesizable
+`tms32010_fetch_execute` register. The
+`tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
+the qualified one-cycle subset and exact unconditional `B`. Other
+multicycle integration will proceed only when directed traces preserve the
+already qualified I/O, table, reset, and interrupt bus sequences and map
+their execution intervals to the explicit pipeline.
 
 ## Consequences
 
@@ -48,6 +51,10 @@ the already qualified branch, I/O, table, reset, and interrupt bus sequences.
   transaction and must not overwrite an incomplete execute slot.
 - Existing retirement-mapped core results remain partial evidence; adding this
   register alone does not make the core cycle-accurate.
+- Exact `B` retains its execute slot while the following operand is fetched,
+  then retires only as the redirected target fetch completes. The operand is
+  never marked executable, and the target instruction cannot execute at the
+  branch-retirement boundary.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 
@@ -61,4 +68,8 @@ the already qualified branch, I/O, table, reset, and interrupt bus sequences.
   fetch N+2 is a nonexecuting dummy before vector 2.
 
 These claims use
-[ti-tms32010-users-guide-spru001b]. **Confidence: VERIFIED_PRIMARY.**
+[ti-tms32010-users-guide-spru001b]. **Confidence: VERIFIED_PRIMARY for
+separate fetch/execute ownership and the table/interrupt dummy-fetch rules;
+INFERRED for the exact B execute-interval mapping synthesized from Figure
+2-2, Table 3-2, and the individual B page because TI supplies no dedicated B
+pin waveform.**

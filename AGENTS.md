@@ -252,11 +252,15 @@ The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
-`tms32010_sequential_pipeline_slice` now connects it to the partial core only
-for reset priming and the 38 already-qualified one-cycle operation families.
-Its full-state offset differential covers the 43-word directed one-cycle
-stream and parks before a multicycle branch. Multicycle, interrupt, I/O, and
-table pipeline integration remain absent; do not generalize this narrow
+`tms32010_sequential_pipeline_slice` now connects it to the partial core for
+reset priming, the 38 already-qualified one-cycle operation families, and
+exact unconditional B. B retains execute ownership through a nonexecutable
+operand fetch and redirected target fetch, retiring only as the target enters
+the execute slot; this combined interval mapping is INFERRED from primary
+component facts because no dedicated B pin waveform has been located. Its
+full-state offset differential covers the 43-word directed one-cycle stream
+and parks before unsupported BANZ. Other multicycle, interrupt, I/O, and
+table pipeline integration remains absent; do not generalize this narrow
 evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover

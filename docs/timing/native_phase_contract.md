@@ -14,6 +14,28 @@ Source for this document:
 memory/peripheral, reset, interrupt, and BIO timing, printed data-sheet
 pp. 13–20 (PDF pp. 369–376)]. **Confidence: VERIFIED_PRIMARY.**
 
+## Cycle labels and prefetch boundaries
+
+TI's instruction-specific diagrams label the current opcode transaction
+“instruction prefetch,” then number the execution intervals that follow it.
+For example, Figure 2-10 shows four program-bus transactions for a
+three-cycle `TBLR`: opcode prefetch, dummy prefetch, table transfer, and next
+instruction prefetch. The three documented cycles are the three elapsed
+intervals from completion of the current opcode prefetch through completion
+of the next opcode prefetch. Figure 2-9 applies the same convention to the
+two-cycle `IN`/`OUT` sequence.
+
+The legacy `tms32010_phase_slice` drives the correct ordered transactions but
+accounts and retires them at fetch-sample boundaries without a distinct
+execute slot. Its “opcode cycle” terminology must therefore not be read as
+TI's numbered execution-cycle label or as complete pipeline evidence. The
+explicit `tms32010_sequential_pipeline_slice` currently maps this convention
+only for sequential one-cycle instructions and exact `B`
+[ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
+printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
+**Confidence: VERIFIED_PRIMARY for the source labels and transaction
+intervals; implementation scope VERIFIED_SIMULATION.**
+
 ## Clock and normal program read
 
 One `CLKOUT` period is one processor machine cycle and four crystal/input-clock
@@ -51,12 +73,12 @@ Characterization-only minima must not be promoted to production guarantees.
 
 `TBLR` occupies three instruction cycles and creates this program-bus order:
 
-| Cycle | Address role | Data-bus role | Strobe |
-|---:|---|---|---|
-| 1 | `TBLR` instruction prefetch | instruction input | `MEN` read |
-| 2 | dummy next-instruction prefetch | instruction input, discarded | `MEN` read |
-| 3 | program address from `ACC[11:0]` | table data input | `MEN` read |
-| following | same next-instruction address as cycle 2 | instruction input, retained | `MEN` read |
+| Boundary/interval | Address role | Data-bus role | Strobe |
+|---|---|---|---|
+| opcode prefetch boundary | `TBLR` instruction prefetch | instruction input | `MEN` read |
+| execution cycle 1 | dummy next-instruction prefetch | instruction input, discarded | `MEN` read |
+| execution cycle 2 | program address from `ACC[11:0]` | table data input | `MEN` read |
+| execution cycle 3 | same next-instruction address as cycle 1 | instruction input, retained | `MEN` read |
 
 The dummy word is fetched externally and then fetched again; suppressing it
 would be externally observable and incorrect.
@@ -65,12 +87,12 @@ would be externally observable and incorrect.
 
 `TBLW` also occupies three cycles:
 
-| Cycle | Address/data role | Strobe behavior |
-|---:|---|---|
-| 1 | `TBLW` instruction prefetch | `MEN` read |
-| 2 | dummy next-instruction prefetch | `MEN` read; word discarded |
-| 3 | `ACC[11:0]` address and data-memory word driven | `MEN` inactive, `WE` active-low pulse |
-| following | repeat next-instruction prefetch | `MEN` read |
+| Boundary/interval | Address/data role | Strobe behavior |
+|---|---|---|
+| opcode prefetch boundary | `TBLW` instruction prefetch | `MEN` read |
+| execution cycle 1 | dummy next-instruction prefetch | `MEN` read; word discarded |
+| execution cycle 2 | `ACC[11:0]` address and data-memory word driven | `MEN` inactive, `WE` active-low pulse |
+| execution cycle 3 | repeat next-instruction prefetch | `MEN` read |
 
 The processor begins driving output data before `WE` asserts, holds it through
 the falling `CLKOUT` boundary, then releases it after `WE` deasserts. Exact
@@ -89,21 +111,26 @@ The qualified synchronous phase mapping for both table instructions is:
 | TBLW table, phases 1–3 | captured `ACC[11:0]` | `WE` | complete selected-RAM-to-program write |
 | following, phase 0 | opcode PC + 1 | none | repeat discarded following-address setup |
 
-The opcode and discarded samples increment the architectural cycle count
-without retiring. The table sample performs the RAM effect, indirect AR/ARP
-post-modification, and documented final stack-bottom duplication, then retires
-at exactly three cycles. A low FPGA clock enable holds every active table
-phase, address, strobe, write datum, pending operation, and architectural
-state. `sim/bus/tb_table_transfer_phase.sv` asserts every row, including
-`MEN`/`DEN`/`WE` exclusivity and the repeated following address.
-**Confidence: VERIFIED_PRIMARY for the logical waveform; VERIFIED_HARDWARE is
-not claimed.**
+The legacy wrapper's opcode, discarded, and table samples increment its
+architectural cycle counter, and its table sample performs the RAM effect,
+indirect AR/ARP post-modification, and documented final stack-bottom
+duplication. It then presents the repeated next address. This preserves the
+three-period bus spacing and all four ordered transactions, but retirement is
+still attached to the table sample rather than held through completion of the
+repeated next-instruction prefetch. A low FPGA clock enable holds every active
+table phase, address, strobe, write datum, pending operation, and
+architectural state. `sim/bus/tb_table_transfer_phase.sv` asserts the bus
+rows, including `MEN`/`DEN`/`WE` exclusivity and the repeated following
+address; explicit execute ownership remains unqualified.
+**Confidence: VERIFIED_PRIMARY for the logical waveform;
+VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## I/O reads and writes
 
-`IN` and `OUT` each occupy two cycles. Cycle 1 is the instruction prefetch.
-During cycle 2 `MEN` remains inactive, the selected port is on `PA2..PA0`,
-and upper address pins are zero.
+`IN` and `OUT` each occupy two execution intervals after the opcode-prefetch
+boundary. During execution cycle 1, `MEN` remains inactive, the selected port
+is on `PA2..PA0`, and upper address pins are zero. Execution cycle 2 is the
+next instruction prefetch.
 
 - `IN`: `DEN` asserts active-low around the falling-edge sampling boundary;
   external data observes the same 50 ns setup and 0 ns hold requirements.
@@ -124,25 +151,38 @@ The qualified synchronous phase mapping is:
 | port, phases 1–3 | `{9'b0, ppp}` | `DEN` for `IN`; `WE` for `OUT` | sample input or complete output at phase-3 falling boundary |
 | following, phase 0 | opcode PC + 1 | none | next program-address setup |
 
-The opcode sample advances architectural PC to PC+1 but does not retire the
-instruction. The port-cycle sample performs the internal RAM write for `IN`
-or completes the RAM-read-to-port transfer for `OUT`, applies indirect AR/ARP
-post-modification, increments the architectural cycle total a second time,
-and retires. A low FPGA clock enable holds the current native phase, address,
-strobe, pending operation, write data, and architectural state; this is a
-synchronous emulation control, not an undocumented original READY pin.
+In the legacy wrapper, the opcode sample advances architectural PC to PC+1
+without retirement. The port-cycle sample performs the internal RAM write for
+`IN` or completes the RAM-read-to-port transfer for `OUT`, applies indirect
+AR/ARP post-modification, increments the cycle total a second time, and
+retires while presenting the next program address. This preserves the
+two-period bus spacing but does not yet retain execute ownership through
+completion of the next-instruction prefetch. A low FPGA clock enable holds
+the current native phase, address, strobe, pending operation, write data, and
+architectural state; this is a synchronous emulation control, not an
+undocumented original READY pin.
 
-`sim/bus/tb_io_phase.sv` asserts every row above, including mutually
+`sim/bus/tb_io_phase.sv` asserts the legacy bus rows above, including mutually
 exclusive `MEN`/`DEN`/`WE`, input changes before the enabled sample, stable
 output data, and the next program address. Analog delay values remain wrapper
-constraints rather than RTL delays. **Confidence: VERIFIED_PRIMARY for the
-logical waveform; VERIFIED_HARDWARE is not claimed.**
+constraints rather than RTL delays. Explicit execute ownership remains
+unqualified. **Confidence: VERIFIED_PRIMARY for the logical waveform;
+VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
+Except for exact `B`, the branch-family tables below describe transaction
+order in the legacy wrapper. Their numbered read slots are not TI's
+post-prefetch execution-cycle labels. TI establishes two words, two cycles,
+the following target word, and ordinary program-memory fetch behavior, but no
+located original-part document supplies a dedicated branch pin waveform.
+Consequently, the combined read/execute/commit mapping for these still
+unintegrated families is INFERRED even where each component fact is
+VERIFIED_PRIMARY.
+
 `BANZ` uses two consecutive normal program reads:
 
-| Cycle | Address role | Result at falling-edge sample |
+| Legacy read slot | Address role | Result at falling-edge sample |
 |---:|---|---|
 | 1 | opcode PC | recognize `0xf400`; advance PC/address to the following word |
 | 2 | opcode PC + 1 | sample the 12-bit target, test old selected `AR[8:0]`, decrement that field modulo 512, and select the next address |
@@ -154,30 +194,36 @@ the normal address/`MEN`/falling-edge relationship above; BANZ adds no
 `DEN` or `WE` phase
 [ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1, Table 3-2, and `BANZ`,
 printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
-(PDF pp. 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for the
+component facts; INFERRED for combined transaction/commit mapping.**
 
 ## B
 
-`B` also uses two consecutive normal program reads:
+The explicit pipeline drives `B` through these source-derived intervals:
 
-| Cycle | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize `0xf900`; advance PC/address to the following word |
-| 2 | opcode PC + 1 | sample the canonical 12-bit target, load PC, and retire |
-| following | target | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize `0xf900`; B enters execute ownership |
+| execution cycle 1 | opcode PC + 1 | sample canonical target operand; B remains executing and redirects next fetch |
+| execution cycle 2 | target | fetch target instruction; load PC, retire B, and capture target into execute slot |
 
 Each read uses the normal address/`MEN`/falling-edge relationship and has no
-`DEN` or `WE` phase. A clock-enable stall in the implementation holds the
-active target-word phase, address, PC, and pending operation
+`DEN` or `WE` phase. In the explicit pipeline, opcode-prefetch completion
+places B in execute ownership; the operand read occupies execution cycle 1;
+the redirected target-instruction read occupies execution cycle 2; and B
+retires as that target fetch completes. A clock-enable stall holds the active
+target fetch, address, PC, and B ownership
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `B`,
 printed pp. 2-2, 2-13, 3-6, and 3-15
-(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY for the
+component facts; INFERRED for the combined execute-interval mapping.**
 
 ## Accumulator-conditional branches
 
-`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use the same native shape:
+The legacy wrapper gives `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` the
+same ordered-read shape:
 
-| Cycle | Address role | Result at falling-edge sample |
+| Legacy read slot | Address role | Result at falling-edge sample |
 |---:|---|---|
 | 1 | opcode PC | recognize the exact condition; advance PC/address to the following word |
 | 2 | opcode PC + 1 | sample the canonical target, test unchanged 32-bit ACC, select target or opcode PC + 2, and retire |
@@ -189,13 +235,14 @@ cover both outcomes and an active target-phase stall for all six instructions
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
-**Confidence: VERIFIED_PRIMARY.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
+transaction/commit mapping.**
 
 ## Branch on overflow
 
-`BV` uses the same native shape:
+The legacy wrapper gives `BV` the same ordered-read shape:
 
-| Cycle | Address role | Result at falling-edge sample |
+| Legacy read slot | Address role | Result at falling-edge sample |
 |---:|---|---|
 | 1 | opcode PC | recognize exact `0xf500`; advance PC/address to the following word without changing OV |
 | 2 | opcode PC + 1 | sample the canonical target; if OV was set, select target and clear OV, otherwise select opcode PC + 2; retire |
@@ -206,13 +253,15 @@ phase holds PC, address, pending operation, and OV. Directed phase tests cover
 both outcomes and verify no data transaction
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
 printed pp. 2-2, 2-13, 3-6, and 3-23
-(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY for component
+facts; INFERRED for combined transaction/commit mapping.**
 
 ## Branch on I/O status
 
-`BIOZ` uses two normal program reads and samples the raw active-low pin:
+The legacy wrapper gives `BIOZ` two normal program reads and samples the raw
+active-low pin:
 
-| Cycle | Address role | Result at falling-edge sample |
+| Legacy read slot | Address role | Result at falling-edge sample |
 |---:|---|---|
 | 1 | opcode PC | recognize exact `0xf600`; advance PC/address to the following word; do not latch BIO |
 | 2 | opcode PC + 1 | sample canonical target and live BIO; low selects target, high selects opcode PC + 2; retire |
@@ -227,14 +276,15 @@ low before retirement
 [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
 `BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
-**Confidence: VERIFIED_PRIMARY.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
+transaction/commit mapping.**
 
 ## Direct subroutine call
 
-`CALL` has the same two normal program reads as an unconditional branch and
-adds a return-stack push:
+The legacy wrapper gives `CALL` the same two normal program reads as an
+unconditional branch and adds a return-stack push:
 
-| Cycle | Address role | Result at falling-edge sample |
+| Legacy read slot | Address role | Result at falling-edge sample |
 |---:|---|---|
 | 1 | opcode PC | recognize exact `0xf800`; advance PC/address to the following target word; do not push |
 | 2 | opcode PC + 1 | sample canonical target; push opcode PC + 2, select target, and retire |
@@ -246,7 +296,8 @@ operation, and all stack levels. Directed phase tests require an ordinary
 falling-edge sample
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1–2.6.2, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13–2-14, 3-6, and 3-26
-(PDF pp. 26, 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 26, 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for
+component facts; INFERRED for combined transaction/commit mapping.**
 
 ## Reset assertion and release
 

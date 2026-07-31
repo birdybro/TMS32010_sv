@@ -17,6 +17,20 @@ This is evidence for architectural cycle totals, not yet for pin-level
 subphases. Every individual row, addressing mode, conditional outcome, and bus
 trace still needs an automated assertion before `TIMING-001` can complete.
 
+TI's explicit I/O and table figures place the current instruction's opcode
+prefetch before the numbered execution intervals. Thus a two-cycle `IN`
+spans opcode-prefetch completion to next-instruction-prefetch completion via
+one intervening port transfer, while a three-cycle `TBLR` spans the
+corresponding boundary via dummy, table-transfer, and repeated-prefetch
+intervals. The legacy phase wrapper preserves those external transactions and
+numeric totals but attaches retirement to fetch samples without a distinct
+execute slot. Only the sequential one-cycle subset and exact `B` currently
+have explicit fetch/execute ownership
+[ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
+printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
+**Confidence: VERIFIED_PRIMARY for source cycle labels; VERIFIED_SIMULATION
+for the stated implementation scope.**
+
 The individual `PUSH` and `POP` pages independently confirm two cycles and one
 word. Directed model tests assert the two-cycle totals and exact stack results
 transcribed in `docs/architecture/instruction_set.md`. Those tests deliberately
@@ -35,6 +49,12 @@ No native second-cycle program activity is claimed under `OQ-007`
 UNKNOWN for the second-cycle external subphases.**
 
 ## Qualified timing tests
+
+Unless explicitly identified as an explicit-pipeline test below, the
+multicycle tests use `tms32010_phase_slice`. They qualify numeric totals,
+ordered transactions, stalls, and architectural effects in that legacy
+retirement-mapped wrapper; they do not independently qualify TI's overlapped
+execute-slot ownership.
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
@@ -112,17 +132,22 @@ the next instruction cannot use ACC. Exact result availability for a
 violating schedule and the arithmetic stage responsible for OV remain
 `OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
 
-Directed `TBLR`/`TBLW` tests assert exactly three complete machine cycles.
-Cycle 1 samples the opcode, cycle 2 reads and discards PC+1, and cycle 3
-transfers at `ACC[11:0]` under `MEN` or `WE`. Retirement, indirect AR/ARP
-updates, RAM effects, and final stack-bottom duplication occur only at the
-third sample; the next cycle returns to PC+1. Native tests stall both the
+Directed legacy `TBLR`/`TBLW` tests assert three sampled transactions before
+retirement: opcode prefetch, discarded PC+1 prefetch, and transfer at
+`ACC[11:0]` under `MEN` or `WE`; they then assert that the next transaction
+returns to PC+1. This gives the required three-period spacing between the
+opcode-prefetch and repeated-next-prefetch boundaries. The current wrapper
+applies retirement, indirect AR/ARP updates, RAM effects, and final
+stack-bottom duplication at the table-transfer sample rather than retaining
+an explicit execute slot through the repeated prefetch. Tests stall both the
 discarded-prefetch and table phases, while differential tests compare the
-three program addresses, direction, cycle total, RAM, stack, and TBLW program
-mutation
+ordered program addresses, direction, numeric total, RAM, stack, and TBLW
+program mutation
 [ti-tms32010-users-guide-spru001b, §2.8.2, Table 3-2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17, 3-7, and 3-64–3-67
-(PDF pp. 41, 57, and 114–117)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 41, 57, and 114–117)]. **Confidence: VERIFIED_PRIMARY for source
+transactions and numeric total; VERIFIED_SIMULATION for legacy bus order;
+explicit pipeline ownership unqualified.**
 
 Directed `BANZ` tests assert two complete program-read cycles on both taken
 and untaken paths. Cycle 1 samples `0xf400`; cycle 2 samples the target word
@@ -131,16 +156,23 @@ increased by two and the next bus address equal to target or PC+2. Tests also
 hold the clock enable during cycle 2 and require every pending state and
 native pin to remain stable
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BANZ`, printed pp. 3-6 and
-3-16 (PDF pp. 56 and 66)]. **Confidence: VERIFIED_PRIMARY.**
+3-16 (PDF pp. 56 and 66)]. **Confidence: VERIFIED_PRIMARY for component
+facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
+unqualified.**
 
-Directed `B` tests assert two complete program-read cycles: cycle 1 samples
-exact opcode `0xf900`, cycle 2 samples the canonical target at PC+1, and the
-second sample retires with PC and the next bus address set to that target.
-Tests cover a second-cycle clock-enable hold, operand-fetch PC wrap, successive
-branches, state preservation, skipped fall-through words, and
-trap-before-effects for a noncanonical target
-[ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
-3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY.**
+The explicit-pipeline `B` test primes exact opcode `0xf900`, keeps B in the
+execute slot while the canonical PC+1 operand is fetched during execution
+cycle 1, redirects and fetches the target instruction during execution cycle
+2, and retires B only as that target word enters the execute slot. The target
+instruction's effects occur during the following fetch. The test stalls the
+target fetch, proves no early target effect, and parks a malformed operand
+before any unsupported speculative address. Legacy tests retain additional
+operand-PC wrap, successive-branch, state-preservation, and skipped-fallthrough
+coverage
+[ti-tms32010-users-guide-spru001b, §2.1.1 and Figure 2-2, Table 3-2, and
+`B`, printed pp. 2-3, 3-6, and 3-15 (PDF pp. 27, 56, and 65)].
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for their
+combined B interval mapping; VERIFIED_SIMULATION for the implementation.**
 
 Directed `BGEZ`/`BGZ`/`BLEZ`/`BLZ`/`BNZ`/`BZ` tests assert the same two
 complete program reads and second-sample retirement for both predicate
@@ -150,14 +182,18 @@ most-negative boundaries. Native tests assert the ordinary `MEN` target phase
 and clock-enable stability for every taken and untaken case
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
-(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY for
+component facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline
+ownership unqualified.**
 
 Directed `BV` tests assert two complete program reads for OV set and clear,
 with OV stable through the opcode cycle and any target-phase stall. A taken
 BV clears OV only at second-sample retirement; an untaken BV retains clear OV
 and still consumes that sample. Malformed target words trap before the clear
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
-3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
+3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
+facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
+unqualified.**
 
 Directed `BIOZ` tests assert two complete program reads for BIO low and high.
 The opcode cycle never retires. The target-word sample uses the live,
@@ -167,7 +203,9 @@ and stall the active target phase, guarding TI's every-cycle, not-latched
 sampling rule. Malformed target words trap before applying the pin predicate
 [ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, `BIOZ`, and Appendix A
 BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
-(PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY for component
+facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
+unqualified.**
 
 Directed `CALL` tests assert the opcode and canonical target as two complete
 program reads, no stack mutation at the opcode sample, and one
@@ -177,7 +215,9 @@ old-bottom discard, return-address wrap, state preservation, and malformed
 target trap-before-push
 [ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
 printed pp. 2-13–2-14, 3-6, and 3-26
-(PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
+facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
+unqualified.**
 
 Directed model tests assert RET's two-cycle total, old-TOS PC load, complete
 four-level pop with old-bottom duplication, and EINT protection through RET
@@ -191,17 +231,22 @@ only the opcode fetch. **Confidence: VERIFIED_PRIMARY for the numeric cycle
 total and architectural boundary; UNKNOWN for the second external cycle
 under `OQ-007`.**
 
-Directed `IN`/`OUT` tests assert one opcode `MEN` cycle followed by exactly
-one port cycle. The opcode sample advances PC without retirement. The second
-sample performs the selected `DEN` input or `WE` output transaction, commits
-the internal RAM effect and any common indirect AR/ARP update, increments the
-cycle total to two, and retires. Native tests cover address setup, all three
+Directed legacy `IN`/`OUT` tests assert an opcode `MEN` transaction followed
+by exactly one port transaction, then resumption at opcode PC+1. The opcode
+sample advances PC without retirement. The port sample performs the selected
+`DEN` input or `WE` output transaction, commits the internal RAM effect and
+any common indirect AR/ARP update, increments the numeric total to two, and
+retires in the legacy wrapper. Native tests cover address setup, all three
 mutually exclusive strobes, a stalled active phase, live input data, stable
-output data, and resumption at opcode PC+1. Model/RTL differential traces
-compare both logical cycles and the I/O transaction data
+output data, and the following prefetch address. Model/RTL differential
+traces compare both logical transactions and the I/O data. Explicit-pipeline
+integration must retain IN/OUT ownership through completion of that following
+prefetch before these become full timing evidence
 [ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
 IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
-(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for the
+waveform and total; VERIFIED_SIMULATION for legacy bus order; explicit
+pipeline ownership unqualified.**
 
 ## Open timing dimensions
 
@@ -212,7 +257,7 @@ IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
-- table-operation discarded fetch order;
+- explicit execute ownership through table-operation repeated prefetch;
 - complete interrupt fetch/execute overlap, request ownership within native
   subphases, unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
   CALA/RET sequencing, and the provisional DINT-at-final-boundary ordering

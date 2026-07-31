@@ -433,14 +433,21 @@ objective passing evidence.
   sequential replacement, stall, multicycle-retention, branch-flush,
   interrupt-dummy/vector, and recognized-reset tests plus independent Yosys
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
-  it to the core only for reset priming and decoded one-cycle operation
-  families. A directed test proves first-fetch nonretirement, distinct
+  it to the core for reset priming, decoded one-cycle operation families, and
+  exact unconditional B. B retains execute ownership across a nonexecutable
+  PC+1 operand fetch and the redirected target-instruction fetch, retires only
+  as the target enters the execute slot, and cannot apply the target's effects
+  until the following fetch interval. A directed test covers target-fetch
+  stall, no early target effect, and conservative malformed-operand parking.
+  This combined interval mapping is INFERRED from Figure 2-2, Table 3-2, and
+  the B page because no dedicated B pin waveform has been located.
+  The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
-  parking on `B`, and reset recovery. An offset differential runs the full
+  parking on unsupported `BANZ`, and reset recovery. An offset differential runs the full
   existing 43-word/38-family one-cycle program and compares PC, ACC, T, P,
   both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count, and illegal
-  state after every pipelined retirement. Branch, I/O, table, and interrupt
-  pipeline integration remain absent.
+  state after every pipelined retirement. Other branch, I/O, table, and
+  interrupt pipeline integration remain absent.
 
 ## Milestone 9 — Program-memory interface
 
@@ -460,12 +467,15 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all 37
+  release delay. The legacy partial wrapper integrates those phases with all 38
   supported one-cycle instructions plus both cycles of eleven qualified
   control-flow instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
-  traps and stalls. Every qualified control-flow path verifies opcode/target
-  addresses and target-read stalls; conditional branches cover both outcomes.
+  traps and stalls. Every legacy-qualified control-flow path verifies
+  opcode/target addresses and target-read stalls; conditional branches cover
+  both outcomes, but those tests do not establish separate execute ownership.
+  The explicit pipeline now covers exact B's operand and redirected target
+  fetches, including target stall and no early target execution.
   CALL also verifies no early push and its target-sample stack commit. IN/OUT
   verify an ordinary opcode read before the distinct I/O cycle without
   changing the qualified normal-program-read primitive. TBLR/TBLW verify
@@ -477,8 +487,9 @@ objective passing evidence.
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
-  indirect-call/return, general pipeline overlap, interrupt execute ownership,
-  and unsupported CALA/RET/PUSH/POP cycles remain. Do not collapse Harvard
+  indirect-call/return, pipeline ownership for other branches/I/O/table,
+  interrupt execute ownership, and unsupported CALA/RET/PUSH/POP cycles
+  remain. Do not collapse Harvard
   spaces in the native interface.
 
 ## Milestone 10 — Data-memory interface
@@ -814,6 +825,14 @@ objective passing evidence.
   TBLR/TBLW assert one MEN opcode read, one discarded MEN PC+1 read, one
   ACC-addressed MEN/WE table cycle, third-cycle retirement and updates,
   strobe/data stability during stalls, and the repeated PC+1 fetch.
+  Primary Figures 2-9/2-10 label opcode prefetch separately from the numbered
+  execution intervals; the legacy wrapper preserves the bus sequence and
+  totals but does not yet retain IN/OUT or TBL execute ownership through the
+  following/repeated prefetch. Exact B is the first multicycle case mapped
+  into explicit ownership: operand fetch is execution cycle 1 and target
+  instruction fetch is execution cycle 2. The mapping is INFERRED from
+  primary component facts and directed-tested, not presented as a dedicated
+  primary pin waveform.
   Other control flow remains. CALA is model-asserted as a
   primary-confirmed one-word/two-cycle computed call, but its second-cycle
   external sequence remains open under `OQ-007`. PUSH/POP are model-asserted as
@@ -969,7 +988,9 @@ objective passing evidence.
   TimeQuest reports zero unconstrained categories; this is still not wrapper
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
-  flip-flops/muxes. Full-core
+  flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
+  harness (13,514 generic cells/26 checks) and the exact-B pipeline slice
+  (14,213 cells/41 checks), each with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 

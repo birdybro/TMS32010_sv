@@ -26,13 +26,15 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The main synthesis harness still targets the legacy multicycle phase wrapper.
-The separately invoked Yosys 0.67+111 synthesis of
-`tms32010_sequential_pipeline_slice` passes pre/post structural checks with
-13,940 generic cells, 32 retained checks, and no inferred memory blocks. This
-standalone result includes the core, a second decoder, program bus, and
-fetch/execute register. It is not a Quartus resource or timing result and does
-not qualify the still-absent multicycle pipeline integration.
+The command runs two checked-in scripts. The main synthesis harness targets
+the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
+The second directly targets `tms32010_sequential_pipeline_slice` and writes
+`build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
+a second decoder, program bus, and fetch/execute register. It is not a
+Quartus resource or timing result and qualifies only the pipeline subset
+documented in `docs/architecture/pipeline.md`. After exact B integration,
+Yosys 0.67+111 reports 14,213 generic cells, 41 retained checks, and zero
+structural-check problems.
 
 ## Quartus
 

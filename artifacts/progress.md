@@ -1,11 +1,11 @@
 # Progress summary
 
-- **Current milestone:** sequential fetch/execute integration
+- **Current milestone:** multicycle fetch/execute integration
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 12 native bus/phase tests, including two explicit pipeline tests; one
+  tests; 13 native bus/phase tests, including three explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -33,9 +33,10 @@
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
-  sequential pipeline wrapper independently passes at 13,940 generic cells
-  with 32 retained checks and no structural problems; this is not a Quartus
-  fit or complete-pipeline result
+  `make synth-yosys` now also runs the sequential pipeline script, which
+  independently passes at 14,213 generic cells with 41 retained checks and
+  no structural problems after exact B integration; this is not a Quartus fit
+  or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -77,7 +78,17 @@
   `/BIOS`; the separate `320IRQ` net serves the 68000-side interrupt path;
   TI Figure 2-2 explicitly launches the next prefetch while a previously
   fetched instruction begins/continues execution, requiring distinct
-  fetch/execute validity and address state in the final sequencer;
+  fetch/execute validity and address state in the final sequencer; TI Figures
+  2-9 and 2-10 consistently label the current opcode transaction as
+  instruction prefetch and count the following execution intervals, with the
+  next instruction prefetch occupying the final interval; combining those
+  verified-primary conventions with B's verified two-word/two-cycle
+  definition yields an explicitly labeled inferred pipeline mapping in which
+  the operand fetch is execution cycle 1, the redirected target fetch is
+  execution cycle 2, and B retires only as that target instruction is
+  captured; directed RTL evidence now verifies that ownership mapping,
+  operand nonexecution, target-effect deferral, stalls, and conservative
+  malformed-operand parking;
   ADD sign-extends and left-shifts its RAM operand before
   full-accumulator addition, applies sticky OV, wraps with OVM clear, and
   saturates at either signed endpoint with OVM set; SUB uses the same signed
@@ -217,7 +228,8 @@
   cycles of TBLR/TBLW, checking family-specific logical bus activity,
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
-- **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
+- **Unresolved issues:** pipeline ownership beyond sequential one-cycle
+  instructions and exact B, interrupt execute-overlap
   ownership and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
@@ -230,10 +242,10 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** integrate ADR-0002 fetch/execute state incrementally, starting
-  from the now-qualified reset priming and sequential one-cycle wrapper into
-  the first two-word branch path without changing its already qualified two
-  external reads; continue
+- **Next task:** extend explicit pipeline ownership from exact B to BANZ under
+  a directed operand/condition/target-fetch contract, preserving the
+  modulo-512 decrement and both outcomes without promoting the inferred
+  branch timing synthesis to primary proof; then continue
   `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
@@ -252,4 +264,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c319996`
+  `8115fcf`

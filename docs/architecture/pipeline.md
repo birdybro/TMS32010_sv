@@ -38,8 +38,8 @@ operand/dummy reads carry no valid instruction; an incomplete instruction
 cannot be overwritten; and a redirect flushes the old path. Its directed test
 covers reset priming, Figure 2-2 sequential replacement, a retained
 multicycle slot, branch redirection, and the Figure 2-12 dummy/vector
-transition. It is not yet connected to the partial core, so these tests prove
-the building block rather than the integrated pipeline
+transition. These tests prove the building block independently of its narrow
+core integration
 [`docs/decisions/ADR-0002-fetch-execute-separation.md`,
 `sim/unit/tb_fetch_execute.sv`].
 A 12-step bounded proof additionally checks exact arbitrary-word capture,
@@ -55,20 +55,30 @@ The first core-connected use is
 address separate from the core PC. Fetch 0 primes an empty slot; while fetch
 N+1 runs, the core owns and retires one-cycle instruction N. Arbitrary
 clock-enable stalls hold both addresses, and recognized reset empties both
-domains. A directed test checks the boundary explicitly. A second test runs
+domains. Exact unconditional `B` is the first integrated multicycle case:
+after its prefetch enters execute ownership, its operand fetch is explicitly
+nonexecutable execution cycle 1; that operand redirects the bus; target fetch
+is execution cycle 2; and only that target-fetch boundary retires B and
+captures the target instruction. A directed test checks this sequence,
+including a target-phase stall, no early target effect, and conservative
+parking on a malformed operand. Another directed test checks the sequential
+boundary explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
 state one retirement apart
 [`sim/bus/tb_sequential_pipeline_slice.sv`,
+`sim/bus/tb_sequential_pipeline_b.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
-when the execute slot contains a multicycle, reserved, or invalid-address
-word; it does not claim that parking is TMS32010 hardware behavior. The
-legacy phase wrapper retains the separately verified branch, I/O, table, and
-interrupt sequences until those states are reworked around explicit pipeline
-ownership. **Confidence: VERIFIED_PRIMARY for the required overlap;
-implementation behavior VERIFIED_SIMULATION only within this stated slice.**
+when the execute slot contains any other multicycle, reserved, or
+invalid-address word; it does not claim that parking is TMS32010 hardware
+behavior. The legacy phase wrapper retains the separately verified bus order
+for the remaining branch, I/O, table, and interrupt sequences until those
+states are reworked around explicit pipeline ownership. **Confidence:
+VERIFIED_PRIMARY for the required overlap; INFERRED for exact B interval
+ownership because no dedicated B waveform has been located; implementation
+behavior VERIFIED_SIMULATION only within this stated slice.**
 
 ## Required implementation model
 
@@ -87,15 +97,18 @@ gate topology.
 ## Unresolved sequences
 
 Normal read, table, I/O, and reset pin sequences are transcribed in
-`docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
-resolved for:
+`docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
+but exact pipeline ownership remains to be resolved except for sequential
+one-cycle instructions and exact `B`:
 
-- B, BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions are now
-  qualified;
-- IN and OUT are now qualified as one opcode-read cycle followed by one
-  mutually exclusive DEN or WE I/O cycle;
-- TBLR and TBLW are now qualified as opcode read, discarded PC+1 read, and
-  ACC-addressed table transfer, followed by a repeated PC+1 read;
+- BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions retain
+  legacy two-read evidence but not yet explicit execute-slot ownership;
+- IN and OUT retain the primary opcode-prefetch, mutually exclusive DEN/WE
+  transfer, and next-prefetch bus order but not yet explicit execute-slot
+  ownership through the next-prefetch boundary;
+- TBLR and TBLW retain the primary opcode prefetch, discarded PC+1 read,
+  ACC-addressed table transfer, and repeated PC+1 read bus order but not yet
+  explicit execute-slot ownership through the repeated-prefetch boundary;
 - CALA and RET have model-qualified state/cycle behavior but externally
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
@@ -105,8 +118,8 @@ resolved for:
   multicycle core families are directed-tested;
 - any external cycle stretching (`OQ-001`).
 
-Until these rows have cited diagrams and automated traces, the project does
-not claim cycle accuracy.
+Until these rows have cited diagrams and explicit-pipeline automated traces,
+the project does not claim cycle accuracy.
 
 ## Interrupt pipeline sequence
 
@@ -154,14 +167,20 @@ and `BANZ`, printed pp. 2-2, 2-9–2-10, 2-13, 3-6, and 3-16
 (PDF pp. 26, 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for
 logical ordering and normal-read pin phases.**
 
-Unconditional `B` reuses the same verified two-read shape without a counter
-condition. Cycle 1 reads exact opcode `0xf900` at PC; cycle 2 reads the
-canonical target at PC+1; at the second falling-edge sample PC receives the
-target and the instruction retires. Both reads use normal program phases, and
-a clock-enable stall holds the second phase without architectural progress
+Unconditional `B` supplies the first integrated multicycle ownership trace.
+The `0xf900` opcode prefetch completes at the boundary where B enters the
+execute slot. During execution cycle 1, the canonical operand is read at
+PC+1 and redirects the next bus interval. During execution cycle 2, the
+target instruction is fetched while B retains execute ownership. At that
+second interval's falling-edge boundary PC receives the target, B retires,
+and the fetched target enters—but does not yet execute from—the execute
+slot. A clock-enable stall holds that target phase without architectural
+progress
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
-3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY for logical
-ordering and normal-read pin phases.**
+3-15 (PDF pp. 56 and 65), plus §2.1.1 and Figure 2-2, printed p. 2-3
+(PDF p. 27)]. **Confidence: VERIFIED_PRIMARY for the component facts;
+INFERRED for this combined execute-interval mapping because no dedicated B
+pin waveform has been located.**
 
 `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use that same two-read shape.
 At the second sample, a signed/zero test of the unchanged 32-bit ACC selects
