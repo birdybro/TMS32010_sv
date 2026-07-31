@@ -84,7 +84,10 @@ empties the slot and selects vector 2. Entry pushes the resolved return PC
 while vector 2 is fetched into that empty slot, without retirement or vector
 effects. A following interval executes the vector. Directed stalls cover both
 the N+2 and vector reads and prove no early retirement, stack push, or vector
-effect. Another
+effect. If MPY or MPYK occupies the protected slot, explicit ownership remains
+set through one additional instruction; directed tests cover both signed
+products, logical bus shapes, stalls, dummy discard, and the post-following
+return PC. Another
 directed test checks the sequential boundary explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
@@ -98,6 +101,7 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_call.sv`,
 `sim/bus/tb_sequential_pipeline_io.sv`,
 `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
+`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
@@ -142,8 +146,9 @@ accumulator branches, plus `IN`/`OUT`:
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
-  vector path, particularly MPY/MPYK extension and the complete multicycle
-  arrival matrix (`OQ-004`); all 32 represented machine-cycle arrival points
+  vector path and MPY/MPYK protected-slot extension, particularly the complete
+  multicycle arrival matrix (`OQ-004`); all 32 represented machine-cycle
+  arrival points
   across the 15 currently supported multicycle families remain directed-tested
   in the legacy/core path;
 - any external cycle stretching (`OQ-001`).

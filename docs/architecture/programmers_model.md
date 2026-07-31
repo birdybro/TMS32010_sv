@@ -103,8 +103,8 @@ does not pretend the discarded word executed
 pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
 **Confidence: VERIFIED_PRIMARY for those architectural effects and the tested
 fetch order; VERIFIED_SIMULATION for the basic protected/discard/vector
-ownership path. Explicit MPY/MPYK extension and the complete
-multicycle-arrival matrix remain `OQ-004`.**
+ownership path and MPY/MPYK protected-slot extension. The complete
+multicycle-arrival matrix remains `OQ-004`.**
 
 ## Addressing
 

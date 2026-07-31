@@ -80,7 +80,10 @@ strobe. The qualified Figure 2-12 path retains one protected instruction
 while its concurrent N+2 read is discarded, empties the execute slot for the
 entry interval, and captures vector 2 without executing it. Independent N+2
 and vector stalls prove retirement, stack push, and vector effects occur only
-at their owning boundaries. Other
+at their owning boundaries. If MPY or MPYK occupies that protected slot, the
+wrapper retains protection through one additional instruction; directed tests
+cover both signed products, internal-read versus program-only activity,
+stalls, dummy discard, and the post-following stacked PC. Other
 multicycle, reserved, or invalid-address execute words park the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
 mechanism, not claimed hardware behavior. Table overlap remains in the legacy

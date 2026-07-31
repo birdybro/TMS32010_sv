@@ -79,7 +79,10 @@ port boundary, and OUT data remains stable through it. The wrapper parks on
 unsupported TBLR. Figure 2-12 interrupt ownership is now integrated for the
 qualified path: one protected instruction executes while N+2 is fetched but
 discarded, vector 2 is fetched during a nonexecuting entry interval, and only
-the following interval executes it. Table ownership remains unintegrated.
+the following interval executes it. MPY and MPYK in the protected slot defer
+that entry until one additional instruction retires; directed tests verify
+both products, bus shapes, stalls, and the resulting return PC. Table
+ownership remains unintegrated.
 Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.

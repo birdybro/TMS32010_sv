@@ -82,6 +82,9 @@ their execution intervals to the explicit pipeline.
 - An interrupt-protected instruction may complete while its concurrent N+2
   program read is classified as a dummy. Entry then executes in an empty slot
   while vector 2 is fetched; vector execution is deferred to the next fetch.
+- If MPY or MPYK occupies that protected slot, the ownership flag remains set
+  through one additional instruction before its concurrent read becomes the
+  dummy return-PC fetch.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 

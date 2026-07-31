@@ -400,6 +400,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_call.sv`,
   `sim/bus/tb_sequential_pipeline_io.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -425,8 +426,9 @@ objective passing evidence.
   pipeline deferral, MPY/MPYK extension, a non-retiring return-PC dummy read,
   stack entry, mask/flag acknowledge effects, and vector-2 selection.
   Complete fetch/execute overlap still does not exist; the narrow explicit
-  ownership slice now includes the basic Figure 2-12 interrupt path and is
-  described below. A four-case native test now
+  ownership slice now includes the basic Figure 2-12 interrupt path and the
+  MPY/MPYK protected-slot extension and is described below. A four-case native
+  test now
   asserts falling-boundary request ownership from each modeled subphase,
   including a stalled pre-sample phase, while leaving physical setup/CDC
   behavior unclaimed. A 32-case core matrix exhausts arrival at every
@@ -632,6 +634,7 @@ objective passing evidence.
   `sim/interrupt/tb_interrupt_native_sampling.sv`,
   `sim/interrupt/tb_interrupt_phase.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`
 - **Notes:** Primary sources establish an internally latched request from a
@@ -655,8 +658,11 @@ objective passing evidence.
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
   empty execute slot, captures vector 2 without executing it, and defers the
-  vector effect through independently stalled reads. MPY/MPYK extension and
-  the complete multicycle arrival matrix remain legacy/core-only evidence.
+  vector effect through independently stalled reads. MPY and MPYK in that
+  protected slot now explicitly extend service through one more instruction;
+  directed checks cover signed results, internal-read versus program-only bus
+  shape, stalls, dummy discard, return-PC ownership, and vector deferral. The
+  complete multicycle arrival matrix remains legacy/core-only evidence.
   Physical setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP
   arrival cycles, RTL/native RET behavior, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete

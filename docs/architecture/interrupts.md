@@ -82,12 +82,20 @@ stalls on both reads prove that protected retirement, entry push, and vector
 effects cannot occur early
 [`sim/interrupt/tb_sequential_pipeline_interrupt.sv`].
 
-This remains an incomplete pipeline claim. The explicit test does not yet
-cover MPY/MPYK extension, every multicycle protected instruction, DINT's
-provisional cancellation, physical synchronizer/setup behavior, unsupported
-CALA/RET/PUSH/POP cycles, native/RTL return through `RET`, or analog input
-timing. The legacy/core matrix remains the evidence for those represented
-arrival cases (`CTRL-002`, `OQ-004`, `OQ-007`, `OQ-016`).
+MPY and MPYK in the protected slot explicitly retain that protection through
+one additional instruction. Directed tests verify signed P results, MPY's
+internal read versus MPYK's program-only cycle, independent fetch stalls, no
+early entry, retirement of the instruction following the multiply, dummy
+discard, the post-following stacked PC, vector capture, and deferred vector
+execution
+[`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
+
+This remains an incomplete pipeline claim. The explicit tests do not yet
+cover every multicycle request-arrival position or protected instruction,
+DINT's provisional cancellation, physical synchronizer/setup behavior,
+unsupported CALA/RET/PUSH/POP cycles, native/RTL return through `RET`, or
+analog input timing. The legacy/core matrix remains the evidence for those
+represented arrival cases (`CTRL-002`, `OQ-004`, `OQ-007`, `OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's

@@ -5,7 +5,8 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 20 native bus/phase tests, including ten explicit pipeline tests; one
+  tests; 21 native bus/phase tests, including eleven explicit pipeline tests;
+  one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -257,12 +258,15 @@
   pipeline now implements the basic Figure 2-12 ownership sequence by
   retiring one protected word while discarding N+2, performing entry with an
   empty execute slot while capturing vector 2, and deferring vector execution
-  until the following interval
+  until the following interval; MPY and MPYK in that protected slot now have
+  explicit tests for signed products, internal-read versus program-only bus
+  shape, independent stalls, one additional retirement, dummy discard,
+  post-following stacked PC, vector capture, and deferred vector execution
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
-  branches, exact IN/OUT, and the basic interrupt path; table ownership,
-  explicit MPY/MPYK interrupt extension, the complete explicit multicycle
-  arrival matrix, and physical interrupt setup/synchronizer behavior, CALA/RET
+  branches, exact IN/OUT, the basic interrupt path, and MPY/MPYK interrupt
+  extension; table ownership, the complete explicit multicycle arrival
+  matrix, and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
@@ -274,8 +278,8 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` by transferring MPY/MPYK protection and
-  the represented multicycle arrival matrix into the explicit pipeline, or
+- **Next task:** continue `CTRL-002` by transferring the represented
+  multicycle arrival matrix into the explicit pipeline, or
   advance `BUS-001` by integrating the already primary-qualified TBLR/TBLW
   repeated-prefetch ownership; extend `FORMAL-001` only with bounded cases
   whose architectural ordering is already documented; preserve the
@@ -290,4 +294,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `33f1c78`
+  `c3f4e1d`

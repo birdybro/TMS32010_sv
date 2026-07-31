@@ -755,7 +755,7 @@
       "overflow_behavior": "no status overflow; the original multiplier deliberately produces 0xc0000000 for 0x8000 times 0x8000",
       "result_behavior": "P receives the signed 16-by-16 product, except for the documented 0x8000-by-0x8000 result",
       "branch_behavior": "none",
-      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPY completes; the shared MPY/MPYK deferral and dummy vector entry are directed-tested",
+      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPY completes; explicit-pipeline tests verify the protected MPY, following retirement, dummy discard, post-following return PC, and vector entry",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -793,7 +793,7 @@
       "overflow_behavior": "no status overflow; the 13-bit immediate range cannot select the MPY 0x8000-by-0x8000 hardware exception",
       "result_behavior": "P receives the signed product of T and the constant in the inclusive range -4096 through 4095",
       "branch_behavior": "none",
-      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPYK completes; the deferral, following-instruction retirement, dummy entry, and vector selection are directed-tested",
+      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPYK completes; explicit-pipeline tests verify the protected MPYK, following retirement, dummy discard, post-following return PC, and vector entry",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [

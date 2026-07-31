@@ -77,6 +77,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Explicit Figure 2-12 interrupt ownership for the qualified EINT path:
   protected execution discards N+2, entry uses an empty execute slot while
   fetching vector 2, and vector execution waits for the following interval.
+- Explicit MPY/MPYK interrupt-protection extension through one additional
+  instruction, with post-following dummy/return-PC ownership.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -714,9 +716,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   B/EINT, protected-instruction retirement, stalled N+2 discard, stalled
   vector fetch without early stack push, return-PC entry state, and deferred
   vector execution.
+- A directed explicit-pipeline multiply test proves MPY and MPYK signed
+  results, internal-read versus program-only bus shape, stalls, one additional
+  protected retirement, discarded dummy words, post-following stacked PCs,
+  vector capture, and deferred vector effects.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 20
-  native bus/phase tests including ten pipeline tests, five interrupt
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 21
+  native bus/phase tests including eleven pipeline tests, five interrupt
   RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and

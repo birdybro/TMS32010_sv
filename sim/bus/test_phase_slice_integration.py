@@ -89,6 +89,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_interrupt_discards_dummy_and_captures_vector(self) -> None:
         self._run_testbench("tb_sequential_pipeline_interrupt")
 
+    def test_multiply_extends_explicit_interrupt_protection(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_interrupt_multiply")
+
     def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
         self._run_testbench("tb_sequential_pipeline_differential")
 

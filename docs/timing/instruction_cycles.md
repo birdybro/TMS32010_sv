@@ -287,13 +287,14 @@ VERIFIED_SIMULATION for explicit and legacy implementations.**
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
 - explicit execute ownership through table-operation repeated prefetch;
-- MPY/MPYK extension and the complete multicycle-arrival matrix in the
-  explicit fetch/execute wrapper, unsupported CALA/RET/PUSH/POP arrival
-  sequencing, native/RTL CALA/RET sequencing, physical interrupt
+- the complete multicycle-arrival matrix in the explicit fetch/execute
+  wrapper, unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
+  CALA/RET sequencing, physical interrupt
   setup/synchronizer behavior, and the provisional DINT-at-final-boundary
   ordering (`OQ-004`, `OQ-007`, `OQ-016`, `OQ-019`); the basic Figure 2-12
-  protected/dummy/vector path and the 32 represented machine-cycle arrival
-  points in the legacy/core path are qualified;
+  protected/dummy/vector path, MPY/MPYK protected-slot extension, and the 32
+  represented machine-cycle arrival points in the legacy/core path are
+  qualified;
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is

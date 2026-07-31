@@ -113,8 +113,13 @@ captures vector 2 without executing it, and executes it only in the following
 interval. Directed stalls prove the dummy and vector addresses remain stable
 and that retirement, stack entry, and vector effects cannot occur early
 [`sim/interrupt/tb_sequential_pipeline_interrupt.sv`]. This qualifies the
-basic Figure 2-12 ownership path, not MPY/MPYK extension or the complete
-multicycle-arrival matrix described in `docs/architecture/pipeline.md`.
+basic Figure 2-12 ownership path. A second explicit test qualifies MPY/MPYK
+protected-slot extension through one additional instruction, including MPY's
+internal read, MPYK's program-only cycle, stalls, dummy discard, and
+post-following return-PC ownership
+[`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`]. The complete
+multicycle-arrival matrix remains open as described in
+`docs/architecture/pipeline.md`.
 
 `PUSH` and `POP` each consume two cycles despite carrying only one program
 word. No located original-part timing figure shows whether `MEN` is inactive,
@@ -321,7 +326,7 @@ identify:
 
 - branch/call/return prefetch address order;
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
-  discarded-N+2/vector path, including MPY/MPYK extension and the complete
+  discarded-N+2/vector path and MPY/MPYK extension, including the complete
   multicycle-arrival matrix; the 32 represented machine-cycle arrival cases
   for the 15 supported multicycle families remain qualified in the
   legacy/core path;

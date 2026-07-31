@@ -133,8 +133,9 @@ previously-disabled following-instruction deferral and MPY/MPYK's protection,
 dummy-fetch the return PC, push it, mask and clear the request, and select
 vector 2. Directed native testing verifies the Figure 2-12 external address
 order, and the explicit pipeline qualifies its basic protected-word/
-discarded-N+2/vector ownership. MPY/MPYK extension, every multicycle request
-arrival in that explicit pipeline, native/RTL CALA/RET sequencing, PUSH/POP
+discarded-N+2/vector ownership plus MPY/MPYK extension through one additional
+instruction. Every multicycle request arrival in that explicit pipeline,
+native/RTL CALA/RET sequencing, PUSH/POP
 second-cycle sequencing, and provisional DINT-at-final-boundary ordering
 remain outside a cycle-accuracy claim under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.

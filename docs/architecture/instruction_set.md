@@ -55,8 +55,8 @@ previously-disabled following-instruction service delay, and vector entry.
 Tests also prove that an EINT executed while already enabled does not add a
 second deferral. The warning against placing EINT before branch remains a
 software restriction. The explicit pipeline now qualifies the basic
-EINT/protected-word/discarded-N+2/vector path, but MPY/MPYK extension and the
-complete multicycle-arrival matrix remain `OQ-004`.
+EINT/protected-word/discarded-N+2/vector path and MPY/MPYK protected-slot
+extension, but the complete multicycle-arrival matrix remains `OQ-004`.
 
 ## Qualified `LST` functional slice
 
@@ -828,6 +828,13 @@ of `CTRL-002`
 [ti-tms32010-users-guide-spru001b, `MPY`, printed p. 3-43 (PDF p. 93)].
 **Confidence: VERIFIED_PRIMARY for the rule and directed RTL boundary.**
 
+The explicit fetch/execute test independently exercises MPY in that protected
+slot. It verifies the signed product, internal RAM read, fetch stall,
+following-instruction retirement, discarded dummy word, post-following return
+PC, vector capture, and deferred vector execution
+[`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
+**Confidence: VERIFIED_SIMULATION for the explicit ownership mapping.**
+
 ## Qualified `MPYK` functional slice
 
 `MPYK` fixes bits 15:13 to `100`; bits 12:0 hold a signed immediate in the
@@ -856,6 +863,13 @@ program-only transaction, cycle count, one-following-instruction deferral,
 dummy entry, and vector selection have directed model/RTL checks
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
 **Confidence: VERIFIED_PRIMARY.**
+
+The same explicit fetch/execute test verifies MPYK's signed result,
+program-only bus boundary, fetch stall, following-instruction retirement,
+dummy discard, post-following return PC, vector capture, and deferred vector
+effect
+[`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
+**Confidence: VERIFIED_SIMULATION for the explicit ownership mapping.**
 
 ## Qualified `PAC` functional slice
 

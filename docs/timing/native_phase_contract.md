@@ -401,4 +401,5 @@ pipeline. Table, I/O, and the cited interrupt program-read sequence now have
 directed native-phase tests, including INT ownership at the enabled falling
 boundary for all four modeled arrival phases. The basic EINT/protected-word/
 discarded-N+2/vector sequence also has explicit fetch/execute ownership;
-MPY/MPYK extension and the complete multicycle-arrival matrix do not.
+MPY/MPYK in the protected slot explicitly extend ownership through one
+additional instruction. The complete multicycle-arrival matrix does not.
