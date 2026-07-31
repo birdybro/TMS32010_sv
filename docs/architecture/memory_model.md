@@ -70,6 +70,15 @@ ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
 
+An inductive standalone proof quantifies a symbolic address across all 144
+qualified words while leaving initial contents and legal CPU/debug writes
+arbitrary. It proves read-after-write for either port, preservation under
+writes to other words, exact `< 144` validity for every eight-bit address, and
+the portable block's zero read output when invalid. The last result is only
+the current verification-interface policy: it does not establish an
+original-chip value for `0x90`–`0xff` or weaken the core's trap-before-effects
+boundary under `OQ-002` [`formal/tms32010_internal_ram.sby`].
+
 `LST` performs one ordinary internal-RAM read and uses the old DP or old
 selected AR to resolve that source before replacing status fields. It never
 writes data RAM. Out-of-range sources trap before status or indirect-address

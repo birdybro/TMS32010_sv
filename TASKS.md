@@ -365,7 +365,8 @@ objective passing evidence.
 - **Acceptance criteria:** exhaustive feasible arithmetic and boundary-focused
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
-- **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`
+- **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`,
+  `formal/tms32010_internal_ram.sby`
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
@@ -425,7 +426,12 @@ objective passing evidence.
   Physical reset
   preserves OVM as documented and assigns no arbitrary value to
   ACC/T/P/AR/ARP/DP/OV or RAM; retention of unlisted FPGA state remains
-  provisional under OQ-012. ALU, multiplier, other output-shifter consumers,
+  provisional under OQ-012. The standalone RAM passes temporal induction over
+  a symbolic qualified address with arbitrary initial contents and legal
+  CPU/debug writes. It proves both write paths, preservation under non-target
+  writes, all eight-bit validity results, and zero output for invalid reads;
+  that invalid-read value remains implementation policy under `OQ-002`.
+  ALU, multiplier, other output-shifter consumers,
   remaining stack operations and remaining status behavior remain. The CALL
   path implements and exposes all four 12-bit stack levels, including
   nested pushes and old-bottom discard.
@@ -626,7 +632,12 @@ objective passing evidence.
   read/write traces, ordering, and explicitly trap unresolved `0x90`–`0xff`.
   The portable RTL contains exactly 144 words and a nonarchitectural preload
   port. Directed tests read back every store class; seeded differential
-  compares all 144 final words. Remaining instruction interactions remain.
+  compares all 144 final words. A standalone inductive proof additionally
+  quantifies all qualified word addresses and arbitrary 16-bit legal writes,
+  checks non-target preservation, and exhausts the 256-value read/write
+  validity functions. The invalid-read-zero result is a verification-interface
+  policy, not original-silicon evidence for `OQ-002`. Remaining instruction
+  interactions remain.
   MPYK separately verifies that its immediate multiply performs no logical
   data-memory transaction. PAC separately verifies that its internal P-to-ACC
   transfer performs no logical data-memory transaction. APAC verifies the same
@@ -1173,10 +1184,19 @@ objective passing evidence.
   identities; four independent covers reach the exception and signed
   boundaries at step 0. It does not prove instruction sequencing, address
   selection, physical timing, or technology mapping.
+  An eleventh standalone internal-RAM configuration passes six-step base case
+  and temporal induction. It leaves initial memory arbitrary, quantifies a
+  symbolic address across all 144 qualified words, and leaves both write
+  paths arbitrary under active-address-valid and mutual-exclusion interface
+  assumptions. It proves both read-after-write paths, non-target preservation,
+  all 256 validity results, and the portable invalid-read-zero policy. Five
+  covers reach word 0, word `0x8f`, non-target writes, and invalid `0x90`/`0xff`
+  reads. It does not resolve original-silicon `OQ-002`, power-up contents,
+  instruction address selection, electrical timing, or technology mapping.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general
-  decode/FSM/RAM and remaining arithmetic properties, and liveness
+  general decode/FSM and remaining integrated RAM/arithmetic properties, and liveness
   assumptions remain.
   Never describe bounded checks as complete proof.
 

@@ -37,6 +37,10 @@ cover both wrap directions under all four incoming OV/OVM combinations.
 The 144-word internal RAM exposes verification-visible logical
 `ADD`/`ADDH`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
 `SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR`/`SST` writes;
+an inductive symbolic proof covers read/write behavior at every qualified
+word from arbitrary initial contents. The block's invalid-address indication
+and zero read output are implementation policy only; original-silicon
+behavior at `0x90`–`0xff` remains unknown under `OQ-002`.
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow

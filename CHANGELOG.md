@@ -435,6 +435,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Standalone 144-word internal RAM passes a six-step base case and temporal
+  induction over a symbolic qualified word, arbitrary initial contents, and
+  arbitrary legal CPU/debug writes. Both read-after-write paths, non-target
+  preservation, all 256 address-valid results, and invalid-read-zero policy
+  hold; five covers reach words `0x00`/`0x8f`, non-target writes, and invalid
+  `0x90`/`0xff`. This does not resolve original-silicon `OQ-002` behavior.
 - All 2^32 standalone multiplier input pairs in a one-step symbolic proof.
   Ordinary pairs equal the explicitly sign-extended signed product; equal
   `0x8000` operands uniquely select the documented `0xc0000000` exception.

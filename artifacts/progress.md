@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** RTL datapath arithmetic proof
+- **Current milestone:** internal data-memory formal qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 230
   directed model/unit tests, including standalone fetch/execute and
@@ -82,7 +82,16 @@
   signed product. It proves the unique `0x8000`-square exception,
   commutativity, and zero/unity identities; all four exception/extrema covers
   reach step 0. Instruction sequencing, physical timing, and technology
-  mapping remain outside that proof.
+  mapping remain outside that proof. An eleventh standalone RAM configuration
+  passes a six-step base case and temporal induction over a symbolic address
+  spanning every qualified word. From arbitrary initial contents and under
+  active-address-valid/mutually-exclusive-write interface assumptions, it
+  proves CPU/debug read-after-write, non-target preservation, every eight-bit
+  validity result, and the portable invalid-read-zero policy. Five covers
+  reach word 0, word `0x8f`, a non-target write, and invalid reads at `0x90`
+  and `0xff`. Original-silicon `OQ-002`, physical power-up contents,
+  instruction address selection, electrical timing, and technology mapping
+  remain outside that proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -368,4 +377,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `1e0f492`
+  `882d95d`

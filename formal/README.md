@@ -1,7 +1,7 @@
-# Bounded formal verification
+# Formal verification
 
 `make formal` runs committed SymbiYosys configurations and fails if the tool
-is missing or any bounded check fails. Generated work directories live below
+is missing or any check fails. Generated work directories live below
 the ignored `build/formal/` tree.
 
 The qualified local run used SymbiYosys v0.67-4-gfea6e46, Yosys SMTBMC from
@@ -28,6 +28,30 @@ times most-negative boundaries.
 This proves the RTL's combinational bit-vector relation. It does not prove
 physical multiplier timing, a technology-mapped DSP implementation, MPY/MPYK
 instruction sequencing, operand-address selection, or interrupt interaction.
+
+## Inductive internal-RAM harness
+
+`tms32010_internal_ram.sby` uses temporal induction for the standalone
+144-word portable RAM. A symbolic watched address is constrained only to the
+qualified `0x00`–`0x8f` range, so one proof covers all 144 words. Initial RAM
+contents remain arbitrary. CPU and debug write controls, addresses, and all
+16 data bits remain arbitrary subject to three interface assumptions: an
+active write has a qualified address, an active debug write has a qualified
+address, and both write ports are not asserted together.
+
+The proof establishes CPU/debug read-after-write behavior and preservation of
+the watched word when either port writes elsewhere. A second inactive-write
+instance exhausts all 256 read and write address values, proving the exact
+`address < 144` valid flags and the implementation's zero output for invalid
+reads. The five covers independently reach CPU write/readback at word 0,
+debug write/readback at word 143, a non-target write, and invalid reads at
+`0x90` and `0xff`.
+
+This qualifies the portable storage block and its verification interface. It
+does not assign original-silicon behavior to `0x90`–`0xff` (`OQ-002`), assign
+physical power-up contents, make the debug port architectural, prove
+instruction address selection, or qualify asynchronous-read electrical
+timing or FPGA memory mapping.
 
 ## Architectural reset-boundary harness
 
@@ -255,7 +279,7 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The ten harnesses leave DINT ordering, formal coverage of the represented
+The eleven harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to
