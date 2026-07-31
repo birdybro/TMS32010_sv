@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** original TMS32010 physical clock-envelope qualification
-- **Completed task IDs:** REPO-001, REF-001, BUS-003, TIMING-002
-- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 231
+- **Current milestone:** assembler and realistic FIR-program qualification
+- **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
+- **Tests passing:** 109 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -129,6 +129,12 @@
   words and no READY pin; the TMS32010-20 external master clock must remain
   within 48.78–150 ns and 47.5–52.5% pulse duty, bounding `CLKOUT` machine
   cycles to 195.12–600 ns rather than permitting a stopped physical clock;
+  TI SPRA003A describes original-TMS32010 direct-form FIR evaluation as a
+  finite weighted sum and identifies `LTD`/`MPY` as the paired mechanism for
+  accumulating the previous product, loading the next sample, moving sample
+  history, and starting the next product; the new source and numeric fixture
+  are independently project-authored and do not elevate the application
+  report above the original instruction definitions;
   reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
   transfers are three; falling CLKOUT samples program/I/O data, INT, and BIO;
@@ -401,18 +407,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** continue the next unblocked P0 architecture or RTL timing task
-  without treating bounded physical clock slowing as a native wait protocol.
-  Retain the
-  complete opcode documentation partition without promoting primary-unlisted
-  words to reserved behavior; resolve the 372 simultaneous-update combinations
-  only from further primary or physical evidence under `OQ-010`. For
-  `CTRL-001`, physical electrical timing and original-silicon
-  values for TI-unlisted state remain outside current evidence. Keep PUSH/POP
-  outside RTL
-  until `OQ-016` gains the measured address/word-ownership trace; keep LST's
-  loaded-ARP precedence PROVISIONAL under `OQ-015`; keep DMOV/LTD source-
-  `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
-  behavior at CORROBORATED until physical evidence justifies an upgrade.
+- **Next task:** begin the generic MiSTer-facing wrapper without introducing
+  Hard Drivin'-specific behavior into the architectural core. Retain the
+  documented physical clock envelope and platform-only phase-pause distinction
+  at that integration boundary.
 - **Latest committed baseline before this cycle:**
-  `a98a410`
+  `b702eaa`

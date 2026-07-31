@@ -180,10 +180,10 @@
     {
       "id": "ti-fir-iir-application-spra003",
       "title": "Implementation of FIR/IIR Filters with the TMS32010/TMS32020",
-      "author_or_organization": "Texas Instruments",
-      "publication_number": "SPRA003",
-      "publication_date": "unknown",
-      "revision": "unknown",
+      "author_or_organization": "Al Lovrich and Ray Simar, Jr.; Texas Instruments",
+      "publication_number": "SPRA003A",
+      "publication_date": "1989; copyright revision 1997",
+      "revision": "A",
       "source_url": "https://www.ti.com/lit/pdf/spra003",
       "retrieval_date": "2026-07-30",
       "local_filename": "ti/SPRA003_Implementation_FIR_IIR_TMS32010_TMS32020.pdf",
@@ -193,9 +193,12 @@
       "license_or_redistribution_status": "Copyrighted TI publication; redistribution permission not established",
       "relevance": "Contemporary realistic DSP programs and cycle/memory examples",
       "authority_level": 3,
-      "notes": "Current official TI-hosted source. Application examples corroborate but do not define undocumented hardware behavior.",
+      "notes": "Current official TI-hosted source. The cover identifies a 1989 report while the revision notice is copyright 1997. Application examples corroborate but do not define undocumented hardware behavior.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "cover (PDF p. 1)",
+        "Digital Filter Implementation on the TMS320, printed pp. 8-12 (PDF pp. 8-12)"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,

@@ -337,7 +337,7 @@ objective passing evidence.
 
 ### TOOLS-001 — Assembler and disassembler
 
-- **Status:** IMPLEMENTING
+- **Status:** COMPLETE
 - **Priority:** P1
 - **Dependencies:** ISA-001
 - **Description:** Qualify a legal assembler or implement deterministic local
@@ -347,7 +347,8 @@ objective passing evidence.
   work; source-binary-disassembly-binary round trips match hand fixtures.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
-- **Tests:** `tests/regressions/test_toolchain.py`
+- **Tests:** `tests/regressions/test_toolchain.py`,
+  `tests/regressions/test_fir4_program.py`
 - **Notes:** Qualified slice supports the same sixty instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
@@ -362,12 +363,20 @@ objective passing evidence.
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The checked synthetic
+  directed-tested across all sixty documented mnemonics. The checked synthetic
   `tests/asm/push_pop_bus_probe.asm` image provides a reproducible,
   noncopyrighted original-device pin-trace fixture for `OQ-016`. SST
   additionally enforces direct offsets 0–15 while
   retaining common indirect syntax and lossless noncanonical aliases. A surviving
-  binary tool may be cataloged but never executed outside isolation.
+  binary tool may be cataloged but never executed outside isolation. The
+  project-authored `sim/programs/fir4/fir4.asm` closes the initial realistic
+  test-program workflow: independently fixed words round-trip through the
+  tools, the model produces Q15 `0x1a00` from a hand-calculated four-tap
+  vector, all twelve one-cycle instructions fetch in order, and every logical
+  `LT`/`MPY`/`LTD`/`SACH` RAM transaction matches the committed expectation.
+  This task's tool/workflow criteria are complete; it does not imply
+  instruction-complete RTL or final assembler syntax compatibility with every
+  historical TI extension.
 
 ## Milestone 7 — RTL datapath
 

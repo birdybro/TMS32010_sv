@@ -22,6 +22,9 @@ instructions: `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, 
 boundary support the same set except CALA, POP, PUSH, and RET,
 for fifty-six shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
+A redistribution-safe four-tap Q15 FIR program now verifies the complete local
+assemble/disassemble/model workflow against independently fixed opcodes,
+numeric results, twelve instruction cycles, and logical transaction traces.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

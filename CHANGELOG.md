@@ -38,6 +38,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Deterministic project-local assembler/disassembler slice with checked
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
+- A project-authored four-tap Q15 FIR program with independently fixed opcode,
+  input, output, sample-history, cycle, program-fetch, and logical
+  data-transaction expectations. It exercises the primary-documented
+  `LTD`/`MPY` pipelined multiply/accumulate idiom without reproducing TI
+  example source.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -440,6 +445,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Complete local assembler/disassembler acceptance across all sixty documented
+  mnemonics and the first realistic test-program workflow. The synthetic FIR
+  image round-trips exactly, executes twelve one-cycle instructions, sums four
+  signed products to ACC `0x0d000000`, stores Q15 `0x1a00`, advances three
+  history words, and matches every logical program/data transaction.
 - The platform-only `clock_enable_i` phase-pause contract across every
   currently represented external transaction class. The complete native
   bus/phase suite now passes 24 tests. The 40-step program-bus BMC also proves
