@@ -1284,8 +1284,9 @@ objective passing evidence.
   structural problems. A fifth script retains the 4K-by-16 board adapter as
   one synchronous-read, single-write-port abstract memory with 85 total cells
   and zero structural problems. A sixth pre-technology script checks the
-  partial processor/program-RAM board top as 2,167 abstract cells, 122 checks,
-  and two retained memories with zero structural problems. A seventh
+  partial processor/program/communication-RAM board top as 2,259 abstract
+  cells, 131 checks, and three retained memories with zero structural
+  problems. A seventh
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. This is not a
@@ -1356,7 +1357,8 @@ objective passing evidence.
   Complete BIO divider state, signed-audio DAC interpretation, board-variant
   audit, 68000 bus adaptation, and complete peripheral integration remain.
   The partial `hard_drivin_sound_mister` now connects the core, native decoder,
-  and shared RAM. A directed RTL test host-loads the fixed ROM-free smoke,
+  shared program RAM, and communication path. A directed RTL test host-loads
+  the fixed ROM-free smoke and a synthetic communication word,
   performs the safe reset handoff, verifies its 12 retirements/22 cycles and
   nine physical I/O transfers, then reloads a focused low-TBLW sequence and
   proves one I/O commit with unchanged RAM word 3.
@@ -1383,9 +1385,11 @@ objective passing evidence.
   words, rejects the non-owning side, preserves storage across initialization,
   tracks explicit counter/block validity, verifies global port-2 increment and
   16-bit wrap, and assigns port 3 no effect. Its pre-technology Yosys target
-  retains one memory in an 82-cell hierarchy with seven checks. Processor-top
-  connection, host latch/bus adaptation, serial-ROM data, and physical timing
-  remain acceptance work.
+  retains one memory in an 82-cell hierarchy with seven checks. The board top
+  now routes processor port 1 internally, proves it ignores an external
+  sentinel, verifies `0x3456` to `0x3459` global increments, and reads the
+  retained word back after processor reset. Host latch/68000 bus adaptation,
+  serial-ROM data, and physical timing remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

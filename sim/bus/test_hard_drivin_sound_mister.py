@@ -28,6 +28,9 @@ class HardDrivinSoundMisterTests(unittest.TestCase):
             ROOT / "rtl" / "wrappers" / "tms32010_mister.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_bus_decode.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_program_ram.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_address_control.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_communication_ram.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_communication_path.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_mister.sv",
             ROOT / "sim" / "bus" / f"{name}.sv",
         ]

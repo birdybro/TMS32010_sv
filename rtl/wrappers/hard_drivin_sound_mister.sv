@@ -1,8 +1,8 @@
 `default_nettype none
 
 // Same-clock FPGA integration of the generic MiSTer callback wrapper with the
-// qualified A044427 Rev-A program-RAM ownership and native target decode.
-// Peripheral implementations and the 68000 bus bridge remain external.
+// qualified A044427 Rev-A program/communication RAM ownership and native
+// target decode. Remaining peripherals and the 68000 bus bridge are external.
 module hard_drivin_sound_mister (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -20,6 +20,17 @@ module hard_drivin_sound_mister (
   output logic        host_access_permitted_o,
   output logic        ownership_conflict_o,
 
+  input  logic        communication_host_enable_i,
+  input  logic        host_communication_select_n_i,
+  input  logic        host_communication_write_i,
+  input  logic        host_communication_commit_i,
+  input  logic [8:0]  host_communication_address_i,
+  input  logic [15:0] host_communication_write_data_i,
+  output logic [15:0] host_communication_read_data_o,
+  output logic        host_communication_ready_o,
+  output logic        host_communication_access_permitted_o,
+  output logic        host_communication_blocked_o,
+
   output logic [2:0]  io_port_o,
   output logic        io_read_o,
   output logic        io_write_o,
@@ -27,6 +38,13 @@ module hard_drivin_sound_mister (
   output logic        io_commit_o,
   input  logic [15:0] io_read_data_i,
   input  logic        io_ready_i,
+
+  output logic        port_1_blocked_o,
+  output logic        port_1_address_invalid_o,
+  output logic [15:0] sound_address_o,
+  output logic        sound_address_valid_o,
+  output logic [3:0]  sound_rom_block_o,
+  output logic        sound_rom_block_valid_o,
 
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
@@ -93,6 +111,10 @@ module hard_drivin_sound_mister (
   logic [15:0] native_write_data;
   logic        port_region;
   logic        program_ram_select_n;
+  logic [15:0] communication_port_1_read_data;
+  logic        communication_port_1_ready;
+  logic [15:0] selected_io_read_data;
+  logic        selected_io_ready;
 
   assign native_write_data =
     logical_program_write
@@ -115,11 +137,23 @@ module hard_drivin_sound_mister (
     end
   end
 
+  // Port 1 is served by the internal communication-RAM path. Every other
+  // physical port remains on the external callback. The physical request and
+  // commit signals stay visible for trace/debug ownership.
+  always_comb begin
+    selected_io_read_data = io_read_data_i;
+    selected_io_ready     = io_ready_i;
+    if (io_read_o && (io_port_o == 3'd1)) begin
+      selected_io_read_data = communication_port_1_read_data;
+      selected_io_ready     = communication_port_1_ready;
+    end
+  end
+
   assign io_write_data_o = native_write_data;
   assign io_commit_o =
     phase_advance_o &&
     (phase_o == 2'd3) &&
-    io_ready_i &&
+    selected_io_ready &&
     (io_read_o || io_write_o);
   assign ram_tms_commit =
     phase_advance_o &&
@@ -157,6 +191,34 @@ module hard_drivin_sound_mister (
     .tms_program_ram_select_n_o    (program_ram_select_n)
   );
 
+  hard_drivin_sound_communication_path communication_path (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .communication_host_enable_i   (communication_host_enable_i),
+    .host_select_n_i               (host_communication_select_n_i),
+    .host_write_i                  (host_communication_write_i),
+    .host_commit_i                 (host_communication_commit_i),
+    .host_address_i                (host_communication_address_i),
+    .host_write_data_i             (host_communication_write_data_i),
+    .host_read_data_o              (host_communication_read_data_o),
+    .host_ready_o                  (host_communication_ready_o),
+    .host_access_permitted_o       (host_communication_access_permitted_o),
+    .host_blocked_o                (host_communication_blocked_o),
+    .io_port_i                     (io_port_o),
+    .io_read_i                     (io_read_o),
+    .io_write_i                    (io_write_o),
+    .io_write_data_i               (io_write_data_o),
+    .io_commit_i                   (io_commit_o),
+    .port_1_read_data_o            (communication_port_1_read_data),
+    .port_1_ready_o                (communication_port_1_ready),
+    .port_1_blocked_o              (port_1_blocked_o),
+    .port_1_address_invalid_o      (port_1_address_invalid_o),
+    .sound_address_o               (sound_address_o),
+    .sound_address_valid_o         (sound_address_valid_o),
+    .sound_rom_block_o             (sound_rom_block_o),
+    .sound_rom_block_valid_o       (sound_rom_block_valid_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
@@ -174,8 +236,8 @@ module hard_drivin_sound_mister (
     .io_read_o                     (logical_io_read),
     .io_write_o                    (logical_io_write),
     .io_write_data_o               (logical_io_write_data),
-    .io_read_data_i                (io_read_data_i),
-    .io_ready_i                    (io_ready_i),
+    .io_read_data_i                (selected_io_read_data),
+    .io_ready_i                    (selected_io_ready),
     .debug_data_write_i            (debug_data_write_i),
     .debug_data_address_i          (debug_data_address_i),
     .debug_data_i                  (debug_data_i),
@@ -237,6 +299,10 @@ module hard_drivin_sound_mister (
       end
       if (port_region && !native_we_n_o) begin
         assert (program_ram_select_n);
+      end
+      if (io_read_o && (io_port_o == 3'd1)) begin
+        assert (selected_io_ready == communication_port_1_ready);
+        assert (selected_io_read_data == communication_port_1_read_data);
       end
     end
   end

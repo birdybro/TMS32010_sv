@@ -149,6 +149,7 @@ the stated adapter contract.**
 The pre-technology Yosys target retains one `$mem_v2` in an 82-cell hierarchy
 with seven checks and zero structural problems. This is portable memory-shape
 evidence only; it is not a Quartus block-RAM mapping, physical HM6116 timing
-result, or completed board top. The communication path is not yet connected
-to `hard_drivin_sound_mister`, and there is still no 68000 byte-lane/DTACK
-adapter or serial sound-ROM data implementation.
+result, or completed board top. The communication path is now connected to
+`hard_drivin_sound_mister` for processor port 1 and a whole-word host callback,
+but there is still no 68000 byte-lane/DTACK adapter or serial sound-ROM data
+implementation.

@@ -189,7 +189,9 @@ qualified 512-word storage/ownership boundary and shared address/block state.
 Its exhaustive simulation covers all 512 words plus the global port-2 read
 increment, wrap, validity, ownership, and port-3 non-effect cases; its
 pre-technology Yosys target retains one memory with zero structural problems.
-Connection to the processor/program-RAM board top, a host latch/bus adapter,
+The processor/program-RAM board top now routes port 1 to this path, preloads a
+synthetic word through the whole-word host callback, and verifies execution,
+global read increments, and reset retention. A 68000 host latch/bus adapter,
 serial sound-ROM data, and physical timing remain acceptance work.
 
 ### DAC path
@@ -308,8 +310,9 @@ The future non-ROM qualification sequence is:
 2. synthetic 4K shared-program-RAM ownership and host-load sequence (complete
    in both the standalone adapter and processor-connected RTL wrapper;
    host-bus timing remains);
-3. host/DSP communication-memory handshake (primary digital contract
-   transcribed; FPGA storage and execution test remain);
+3. host/DSP communication-memory handshake (complete for the same-clock
+   whole-word callback and synthetic processor execution; 68000 bus/latch
+   timing remains);
 4. BIO pulse/poll behavior;
 5. synthetic writes through every decoded I/O port and DAC trace (model-level
    raw-port smoke and primary digital-code mapping complete; signed-audio

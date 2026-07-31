@@ -65,8 +65,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   contents, no-priority conflict rejection, complete 4,096-word host-load/TMS
   readback coverage, and a memory-retaining Yosys target.
 - A partial `hard_drivin_sound_mister` top connecting the generic processor,
-  board-native decoder, and shared RAM, with physical I/O commit signaling and
-  correct low-address TBLW readiness routing.
+  board-native decoder, shared program RAM, and communication path, with
+  physical I/O commit signaling, internal port-1 routing, whole-word
+  communication host callbacks, and correct low-address TBLW readiness.
 - Primary-transcribed Driver Sound communication-RAM and shared-address
   contract, backed by newly pinned TI LS191/LS259 component data sheets. It
   records 512-word CRAMEN ownership, read-only DSP access, port-7 load,
@@ -470,6 +471,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Reordered the project-authored Hard Drivin' smoke so port 7 qualifies the
+  physically uncleared sound-address counters before the first
+  communication-RAM read. The independent opcode and transaction fixture
+  retains the same twelve instructions, 22 documented cycles, and final
+  architectural results.
 - Prevented inactive program-data pins from asserting the nonphysical
   `instruction_valid_o` qualification during initialization or recognized
   reset.
@@ -504,12 +510,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 - All 24 acquired reference files match their pinned SHA-256 values, including
   the official TI-hosted SDLS072 LS191 and SDLS086 LS259 data sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
-  Sound smoke: 12 retirements, 22 cycles, six writes, three reads, active-low
-  BIOZ branch, final ACC `0x000055aa`, and raw DAC word `0xf230`. A second
+  Sound smoke: the host preloads communication word `0x056`, port 7 first
+  qualifies the address chain, internal port 1 ignores an external sentinel,
+  and three reads advance `0x3456` to `0x3459`. The run still produces 12
+  retirements, 22 cycles, six writes, three reads, active-low BIOZ branch,
+  final ACC `0x000055aa`, and raw DAC word `0xf230`. A reset/CRAMEN host read
+  proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,167 abstract
-  cells, 122 retained checks, two memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,259 abstract
+  cells, 131 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -989,14 +999,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- The standalone communication-RAM/address adapter is not yet connected to
-  `hard_drivin_sound_mister`, a CRAMEN host latch, or a 68000 bridge. Its
-  registered response is an FPGA convention, not physical HM6116 timing.
+- The communication-RAM/address adapter is connected to
+  `hard_drivin_sound_mister`, but CRAMEN remains an external input and no
+  68000 latch/bus bridge exists. Its registered response is an FPGA convention,
+  not physical HM6116 timing.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2; port 3 remains an
   unresolved decoded strobe (`OQ-023`–`OQ-025`).
-- `hard_drivin_sound_mister` is only the processor/program-RAM/physical-I/O
-  callback boundary. It lacks the 68000 bridge and every sound-board peripheral;
+- `hard_drivin_sound_mister` is only the processor/program/communication-RAM
+  and physical-I/O callback boundary. It lacks the 68000 bridge and remaining
+  sound-ROM/compare/DAC/mute/IRQ/BIO peripheral implementations;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under

@@ -403,9 +403,11 @@ latches a separate ROM block nibble. Port 3 only produces an unconsumed
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys
-script qualify the isolated adapter only. It is not yet connected to
-`hard_drivin_sound_mister`; do not infer a 68000 bridge, physical HM6116
-latency, sound-ROM data path, or completed board integration from its presence.
+script qualify the isolated adapter. `hard_drivin_sound_mister` now routes
+processor port 1 to that path and exposes its whole-word host callback; the
+synthetic execution test qualifies the handoff, data source, global read
+increments, and reset retention. Do not infer a 68000 bridge/latch decode,
+physical HM6116 latency, sound-ROM data path, or completed board integration.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

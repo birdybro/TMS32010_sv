@@ -33,6 +33,13 @@ The harness supplies the following synthetic values:
 - provisional compare response zero from port 2; and
 - asserted active-low BIO, causing `BIOZ` to skip a sentinel `LACK 0xee`.
 
+The program writes port 7 before its first input read. This qualifies the
+physically uncleared shared LS191 address chain before port 1 uses `SA8:SA0`;
+the following port-1, port-0, and port-2 reads then each advance the full
+counter once. Reordering that project-authored sequence corrects the earlier
+abstract-callback fixture without changing its instruction count, documented
+cycle total, or final architectural results.
+
 The expected raw DAC write is preserved as `0xf230`. A044427 Rev A and the
 Am6012 manufacturer data establish the physical DAC input code as
 `0xf230 >> 4 = 0xf23`: `TD15:TD4` reach `B1:B12`, while `TD3:TD0` are absent

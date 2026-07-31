@@ -71,9 +71,10 @@ problems. This supports portable memory inference; it does not prove Cyclone V
 M10K mapping, fitter timing, or physical asynchronous-SRAM equivalence.
 
 The sixth script stops before technology mapping for the partial
-`hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM and
-144-word internal RAM as two memory objects and reports 2,167 abstract cells,
-122 checks, and zero structural problems. This is not comparable to the
+`hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM,
+512-word communication RAM, and 144-word internal RAM as three memory objects
+and reports 2,259 abstract cells, 131 checks, and zero structural problems.
+This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
 

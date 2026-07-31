@@ -156,8 +156,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "does not implement the 68000 bus",
             "needless FPGA divergence",
             "neither storage path is acknowledged",
+            "Communication-RAM host sequence",
+            "external `io_read_data_i` and `io_ready_i` are ignored",
             "A TBLW to address 0–7 arrives as `io_write_o`",
             "No Atari ROM data is used",
+            "`0x3456` to `0x3459`",
+            "2,259",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -179,7 +183,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "not a claimed control command",
             "hard_drivin_sound_communication_path",
             "loads every one of the 512 words",
-            "not yet connected",
+            "now connected",
             "physical HM6116 timing",
         ):
             self.assertIn(required, communication)

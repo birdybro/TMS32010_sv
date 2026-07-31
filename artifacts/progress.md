@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' standalone communication-RAM/address RTL
+- **Current milestone:** Hard Drivin' integrated communication-RAM execution
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 117 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
@@ -48,9 +48,9 @@
   with zero structural problems. A fifth target retains the board's 4K-by-16
   adapter as one registered-read, single-write-port abstract memory in an
   85-cell hierarchy with five checks and zero structural problems.
-  The partial processor/program-RAM board top retains both program and internal
-  data memories and passes at 2,167 abstract cells/122 checks with zero
-  structural problems before technology mapping. A seventh target retains the
+  The partial processor/program/communication-RAM board top retains all three
+  memories and passes at 2,259 abstract cells/131 checks with zero structural
+  problems before technology mapping. A seventh target retains the
   standalone 512-by-16 communication memory as one `$mem_v2` in an 82-cell
   hierarchy with seven checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -428,10 +428,14 @@
   Quartus block-RAM mapping remains unclaimed. A044427's whole-word host path
   conflicts with MAME byte merging under `SC-022`/`OQ-022`.
 - **New integration evidence:** the processor-connected wrapper host-loads the
-  existing ROM-free smoke, performs a conflict-free `/320RES` handoff, and
+  corrected ROM-free smoke, preloads communication word `0x056`, performs
+  conflict-free `/320RES` and CRAMEN handoffs, and
   reproduces 12 retirements, 22 cycles, nine physical I/O transfers, the BIOZ
-  path, and final ACC. A second reset/reload proves low-address TBLW readiness
-  and write data route through output port 3 without changing program RAM.
+  path, and final ACC. Internal port 1 ignores a deliberately wrong external
+  sentinel, and the three input reads advance the loaded address from
+  `0x3456` to `0x3459`. A reset-time host read proves communication retention;
+  a second reset/reload proves low-address TBLW readiness and write data route
+  through output port 3 without changing program RAM.
 - **New communication evidence:** A044427 configures two HM6116 devices as
   512 by 16 words. CRAMEN selects host read/write or DSP port-1 read-only
   ownership; `SA8:SA0` supplies the DSP address. Four LS191 counters load on
@@ -445,8 +449,9 @@
   states, blocked non-owner requests, owner-tagged synchronous reads, global
   port-2 increment, 16-bit wrap, port-7 load, port-6 low-nibble state, port-3
   non-effect, invalid pre-load state, and memory retention. Yosys retains one
-  512-by-16 memory in an 82-cell hierarchy with seven checks; this is not
-  physical HM6116 timing or board-top integration.
+  512-by-16 memory in an 82-cell hierarchy with seven checks. The board-top
+  execution described above now qualifies its processor callback connection;
+  physical HM6116 timing and a 68000 bridge remain unimplemented.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -469,8 +474,7 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** connect the standalone communication path to
-  `hard_drivin_sound_mister` with an explicit CRAMEN/host callback and qualify
-  a processor-executed port-1 read without inventing 68000 byte behavior.
+- **Next task:** transcribe and qualify the A044427 port-0 serial sound-ROM
+  shift/data path before selecting a synthesizable FPGA adapter boundary.
 - **Latest committed baseline before this cycle:**
-  `22b7279`
+  `afd2ccd`

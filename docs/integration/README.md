@@ -29,8 +29,9 @@ peripheral implementations and the 68000 bridge external.
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every
-word, but is not yet connected to `hard_drivin_sound_mister` and does not
-implement a 68000 bus, physical HM6116 timing, or serial sound-ROM data path.
+word. `hard_drivin_sound_mister` now routes processor port 1 to that adapter
+and exposes its whole-word host callback, but still does not implement a 68000
+bus/latch decode, physical HM6116 timing, or serial sound-ROM data path.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

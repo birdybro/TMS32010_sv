@@ -150,9 +150,10 @@ both structural checks report zero problems. This establishes an inferable
 synchronous memory shape, not a Quartus M10K mapping or fitted timing result.
 
 The sixth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,167 abstract cells, 122
-retained checks, and two `$mem_v2` objects: the synchronous 4K-by-16 shared
-program RAM and the core's existing asynchronous-read 144-by-16 internal RAM.
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,259 abstract cells, 131
+retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
+program RAM, synchronous 512-by-16 communication RAM, and the core's existing
+asynchronous-read 144-by-16 internal RAM.
 Both structural checks pass with zero problems. This proves hierarchy and
 memory retention only; it is not a technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
