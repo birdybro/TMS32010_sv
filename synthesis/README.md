@@ -1,7 +1,8 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current twenty-five-instruction execution
-slice, 144-word data RAM, and program phase engine only. They do not establish
+The checked-in projects synthesize the current twenty-six-instruction
+execution slice, signed multiplier, 144-word data RAM, and program phase
+engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
 
 ## Yosys
@@ -18,7 +19,8 @@ for the current one-cycle sequential instruction subset. Yosys 0.33 from
 Ubuntu 24.04 is the currently verified open-source synthesis baseline; see
 `synthesis/qualification.md` for the reproducible isolated command. The
 asynchronous data-RAM read currently lowers to registers and muxes rather than
-a memory block.
+a memory block. The portable multiply operator remains technology-neutral;
+the current Cyclone V flow infers one DSP block.
 
 ## Quartus
 

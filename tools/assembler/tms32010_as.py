@@ -307,6 +307,7 @@ class Assembler:
             "LDP",
             "LT",
             "MAR",
+            "MPY",
             "OR",
             "SUBS",
             "XOR",

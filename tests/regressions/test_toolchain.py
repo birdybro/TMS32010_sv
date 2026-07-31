@@ -30,6 +30,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LT *
             LT *+,AR1
             LT *-,0
+            MPY 0
+            MPY 127
+            MPY *
+            MPY *+,AR1
+            MPY *-,0
             LARK AR0,0
             LARK AR0,255
             LARK AR1,0
@@ -127,6 +132,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6A88,
                 0x6AA1,
                 0x6A90,
+                0x6D00,
+                0x6D7F,
+                0x6D88,
+                0x6DA1,
+                0x6D90,
                 0x7000,
                 0x70FF,
                 0x7100,
@@ -363,8 +373,12 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "AR0 or AR1"):
             self.assembler.assemble_text("LARK AR2,1\n")
 
-    def test_ldp_and_lt_operand_diagnostics_and_noncanonical_aliases(self) -> None:
-        for mnemonic, noncanonical in (("LDP", 0x6F89), ("LT", 0x6A89)):
+    def test_common_address_operand_diagnostics_and_noncanonical_aliases(self) -> None:
+        for mnemonic, noncanonical in (
+            ("LDP", 0x6F89),
+            ("LT", 0x6A89),
+            ("MPY", 0x6D89),
+        ):
             for operand, message in (
                 ("128", "direct address"),
                 ("*+,2", "next ARP"),

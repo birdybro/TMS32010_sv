@@ -20,6 +20,7 @@ module tb_ldp_rtl;
   logic [11:0] pc;
   logic [31:0] accumulator;
   logic [15:0] t_register;
+  logic [31:0] product_register;
   logic [15:0] auxiliary_register_0;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
@@ -53,6 +54,7 @@ module tb_ldp_rtl;
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .t_register_o                  (t_register),
+    .product_register_o            (product_register),
     .auxiliary_register_0_o        (auxiliary_register_0),
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
@@ -168,6 +170,8 @@ module tb_ldp_rtl;
             "every accepted LDP and setup instruction consumes one cycle");
 
     require(t_register == 16'h0000, "LDP preserves initialized T");
+    require(product_register == 32'h0000_0000,
+            "LDP preserves initialized P");
     $display("PASS tb_ldp_rtl");
     $finish;
   end

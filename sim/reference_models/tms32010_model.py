@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LT, MAR, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR, ZAC,
-ZALH, and ZALS.
+LDPK, LT, MAR, MPY, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR,
+ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -190,6 +190,7 @@ class Tms32010Model:
             "LAR",
             "LDP",
             "LT",
+            "MPY",
             "OR",
             "SACL",
             "SACH",
@@ -218,6 +219,7 @@ class Tms32010Model:
                 "LAR",
                 "LDP",
                 "LT",
+                "MPY",
                 "OR",
                 "SUB",
                 "SUBS",
@@ -261,6 +263,7 @@ class Tms32010Model:
                             "LAR",
                             "LDP",
                             "LT",
+                            "MPY",
                             "OR",
                             "SUB",
                             "SUBS",
@@ -294,6 +297,20 @@ class Tms32010Model:
             )
         elif mnemonic == "LT":
             self.state.t = self.data[operands["effective_address"]]
+        elif mnemonic == "MPY":
+            data_word = self.data[operands["effective_address"]]
+            if self.state.t == 0x8000 and data_word == 0x8000:
+                self.state.p = 0xC000_0000
+            else:
+                signed_t = (
+                    self.state.t
+                    if self.state.t < 0x8000
+                    else self.state.t - 0x10000
+                )
+                signed_data = (
+                    data_word if data_word < 0x8000 else data_word - 0x10000
+                )
+                self.state.p = (signed_t * signed_data) & ACC_MASK
         elif mnemonic == "SACL":
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
@@ -382,6 +399,7 @@ class Tms32010Model:
                 "LDP",
                 "LT",
                 "MAR",
+                "MPY",
                 "OR",
                 "SACL",
                 "SACH",
@@ -640,6 +658,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "LT", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6D00:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "MPY", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

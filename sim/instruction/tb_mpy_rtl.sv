@@ -1,6 +1,6 @@
 `default_nettype none
 
-module tb_lt_rtl;
+module tb_mpy_rtl;
   logic        clk;
   logic        initialize;
   logic        reset;
@@ -84,90 +84,125 @@ module tb_lt_rtl;
     end
   endtask
 
+  task automatic preload(input logic [7:0] address, input logic [15:0] data);
+    debug_data_address = address;
+    debug_data         = data;
+    tick();
+  endtask
+
   initial begin
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end
     program_memory[0]  = 16'h7ea5;  // LACK 0xa5
     program_memory[1]  = 16'h7f8b;  // SOVM
-    program_memory[2]  = 16'h6e01;  // LDPK 1
-    program_memory[3]  = 16'h6a0f;  // LT 15, old DP selects address 143
-    program_memory[4]  = 16'h6e00;  // LDPK 0
-    program_memory[5]  = 16'h708f;  // LARK AR0,143
-    program_memory[6]  = 16'h6880;  // LARP 0
-    program_memory[7]  = 16'h6aa1;  // LT *+,AR1
-    program_memory[8]  = 16'h7100;  // LARK AR1,0
-    program_memory[9]  = 16'h6a90;  // LT *-,AR0
-    program_memory[10] = 16'h6e01;  // LDPK 1
-    program_memory[11] = 16'h6a10;  // unresolved physical address 144
+    program_memory[2]  = 16'h6a01;  // LT 1
+    program_memory[3]  = 16'h6d02;  // MPY 2
+    program_memory[4]  = 16'h6a03;  // LT 3
+    program_memory[5]  = 16'h6d04;  // MPY 4
+    program_memory[6]  = 16'h6a05;  // LT 5
+    program_memory[7]  = 16'h6d05;  // MPY 5, special most-negative square
+    program_memory[8]  = 16'h6a06;  // LT 6
+    program_memory[9]  = 16'h7107;  // LARK AR1,7
+    program_memory[10] = 16'h7006;  // LARK AR0,6
+    program_memory[11] = 16'h6880;  // LARP 0
+    program_memory[12] = 16'h6da1;  // MPY *+,AR1
+    program_memory[13] = 16'h6d90;  // MPY *-,AR0
+    program_memory[14] = 16'h6e01;  // LDPK 1
+    program_memory[15] = 16'h6a0f;  // LT 15, physical address 143
+    program_memory[16] = 16'h6d0e;  // MPY 14, physical address 142
+    program_memory[17] = 16'h6d10;  // unresolved physical address 144
 
     initialize         = 1'b1;
     reset              = 1'b1;
     clock_enable       = 1'b1;
     debug_data_write   = 1'b1;
-    debug_data_address = 8'd143;
-    debug_data         = 16'hfedc;
-    tick();
-    initialize = 1'b0;
-    debug_data_address = 8'd0;
+    debug_data_address = 8'h00;
     debug_data         = 16'h0000;
-    tick();
+    preload(8'd1, 16'h0006);
+    preload(8'd2, 16'h0007);
+    preload(8'd3, 16'hffff);
+    preload(8'd4, 16'h0002);
+    preload(8'd5, 16'h8000);
+    preload(8'd6, 16'h7fff);
+    preload(8'd7, 16'h8000);
+    preload(8'd142, 16'h0003);
+    preload(8'd143, 16'hfffe);
     debug_data_write = 1'b0;
+    initialize       = 1'b0;
+    tick();
     require(!program_read && interrupt_mask,
             "reset suppresses fetch and masks interrupts");
 
     reset = 1'b0;
     tick();
     tick();
+    require(data_read && data_address == 8'd1,
+            "LT exposes the multiplicand source before MPY");
     tick();
-    require(data_page_pointer &&
-            data_read && !data_write && data_address_valid &&
-            data_address == 8'd143 && data_read_data == 16'hfedc,
-            "direct LT resolves the old page and exposes its full source");
+    require(t_register == 16'h0006 &&
+            data_read && data_address == 8'd2 &&
+            data_read_data == 16'h0007,
+            "MPY reads its data operand while preserving loaded T");
+    tick();
+    require(product_register == 32'h0000_002a,
+            "positive signed multiplication produces the primary example");
 
     tick();
-    require(t_register == 16'hfedc,
-            "direct LT loads all sixteen source bits into T");
+    tick();
+    require(product_register == 32'hffff_fffe,
+            "MPY treats both operands as signed two's-complement values");
     tick();
     tick();
-    tick();
-    require(data_read && data_address == 8'd143,
-            "indirect LT reads through the old selected AR");
+    require(product_register == 32'hc000_0000,
+            "most-negative square reproduces the documented hardware result");
 
     tick();
-    require(t_register == 16'hfedc &&
-            auxiliary_register_0 == 16'd144 &&
+    tick();
+    tick();
+    tick();
+    require(data_read && data_address == 8'd6,
+            "indirect MPY uses the selected AR before modification");
+    tick();
+    require(product_register == 32'h3fff_0001 &&
+            auxiliary_register_0 == 16'd7 &&
             auxiliary_register_pointer,
-            "LT loads T before common increment and ARP replacement");
+            "indirect MPY stores the product then updates AR and ARP");
+    require(data_read && data_address == 8'd7,
+            "second indirect MPY uses the newly selected AR");
     tick();
-    require(data_read && data_address == 8'd0 &&
-            data_read_data == 16'h0000,
-            "second indirect LT reads through newly selected AR1");
-
-    tick();
-    require(t_register == 16'h0000 &&
-            auxiliary_register_1 == 16'h01ff &&
+    require(product_register == 32'hc000_8000 &&
+            auxiliary_register_1 == 16'd6 &&
             !auxiliary_register_pointer,
-            "LT preserves zero and applies nine-bit decrement wrap");
+            "negative indirect product and nine-bit decrement are exact");
+
+    tick();
+    require(data_page_pointer && data_read && data_address == 8'd143,
+            "page-one LT resolves its old DP address");
+    tick();
+    require(t_register == 16'hfffe &&
+            data_read && data_address == 8'd142,
+            "page-one MPY sees the complete signed operands");
+    tick();
+    require(product_register == 32'hffff_fffa,
+            "page-one MPY stores a negative product");
     require(accumulator == 32'h0000_00a5 && overflow_mode && !overflow_flag,
-            "LT preserves accumulator and arithmetic status");
+            "MPY preserves ACC, OV, and OVM");
+    require(t_register == 16'hfffe,
+            "MPY preserves its T multiplicand");
+    require(data_read && !data_address_valid && !instruction_valid &&
+            data_address == 8'd144,
+            "unresolved MPY read remains visible without RAM aliasing");
 
     tick();
-    require(data_read && !data_address_valid && !instruction_valid,
-            "unresolved direct LT read is visible but cannot execute");
-    require(data_address == 8'd144,
-            "unresolved LT address is not aliased into physical RAM");
-    tick();
-    require(illegal && !retired && pc == 12'd11,
-            "unresolved LT traps without advancing PC");
-    require(t_register == 16'h0000 && cycle_count == 32'd11,
-            "failed LT leaves T unchanged and counts only accepted cycles");
-    require(data_write_data == 16'h00a5,
-            "inactive write datapath remains independent of T");
-    require(product_register == 32'h0000_0000,
-            "LT preserves initialized P");
+    require(illegal && !retired && pc == 12'd17,
+            "unresolved MPY traps without advancing PC");
+    require(product_register == 32'hffff_fffa && cycle_count == 32'd17,
+            "failed MPY preserves P and counts only accepted instructions");
+    require(!data_write && data_write_data == accumulator[15:0],
+            "MPY never creates a logical data write");
 
-    $display("PASS tb_lt_rtl");
+    $display("PASS tb_mpy_rtl");
     $finish;
   end
 endmodule

@@ -10,7 +10,7 @@ set_false_path -from \
   [get_ports {initialize_i rs_i clock_enable_i program_data_i[*] \
               debug_data_write_i debug_data_address_i[*] debug_data_i[*]}]
 set_false_path -to \
-  [get_ports {pc_o[*] accumulator_o[*] t_register_o[*] \
+  [get_ports {pc_o[*] accumulator_o[*] t_register_o[*] product_register_o[*] \
               auxiliary_register_0_o[*] auxiliary_register_1_o[*] \
               auxiliary_register_pointer_o data_page_pointer_o \
               overflow_flag_o overflow_mode_o interrupt_mask_o instruction_valid_o \

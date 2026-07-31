@@ -10,6 +10,7 @@ PACKAGE = ROOT / "rtl" / "packages" / "tms32010_pkg.sv"
 DECODE = ROOT / "rtl" / "core" / "tms32010_decode.sv"
 CORE = ROOT / "rtl" / "core" / "tms32010_core.sv"
 INTERNAL_RAM = ROOT / "rtl" / "core" / "tms32010_internal_ram.sv"
+MULTIPLIER = ROOT / "rtl" / "core" / "tms32010_multiplier.sv"
 
 
 class RtlInitialSliceTests(unittest.TestCase):
@@ -22,6 +23,9 @@ class RtlInitialSliceTests(unittest.TestCase):
     def _run_testbench(self, name: str, sources: list[Path]) -> None:
         build = ROOT / "build" / "verilator" / name
         build.mkdir(parents=True, exist_ok=True)
+        sources = list(sources)
+        if CORE in sources and MULTIPLIER not in sources:
+            sources.insert(sources.index(CORE), MULTIPLIER)
         command = [
             self.verilator,
             "--binary",
@@ -150,6 +154,18 @@ class RtlInitialSliceTests(unittest.TestCase):
                 INTERNAL_RAM,
                 CORE,
                 ROOT / "sim" / "instruction" / "tb_lt_rtl.sv",
+            ],
+        )
+
+    def test_mpy_signed_product_address_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_mpy_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_mpy_rtl.sv",
             ],
         )
 

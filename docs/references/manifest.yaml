@@ -22,7 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LT/MAR/OR/SACH/SACL/SAR/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-39, 3-42, 3-46, 3-53 through 3-56, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-89, 92, 96, 103-106, 110, 113, 118, and 120-121)",
+        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LT/MAR/MPY/OR/SACH/SACL/SAR/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-39, 3-42 through 3-43, 3-46, 3-53 through 3-56, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-89, 92-93, 96, 103-106, 110, 113, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -50,7 +50,7 @@
       "notes": "Use opcode examples as an independent check, not as the only encoding authority.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "LDP and LT assembler syntax, operation, encoding, and examples, printed pages 3-36 and 3-39 (PDF pages 57 and 60)",
+        "LDP, LT, and MPY assembler syntax, operation, encoding, and examples, printed pages 3-36, 3-39, and 3-43 (PDF pages 57, 60, and 64)",
         "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)"
       ],
       "status": "acquired",
@@ -80,7 +80,7 @@
       "sections_or_pages_used": [
         "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison",
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
-        "ABS, ADD, ADDH, ADDS, AND, LAR, LDP, LT, MAR, OR, SAR, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-18, 4-38, 4-41, 4-44, 4-47 through 4-48, 4-52, 4-61 through 4-62, 4-66, 4-70, and 4-73 (PDF pages 95-99, 119, 122, 125, 128-129, 133, 142-143, 147, 151, and 154)",
+        "ABS, ADD, ADDH, ADDS, AND, LAR, LDP, LT, MAR, MPY, OR, SAR, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-18, 4-38, 4-41, 4-44, 4-47 through 4-49, 4-52, 4-61 through 4-62, 4-66, 4-70, and 4-73 (PDF pages 95-99, 119, 122, 125, 128-130, 133, 142-143, 147, 151, and 154)",
         "ROVM instruction description, printed page 4-58 (PDF page 139)"
       ],
       "status": "acquired",

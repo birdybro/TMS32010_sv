@@ -1,6 +1,7 @@
 read_verilog -sv rtl/packages/tms32010_pkg.sv
 read_verilog -sv rtl/core/tms32010_decode.sv
 read_verilog -sv rtl/core/tms32010_internal_ram.sv
+read_verilog -sv rtl/core/tms32010_multiplier.sv
 read_verilog -sv rtl/core/tms32010_core.sv
 read_verilog -sv rtl/core/tms32010_program_bus.sv
 read_verilog -sv rtl/wrappers/tms32010_phase_slice.sv

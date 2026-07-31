@@ -23,6 +23,7 @@ module tms32010_core (
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
   output logic [15:0] t_register_o,
+  output logic [31:0] product_register_o,
   output logic [15:0] auxiliary_register_0_o,
   output logic [15:0] auxiliary_register_1_o,
   output logic        auxiliary_register_pointer_o,
@@ -62,6 +63,7 @@ module tms32010_core (
   localparam logic [4:0] OP_MAR  = 5'd22;
   localparam logic [4:0] OP_LDP  = 5'd23;
   localparam logic [4:0] OP_LT   = 5'd24;
+  localparam logic [4:0] OP_MPY  = 5'd25;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -81,6 +83,7 @@ module tms32010_core (
   logic        sub_overflow;
   logic [31:0] subs_wrapped_result;
   logic        subs_overflow;
+  logic [31:0] multiplier_product;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -113,7 +116,8 @@ module tms32010_core (
         (decoded_operation == OP_LAR) ||
         (decoded_operation == OP_SAR) ||
         (decoded_operation == OP_LDP) ||
-        (decoded_operation == OP_LT)
+        (decoded_operation == OP_LT) ||
+        (decoded_operation == OP_MPY)
       )
     ) begin
       if (decoded_indirect) begin
@@ -141,6 +145,12 @@ module tms32010_core (
     .debug_data_i    (debug_data_i)
   );
 
+  tms32010_multiplier multiplier (
+    .multiplicand_i (t_register_o),
+    .multiplier_i   (ram_read_data),
+    .product_o      (multiplier_product)
+  );
+
   assign program_address_o = pc_o;
   assign program_read_o    = ~reset_i && ~initialize_i;
   assign data_read_o =
@@ -160,7 +170,8 @@ module tms32010_core (
       (decoded_operation == OP_SUBS) ||
       (decoded_operation == OP_LAR) ||
       (decoded_operation == OP_LDP) ||
-      (decoded_operation == OP_LT)
+      (decoded_operation == OP_LT) ||
+      (decoded_operation == OP_MPY)
     );
   assign data_write_o =
     ~reset_i &&
@@ -230,7 +241,8 @@ module tms32010_core (
         (decoded_operation != OP_LAR) &&
         (decoded_operation != OP_SAR) &&
         (decoded_operation != OP_LDP) &&
-        (decoded_operation != OP_LT)
+        (decoded_operation != OP_LT) &&
+        (decoded_operation != OP_MPY)
       ) ||
       ram_address_valid
     );
@@ -260,6 +272,7 @@ module tms32010_core (
       pc_o                         <= 12'h000;
       accumulator_o                <= 32'h0000_0000;
       t_register_o                 <= 16'h0000;
+      product_register_o           <= 32'h0000_0000;
       auxiliary_register_0_o       <= 16'h0000;
       auxiliary_register_1_o       <= 16'h0000;
       auxiliary_register_pointer_o <= 1'b0;
@@ -274,7 +287,7 @@ module tms32010_core (
       interrupt_mask_o <= 1'b1;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
-      // ACC, T, AR0, AR1, ARP, DP, and OV receive no arbitrary reset value.
+      // ACC, T, P, AR0, AR1, ARP, DP, and OV receive no arbitrary reset value.
       // TI explicitly documents that reset leaves OVM unchanged. Retention of
       // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
@@ -299,6 +312,7 @@ module tms32010_core (
           end
           OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_LT: t_register_o <= ram_read_data;
+          OP_MPY: product_register_o <= multiplier_product;
           OP_SAR: begin
           end
           OP_SACL: begin
@@ -401,7 +415,8 @@ module tms32010_core (
            (decoded_operation == OP_SAR) ||
            (decoded_operation == OP_MAR) ||
            (decoded_operation == OP_LDP) ||
-           (decoded_operation == OP_LT)) &&
+           (decoded_operation == OP_LT) ||
+           (decoded_operation == OP_MPY)) &&
           decoded_indirect
         ) begin
           if (

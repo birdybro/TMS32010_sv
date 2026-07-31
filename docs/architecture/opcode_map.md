@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial twenty-five-instruction model/tool boundary is intentionally partial
+Its initial twenty-six-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -17,6 +17,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `LDP dma` | `0x6f00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LDP` page, printed p. 3-36 |
 | `LDPK K` | `0x6e00` | `0xfffe` | 1 | 1 | individual `LDPK` page, printed p. 3-37 |
 | `LT dma` | `0x6a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LT` page, printed p. 3-39 |
+| `MPY dma` | `0x6d00` | `0xff00` plus addressing constraints | 1 | 1 | individual `MPY` page, printed p. 3-43 |
 | `NOP` | `0x7f80` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `ZAC` | `0x7f89` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-5 |
 | `ROVM` | `0x7f8a` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |

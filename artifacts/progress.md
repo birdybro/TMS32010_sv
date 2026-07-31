@@ -1,20 +1,22 @@
 # Progress summary
 
-- **Current milestone:** LT T-register load qualification
+- **Current milestone:** MPY signed multiplier qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 59 repository/provenance/document/ISA/toolchain tests; 97
-  directed model tests; 16 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded twenty-five-instruction model/RTL
-  differential including T, OV/OVM, logical reads/writes, and all 144 final RAM
+- **Tests passing:** 60 repository/provenance/document/ISA/toolchain tests; 103
+  directed model tests; 17 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-six-instruction model/RTL
+  differential including T, P, OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the twenty-five-instruction partial core, 144-word RAM, and phase engine on
-  `5CSEBA6U23I7`: 1,662 ALMs, 2,451 registers, 0 RAM/DSP, 62.65 MHz worst
-  slow-corner internal Fmax, +4.038 ns setup and +0.137 ns worst hold slack at
-  50 MHz. TimeQuest reports zero unconstrained categories after enumerated
+  the twenty-six-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,708 ALMs, 2,483 registers, 0 RAM blocks,
+  1 DSP block, 62.09 MHz worst slow-corner internal Fmax, +3.894 ns setup
+  slack, and +0.164 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  8,281 generic cells and lowering the asynchronous RAM to registers/muxes; it
+  10,179 generic cells and lowering the asynchronous RAM to registers/muxes;
+  its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -56,15 +58,18 @@
   the old direct DP or indirect selected AR, ignores source bits 15:1,
   transfers source bit 0 to DP, and only then applies ordinary indirect
   AR/ARP updates; LT uses the same old-address/post-update ordering but loads
-  all 16 source bits into T without changing ACC or arithmetic status
+  all 16 source bits into T without changing ACC or arithmetic status; MPY
+  signed-multiplies T and the selected word into P, except that the documented
+  original-hardware `0x8000` square produces `0xc0000000`
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
-  overflow-status behavior, physical-reset retention of unlisted state, Hard
-  Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify the primary-defined `MPY` multiply
-  instruction now that T loads are verified; keep
+  overflow-status behavior, physical-reset retention of unlisted state, MPY
+  interrupt deferral, Hard Drivin' INT net, and safe phase adaptation without
+  READY
+- **Next task:** research and qualify the primary-defined `MPYK` immediate
+  multiply while preserving MPY's interrupt-deferral gap under `INT-001`; keep
   `ADDH` and `ABS` outside the supported boundary pending `OQ-011` and
   `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `ac5508065a732496953337b704a98b417d456f28`
+  `127c4ec24a68ff9e19de8cb4c2c3d562ed18e219`

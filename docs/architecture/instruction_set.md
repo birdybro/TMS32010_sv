@@ -194,6 +194,38 @@ ti-tms32010-assembly-guide-spru002b, `LT`, printed p. 3-39
 (PDF p. 60)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
 update bits.**
 
+## Qualified `MPY` functional slice
+
+`MPY` fixes bits 15:8 to `0x6d`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. It treats both the 16-bit T register and
+the selected internal RAM word as signed two's-complement operands and
+replaces the 32-bit P register with their product. It is one word and one
+cycle and does not modify T, ACC, `OV`, or `OVM`
+[ti-tms32010-users-guide-spru001b, §§2.2 and `MPY`, printed pp. 2-9 and
+3-43 (PDF pp. 33 and 93); ti-first-generation-users-guide-1987, `MPY`,
+printed p. 4-49 (PDF p. 130)]. **Confidence: VERIFIED_PRIMARY.**
+
+The original multiplier has one documented arithmetic exception. When both
+operands are `0x8000`, the mathematical signed product would be
+`0x40000000`, but the TMS32010 produces `0xc0000000`. Directed model and RTL
+tests require that exact result in addition to zero, sign, extrema, direct,
+indirect, page-one, and counter-update cases. The pinned MAME implementation
+independently corroborates the exception, but is not its authority
+[mame-tms320c1x-core-030fefc, `tms320c1x_device_base::mpy`, lines 631-635].
+**Confidence: VERIFIED_PRIMARY; CORROBORATED by the secondary oracle.**
+
+Direct addressing resolves the data operand through the old DP. Indirect
+addressing reads through the AR selected by the old ARP before the ordinary
+nine-bit AR update and optional next-ARP replacement. Reserved controls and
+the simultaneous-update uncertainty follow `OQ-010`. TI also specifies that
+interrupt service is inhibited until the instruction following `MPY`
+completes. The functional multiply and one-cycle program/data transaction are
+verified, but actual interrupt deferral is not: the current core has no
+interrupt entry engine. That gap remains part of `INT-001` and prevents this
+slice from being complete interrupt evidence
+[ti-tms32010-users-guide-spru001b, `MPY`, printed p. 3-43 (PDF p. 93)].
+**Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

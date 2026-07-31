@@ -24,6 +24,7 @@ module tb_phase_slice_integration;
   logic [11:0] pc;
   logic [31:0] accumulator;
   logic [15:0] t_register;
+  logic [31:0] product_register;
   logic [15:0] auxiliary_register_0;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
@@ -61,6 +62,7 @@ module tb_phase_slice_integration;
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .t_register_o                  (t_register),
+    .product_register_o            (product_register),
     .auxiliary_register_0_o        (auxiliary_register_0),
     .auxiliary_register_1_o        (auxiliary_register_1),
     .auxiliary_register_pointer_o  (auxiliary_register_pointer),
@@ -132,7 +134,8 @@ module tb_phase_slice_integration;
     program_memory[24] = 16'h6890;  // MAR *-,AR0
     program_memory[25] = 16'h6f03;  // LDP 3
     program_memory[26] = 16'h6a03;  // LT 3
-    program_memory[27] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[27] = 16'h6d04;  // MPY 4
+    program_memory[28] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -143,6 +146,9 @@ module tb_phase_slice_integration;
     tick();
     debug_data_address = 8'h03;
     debug_data         = 16'hbeef;
+    tick();
+    debug_data_address = 8'h04;
+    debug_data         = 16'h0002;
     tick();
     debug_data_write = 1'b0;
     initialize = 1'b0;
@@ -396,13 +402,25 @@ module tb_phase_slice_integration;
             "LT preserves arithmetic status");
     require(pc == 12'h01b && cycle_count == 32'd27,
             "LT consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h04 && data_read_data == 16'h0002,
+            "MPY presents its internal operand beside normal program phases");
+
+    advance_to_sample();
+    require(retired && product_register == 32'hffff_7dde,
+            "MPY stores the signed product in P");
+    require(t_register == 16'hbeef &&
+            !overflow_flag && overflow_mode,
+            "MPY preserves T and arithmetic status");
+    require(pc == 12'h01c && cycle_count == 32'd28,
+            "MPY consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h01b, "trap holds architectural PC");
-    require(program_address == 12'h01b, "trap holds native program address");
-    require(cycle_count == 32'd27, "trap does not count as retired cycle");
+    require(pc == 12'h01c, "trap holds architectural PC");
+    require(program_address == 12'h01c, "trap holds native program address");
+    require(cycle_count == 32'd28, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

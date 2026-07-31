@@ -2,9 +2,9 @@
 
 ## 2026-07-30 Quartus fits
 
-These results cover the twenty-five-instruction RTL, 144-word internal data RAM, and
-first program-bus phase engine. They are not complete-core resource or
-interface-timing results.
+These results cover the twenty-six-instruction RTL, signed multiplier,
+144-word internal data RAM, and first program-bus phase engine. They are not
+complete-core resource or interface-timing results.
 
 - Tool: Quartus Prime Lite 17.0.2 Build 602, 2017-07-19.
 - Target: Cyclone V `5CSEBA6U23I7` (DE10-Nano FPGA).
@@ -15,17 +15,17 @@ interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,662 ALMs (4%).
-- Registers: 2,451.
+- Logic: 1,708 ALMs (4%).
+- Registers: 2,483.
 - Memory: 0 bits, 0 RAM blocks.
-- DSP blocks: 0.
+- DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +4.038 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.137 ns.
-- Slow-corner internal Fmax: 62.65 MHz at 100 °C, 62.93 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +3.894 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.164 ns.
+- Slow-corner internal Fmax: 63.09 MHz at 100 °C, 62.09 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
-The I/O categories report zero because each of the 237 harness-only interface
+The I/O categories report zero because each of the 269 harness-only interface
 pins is explicitly excluded, not because portable-core I/O timing is closed.
 The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
@@ -38,12 +38,16 @@ T port to the synthesis-harness false-path list restored zero unconstrained
 categories in the full rerun. This exclusion remains harness-scoped and is not
 a claim of wrapper I/O timing.
 
+The portable multiplier infers one Cyclone V DSP block without a
+vendor-specific primitive. This is a technology mapping result, not an
+architectural dependency.
+
 The reports contain no latch diagnostic. The five warnings are the expected
 synthesis-harness notices: the currently constant interrupt-mask diagnostic,
 a Lite-only LogicLock notice, incomplete I/O assignments, and the sole
 physical clock's intentionally absent package location. Quartus separately
 reports as information that the 144-word array cannot infer RAM because its
-read is asynchronous, so it maps to registers and logic. The fit uses 221
+read is asynchronous, so it maps to registers and logic. The fit uses 269
 virtual pins and one physical clock pin; the expected critical warning says
 that clock has no package location.
 This is not a deployable board image, and the generated `.sof` is deliberately
@@ -89,10 +93,12 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.33 from Ubuntu 24.04 successfully elaborates and synthesizes the same
 integrated partial hierarchy. Both pre- and post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, eight RTL assertions
-remain represented, and the generic result contains 8,281 cells. The
+remain represented, and the generic result contains 10,179 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 2,318 mux cells, leaving no inferred memories after generic synthesis. This
-is a portability smoke test, not an FPGA resource estimate.
+is a portability smoke test, not an FPGA resource estimate. The standalone
+signed multiplier accounts for 1,841 of those generic cells; unlike Quartus,
+generic Yosys synthesis does not map it to a target DSP resource.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
