@@ -60,16 +60,18 @@ integration. A separate fetch address primes word 0 without retirement, then
 stays one word ahead while the core retires decoded one-cycle instructions.
 Directed tests cover stalls and reset recovery; a 43-retirement offset
 differential spans all 38 already-qualified one-cycle operation families and
-compares the complete exposed architectural state. Exact B, BANZ, BV, and the
-six accumulator-conditional branches also retain execute ownership through
-nonexecutable operand fetch and selected instruction fetch. BANZ selects from
-the old nine-bit counter and decrements only at branch retirement; the
-accumulator family selects from the unchanged full 32-bit ACC; BV selects
-from old sticky OV and clears it only at taken retirement. Other
+compares the complete exposed architectural state. Exact B, BANZ, BV, BIOZ,
+and the six accumulator-conditional branches also retain execute ownership
+through nonexecutable operand fetch and selected instruction fetch. BANZ
+selects from the old nine-bit counter and decrements only at branch
+retirement; the accumulator family selects from the unchanged full 32-bit
+ACC; BV selects from old sticky OV and clears it only at taken retirement;
+BIOZ samples raw active-low BIO at operand completion and retains only the
+resulting decision through the selected fetch. Other
 multicycle, reserved, or invalid-address execute words park the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
-mechanism, not claimed hardware behavior. BIOZ, CALL, I/O, table, and
-interrupt overlap remain in the legacy wrapper and are not
+mechanism, not claimed hardware behavior. CALL, I/O, table, and interrupt
+overlap remain in the legacy wrapper and are not
 pipeline-integrated.
 
 `tms32010_program_bus` is the first independently tested native timing

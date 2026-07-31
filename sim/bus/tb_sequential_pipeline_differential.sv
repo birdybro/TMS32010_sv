@@ -166,6 +166,7 @@ module tb_sequential_pipeline_differential;
     .initialize_i                  (initialize),
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
+    .bio_i                         (1'b1),
     .program_data_i                (pipeline_program_data),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
@@ -284,7 +285,7 @@ module tb_sequential_pipeline_differential;
     program_memory[40] = 16'h6400;  // SUBC 0
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
     program_memory[42] = 16'h6203;  // SUBH 3
-    program_memory[43] = 16'hf600;  // unsupported BIOZ boundary
+    program_memory[43] = 16'hf800;  // unsupported CALL boundary
 
     initialize         = 1'b1;
     rs                 = 1'b1;
@@ -347,9 +348,9 @@ module tb_sequential_pipeline_differential;
 
     require(
       pipeline_blocked &&
-      pipeline_execute_word == 16'hf600 &&
+      pipeline_execute_word == 16'hf800 &&
       !pipeline_illegal,
-      "pipeline parks on unsupported BIOZ without executing it"
+      "pipeline parks on unsupported CALL without executing it"
     );
     require(
       !legacy_illegal &&

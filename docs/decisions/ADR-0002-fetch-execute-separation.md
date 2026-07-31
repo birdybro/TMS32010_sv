@@ -36,8 +36,8 @@ The final sequencer will represent fetch and execute ownership explicitly:
 The first implementation was the standalone synthesizable
 `tms32010_fetch_execute` register. The
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
-the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, and the six
-accumulator-conditional branches. Other
+the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, and the
+six accumulator-conditional branches. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
 their execution intervals to the explicit pipeline.
@@ -68,6 +68,10 @@ their execution intervals to the explicit pipeline.
   operand fetch. OV remains unchanged through that decision and any
   selected-fetch stall, then clears only when a taken BV retires as the
   selected instruction is captured.
+- Exact `BIOZ` samples the raw active-low input at operand completion, not
+  opcode recognition. The resulting decision selects the second execution
+  interval's fetch and remains stable through later pin changes or stalls;
+  retaining that decision is not an opcode-time latch of the BIO pin.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 
@@ -83,6 +87,6 @@ their execution intervals to the explicit pipeline.
 These claims use
 [ti-tms32010-users-guide-spru001b]. **Confidence: VERIFIED_PRIMARY for
 separate fetch/execute ownership and the table/interrupt dummy-fetch rules;
-INFERRED for the exact B/BANZ/BV/accumulator-branch execute-interval mappings
-synthesized from Figure 2-2, Table 3-2, and the individual instruction pages
-because TI supplies no dedicated branch pin waveform.**
+INFERRED for the exact B/BANZ/BV/BIOZ/accumulator-branch execute-interval
+mappings synthesized from Figure 2-2, Table 3-2, and the individual
+instruction pages because TI supplies no dedicated branch pin waveform.**

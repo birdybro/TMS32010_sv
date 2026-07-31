@@ -64,6 +64,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Explicit BV pipeline ownership for both old-OV outcomes: the nonexecutable
   operand selects target or fallthrough, the selected fetch is cycle 2, and
   sticky OV clears only when a taken BV retires and captures that instruction.
+- Explicit BIOZ pipeline ownership for both active-low pin outcomes: the raw
+  input is sampled at operand completion, the selected fetch is cycle 2, and
+  the resulting decision remains stable through later pin changes or stalls.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -654,15 +657,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   completion/replacement, bubbles, and reset/flush invalidation under two
   explicit sequencer assumptions; its cover reaches the complete
   prime/stall/replace/flush/target path at step 7.
-- Yosys 0.67+111 synthesizes the exact-B/BANZ/BV/accumulator-branch sequential
-  pipeline wrapper to 14,567 generic cells with 44 retained checks and zero
+- Yosys 0.67+111 synthesizes the
+  exact-B/BANZ/BV/BIOZ/accumulator-branch sequential pipeline wrapper to
+  14,715 generic cells with 47 retained checks and zero
   structural errors;
   `make synth-yosys` now reproducibly runs this top as well as the unchanged
   13,514-cell/26-check legacy harness.
 - Directed pipeline tests prove that fetch 0 does not retire, fetch and execute
   addresses remain one word apart across stalls, every word in the qualified
   one-cycle stream matches legacy architectural state at one-retirement
-  offset, unsupported BIOZ cannot enter the qualified execution path, and
+  offset, unsupported CALL cannot enter the qualified execution path, and
   reset recovers the parked pipeline.
 - A directed B pipeline test proves operand nonexecution, retained B ownership,
   redirected target fetch, two execution intervals, target-fetch stall
@@ -682,9 +686,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   retained ownership and unchanged OV through operand and selected-fetch
   stalls, taken-path clear only at retirement, deferred selected-instruction
   effects on both outcomes, and malformed-operand parking before OV mutation.
+- A directed BIOZ pipeline test proves the opcode-prefetch level is not
+  latched, a pin change during an operand stall owns the decision at operand
+  completion, later pin changes cannot redirect the selected fetch, both
+  paths retain ownership through stalls, selected-instruction effects are
+  deferred, and malformed operands park before speculative selection.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 16
-  native bus/phase tests including six pipeline tests, five interrupt
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 17
+  native bus/phase tests including seven pipeline tests, five interrupt
   RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
@@ -728,11 +737,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   qualified, but TI's located instruction pages do not identify its second
   cycle's external address or `MEN` behavior.
 - No dedicated original-part branch pin waveform has been located. Exact B,
-  BANZ, BV, and the six accumulator-branch explicit execute-interval mappings
-  are INFERRED from Figure 2-2, the two-word/two-cycle table entries, and
-  their operand/condition definitions, with directed simulation evidence.
-  BIOZ and CALL retain legacy bus-order tests but not explicit execute-slot
-  ownership under `OQ-007`.
+  BANZ, BV, BIOZ, and the six accumulator-branch explicit execute-interval
+  mappings are INFERRED from Figure 2-2, the two-word/two-cycle table entries,
+  and their operand/condition definitions, with directed simulation evidence.
+  CALL retains legacy bus-order tests but not explicit execute-slot ownership
+  under `OQ-007`.
 - CALA's state effects and numeric two-cycle total are model/tool-qualified,
   but its located pages likewise do not identify the second cycle's external
   address or `MEN` behavior; RTL/native qualification remains `OQ-007`.

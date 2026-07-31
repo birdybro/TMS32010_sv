@@ -30,8 +30,8 @@ accounts and retires them at fetch-sample boundaries without a distinct
 execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
-only for sequential one-cycle instructions, exact `B`/`BANZ`/`BV`, and the
-six accumulator branches
+only for sequential one-cycle instructions, exact
+`B`/`BANZ`/`BV`/`BIOZ`, and the six accumulator branches
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -172,12 +172,12 @@ VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
-Except for exact `B`, `BANZ`, `BV`, and the six accumulator branches, the
-branch-family tables below describe transaction order in the legacy wrapper.
-Their numbered read slots are not TI's post-prefetch execution-cycle labels.
-TI establishes two words, two cycles, the following target word, and ordinary
-program-memory fetch behavior, but no located original-part document supplies
-a dedicated branch pin waveform. Consequently, the combined
+Except for exact `B`, `BANZ`, `BV`, `BIOZ`, and the six accumulator branches,
+the branch-family tables below describe transaction order in the legacy
+wrapper. Their numbered read slots are not TI's post-prefetch execution-cycle
+labels. TI establishes two words, two cycles, the following target word, and
+ordinary program-memory fetch behavior, but no located original-part document
+supplies a dedicated branch pin waveform. Consequently, the combined
 read/execute/commit mapping for these still unintegrated families is INFERRED
 even where each component fact is VERIFIED_PRIMARY.
 
@@ -268,26 +268,30 @@ VERIFIED_SIMULATION for the stated implementation.**
 
 ## Branch on I/O status
 
-The legacy wrapper gives `BIOZ` two normal program reads and samples the raw
-active-low pin:
+The explicit pipeline drives `BIOZ` through these source-derived intervals:
 
-| Legacy read slot | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize exact `0xf600`; advance PC/address to the following word; do not latch BIO |
-| 2 | opcode PC + 1 | sample canonical target and live BIO; low selects target, high selects opcode PC + 2; retire |
-| following | selected target/fallthrough | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize exact `0xf600`; BIOZ enters execute ownership without latching BIO |
+| execution cycle 1 | opcode PC + 1 | sample canonical target and live active-low BIO; low selects target and high selects fallthrough fetch |
+| execution cycle 2 | selected target or opcode PC + 2 | fetch selected instruction; retire BIOZ and capture fetched word |
 
-Both outcomes consume cycle 2. TI explicitly says BIO is sampled every
-machine cycle and is not latched. The electrical input must meet 50 ns setup
-before falling `CLKOUT`; the RTL exposes the raw level and applies it only at
-the enabled target-word sample. Directed tests change the level between
-cycles in both directions and hold the active target phase with clock enable
-low before retirement
+Both outcomes consume both execution intervals. TI explicitly says BIO is
+sampled every machine cycle and is not latched. The electrical input must
+meet 50 ns setup before execution cycle 1's falling target-word/operand
+boundary. The implementation retains only that resulting branch decision
+through cycle 2; later pin changes or a clock-enable stall cannot redirect an
+already selected fetch. Every transaction uses the normal
+address/`MEN`/falling-edge relationship and adds no `DEN` or `WE` phase.
+Directed tests change BIO during an operand stall, change it again after
+selection, stall both selected paths, defer selected-instruction effects, and
+park malformed operands
 [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
 `BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
-**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
-transaction/commit mapping.**
+**Confidence: VERIFIED_PRIMARY for component facts and the pin sample;
+INFERRED for the combined execute-interval mapping; VERIFIED_SIMULATION for
+the stated implementation.**
 
 ## Direct subroutine call
 

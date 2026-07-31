@@ -92,17 +92,20 @@ accompanies either execution interval
 facts; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for the implementation.**
 
-`BIOZ` presents exact opcode `0xf600` at PC and the canonical target at PC+1
-on both input levels. The physical BIO input is active low, sampled every
-machine cycle, and not latched. The level meeting the 50 ns setup requirement
-at the second falling-`CLKOUT` sample therefore selects target or PC+2; a
-change after opcode recognition but before the target sample affects the
-branch. Both paths take two cycles and emit only normal `MEN` reads
+The explicit pipeline prefetches exact BIOZ opcode `0xf600` at PC, reads its
+canonical operand at PC+1 during execution cycle 1, and samples the raw
+active-low input at that operand's falling boundary. The sampled level
+selects execution cycle 2's instruction fetch at target or PC+2. BIOZ owns
+execution until that fetch completes, when it retires and captures the
+selected word without executing it. The implementation retains only the
+decision after operand completion, so later BIO changes or a selected-fetch
+stall cannot redirect the active address. Both intervals use normal `MEN`
+reads and no data or I/O transaction
 [ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, `BIOZ`, and Appendix A
 BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
 (PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY for component
-facts and BIO sampling; INFERRED for the legacy combined transaction/commit
-mapping.**
+facts and BIO sampling; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 `CALL` presents exact opcode `0xf800` at PC and its canonical target at PC+1
 through two ordinary `MEN` reads. At the second sample it pushes opcode-PC+2

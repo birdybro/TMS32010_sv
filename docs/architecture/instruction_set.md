@@ -284,12 +284,26 @@ ti-first-generation-users-guide-1987, `BIOZ`, printed p. 4-24
 
 TI states that BIO is sampled every machine cycle and is not latched; its AC
 table requires setup before falling `CLKOUT`. Consequently the live level at
-the target-word retirement sample owns the branch, not the level observed
-when the opcode was recognized. Directed RTL and native-phase tests reverse
-BIO in both directions between those samples and verify this ownership.
+the target-word falling sample owns the selection, not the level observed
+when the opcode was recognized. Legacy RTL and native-phase tests reverse BIO
+in both directions between those samples and verify this ownership; the
+explicit pipeline maps the same target-word sample to operand completion.
 Malformed target words trap before the pin predicate is applied. Pinned MAME
 corroborates the active condition through its abstract callback, but shortens
 the untaken path; `SC-015` records that disagreement.
+
+The source-derived explicit-pipeline mapping places `0xf600` in execute
+ownership at opcode-prefetch completion, reads its nonexecutable canonical
+operand at PC+1 during execution cycle 1, and samples live BIO at that
+operand boundary to select execution cycle 2's instruction fetch. BIOZ
+retires and captures—but does not execute—that word only when the selected
+fetch completes. The implementation retains the decision rather than the raw
+pin after operand completion. A directed test changes BIO during an operand
+stall, changes it again after selection, stalls both paths, proves the
+selected address and ownership stable, defers fetched-instruction effects,
+and parks a malformed operand. **Confidence: VERIFIED_PRIMARY for the
+component facts and BIO sample boundary; INFERRED for the combined
+execute-interval mapping; VERIFIED_SIMULATION for the implementation.**
 
 ## Qualified direct-call slice
 

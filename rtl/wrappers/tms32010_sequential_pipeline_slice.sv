@@ -1,16 +1,18 @@
 `default_nettype none
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
-// instructions, exact B/BANZ/BV, and the exact accumulator-conditional
-// branch family. Program fetch owns a separate address from the core PC.
-// Other multicycle, reserved, and invalid-data-address instructions park the
-// wrapper before execution; the legacy phase wrapper remains responsible for
-// their separately qualified traces.
+// instructions, exact B/BANZ/BV/BIOZ, and the exact
+// accumulator-conditional branch family. Program fetch owns a separate
+// address from the core PC. Other multicycle, reserved, and
+// invalid-data-address instructions park the wrapper before execution; the
+// legacy phase wrapper remains responsible for their separately qualified
+// traces.
 module tms32010_sequential_pipeline_slice (
   input  logic        clk_i,
   input  logic        initialize_i,
   input  logic        rs_i,
   input  logic        clock_enable_i,
+  input  logic        bio_i,
   input  logic [15:0] program_data_i,
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
@@ -67,6 +69,7 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_BNZ  = 6'd43;
   localparam logic [5:0] OP_BZ   = 6'd44;
   localparam logic [5:0] OP_BV   = 6'd45;
+  localparam logic [5:0] OP_BIOZ = 6'd46;
   localparam logic [5:0] OP_SUBH = 6'd52;
 
   function automatic logic is_accumulator_branch(
@@ -125,11 +128,14 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_is_b;
   logic        execute_is_accumulator_branch;
   logic        execute_is_bv;
+  logic        execute_is_bioz;
   logic        execute_control_supported;
   logic        control_operand_step;
   logic        control_target_step;
   logic [8:0]  banz_counter;
   logic        accumulator_condition_taken;
+  logic        bioz_taken;
+  logic        core_bio;
   logic        execute_complete;
   logic        core_instruction_valid;
   logic        execute_ready;
@@ -185,6 +191,11 @@ module tms32010_sequential_pipeline_slice (
             overflow_flag_o
               ? program_data_i[11:0]
               : program_bus_address + 12'h001;
+        end else if (execute_is_bioz) begin
+          next_fetch_address =
+            !bio_i
+              ? program_data_i[11:0]
+              : program_bus_address + 12'h001;
         end
       end
     end
@@ -212,11 +223,16 @@ module tms32010_sequential_pipeline_slice (
     execute_valid_o &&
     execute_decoded_valid &&
     (execute_decoded_operation == OP_BV);
+  assign execute_is_bioz =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_BIOZ);
   assign execute_control_supported =
     execute_is_banz ||
     execute_is_b ||
     execute_is_accumulator_branch ||
-    execute_is_bv;
+    execute_is_bv ||
+    execute_is_bioz;
   assign control_operand_step =
     execute_control_supported &&
     (pipeline_state == PIPELINE_SEQUENTIAL);
@@ -232,6 +248,14 @@ module tms32010_sequential_pipeline_slice (
       execute_decoded_operation,
       accumulator_o
     );
+  // TI says BIO is sampled each machine cycle and is not latched. The raw
+  // input selects the fetch at the operand boundary. This retained bit is the
+  // resulting branch decision, not an opcode-time pin latch; it keeps core
+  // retirement consistent with an already selected, possibly stalled fetch.
+  assign core_bio =
+    (control_target_step && execute_is_bioz)
+      ? !bioz_taken
+      : bio_i;
   assign core_program_data =
     control_target_step
       ? branch_operand_word
@@ -311,7 +335,7 @@ module tms32010_sequential_pipeline_slice (
     .initialize_i                  (initialize_i),
     .reset_i                       (core_reset),
     .clock_enable_i                (core_execute_boundary),
-    .bio_i                         (1'b1),
+    .bio_i                         (core_bio),
     .int_i                         (1'b1),
     .program_address_o             (core_program_address),
     .program_next_address_o        (core_program_next_address),
@@ -376,18 +400,25 @@ module tms32010_sequential_pipeline_slice (
     if (initialize_i) begin
       pipeline_state      <= PIPELINE_SEQUENTIAL;
       branch_operand_word <= 16'h0000;
+      bioz_taken          <= 1'b0;
     end else if (pipeline_boundary) begin
       if (rs_i) begin
         pipeline_state      <= PIPELINE_SEQUENTIAL;
         branch_operand_word <= 16'h0000;
+        bioz_taken          <= 1'b0;
       end else if (core_execute_boundary && control_operand_step) begin
         branch_operand_word <= program_data_i;
+        bioz_taken <=
+          (program_data_i[15:12] == 4'h0) &&
+          execute_is_bioz &&
+          !bio_i;
         pipeline_state <=
           (program_data_i[15:12] == 4'h0)
             ? PIPELINE_CONTROL_TARGET
             : PIPELINE_CONTROL_INVALID;
       end else if (core_execute_boundary && control_target_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
+        bioz_taken     <= 1'b0;
       end
     end
   end
@@ -429,9 +460,19 @@ module tms32010_sequential_pipeline_slice (
               (
                 overflow_flag_o
                   ? branch_operand_word[11:0]
+                : pc_o + 12'h001
+              )
+            );
+          end else if (execute_is_bioz) begin
+            assert (
+              program_bus_address ==
+              (
+                bioz_taken
+                  ? branch_operand_word[11:0]
                   : pc_o + 12'h001
               )
             );
+            assert (core_bio == !bioz_taken);
           end
         end else begin
           assert (execute_address_o == pc_o);
@@ -443,6 +484,19 @@ module tms32010_sequential_pipeline_slice (
         assert (!fetched_instruction);
         assert (!execute_complete);
         assert (program_bus_address == execute_address_o + 12'h001);
+        if (
+          execute_is_bioz &&
+          (program_data_i[15:12] == 4'h0)
+        ) begin
+          assert (
+            next_fetch_address ==
+            (
+              !bio_i
+                ? program_data_i[11:0]
+                : program_bus_address + 12'h001
+            )
+          );
+        end
       end
       if (control_target_step && fetch_boundary) begin
         assert (fetched_instruction);

@@ -103,12 +103,12 @@ signed multiplier accounts for 1,753 of those generic cells; unlike Quartus,
 generic Yosys synthesis does not map it to a target DSP resource.
 
 The second checked-in script directly synthesizes
-`tms32010_sequential_pipeline_slice`. After exact B, BANZ, BV, and the six
-accumulator branches are integrated it passes both structural checks with
-zero reported problems, retains 44 RTL checks, and contains 14,567 generic
-cells. This is 42 cells and one check above the accumulator-branch
-14,525-cell/43-check checkpoint, 291 cells/two checks above the exact-B/BANZ
-14,276-cell/42-check checkpoint, and 627 cells/12 checks above the
+`tms32010_sequential_pipeline_slice`. After exact B, BANZ, BV, BIOZ, and the
+six accumulator branches are integrated it passes both structural checks
+with zero reported problems, retains 47 RTL checks, and contains 14,715
+generic cells. This is 148 cells and three checks above the exact-BV
+14,567-cell/44-check checkpoint, 439 cells/five checks above the exact-B/BANZ
+14,276-cell/42-check checkpoint, and 775 cells/15 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
 instruction-complete resource estimate.

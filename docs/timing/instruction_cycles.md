@@ -206,17 +206,21 @@ effects, and malformed-operand parking before clear
 facts; INFERRED for the combined interval mapping; VERIFIED_SIMULATION for
 the implementation and legacy ordering.**
 
-Directed `BIOZ` tests assert two complete program reads for BIO low and high.
-The opcode cycle never retires. The target-word sample uses the live,
-active-low BIO level, selects target or PC+2, and retires after exactly two
-cycles. Tests reverse BIO between opcode and target samples in both directions
-and stall the active target phase, guarding TI's every-cycle, not-latched
-sampling rule. Malformed target words trap before applying the pin predicate
+Legacy `BIOZ` tests assert two complete program reads for BIO low and high
+and reverse the raw pin between opcode and target-word samples. The
+explicit-pipeline test separately primes exact opcode `0xf600`, retains BIOZ
+through the nonexecutable PC+1 operand fetch in execution cycle 1, and samples
+live active-low BIO at that boundary to select execution cycle 2's instruction
+fetch at target or PC+2. Only completion of that fetch retires BIOZ and
+captures the fetched word. The test presents the opposite opcode-prefetch
+level, changes BIO during an operand stall, reverses it again after selection,
+stalls both selected paths, and proves stable address/ownership, deferred
+effects, and malformed-operand parking before selection
 [ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, `BIOZ`, and Appendix A
 BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
 (PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY for component
-facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
-unqualified.**
+facts and the pin sample; INFERRED for the combined interval mapping;
+VERIFIED_SIMULATION for the implementation and legacy ordering.**
 
 Directed `CALL` tests assert the opcode and canonical target as two complete
 program reads, no stack mutation at the opcode sample, and one

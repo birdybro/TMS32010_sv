@@ -118,12 +118,12 @@ data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
 No dedicated original-part pin waveform has been located for the two-word
-branch family. Except for the newly integrated exact `B`, `BANZ`, `BV`, and
-six accumulator-conditional branches, the ordered reads below are derived
-from the primary word/cycle totals, following-word operand definitions,
-normal program-read rules, and legacy directed traces. They remain INFERRED
-as combined pipeline mappings even though the component facts are
-VERIFIED_PRIMARY.
+branch family. Except for the newly integrated exact `B`, `BANZ`, `BV`,
+`BIOZ`, and six accumulator-conditional branches, the ordered reads below are
+derived from the primary word/cycle totals, following-word operand
+definitions, normal program-read rules, and legacy directed traces. They
+remain INFERRED as combined pipeline mappings even though the component facts
+are VERIFIED_PRIMARY.
 
 Exact `BANZ` now has explicit pipeline ownership. Opcode `0xf400` prefetches
 at PC and enters the execute slot. Its canonical operand is read at PC+1
@@ -185,16 +185,22 @@ printed pp. 2-2, 2-13, 3-6, and 3-23
 facts; INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
 implementation.**
 
-`BIOZ` likewise reads exact opcode `0xf600` at PC and its following target at
-PC+1 on both pin levels. Both are normal `MEN` reads; neither emits `DEN` or
-`WE`. BIO is not latched and must meet setup before the second falling
-`CLKOUT` sample, where low selects the target and high selects PC+2. Pinned
-MAME shortens the untaken path; `SC-015` records that emulator abstraction
+Exact `BIOZ` now has explicit pipeline ownership. Opcode `0xf600` prefetches
+at PC and enters the execute slot. Its canonical PC+1 operand is a
+nonexecutable execution-cycle-1 read. Raw BIO is not latched and must meet
+setup before that operand's falling boundary, where low selects execution
+cycle 2's normal `MEN` read at the target and high selects opcode PC+2. BIOZ
+owns execution until the selected word is captured and the branch retires.
+The implementation retains the sampled decision through later pin changes or
+stalls; neither interval emits `DEN` or `WE`. A directed test covers both
+paths and parks malformed operands before selection. Pinned MAME shortens the
+untaken path; `SC-015` records that emulator abstraction
 [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
 `BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
-**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
-pipeline mapping.**
+**Confidence: VERIFIED_PRIMARY for component facts and the pin sample;
+INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
+implementation.**
 
 `CALL` reads exact opcode `0xf800` at PC and its canonical target at PC+1 as
 two ordinary `MEN` program reads. The following normal read is at the target.

@@ -1,12 +1,12 @@
 `default_nettype none
 
-module tb_sequential_pipeline_accumulator_branches;
+module tb_sequential_pipeline_bioz;
   logic        clk;
   logic        initialize;
   logic        rs;
   logic        clock_enable;
+  logic        bio;
   logic [15:0] program_data;
-  logic        debug_data_write;
   logic [1:0]  phase;
   logic        clkout;
   logic [11:0] program_address;
@@ -33,11 +33,11 @@ module tb_sequential_pipeline_accumulator_branches;
     .initialize_i                  (initialize),
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
-    .bio_i                         (1'b1),
+    .bio_i                         (bio),
     .program_data_i                (program_data),
-    .debug_data_write_i            (debug_data_write),
+    .debug_data_write_i            (1'b0),
     .debug_data_address_i          (8'h00),
-    .debug_data_i                  (16'hffff),
+    .debug_data_i                  (16'h0000),
     .phase_o                       (phase),
     .clkout_o                      (clkout),
     .program_address_o             (program_address),
@@ -104,10 +104,14 @@ module tb_sequential_pipeline_accumulator_branches;
     $fatal(1, "%s sample event did not arrive", name);
   endtask
 
-  task automatic reset_case(input string name);
+  task automatic reset_case(
+    input logic  opcode_bio,
+    input string name
+  );
     initialize   = 1'b1;
     rs           = 1'b1;
     clock_enable = 1'b1;
+    bio          = opcode_bio;
     tick();
     initialize = 1'b0;
     repeat (20) begin
@@ -118,157 +122,203 @@ module tb_sequential_pipeline_accumulator_branches;
   endtask
 
   task automatic run_case(
-    input logic [15:0] opcode,
-    input logic [15:0] setup_opcode,
-    input logic [31:0] expected_accumulator,
-    input logic        expected_taken,
-    input logic        stall_selected,
-    input string       name
+    input logic  decision_bio,
+    input string name
   );
     logic [11:0] expected_selected_address;
     logic [15:0] expected_selected_word;
     logic [15:0] old_auxiliary_register_0;
 
-    expected_selected_address = expected_taken ? 12'h004 : 12'h003;
-    expected_selected_word = expected_taken ? 16'h7042 : 16'h7031;
+    expected_selected_address = !decision_bio ? 12'h004 : 12'h003;
+    expected_selected_word = !decision_bio ? 16'h7042 : 16'h7031;
 
-    program_memory[0] = setup_opcode;
-    program_memory[1] = opcode;
-    program_memory[2] = 16'h0004;
+    program_memory[0] = 16'h7ea5;  // LACK 0xa5
+    program_memory[1] = 16'hf600;  // BIOZ
+    program_memory[2] = 16'h0004;  // canonical target
     program_memory[3] = 16'h7031;  // fallthrough effect
     program_memory[4] = 16'h7042;  // target effect
     program_memory[5] = 16'h7f80;
 
-    reset_case(name);
+    // Present the opposite level while BIOZ itself is fetched. TI says the
+    // pin is sampled every cycle and is not latched at opcode recognition.
+    reset_case(!decision_bio, name);
 
     advance_to_sample(name);
     require(
       execute_valid &&
       execute_address == 12'h000 &&
-      execute_word == setup_opcode &&
+      execute_word == 16'h7ea5 &&
       !retired &&
       cycle_count == 32'd0,
-      {name, " first fetch only primes setup"}
+      {name, " first fetch only primes LACK"}
     );
 
     advance_to_sample(name);
-    old_auxiliary_register_0 = auxiliary_register_0;
     require(
       retired &&
       !illegal &&
-      accumulator == expected_accumulator &&
       execute_address == 12'h001 &&
-      execute_word == opcode &&
+      execute_word == 16'hf600 &&
       program_address == 12'h002 &&
       pc == 12'h001 &&
       cycle_count == 32'd1 &&
       !pipeline_blocked,
-      {name, " setup retires while branch takes execute ownership"}
+      {name, " LACK retires while BIOZ takes execute ownership"}
     );
+    require(
+      accumulator == 32'h0000_00a5,
+      {name, " LACK setup produces the expected accumulator value"}
+    );
+    old_auxiliary_register_0 = auxiliary_register_0;
+
+    tick();
+    require(
+      phase == 2'd1 &&
+      !men_n &&
+      program_address == 12'h002 &&
+      execute_address == 12'h001,
+      {name, " BIOZ operand has an active MEN phase"}
+    );
+    clock_enable = 1'b0;
+    tick();
+    bio = decision_bio;
+    repeat (3) begin
+      tick();
+      require(
+        phase == 2'd1 &&
+        !men_n &&
+        program_address == 12'h002 &&
+        execute_address == 12'h001 &&
+        pc == 12'h001 &&
+        cycle_count == 32'd1 &&
+        !sample &&
+        !retired,
+        {name, " stalled operand remains unsampled after BIO changes"}
+      );
+      require(
+        accumulator == 32'h0000_00a5 &&
+        auxiliary_register_0 == old_auxiliary_register_0,
+        {name, " operand stall preserves unrelated architectural state"}
+      );
+    end
+    clock_enable = 1'b1;
 
     advance_to_sample(name);
     require(
       sample &&
       !retired &&
       !illegal &&
-      accumulator == expected_accumulator &&
       execute_address == 12'h001 &&
-      execute_word == opcode &&
+      execute_word == 16'hf600 &&
       program_address == expected_selected_address &&
       pc == 12'h002 &&
       cycle_count == 32'd2 &&
-      auxiliary_register_0 == old_auxiliary_register_0 &&
       !data_read &&
       !data_write &&
       !data_address_valid &&
       !pipeline_blocked,
-      {name, " operand selects target or fallthrough without retiring"}
+      {name, " operand boundary samples live BIO and selects cycle 2"}
+    );
+    require(
+      accumulator == 32'h0000_00a5 &&
+      auxiliary_register_0 == old_auxiliary_register_0,
+      {name, " operand completion preserves unrelated architectural state"}
     );
 
-    if (stall_selected) begin
+    // Once cycle 2's address is selected, later BIO changes cannot redirect
+    // the active fetch or change the decision committed at retirement.
+    bio = !decision_bio;
+    tick();
+    require(
+      phase == 2'd1 &&
+      !men_n &&
+      program_address == expected_selected_address &&
+      execute_address == 12'h001,
+      {name, " selected instruction has an active MEN phase"}
+    );
+    clock_enable = 1'b0;
+    repeat (3) begin
       tick();
       require(
         phase == 2'd1 &&
         !men_n &&
         program_address == expected_selected_address &&
-        execute_address == 12'h001,
-        {name, " selected instruction has an active MEN phase"}
+        execute_address == 12'h001 &&
+        pc == 12'h002 &&
+        cycle_count == 32'd2 &&
+        !sample &&
+        !retired,
+        {name, " selected-fetch stall holds the sampled BIO decision"}
       );
-      clock_enable = 1'b0;
-      repeat (3) begin
-        tick();
-        require(
-          phase == 2'd1 &&
-          !men_n &&
-          program_address == expected_selected_address &&
-          execute_address == 12'h001 &&
-          pc == 12'h002 &&
-          cycle_count == 32'd2 &&
-          accumulator == expected_accumulator &&
-          auxiliary_register_0 == old_auxiliary_register_0 &&
-          !sample &&
-          !retired,
-          {name, " selected-fetch stall holds condition and ownership"}
-        );
-      end
-      clock_enable = 1'b1;
+      require(
+        accumulator == 32'h0000_00a5 &&
+        auxiliary_register_0 == old_auxiliary_register_0,
+        {name, " selected-fetch stall preserves architectural state"}
+      );
     end
+    clock_enable = 1'b1;
 
     advance_to_sample(name);
     require(
       retired &&
       !illegal &&
-      accumulator == expected_accumulator &&
       execute_address == expected_selected_address &&
       execute_word == expected_selected_word &&
       program_address == expected_selected_address + 12'h001 &&
       pc == expected_selected_address &&
       cycle_count == 32'd3 &&
-      auxiliary_register_0 == old_auxiliary_register_0 &&
       !pipeline_blocked,
-      {name, " selected fetch retires branch and only primes instruction"}
+      {name, " selected fetch retires BIOZ using the sampled decision"}
+    );
+    require(
+      accumulator == 32'h0000_00a5 &&
+      auxiliary_register_0 == old_auxiliary_register_0,
+      {name, " BIOZ retirement preserves unrelated architectural state"}
     );
 
     advance_to_sample(name);
     require(
       retired &&
       !illegal &&
-      accumulator == expected_accumulator &&
       auxiliary_register_0 ==
-        (expected_taken ? 16'h0042 : 16'h0031) &&
+        (!decision_bio ? 16'h0042 : 16'h0031) &&
+      accumulator == 32'h0000_00a5 &&
       pc == expected_selected_address + 12'h001 &&
       cycle_count == 32'd4,
-      {name, " selected instruction executes in following interval"}
+      {name, " selected instruction executes in the following interval"}
     );
   endtask
 
   task automatic reject_noncanonical_target;
-    program_memory[0] = 16'hfd00;  // BGEZ
+    program_memory[0] = 16'hf600;
     program_memory[1] = 16'hf123;
-    reset_case("BGEZ malformed");
+    reset_case(1'b0, "malformed BIOZ");
 
-    advance_to_sample("BGEZ malformed");
+    advance_to_sample("malformed BIOZ");
     require(
       execute_valid &&
       execute_address == 12'h000 &&
-      execute_word == 16'hfd00 &&
+      execute_word == 16'hf600 &&
       program_address == 12'h001 &&
+      pc == 12'h000 &&
+      cycle_count == 32'd0 &&
       !pipeline_blocked,
-      "malformed case primes exact BGEZ"
+      "malformed case primes BIOZ before reading its operand"
     );
 
-    advance_to_sample("BGEZ malformed");
+    advance_to_sample("malformed BIOZ");
     require(
       !retired &&
       !illegal &&
       execute_address == 12'h000 &&
-      execute_word == 16'hfd00 &&
+      execute_word == 16'hf600 &&
       program_address == 12'h001 &&
       pc == 12'h001 &&
       cycle_count == 32'd1 &&
       pipeline_blocked,
-      "malformed BGEZ parks before an unsupported speculative fetch"
+      "malformed BIOZ parks before a condition-selected speculative fetch"
     );
+    bio = 1'b1;
     repeat (4) begin
       tick();
       require(
@@ -280,7 +330,7 @@ module tb_sequential_pipeline_accumulator_branches;
         pipeline_blocked &&
         !sample &&
         !retired,
-        "malformed BGEZ remains parked without architectural effects"
+        "malformed BIOZ remains parked when BIO changes"
       );
     end
   endtask
@@ -289,30 +339,16 @@ module tb_sequential_pipeline_accumulator_branches;
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end
+    initialize   = 1'b1;
+    rs           = 1'b1;
+    clock_enable = 1'b1;
+    bio          = 1'b1;
 
-    initialize       = 1'b1;
-    rs               = 1'b1;
-    clock_enable     = 1'b1;
-    debug_data_write = 1'b1;
-    tick();
-    debug_data_write = 1'b0;
-
-    run_case(16'hfa00, 16'h2000, 32'hffff_ffff, 1'b1, 1'b1, "BLZ taken");
-    run_case(16'hfa00, 16'h7f89, 32'h0000_0000, 1'b0, 1'b1, "BLZ untaken");
-    run_case(16'hfb00, 16'h7f89, 32'h0000_0000, 1'b1, 1'b0, "BLEZ taken");
-    run_case(16'hfb00, 16'h7e01, 32'h0000_0001, 1'b0, 1'b0, "BLEZ untaken");
-    run_case(16'hfc00, 16'h7e01, 32'h0000_0001, 1'b1, 1'b0, "BGZ taken");
-    run_case(16'hfc00, 16'h7f89, 32'h0000_0000, 1'b0, 1'b0, "BGZ untaken");
-    run_case(16'hfd00, 16'h7f89, 32'h0000_0000, 1'b1, 1'b0, "BGEZ taken");
-    run_case(16'hfd00, 16'h2000, 32'hffff_ffff, 1'b0, 1'b0, "BGEZ untaken");
-    run_case(16'hfe00, 16'h7e01, 32'h0000_0001, 1'b1, 1'b0, "BNZ taken");
-    run_case(16'hfe00, 16'h7f89, 32'h0000_0000, 1'b0, 1'b0, "BNZ untaken");
-    run_case(16'hff00, 16'h7f89, 32'h0000_0000, 1'b1, 1'b0, "BZ taken");
-    run_case(16'hff00, 16'h7e01, 32'h0000_0001, 1'b0, 1'b0, "BZ untaken");
-
+    run_case(1'b0, "taken BIOZ");
+    run_case(1'b1, "untaken BIOZ");
     reject_noncanonical_target();
 
-    $display("PASS tb_sequential_pipeline_accumulator_branches");
+    $display("PASS tb_sequential_pipeline_bioz");
     $finish;
   end
 endmodule

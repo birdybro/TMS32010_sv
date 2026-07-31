@@ -254,6 +254,10 @@ electrical result of an out-of-range access.
   the second falling-edge target-word boundary, and perform that normal read
   in both outcomes. MAME corroborates the functional branch condition only;
   its callback assertion convention is not physical pin polarity evidence.
+  The explicit pipeline maps that target-word/operand boundary to execution
+  cycle 1, uses the sampled level to select cycle 2's instruction fetch, and
+  retains only the decision through later pin changes or stalls. This
+  combined interval mapping remains labeled INFERRED.
 - **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
   documented secondary-source timing disagreement.
 
