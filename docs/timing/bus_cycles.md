@@ -55,6 +55,12 @@ operand is part of the fetched instruction word
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
 **Confidence: VERIFIED_PRIMARY.**
 
+The phase test likewise verifies that `PAC` copies P to ACC while retaining
+the ordinary external program fetch and exposing no logical data read or
+write
+[ti-tms32010-users-guide-spru001b, `PAC`, printed p. 3-48 (PDF p. 98)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms

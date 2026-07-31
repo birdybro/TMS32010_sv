@@ -64,6 +64,11 @@ tests require both data strobes to remain inactive
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`PAC` similarly requires only its program-word fetch: it transfers P
+internally to ACC and has no data-memory access
+[ti-tms32010-users-guide-spru001b, `PAC`, printed p. 3-48 (PDF p. 98)].
+**Confidence: VERIFIED_PRIMARY.**
+
 The current array has an asynchronous read because the temporary execution
 slice samples program data and commits a one-cycle instruction at one
 boundary. This is an implementation convenience, not evidence about the

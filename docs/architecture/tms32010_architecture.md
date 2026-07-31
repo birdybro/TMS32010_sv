@@ -112,7 +112,7 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
 `ZALS`. The seventeen common-address data instructions have independent
 fixtures plus directed and
@@ -145,6 +145,8 @@ same address/update path. Its documented `0x8000`-by-`0x8000` result is
 `0xc0000000`, and directed tests preserve that physical multiplier exception.
 MPYK instead sign-extends its signed 13-bit program-word constant, multiplies
 it by T into P, and performs no data-memory access.
+PAC copies all 32 P bits into ACC without changing P or arithmetic status and
+also performs no data-memory access.
 TI's separate rule deferring interrupt service through the instruction after
 MPY or MPYK is documented but cannot yet be execution-tested because
 interrupt entry does not exist.

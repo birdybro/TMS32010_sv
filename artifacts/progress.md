@@ -1,21 +1,21 @@
 # Progress summary
 
-- **Current milestone:** MPYK immediate-multiply qualification
+- **Current milestone:** PAC product-to-accumulator qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 62 repository/provenance/document/ISA/toolchain tests; 106
-  directed model tests; 18 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded twenty-seven-instruction model/RTL
+- **Tests passing:** 63 repository/provenance/document/ISA/toolchain tests; 108
+  directed model tests; 19 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-eight-instruction model/RTL
   differential including T, P, OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the twenty-seven-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,735 ALMs, 2,483 registers, 0 RAM blocks,
-  1 DSP block, 61.39 MHz worst slow-corner internal Fmax, +3.711 ns setup
-  slack, and +0.164 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the twenty-eight-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,741 ALMs, 2,483 registers, 0 RAM blocks,
+  1 DSP block, 59.02 MHz worst slow-corner internal Fmax, +3.057 ns setup
+  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  10,215 generic cells and lowering the asynchronous RAM to registers/muxes;
+  10,287 generic cells and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -62,16 +62,18 @@
   signed-multiplies T and the selected word into P, except that the documented
   original-hardware `0x8000` square produces `0xc0000000`; MPYK sign-extends
   a 13-bit program-word constant, multiplies it by signed T into P, and has no
-  data-memory transaction
+  data-memory transaction; PAC is fixed opcode `0x7f8e`, copies all 32 P bits
+  into ACC in one cycle, leaves P/T/OV/OVM and address state unchanged, and
+  has no data-memory transaction
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, Hard Drivin' INT net, and safe phase adaptation
   without READY
-- **Next task:** research and qualify the primary-defined `PAC` P-to-ACC
-  transfer while preserving multiply interrupt-deferral gaps under `INT-001`;
-  keep `ADDH` and `ABS` outside the supported boundary pending `OQ-011` and
-  `OQ-013`
+- **Next task:** research and qualify primary-defined `APAC` P-plus-ACC
+  arithmetic, including both OVM modes and sticky OV; keep multiply
+  interrupt-deferral gaps under `INT-001` and keep `ADDH` and `ABS` outside
+  the supported boundary pending `OQ-011` and `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `b6778515a77c16cc2f6027e4b3d0032976f4d4e6`
+  `8deb4ee5f4b1b46f8361eb8445fe672b8a8e45b4`

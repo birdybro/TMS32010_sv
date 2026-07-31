@@ -20,7 +20,7 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the twenty-seven-instruction subset,
+program-read cycle for every instruction in the twenty-eight-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -38,6 +38,8 @@ Directed MPY tests assert one-cycle signed products, including the documented
 most-negative exception, with the same old-address/post-update ordering.
 Directed MPYK tests assert one-cycle signed products across both 13-bit
 immediate endpoints and no data-memory transaction.
+Directed PAC tests assert a one-cycle full-width P-to-ACC transfer with P and
+arithmetic status preserved and no data-memory transaction.
 
 ## Open timing dimensions
 

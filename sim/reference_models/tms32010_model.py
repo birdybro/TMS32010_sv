@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LT, MAR, MPY, MPYK, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR,
-ZAC, ZALH, and ZALS.
+LDPK, LT, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS,
+XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -318,6 +318,8 @@ class Tms32010Model:
                 else self.state.t - 0x10000
             )
             self.state.p = (signed_t * operands["constant"]) & ACC_MASK
+        elif mnemonic == "PAC":
+            self.state.acc = self.state.p
         elif mnemonic == "SACL":
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
@@ -691,6 +693,7 @@ class Tms32010Model:
             0x7F89: "ZAC",
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",
+            0x7F8E: "PAC",
         }
         mnemonic = fixed.get(opcode)
         if mnemonic is None:

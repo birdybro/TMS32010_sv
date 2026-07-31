@@ -255,6 +255,29 @@ deferral remains unimplemented under `INT-001`
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
 **Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
 
+## Qualified `PAC` functional slice
+
+`PAC` is the implied fixed word `0x7f8e`. It copies the complete 32-bit P
+register into ACC without a shift or arithmetic operation and leaves P
+unchanged. The instruction is one word and one cycle. The individual
+instruction pages list only PC advance and P-to-ACC transfer, so PAC does not
+modify `OV` or apply `OVM` saturation. It performs no data-memory transaction
+[ti-tms32010-users-guide-spru001b, `PAC`, printed p. 3-48 (PDF p. 98);
+ti-tms32010-assembly-guide-spru002b, `PAC`, printed p. 3-48 (PDF p. 69);
+ti-first-generation-users-guide-1987, `PAC`, printed p. 4-54
+(PDF p. 135)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests copy zero, sign boundaries, all-ones, and the
+original multiplier's `0xc0000000` exception result. They also require P, T,
+address state, RAM, and both arithmetic-status bits to remain unchanged,
+assert one-cycle retirement, and reject adjacent unsupported fixed words.
+Native-phase and seeded differential tests verify the ordinary program fetch
+and inactive logical data-memory strobes. When PAC follows MPY or MPYK, its
+completion is also the end of the multiply instruction's documented interrupt
+deferral window; recognizing a pending interrupt at that boundary remains
+unimplemented under `INT-001`, so these PAC tests are not interrupt-timing
+evidence.
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

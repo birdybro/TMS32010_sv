@@ -65,6 +65,7 @@ module tms32010_core (
   localparam logic [4:0] OP_LT   = 5'd24;
   localparam logic [4:0] OP_MPY  = 5'd25;
   localparam logic [4:0] OP_MPYK = 5'd26;
+  localparam logic [4:0] OP_PAC  = 5'd27;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -323,6 +324,7 @@ module tms32010_core (
           OP_LT: t_register_o <= ram_read_data;
           OP_MPY: product_register_o <= multiplier_product;
           OP_MPYK: product_register_o <= multiplier_product;
+          OP_PAC: accumulator_o <= product_register_o;
           OP_SAR: begin
           end
           OP_SACL: begin

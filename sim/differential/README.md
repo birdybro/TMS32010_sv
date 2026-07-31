@@ -2,7 +2,7 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-twenty-seven supported instructions. It checks pre-execution PC/opcode,
+twenty-eight supported instructions. It checks pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
@@ -22,6 +22,8 @@ MPY cases compare logical reads, signed P results, the most-negative hardware
 exception, and indirect post-modification.
 MPYK cases compare signed immediate endpoints and P results while requiring
 no logical data-memory transaction.
+PAC cases compare the full-width ACC result with unchanged P and inactive
+logical data-memory strobes.
 
 This is model/RTL functional evidence only. Both sides currently use a logical
 instruction-boundary program interface, so the test supplies no pin-phase or

@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY", "MPYK",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY", "MPYK", "PAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -535,6 +535,40 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "MPYK instruction description", "printed_page": "3-44", "pdf_page": 94},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "MPYK instruction description", "printed_page": "3-44", "pdf_page": 65},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.3 and MPYK instruction description", "printed_page": "3-21 and 4-50", "pdf_page": "50 and 131"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
+    },
+    {
+      "mnemonic": "PAC",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f8e",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": ["P"],
+      "registers_written": ["ACC"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "none; all 32 P bits replace ACC without reinterpretation",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "ACC receives the complete 32-bit contents of P; P is unchanged",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special PAC interaction documented; when PAC follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; PAC has no data-memory transaction"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "PAC instruction description", "printed_page": "3-48", "pdf_page": 98},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "PAC instruction description", "printed_page": "3-48", "pdf_page": 69},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "PAC instruction description", "printed_page": "4-54", "pdf_page": 135}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []

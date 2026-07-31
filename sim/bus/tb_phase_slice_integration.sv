@@ -136,7 +136,8 @@ module tb_phase_slice_integration;
     program_memory[26] = 16'h6a03;  // LT 3
     program_memory[27] = 16'h6d04;  // MPY 4
     program_memory[28] = 16'h9ff7;  // MPYK -9
-    program_memory[29] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[29] = 16'h7f8e;  // PAC
+    program_memory[30] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -426,13 +427,25 @@ module tb_phase_slice_integration;
             "MPYK preserves T and arithmetic status");
     require(pc == 12'h01d && cycle_count == 32'd29,
             "MPYK consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "PAC has only its normal program-memory transaction");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0002_4999,
+            "PAC copies the complete P register into the accumulator");
+    require(product_register == 32'h0002_4999 &&
+            t_register == 16'hbeef &&
+            !overflow_flag && overflow_mode,
+            "PAC preserves P, T, and arithmetic status");
+    require(pc == 12'h01e && cycle_count == 32'd30,
+            "PAC consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h01d, "trap holds architectural PC");
-    require(program_address == 12'h01d, "trap holds native program address");
-    require(cycle_count == 32'd29, "trap does not count as retired cycle");
+    require(pc == 12'h01e, "trap holds architectural PC");
+    require(program_address == 12'h01e, "trap holds native program address");
+    require(cycle_count == 32'd30, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.
