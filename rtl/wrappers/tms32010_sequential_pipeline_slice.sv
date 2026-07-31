@@ -1,9 +1,10 @@
 `default_nettype none
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
-// instructions, exact B/BANZ/BV/BIOZ/CALL, and the exact
-// accumulator-conditional branch family. Program fetch owns a separate
-// address from the core PC. Other multicycle, reserved, and
+// instructions, exact B/BANZ/BV/BIOZ/CALL, the exact
+// accumulator-conditional branch family, and exact IN/OUT transfer plus
+// following-prefetch ownership. Program fetch owns a separate address from
+// the core PC. Other multicycle, reserved, and
 // invalid-data-address instructions park the wrapper before execution; the
 // legacy phase wrapper remains responsible for their separately qualified
 // traces.
@@ -14,6 +15,7 @@ module tms32010_sequential_pipeline_slice (
   input  logic        clock_enable_i,
   input  logic        bio_i,
   input  logic [15:0] program_data_i,
+  input  logic [15:0] io_read_data_i,
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
   input  logic [15:0] debug_data_i,
@@ -22,6 +24,8 @@ module tms32010_sequential_pipeline_slice (
   output logic        clkout_o,
   output logic [11:0] program_address_o,
   output logic        men_n_o,
+  output logic        den_n_o,
+  output logic        we_n_o,
   output logic        sample_o,
   output logic        bus_active_o,
 
@@ -38,6 +42,10 @@ module tms32010_sequential_pipeline_slice (
   output logic        data_write_address_valid_o,
   output logic [15:0] data_read_data_o,
   output logic [15:0] data_write_data_o,
+  output logic [2:0]  io_port_o,
+  output logic        io_read_o,
+  output logic        io_write_o,
+  output logic [15:0] io_write_data_o,
 
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
@@ -71,6 +79,8 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_BV   = 6'd45;
   localparam logic [5:0] OP_BIOZ = 6'd46;
   localparam logic [5:0] OP_CALL = 6'd47;
+  localparam logic [5:0] OP_IN   = 6'd48;
+  localparam logic [5:0] OP_OUT  = 6'd49;
   localparam logic [5:0] OP_SUBH = 6'd52;
 
   function automatic logic is_accumulator_branch(
@@ -109,7 +119,8 @@ module tms32010_sequential_pipeline_slice (
   typedef enum logic [1:0] {
     PIPELINE_SEQUENTIAL,
     PIPELINE_CONTROL_TARGET,
-    PIPELINE_CONTROL_INVALID
+    PIPELINE_CONTROL_INVALID,
+    PIPELINE_IO_PREFETCH
   } pipeline_state_t;
 
   pipeline_state_t pipeline_state;
@@ -131,9 +142,16 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_is_bv;
   logic        execute_is_bioz;
   logic        execute_is_call;
+  logic        execute_is_in;
+  logic        execute_is_out;
+  logic        execute_io_supported;
   logic        execute_control_supported;
   logic        control_operand_step;
   logic        control_target_step;
+  logic        io_transfer_step;
+  logic        io_transfer_active;
+  logic        io_prefetch_step;
+  logic [15:0] io_read_sample;
   logic [8:0]  banz_counter;
   logic        accumulator_condition_taken;
   logic        bioz_taken;
@@ -146,6 +164,16 @@ module tms32010_sequential_pipeline_slice (
   logic        core_program_write;
   logic        core_io_read;
   logic        core_io_write;
+  logic [2:0]  core_io_port;
+  logic [15:0] core_io_write_data;
+  logic [7:0]  core_data_address;
+  logic        core_data_read;
+  logic        core_data_write;
+  logic        core_data_address_valid;
+  logic [7:0]  core_data_write_address;
+  logic        core_data_write_address_valid;
+  logic [15:0] core_data_read_data;
+  logic [15:0] core_data_write_data;
   logic [11:0] core_program_address;
   logic [11:0] core_program_next_address;
   logic        core_interrupt_pending;
@@ -157,20 +185,70 @@ module tms32010_sequential_pipeline_slice (
   logic [12:0] unused_execute_immediate_13;
   logic        unused_execute_auxiliary_register;
   logic [3:0]  unused_execute_shift;
-  logic [2:0]  unused_execute_port;
+  logic [2:0]  execute_decoded_port;
   logic        unused_execute_indirect;
   logic [6:0]  unused_execute_addressing_field;
   logic [15:0] unused_core_program_write_data;
-  logic [2:0]  unused_core_io_port;
-  logic [15:0] unused_core_io_write_data;
   /* verilator lint_on UNUSEDSIGNAL */
 
-  assign program_address_o = program_bus_address;
+  assign program_address_o =
+    io_transfer_active
+      ? {9'h000, execute_decoded_port}
+      : program_bus_address;
+  assign io_port_o = execute_decoded_port;
+  assign io_read_o = io_transfer_active && execute_is_in;
+  assign io_write_o = io_transfer_active && execute_is_out;
+  assign io_write_data_o = core_data_read_data;
+  assign den_n_o =
+    ~bus_active_o | ~io_read_o | (phase_o == 2'd0);
+  assign we_n_o =
+    ~bus_active_o | ~io_write_o | (phase_o == 2'd0);
+  assign data_address_o = core_data_address;
+  assign data_read_o =
+    io_transfer_active
+      ? execute_is_out
+      : (
+        io_prefetch_step
+          ? 1'b0
+          : core_data_read
+      );
+  assign data_write_o =
+    io_transfer_active
+      ? execute_is_in
+      : (
+        io_prefetch_step
+          ? 1'b0
+          : core_data_write
+      );
+  assign data_address_valid_o =
+    io_transfer_active
+      ? core_instruction_valid
+      : (
+        io_prefetch_step
+          ? 1'b0
+          : core_data_address_valid
+      );
+  assign data_write_address_o = core_data_write_address;
+  assign data_write_address_valid_o =
+    io_transfer_active
+      ? (execute_is_in && core_instruction_valid)
+      : (
+        io_prefetch_step
+          ? 1'b0
+          : core_data_write_address_valid
+      );
+  assign data_read_data_o = core_data_read_data;
+  assign data_write_data_o =
+    io_transfer_active && execute_is_in
+      ? io_read_data_i
+      : core_data_write_data;
   always_comb begin
     next_fetch_address = 12'h000;
     if (bus_active_o) begin
       next_fetch_address = program_bus_address + 12'h001;
-      if (control_operand_step) begin
+      if (io_transfer_active) begin
+        next_fetch_address = program_bus_address;
+      end else if (control_operand_step) begin
         // A documented branch operand has a zero upper nibble. If it does
         // not, hold the sampled operand address and park after the boundary;
         // no undocumented speculative address is generated.
@@ -235,6 +313,15 @@ module tms32010_sequential_pipeline_slice (
     execute_valid_o &&
     execute_decoded_valid &&
     (execute_decoded_operation == OP_CALL);
+  assign execute_is_in =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_IN);
+  assign execute_is_out =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_OUT);
+  assign execute_io_supported = execute_is_in || execute_is_out;
   assign execute_control_supported =
     execute_is_banz ||
     execute_is_b ||
@@ -248,6 +335,15 @@ module tms32010_sequential_pipeline_slice (
   assign control_target_step =
     execute_control_supported &&
     (pipeline_state == PIPELINE_CONTROL_TARGET);
+  assign io_transfer_step =
+    execute_io_supported &&
+    (pipeline_state == PIPELINE_SEQUENTIAL);
+  assign io_transfer_active =
+    io_transfer_step &&
+    core_instruction_valid;
+  assign io_prefetch_step =
+    execute_io_supported &&
+    (pipeline_state == PIPELINE_IO_PREFETCH);
   assign banz_counter =
     auxiliary_register_pointer_o
       ? auxiliary_register_1_o[8:0]
@@ -275,13 +371,16 @@ module tms32010_sequential_pipeline_slice (
     (
       execute_one_cycle_supported ||
       control_operand_step ||
-      control_target_step
+      control_target_step ||
+      io_transfer_step ||
+      io_prefetch_step
     );
   assign execute_complete =
     execute_ready &&
     (
       execute_one_cycle_supported ||
-      control_target_step
+      control_target_step ||
+      io_prefetch_step
     );
   assign pipeline_blocked_o =
     execute_valid_o &&
@@ -305,7 +404,8 @@ module tms32010_sequential_pipeline_slice (
     (
       !execute_valid_o ||
       execute_one_cycle_supported ||
-      control_target_step
+      control_target_step ||
+      io_prefetch_step
     );
   assign core_reset = pipeline_boundary && rs_i;
   assign core_execute_boundary = fetch_boundary && execute_ready;
@@ -319,7 +419,7 @@ module tms32010_sequential_pipeline_slice (
     .immediate_13_o      (unused_execute_immediate_13),
     .auxiliary_register_o(unused_execute_auxiliary_register),
     .shift_o             (unused_execute_shift),
-    .port_o              (unused_execute_port),
+    .port_o              (execute_decoded_port),
     .indirect_o          (unused_execute_indirect),
     .addressing_field_o  (unused_execute_addressing_field)
   );
@@ -352,19 +452,19 @@ module tms32010_sequential_pipeline_slice (
     .program_write_o               (core_program_write),
     .program_write_data_o          (unused_core_program_write_data),
     .program_data_i                (core_program_data),
-    .io_port_o                     (unused_core_io_port),
+    .io_port_o                     (core_io_port),
     .io_read_o                     (core_io_read),
     .io_write_o                    (core_io_write),
-    .io_write_data_o               (unused_core_io_write_data),
-    .io_read_data_i                (16'h0000),
-    .data_address_o                (data_address_o),
-    .data_read_o                   (data_read_o),
-    .data_write_o                  (data_write_o),
-    .data_address_valid_o          (data_address_valid_o),
-    .data_write_address_o          (data_write_address_o),
-    .data_write_address_valid_o    (data_write_address_valid_o),
-    .data_read_data_o              (data_read_data_o),
-    .data_write_data_o             (data_write_data_o),
+    .io_write_data_o               (core_io_write_data),
+    .io_read_data_i                (io_read_sample),
+    .data_address_o                (core_data_address),
+    .data_read_o                   (core_data_read),
+    .data_write_o                  (core_data_write),
+    .data_address_valid_o          (core_data_address_valid),
+    .data_write_address_o          (core_data_write_address),
+    .data_write_address_valid_o    (core_data_write_address_valid),
+    .data_read_data_o              (core_data_read_data),
+    .data_write_data_o             (core_data_write_data),
     .debug_data_write_i            (debug_data_write_i),
     .debug_data_address_i          (debug_data_address_i),
     .debug_data_i                  (debug_data_i),
@@ -395,7 +495,7 @@ module tms32010_sequential_pipeline_slice (
     .initialize_i   (initialize_i),
     .rs_i           (rs_i),
     .clock_enable_i (bus_clock_enable),
-    .program_read_i (1'b1),
+    .program_read_i (!io_transfer_active),
     .next_address_i (next_fetch_address),
     .phase_o        (phase_o),
     .clkout_o       (clkout_o),
@@ -410,11 +510,13 @@ module tms32010_sequential_pipeline_slice (
       pipeline_state      <= PIPELINE_SEQUENTIAL;
       branch_operand_word <= 16'h0000;
       bioz_taken          <= 1'b0;
+      io_read_sample       <= 16'h0000;
     end else if (pipeline_boundary) begin
       if (rs_i) begin
         pipeline_state      <= PIPELINE_SEQUENTIAL;
         branch_operand_word <= 16'h0000;
         bioz_taken          <= 1'b0;
+        io_read_sample       <= 16'h0000;
       end else if (core_execute_boundary && control_operand_step) begin
         branch_operand_word <= program_data_i;
         bioz_taken <=
@@ -428,6 +530,13 @@ module tms32010_sequential_pipeline_slice (
       end else if (core_execute_boundary && control_target_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
         bioz_taken     <= 1'b0;
+      end else if (core_execute_boundary && io_transfer_step) begin
+        if (execute_is_in) begin
+          io_read_sample <= io_read_data_i;
+        end
+        pipeline_state <= PIPELINE_IO_PREFETCH;
+      end else if (core_execute_boundary && io_prefetch_step) begin
+        pipeline_state <= PIPELINE_SEQUENTIAL;
       end
     end
   end
@@ -435,10 +544,19 @@ module tms32010_sequential_pipeline_slice (
   always_ff @(posedge clk_i) begin
     if (!initialize_i) begin
       assert (!(retired_o && !sample_o));
-      assert (!(core_program_write || core_io_read || core_io_write));
+      assert (!core_program_write);
       assert (!core_interrupt_pending);
+      assert (!(
+        (!men_n_o && !den_n_o) ||
+        (!men_n_o && !we_n_o) ||
+        (!den_n_o && !we_n_o)
+      ));
       if (core_execute_boundary) begin
-        assert (core_program_read);
+        if (io_prefetch_step) begin
+          assert (!core_program_read);
+        end else begin
+          assert (core_program_read);
+        end
         if (control_target_step) begin
           assert (pc_o == execute_address_o + 12'h001);
           assert (core_program_address == pc_o);
@@ -485,6 +603,10 @@ module tms32010_sequential_pipeline_slice (
           end else if (execute_is_call) begin
             assert (program_bus_address == branch_operand_word[11:0]);
           end
+        end else if (io_prefetch_step) begin
+          assert (pc_o == execute_address_o + 12'h001);
+          assert (core_program_address == pc_o);
+          assert (core_program_next_address == pc_o);
         end else begin
           assert (execute_address_o == pc_o);
           assert (core_program_address == execute_address_o);
@@ -518,6 +640,26 @@ module tms32010_sequential_pipeline_slice (
       if (control_target_step && fetch_boundary) begin
         assert (fetched_instruction);
         assert (execute_complete);
+      end
+      if (io_transfer_step && fetch_boundary) begin
+        assert (!fetched_instruction);
+        assert (!execute_complete);
+        assert (program_bus_address == pc_o + 12'h001);
+        assert (next_fetch_address == program_bus_address);
+        assert (!(core_io_read || core_io_write));
+      end
+      if (io_prefetch_step && fetch_boundary) begin
+        assert (fetched_instruction);
+        assert (execute_complete);
+        assert (!(io_read_o || io_write_o));
+        assert (program_address_o == pc_o);
+        assert (core_io_port == execute_decoded_port);
+        if (execute_is_in) begin
+          assert (core_io_read && !core_io_write);
+        end else begin
+          assert (!core_io_read && core_io_write);
+          assert (core_io_write_data == io_write_data_o);
+        end
       end
       if (pipeline_blocked_o) begin
         assert (!core_execute_boundary);

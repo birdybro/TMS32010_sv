@@ -221,22 +221,37 @@ for an I/O write. The native phase wrapper additionally exposes active-low
 does not merge the I/O space into program memory: logical direction and
 transaction ownership remain explicit.
 
-For both `IN` and `OUT`, the opcode is read at PC under `MEN` in cycle 1. At
-that falling-edge sample, PC advances to PC+1 and the instruction enters a
-pending I/O state without retiring. During cycle 2, MEN is inactive.
-Phase zero establishes the zero-extended port address with all strobes high;
-phases 1–3 assert only DEN for IN or only WE for OUT. IN keeps its external
-input live through the enabled falling-edge sample and then writes the
-selected internal-RAM word. OUT reads the selected RAM word combinationally,
-drives it before WE asserts, and holds it through the sample. Indirect AR/ARP
-post-modification and retirement occur at that boundary. The following
-phase-zero address is PC+1
-[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
-IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
-(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY.**
+After the opcode prefetch, Figure 2-9 assigns IN/OUT execution cycle 1 to the
+I/O transfer and execution cycle 2 to the next-instruction prefetch. During
+cycle 1, MEN is inactive. Phase zero establishes the zero-extended port
+address with all strobes high; phases 1–3 assert only DEN for IN or only WE
+for OUT. IN keeps its external input live through the enabled falling-edge
+sample. OUT reads the old resolved RAM word combinationally, drives it before
+WE asserts, and holds it through the sample. During cycle 2, DEN and WE are
+inactive and MEN fetches opcode PC+1
+[ti-tms32010-users-guide-spru001b, §2.8.1, Figure 2-9, Table 3-2,
+`IN`/`OUT`, and Appendix A IN/OUT timing, printed pp. 2-15–2-16, 3-6, 3-30,
+3-47, and data-sheet pp. 17–18
+(PDF pp. 39–40, 56, 80, 97, and 373–374)]. **Confidence:
+VERIFIED_PRIMARY.**
+
+The explicit pipeline implements those ownership intervals directly. At the
+cycle-1 boundary it samples IN data, advances the internal execution state,
+and retains the IN/OUT word in the execute slot; no RAM/AR/ARP update or
+retirement is yet exposed. Cycle 2 presents PC+1 under MEN while I/O and
+logical data-transaction outputs are inactive. Its boundary commits the
+sampled IN word or completes OUT state, applies indirect AR/ARP updates,
+retires, and captures PC+1 without executing it. This commit placement is an
+implementation choice at the architectural boundary before the following
+instruction, not a claim that the physical RAM write occurs later than the
+documented I/O sample.
 
 `sim/bus/tb_io_phase.sv` checks every native phase, strobe exclusivity,
 clock-enable hold, input sampling, output stability, and prefetch resumption.
+`sim/bus/tb_sequential_pipeline_io.sv` additionally checks explicit
+transfer/following-prefetch ownership, independent stalls in both intervals,
+no early RAM/AR/ARP mutation or fetched-word effect, and invalid-address
+parking before any native strobe.
 `sim/instruction/tb_io_rtl.sv` checks direct/indirect address effects and
 trap-before-effects, while the focused differential compares model and RTL
 cycles, transactions, state, and final RAM. The core exposes no READY input

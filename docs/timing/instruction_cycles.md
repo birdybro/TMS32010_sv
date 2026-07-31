@@ -259,14 +259,23 @@ any common indirect AR/ARP update, increments the numeric total to two, and
 retires in the legacy wrapper. Native tests cover address setup, all three
 mutually exclusive strobes, a stalled active phase, live input data, stable
 output data, and the following prefetch address. Model/RTL differential
-traces compare both logical transactions and the I/O data. Explicit-pipeline
-integration must retain IN/OUT ownership through completion of that following
-prefetch before these become full timing evidence
-[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
-IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
-(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for the
-waveform and total; VERIFIED_SIMULATION for legacy bus order; explicit
-pipeline ownership unqualified.**
+traces compare both logical transactions and the I/O data.
+
+The explicit pipeline maps Figure 2-9 directly after the opcode prefetch:
+execution cycle 1 owns the mutually exclusive DEN/WE transfer, and execution
+cycle 2 owns the executable PC+1 prefetch under MEN. IN samples its live word
+at the cycle-1 falling boundary; OUT holds its selected word through that
+boundary. IN/OUT remains the execute owner and does not retire until the
+cycle-2 boundary captures PC+1. Directed assertions independently stall both
+intervals, require two total cycle-count increments, reject early RAM/AR/ARP
+mutation and following-word effects, and park invalid data addresses before a
+native strobe
+[ti-tms32010-users-guide-spru001b, §2.8.1, Figure 2-9, Table 3-2,
+`IN`/`OUT`, and Appendix A IN/OUT timing, printed pp. 2-15–2-16, 3-6, 3-30,
+3-47, and data-sheet pp. 17–18
+(PDF pp. 39–40, 56, 80, 97, and 373–374)]. **Confidence:
+VERIFIED_PRIMARY for the waveform, total, and interval ownership;
+VERIFIED_SIMULATION for explicit and legacy implementations.**
 
 ## Open timing dimensions
 

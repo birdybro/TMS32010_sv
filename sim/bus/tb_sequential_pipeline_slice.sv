@@ -32,6 +32,7 @@ module tb_sequential_pipeline_slice;
     .clock_enable_i                (clock_enable),
     .bio_i                         (1'b1),
     .program_data_i                (program_data),
+    .io_read_data_i                (16'h0000),
     .debug_data_write_i            (1'b0),
     .debug_data_address_i          (8'h00),
     .debug_data_i                  (16'h0000),
@@ -39,6 +40,8 @@ module tb_sequential_pipeline_slice;
     .clkout_o                      (clkout),
     .program_address_o             (program_address),
     .men_n_o                       (men_n),
+    .den_n_o                       (),
+    .we_n_o                        (),
     .sample_o                      (sample),
     .bus_active_o                  (bus_active),
     .execute_valid_o               (execute_valid),
@@ -53,6 +56,10 @@ module tb_sequential_pipeline_slice;
     .data_write_address_valid_o    (),
     .data_read_data_o              (),
     .data_write_data_o             (),
+    .io_port_o                     (),
+    .io_read_o                     (),
+    .io_write_o                    (),
+    .io_write_data_o               (),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .t_register_o                  (),
@@ -109,7 +116,7 @@ module tb_sequential_pipeline_slice;
     program_memory[1] = 16'h7134;  // LARK AR1,0x34
     program_memory[2] = 16'h7ea5;  // LACK 0xa5
     program_memory[3] = 16'h7f80;  // NOP
-    program_memory[4] = 16'h4000;  // IN: valid, but outside this slice
+    program_memory[4] = 16'h6700;  // TBLR: valid, but outside this slice
     program_memory[5] = 16'h0123;  // following word must not execute
 
     initialize   = 1'b1;
@@ -203,9 +210,9 @@ module tb_sequential_pipeline_slice;
       pc == 12'h004 &&
       cycle_count == 32'd4 &&
       execute_address == 12'h004 &&
-      execute_word == 16'h4000 &&
+      execute_word == 16'h6700 &&
       program_address == 12'h005,
-      "NOP retires while unsupported IN enters execute ownership"
+      "NOP retires while unsupported TBLR enters execute ownership"
     );
     require(
       pipeline_blocked && !illegal,

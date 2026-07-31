@@ -397,6 +397,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_bv.sv`,
   `sim/bus/tb_sequential_pipeline_bioz.sv`,
   `sim/bus/tb_sequential_pipeline_call.sv`,
+  `sim/bus/tb_sequential_pipeline_io.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -442,7 +443,8 @@ objective passing evidence.
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
   it to the core for reset priming, decoded one-cycle operation families, and
   exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional
-  branches. All retain execute ownership across a nonexecutable PC+1 operand
+  branches, plus exact IN/OUT execution ownership. All branches retain
+  execute ownership across a nonexecutable PC+1 operand
   fetch and the selected target/fallthrough-instruction fetch, retire only as
   that instruction enters the execute slot, and cannot apply its effects until
   the following fetch interval. BANZ selects from the old selected `AR[8:0]` and
@@ -462,13 +464,21 @@ objective passing evidence.
   return addresses correctly. These combined interval mappings are INFERRED
   from Figure 2-2, Table 3-2, and the instruction pages because no dedicated
   branch/call pin waveform has been located.
+  IN/OUT follow the dedicated primary Figure 2-9 mapping: transfer cycle 1
+  suppresses MEN, multiplexes the zero-extended port address, and asserts
+  only DEN or WE; following-prefetch cycle 2 suppresses I/O strobes and reads
+  PC+1 under MEN. The execute slot retires and captures PC+1 only at the
+  second boundary. Directed tests stall both intervals, sample changed live
+  IN data, hold OUT data, prove no early RAM/AR/ARP or following-word effect,
+  enforce native-strobe exclusivity, and park invalid addresses before any
+  transaction.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
-  parking on unsupported `IN`, and reset recovery. An offset differential
+  parking on unsupported `TBLR`, and reset recovery. An offset differential
   runs the full existing 43-word/38-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
-  and illegal state after every pipelined retirement. I/O, table, and
-  interrupt pipeline integration remain absent.
+  and illegal state after every pipelined retirement. Table and interrupt
+  pipeline integration remain absent.
 
 ## Milestone 9 — Program-memory interface
 
@@ -501,9 +511,11 @@ objective passing evidence.
   retirement-only BV clear, live active-low BIOZ sampling, retained BIOZ
   decision after operand completion, deferred counter mutation, and no early
   fetched-instruction execution. CALL also verifies no early push, selected-
-  target retirement, nested stack shifting, and non-stack state preservation. IN/OUT
-  verify an ordinary opcode read before the distinct I/O cycle without
-  changing the qualified normal-program-read primitive. TBLR/TBLW verify
+  target retirement, nested stack shifting, and non-stack state preservation.
+  IN/OUT additionally retain execute ownership through Figure 2-9's distinct
+  transfer and following-prefetch intervals, including independent stalls,
+  mutually exclusive DEN/WE then MEN, sampled/held data, retirement-only
+  state commit, and fetched-word effect deferral. TBLR/TBLW verify
   opcode and discarded MEN reads, captured ACC address, third-cycle MEN/WE
   ownership, RAM and program-write data, stack-bottom transformation, stalls,
   and the repeated PC+1 address. Interrupt testing adds Figure 2-12's
@@ -512,7 +524,7 @@ objective passing evidence.
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
-  indirect-call/return, pipeline ownership for I/O/table,
+  indirect-call/return, pipeline ownership for table operations,
   interrupt execute ownership, and unsupported CALA/RET/PUSH/POP cycles
   remain. Do not collapse Harvard
   spaces in the native interface.
@@ -557,7 +569,9 @@ objective passing evidence.
 - **Acceptance criteria:** all IN/OUT timing, data-direction, address, and
   clock-enable-stall cases match automated primary-sourced traces.
 - **Documentation:** `docs/architecture/external_interface.md`
-- **Tests:** `sim/bus/tb_io_phase.sv`, `sim/instruction/tb_io_rtl.sv`,
+- **Tests:** `sim/bus/tb_io_phase.sv`,
+  `sim/bus/tb_sequential_pipeline_io.sv`,
+  `sim/instruction/tb_io_rtl.sv`,
   `sim/unit/test_model_io.py`,
   `sim/differential/test_model_rtl_slice.py`
 - **Notes:** IN/OUT each perform one normal MEN opcode cycle followed by one
@@ -566,7 +580,10 @@ objective passing evidence.
   the old resolved internal-RAM address. OUT asserts WE and holds the old
   resolved RAM word as write data. Directed tests cover all bus-strobe
   exclusions, direct/indirect ordering, AR/ARP commit, stable active phases,
-  two-cycle retirement, traps, and model/RTL transaction agreement. The
+  two-cycle retirement, traps, and model/RTL transaction agreement. Explicit
+  pipeline testing retains the executing word through the port transfer and
+  PC+1 prefetch, stalls each interval, and proves that the following word
+  cannot execute before IN/OUT retirement. The
   original 40-pin part has no READY input; clock-enable holding is a wrapper
   adaptation and not a claimed native wait protocol. Hard Drivin' mappings
   belong in an integration wrapper.
@@ -1023,8 +1040,8 @@ objective passing evidence.
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
   harness (13,514 generic cells/26 checks) and the
-  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch pipeline slice
-  (14,778 cells/49 checks), each with zero structural problems. Full-core
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT pipeline slice
+  (15,035 cells/67 checks), each with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 

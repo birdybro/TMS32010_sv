@@ -31,7 +31,8 @@ execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
 only for sequential one-cycle instructions, exact
-`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six accumulator branches
+`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, the six accumulator branches, and exact
+`IN`/`OUT`
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -151,24 +152,35 @@ The qualified synchronous phase mapping is:
 | port, phase 0 | `{9'b0, ppp}` | none | port/address and output-data setup |
 | port, phases 1–3 | `{9'b0, ppp}` | `DEN` for `IN`; `WE` for `OUT` | sample input or complete output at phase-3 falling boundary |
 | following, phase 0 | opcode PC + 1 | none | next program-address setup |
+| following, phases 1–3 | opcode PC + 1 | `MEN` | capture next instruction and retire IN/OUT at phase-3 falling boundary |
 
 In the legacy wrapper, the opcode sample advances architectural PC to PC+1
 without retirement. The port-cycle sample performs the internal RAM write for
 `IN` or completes the RAM-read-to-port transfer for `OUT`, applies indirect
 AR/ARP post-modification, increments the cycle total a second time, and
 retires while presenting the next program address. This preserves the
-two-period bus spacing but does not yet retain execute ownership through
-completion of the next-instruction prefetch. A low FPGA clock enable holds
+two-period bus spacing but does not retain execute ownership through
+completion of the next-instruction prefetch.
+
+The explicit pipeline does retain that ownership. At the port boundary it
+samples IN data or completes the OUT pin transfer, advances the first cycle,
+and keeps the execute slot and pre-update RAM/AR/ARP state. It then performs
+the following `MEN` read, commits the sampled input and indirect updates, and
+retires only as PC+1 enters the execute slot. A low FPGA clock enable holds
 the current native phase, address, strobe, pending operation, write data, and
 architectural state; this is a synchronous emulation control, not an
 undocumented original READY pin.
 
 `sim/bus/tb_io_phase.sv` asserts the legacy bus rows above, including mutually
 exclusive `MEN`/`DEN`/`WE`, input changes before the enabled sample, stable
-output data, and the next program address. Analog delay values remain wrapper
-constraints rather than RTL delays. Explicit execute ownership remains
-unqualified. **Confidence: VERIFIED_PRIMARY for the logical waveform;
-VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
+output data, and the next program address.
+`sim/bus/tb_sequential_pipeline_io.sv` asserts the complete explicit rows,
+stalls both execution intervals, proves old-address indirect update ordering,
+and rejects early retirement or following-instruction effects. Analog delay
+values remain wrapper constraints rather than RTL delays.
+**Confidence: VERIFIED_PRIMARY for the logical waveform and interval
+ownership; VERIFIED_SIMULATION for explicit and legacy implementations;
+VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 

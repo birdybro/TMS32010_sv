@@ -168,6 +168,7 @@ module tb_sequential_pipeline_differential;
     .clock_enable_i                (clock_enable),
     .bio_i                         (1'b1),
     .program_data_i                (pipeline_program_data),
+    .io_read_data_i                (16'h0000),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
     .debug_data_i                  (debug_data),
@@ -175,6 +176,8 @@ module tb_sequential_pipeline_differential;
     .clkout_o                      (),
     .program_address_o             (pipeline_program_address),
     .men_n_o                       (),
+    .den_n_o                       (),
+    .we_n_o                        (),
     .sample_o                      (pipeline_sample),
     .bus_active_o                  (),
     .execute_valid_o               (pipeline_execute_valid),
@@ -189,6 +192,10 @@ module tb_sequential_pipeline_differential;
     .data_write_address_valid_o    (),
     .data_read_data_o              (),
     .data_write_data_o             (),
+    .io_port_o                     (),
+    .io_read_o                     (),
+    .io_write_o                    (),
+    .io_write_data_o               (),
     .pc_o                          (pipeline_pc),
     .accumulator_o                 (pipeline_accumulator),
     .t_register_o                  (pipeline_t),
@@ -285,7 +292,7 @@ module tb_sequential_pipeline_differential;
     program_memory[40] = 16'h6400;  // SUBC 0
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
     program_memory[42] = 16'h6203;  // SUBH 3
-    program_memory[43] = 16'h4000;  // unsupported IN boundary
+    program_memory[43] = 16'h6700;  // unsupported TBLR boundary
 
     initialize         = 1'b1;
     rs                 = 1'b1;
@@ -348,9 +355,9 @@ module tb_sequential_pipeline_differential;
 
     require(
       pipeline_blocked &&
-      pipeline_execute_word == 16'h4000 &&
+      pipeline_execute_word == 16'h6700 &&
       !pipeline_illegal,
-      "pipeline parks on unsupported IN without executing it"
+      "pipeline parks on unsupported TBLR without executing it"
     );
     require(
       !legacy_illegal &&

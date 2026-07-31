@@ -37,7 +37,8 @@ The first implementation was the standalone synthesizable
 `tms32010_fetch_execute` register. The
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
 the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`,
-and the six accumulator-conditional branches. Other
+the six accumulator-conditional branches, and exact `IN`/`OUT` execution
+ownership. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
 their execution intervals to the explicit pipeline.
@@ -72,6 +73,11 @@ their execution intervals to the explicit pipeline.
   opcode recognition. The resulting decision selects the second execution
   interval's fetch and remains stable through later pin changes or stalls;
   retaining that decision is not an opcode-time latch of the BIO pin.
+- `IN` and `OUT` retain their execute slot across Figure 2-9's two execution
+  intervals. Cycle 1 owns the mutually exclusive DEN or WE transfer; cycle 2
+  owns the executable PC+1 prefetch. The port word is sampled or held at the
+  first falling boundary, while retirement and replacement occur only at the
+  second.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 
@@ -81,6 +87,9 @@ their execution intervals to the explicit pipeline.
   (PDF p. 27): fetch overlaps execution of previously fetched instructions.
 - SPRU001B §2.8.2 and Figure 2-10, printed p. 2-17 (PDF p. 41): table
   prefetch is discarded and repeated.
+- SPRU001B §2.8.1 and Figure 2-9, printed pp. 2-15–2-16 (PDF pp. 39–40):
+  IN/OUT execute with an I/O transfer followed by the next-instruction
+  prefetch.
 - SPRU001B §2.10 and Figure 2-12, printed p. 2-19 (PDF p. 43): interrupt
   fetch N+2 is a nonexecuting dummy before vector 2.
 

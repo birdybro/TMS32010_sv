@@ -429,14 +429,15 @@ advances PC by one word
 [ti-first-generation-users-guide-1987, `IN`/`OUT`, printed pp. 4-35 and
 4-52 (PDF pp. 116 and 133)]. **Confidence: VERIFIED_PRIMARY.**
 
-Cycle 1 is the opcode program read under active-low `MEN`. Cycle 2 drives
-`A11..A3=0` and the port on `PA2..PA0`; `IN` asserts active-low `DEN` and
-samples input at the falling-`CLKOUT` boundary, whereas `OUT` asserts
-active-low `WE` with output data valid through that boundary. The following
-program read begins at opcode PC+1. `MEN`, `DEN`, and `WE` remain mutually
-exclusive
-[ti-tms32010-users-guide-spru001b, Table 3-2 and Appendix A IN/OUT timing,
-printed p. 3-6 and data-sheet pp. 17–18 (PDF pp. 56 and 373–374)].
+The externally ordered sequence starts with the opcode prefetch under
+active-low `MEN`. Figure 2-9 then assigns execution cycle 1 to the port
+transfer: `A11..A3=0`, `PA2..PA0` carries the port, IN asserts active-low
+`DEN` and samples at falling `CLKOUT`, and OUT asserts active-low `WE` with
+output data valid through that boundary. Execution cycle 2 fetches opcode
+PC+1 under MEN. `MEN`, `DEN`, and `WE` remain mutually exclusive
+[ti-tms32010-users-guide-spru001b, §2.8.1, Figure 2-9, Table 3-2, and
+Appendix A IN/OUT timing, printed pp. 2-15–2-16 and 3-6 plus data-sheet
+pp. 17–18 (PDF pp. 39–40, 56, and 373–374)].
 **Confidence: VERIFIED_PRIMARY.**
 
 Hand fixtures cover all port-field extremes and direct/indirect forms.
@@ -447,7 +448,12 @@ native waveform test asserts phase-zero address setup, `DEN`-only and
 `WE`-only active phases, live input sampling, stable output data, strobe
 mutual exclusion, and resumption at the prefetched PC. A focused
 model/RTL differential compares cycle totals, RAM effects, AR/ARP state, and
-each I/O transaction. Pinned MAME independently agrees on data direction,
+each I/O transaction. The explicit pipeline test separately retains IN/OUT
+ownership through Figure 2-9's cycle-1 transfer and cycle-2 PC+1 prefetch,
+stalls each interval, samples live IN data only at the transfer boundary,
+holds OUT data there, commits internal state only before the following
+instruction can execute, and parks an invalid resolved address before any
+DEN/WE activity. Pinned MAME independently agrees on data direction,
 common addressing, port selection, and two-cycle table entries; it remains a
 functional corroborator, not pin-timing proof
 [mame-tms320c1x-core-030fefc, `in_p()`/`out_p()` and opcode table,

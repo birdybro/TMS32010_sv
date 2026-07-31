@@ -55,8 +55,8 @@ The first core-connected use is
 address separate from the core PC. Fetch 0 primes an empty slot; while fetch
 N+1 runs, the core owns and retires one-cycle instruction N. Arbitrary
 clock-enable stalls hold both addresses, and recognized reset empties both
-domains. Exact `B`, `BANZ`, `BV`, `BIOZ`, and the six
-accumulator-conditional branches are the first integrated multicycle cases.
+domains. Exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`, and the six
+accumulator-conditional branches are integrated multicycle cases.
 After a branch prefetch enters execute ownership, its operand fetch is
 explicitly nonexecutable execution cycle 1. B redirects unconditionally;
 BANZ selects from the old selected `AR[8:0]`; the accumulator family selects
@@ -69,7 +69,15 @@ and BIOZ retains its sampled decision through the selected fetch. Directed
 tests check B, both BANZ/BV/BIOZ outcomes, all six ACC predicates in both
 directions, target/fallthrough fetch stalls, no early fetched-instruction
 effect, architectural-source preservation, and conservative parking on
-malformed operands. Another
+malformed operands. `CALL` uses the same operand/selected-fetch ownership and
+pushes only at selected-target capture. `IN` and `OUT` retain the execute
+slot across Figure 2-9's two execution intervals: cycle 1 multiplexes the
+encoded port, suppresses MEN, and asserts only DEN or WE; cycle 2 suppresses
+both I/O strobes and fetches PC+1 under MEN. IN samples the live external
+word at the cycle-1 falling boundary; OUT holds the old resolved RAM word
+through that boundary. Architectural RAM/AR/ARP effects, retirement, and
+replacement with PC+1 occur only at the cycle-2 boundary, so the captured
+following instruction cannot execute early. Another
 directed test checks the sequential boundary explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
@@ -81,17 +89,19 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_bv.sv`,
 `sim/bus/tb_sequential_pipeline_bioz.sv`,
 `sim/bus/tb_sequential_pipeline_call.sv`,
+`sim/bus/tb_sequential_pipeline_io.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
 when the execute slot contains any other multicycle, reserved, or
 invalid-address word; it does not claim that parking is TMS32010 hardware
 behavior. The legacy phase wrapper retains the separately verified bus order
-for the remaining I/O, table, and interrupt sequences until those states are
+for the remaining table and interrupt sequences until those states are
 reworked around explicit pipeline ownership. **Confidence:
 VERIFIED_PRIMARY for the required overlap; INFERRED for exact
 B/BANZ/BV/BIOZ/CALL/accumulator-branch interval ownership because no
-dedicated branch/call waveform has been located; implementation behavior
+dedicated branch/call waveform has been located; VERIFIED_PRIMARY for the
+IN/OUT interval mapping in §2.8.1 and Figure 2-9; implementation behavior
 VERIFIED_SIMULATION only within this stated slice.**
 
 ## Required implementation model
@@ -114,11 +124,8 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
 one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
-accumulator branches:
+accumulator branches, plus `IN`/`OUT`:
 
-- IN and OUT retain the primary opcode-prefetch, mutually exclusive DEN/WE
-  transfer, and next-prefetch bus order but not yet explicit execute-slot
-  ownership through the next-prefetch boundary;
 - TBLR and TBLW retain the primary opcode prefetch, discarded PC+1 read,
   ACC-addressed table transfer, and repeated PC+1 read bus order but not yet
   explicit execute-slot ownership through the repeated-prefetch boundary;
@@ -274,18 +281,24 @@ mapping; VERIFIED_SIMULATION for the stated implementation.**
 intervals follow the opcode-prefetch boundary. Execution cycle 1 suppresses
 MEN, drives the three-bit port on A2–A0 with A11–A3 low, and asserts DEN for
 IN or WE for OUT. Execution cycle 2 is the next-instruction prefetch. At the
-port sample, IN writes the live external word to the pre-update internal-RAM
-address; OUT completes the selected internal-RAM-word write. The legacy
-wrapper applies the indirect update and retirement there while presenting the
-next address; explicit ownership through the next-prefetch completion remains
-unintegrated. Directed phase tests require MEN, DEN, and WE to be mutually
-exclusive and hold address, control, data, PC, and pending state through a
-disabled clock-enable phase
-[ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A I/O
-timing, printed pp. 3-6, 3-30, and 3-47 plus data-sheet pp. 17–18
-(PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for
-logical ordering and native pin phases; VERIFIED_SIMULATION for legacy bus
-order; explicit execute ownership unqualified.**
+port sample, IN captures the live external word for the pre-update
+internal-RAM address; OUT completes the selected internal-RAM-word transfer.
+The explicit pipeline retains the IN/OUT execute slot, suppresses logical I/O
+during cycle 2, fetches PC+1 under MEN, and only then commits RAM/AR/ARP
+effects, retires, and captures that fetched word without executing it. This
+commit placement is an RTL ownership choice at the only architectural
+boundary before the following instruction; the pin sample remains at the
+primary-defined cycle-1 falling edge. Directed tests independently stall both
+cycles, require MEN, DEN, and WE mutual exclusion, prove live-input sampling
+and stable output data, reject early state changes or fetched-word effects,
+and park an invalid RAM address before any native strobe
+[ti-tms32010-users-guide-spru001b, §2.8.1, Figure 2-9, Table 3-2,
+`IN`/`OUT`, and Appendix A I/O timing, printed pp. 2-15–2-16, 3-6, 3-30,
+and 3-47 plus data-sheet pp. 17–18
+(PDF pp. 39–40, 56, 80, 97, and 373–374)]. **Confidence:
+VERIFIED_PRIMARY for logical ordering, native pin phases, and execute
+interval ownership; VERIFIED_SIMULATION for explicit and legacy
+implementations.**
 
 `TBLR` and `TBLW` have three execution intervals after their opcode-prefetch
 boundary: a discarded PC+1 prefetch, an ACC-addressed table transfer, and the

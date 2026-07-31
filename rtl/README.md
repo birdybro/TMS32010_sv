@@ -68,10 +68,18 @@ retirement; the accumulator family selects from the unchanged full 32-bit
 ACC; BV selects from old sticky OV and clears it only at taken retirement;
 BIOZ samples raw active-low BIO at operand completion and retains only the
 resulting decision through the selected fetch; CALL pushes opcode-PC+2 only
-at selected-target retirement. Other
+at selected-target retirement. IN and OUT retain ownership across the
+primary-defined I/O transfer and following-instruction prefetch: the transfer
+interval multiplexes the zero-extended port address and asserts only DEN or
+WE, the following interval asserts only MEN at PC+1, and retirement/capture
+occurs only at that second boundary. The IN word is sampled at the transfer
+boundary and committed before the captured following instruction can execute;
+OUT data comes from the old resolved internal-RAM word. Both intervals hold
+under clock-enable stalls, and invalid RAM addresses park before a native
+strobe. Other
 multicycle, reserved, or invalid-address execute words park the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
-mechanism, not claimed hardware behavior. I/O, table, and interrupt overlap
+mechanism, not claimed hardware behavior. Table and interrupt overlap
 remain in the legacy wrapper and are not
 pipeline-integrated.
 

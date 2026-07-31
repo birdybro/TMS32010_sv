@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 18 native bus/phase tests, including eight explicit pipeline tests; one
+  tests; 19 native bus/phase tests, including nine explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -34,9 +34,9 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 14,778 generic cells with 49 retained checks and
-  no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch
-  integration;
+  independently passes at 15,035 generic cells with 67 retained checks and
+  no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
+  IN/OUT integration;
   this is not a
   Quartus fit or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -209,12 +209,15 @@
   stack shifting, non-stack preservation, effect deferral, and malformed
   operands; original TI sources and pinned MAME agree on the architectural
   behavior and two-cycle total; IN and OUT are one-word/two-cycle opcode
-  families with three-bit
-  ports and the common direct/indirect internal-data address; both first read
-  the opcode under MEN, then drive A11–A3 low and the port on A2–A0; IN
-  asserts DEN and samples all 16 live input bits into the old resolved RAM
-  address, while OUT asserts WE and drives all 16 selected RAM bits; indirect
-  AR/ARP changes occur only at second-cycle retirement; TBLR and TBLW are
+  families with three-bit ports and the common direct/indirect internal-data
+  address; Figure 2-9 explicitly places the zero-extended port and DEN/WE
+  transfer in execution cycle 1 and the PC+1 MEN prefetch in execution cycle
+  2; the integrated pipeline retains IN/OUT ownership across both intervals,
+  samples the live IN word or holds the OUT word at the first falling
+  boundary, then commits RAM/AR/ARP state, retires, and captures PC+1 only at
+  the second; directed stalls prove mutual strobe exclusion, stable ownership,
+  and following-word effect deferral, while invalid RAM addresses park before
+  any native transaction; TBLR and TBLW are
   common-address opcode families `0x67xx` and `0x7dxx`, capture
   `ACC[11:0]`, read and discard PC+1 in their second MEN cycle, then read
   program space under MEN or write it under WE in cycle 3; completion mutates
@@ -251,8 +254,9 @@
   cycles of TBLR/TBLW, checking family-specific logical bus activity,
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
-- **Unresolved issues:** pipeline ownership beyond sequential one-cycle
-  instructions, exact B/BANZ/BV/BIOZ/CALL, and the six accumulator branches; interrupt
+- **Unresolved issues:** pipeline ownership remains absent beyond sequential
+  one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
+  branches, and exact IN/OUT; table and interrupt
   execute-overlap
   ownership and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
@@ -266,10 +270,7 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend explicit pipeline ownership through the primary-defined
-  IN/OUT transfer and following-prefetch intervals, preserving distinct
-  `MEN`/`DEN`/`WE` activity and old-address indirect updates; then continue
-  `CTRL-002` by
+- **Next task:** continue `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
   extend `FORMAL-001` only with bounded cases whose architectural ordering is
@@ -287,4 +288,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c185092`
+  `45bb641`

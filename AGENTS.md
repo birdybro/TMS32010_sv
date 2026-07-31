@@ -254,7 +254,8 @@ flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 38 already-qualified one-cycle operation families, and
-exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional branches.
+exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and
+the primary-defined IN/OUT transfer-plus-prefetch sequence.
 All retain execute ownership through a nonexecutable operand fetch and the
 selected target/fallthrough instruction fetch, retiring only as that
 instruction enters the execute slot. BANZ tests the old selected nine-bit
@@ -269,8 +270,14 @@ outcomes for the conditional families and the direct call. These combined
 interval mappings are INFERRED from primary component facts because no
 dedicated branch/call pin waveform has been located. The full-state offset
 differential covers the 43-word directed one-cycle stream and parks before
-unsupported IN. Other multicycle,
-interrupt, I/O, and table pipeline integration remains absent; do not
+unsupported TBLR. IN/OUT retain execute ownership while cycle 1 multiplexes
+the port address and asserts only DEN or WE, sample/hold live transfer data
+at that falling boundary, and retire only when cycle 2 fetches the following
+instruction under MEN. Directed stalls prove stable phase, address, strobe,
+data, and ownership in both intervals; invalid RAM addresses park before any
+native strobe. Figure 2-9 makes this combined I/O mapping
+VERIFIED_PRIMARY rather than inferred. Other multicycle,
+interrupt, and table pipeline integration remains absent; do not
 generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover

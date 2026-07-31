@@ -117,6 +117,22 @@ behavior because those instructions use their extra cycle for an external
 data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
+Figure 2-9 gives `IN` and `OUT` explicit pipeline ownership rather than only
+a transaction order. After the opcode prefetch enters the execute slot,
+execution cycle 1 drives `{9'b0, port}` and asserts only DEN for IN or only WE
+for OUT; MEN is suppressed. Execution cycle 2 removes both I/O strobes and
+fetches PC+1 under MEN. The instruction retires only when that following word
+is captured, and the word cannot execute until the next interval. Directed
+testing stalls each active phase independently, samples changed live IN data
+at the cycle-1 boundary, holds OUT data through that boundary, enforces
+MEN/DEN/WE mutual exclusion, and rejects both early retirement and any
+invalid-address strobe
+[ti-tms32010-users-guide-spru001b, §2.8.1, Figure 2-9, Table 3-2, and
+Appendix A IN/OUT timing, printed pp. 2-15–2-16 and 3-6 plus data-sheet
+pp. 17–18 (PDF pp. 39–40, 56, and 373–374)]. **Confidence:
+VERIFIED_PRIMARY for interval and pin ownership; VERIFIED_SIMULATION for the
+explicit implementation.**
+
 No dedicated original-part pin waveform has been located for the two-word
 branch family. Except for the newly integrated exact `B`, `BANZ`, `BV`,
 `BIOZ`, `CALL`, and six accumulator-conditional branches, the ordered reads

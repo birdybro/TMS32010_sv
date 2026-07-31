@@ -58,8 +58,9 @@ suppression, vector capture, and reset.
 The separate `tms32010_sequential_pipeline_slice` connects that register to
 the core for reset priming, sequential one-cycle instructions, exact B,
 exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
-accumulator-conditional branches. Its fetch address stays one word ahead of
-the execute PC,
+accumulator-conditional branches, plus exact IN/OUT execution ownership. Its
+fetch address stays one word ahead of the execute PC for ordinary sequential
+execution,
 all 43 words in the existing 38-family one-cycle stream match the previously
 qualified architectural state at a one-retirement offset, and all eleven
 integrated branch/call instructions retain ownership through operand and
@@ -70,8 +71,13 @@ retirement; BIOZ samples raw active-low BIO at operand completion and holds
 the resulting decision through the selected fetch; CALL pushes opcode-PC+2
 only when its selected target fetch completes. The combined interval mappings
 are source-derived INFERRED behavior because no dedicated original-part
-branch/call pin waveform has been located. The wrapper parks on unsupported
-IN and does not yet integrate I/O, table, or interrupt pipeline sequencing.
+branch/call pin waveform has been located. Figure 2-9 directly defines the
+I/O mapping: cycle 1 asserts only DEN or WE at the encoded port, cycle 2
+fetches PC+1 under MEN, and IN/OUT retires as that word enters the execute
+slot. Both intervals are independently stallable, IN data is sampled at the
+port boundary, and OUT data remains stable through it. The wrapper parks on
+unsupported TBLR and does not yet integrate table or interrupt pipeline
+sequencing.
 Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.

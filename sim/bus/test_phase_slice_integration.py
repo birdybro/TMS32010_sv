@@ -80,6 +80,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_call_pushes_only_when_selected_fetch_completes(self) -> None:
         self._run_testbench("tb_sequential_pipeline_call")
 
+    def test_io_transfer_precedes_following_instruction_prefetch(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_io")
+
     def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
         self._run_testbench("tb_sequential_pipeline_differential")
 
