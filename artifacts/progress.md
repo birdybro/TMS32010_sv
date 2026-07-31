@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** SUBH high-half subtraction qualification
+- **Current milestone:** bounded indirect-MPY/address-update proof
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 97 repository/provenance/document/ISA/toolchain tests; 217
   directed model tests; 35 RTL instruction/decode tests; 3 interrupt RTL/phase
@@ -27,14 +27,17 @@
   contributes 1,753 generic cells; Yosys
   is not installed on the host path
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
-  12-, 14-, and 20-step actual-core BMCs across arbitrary clock-enable
+  12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
   held-low request relatching at step 8; the third deterministic
   LT/EINT/NOP/MPY/MPYK/MPY/LACK/dummy/vector cover reaches completed entry at
-  step 12 after checking three exact signed products. This is bounded scenario
-  evidence, not a complete interrupt or core proof.
+  step 12 after checking three exact signed products. The fourth
+  LT/LAR/LARP/EINT/NOP/MPY/LACK/dummy/vector cover reaches completed entry at
+  step 12 after proving old address `0x8f`, product `0xffff0000`, AR0
+  decrement from `0xaa8f` to `0xaa8e`, and ARP replacement. This is bounded
+  scenario evidence, not a complete interrupt or core proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -182,7 +185,11 @@
   endpoint when OVM is set; direct and indirect addressing, both overflow
   directions, and its one-cycle data-read transaction are model/RTL/native/
   differential qualified, with the primary-wording resolution recorded as
-  `SC-016`
+  `SC-016`; an actual-core 20-step BMC now proves one fixed protected
+  indirect-MPY case across arbitrary clock-enable stalls, including the old
+  selected data address, signed product, low-nine-bit AR decrement with
+  upper-bit preservation, ARP replacement, following-instruction protection,
+  dummy entry, stack push, and vector selection
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
   ownership and exhaustive multicycle arrival cases, CALA/RET second external
   cycles and native/RTL resumption,
@@ -194,10 +201,10 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** continue `FORMAL-001` with indirect-MPY/address-update
-  scenarios and `CTRL-002` with an exhaustive
-  supported-multicycle arrival matrix; preserve the distinction between
-  model-qualified CALA/RET/PUSH/POP
+- **Next task:** continue `CTRL-002` with an exhaustive supported-multicycle
+  interrupt-arrival matrix and extend `FORMAL-001` only with bounded cases
+  whose architectural ordering is already documented; preserve the
+  distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing, and between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
@@ -210,4 +217,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c5cb3e3`
+  `3626f54`

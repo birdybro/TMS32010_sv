@@ -89,8 +89,32 @@ This qualifies these direct MPY operands and this finite mixed chain only; it
 does not prove indirect MPY address updates, arbitrary chain lengths or
 placements, or every interrupt arrival point.
 
-All three harnesses leave DINT ordering, multicycle arrival positions, RET,
-the complete fetch/execute pipeline, and electrical timing to
+## Indirect-MPY address-update harness
+
+`tms32010_interrupt_multiply_indirect.sby` checks a fourth fixed actual-core
+program with a 20-step BMC and cover. Three initialization cycles preload
+`data[0]=0x8000`, `data[1]=0xaa8f`, and `data[143]=0x0002` through the same
+explicit nonarchitectural debug port used by the direct-MPY harness. The
+program:
+
+1. loads `T=0x8000` and then loads `AR0=0xaa8f` from internal RAM;
+2. explicitly selects AR0, executes EINT, and samples a request during the
+   following NOP;
+3. executes protected `MPY *-,AR1`, followed by protected `LACK 0x55`; and
+4. performs the return-PC dummy fetch and vector entry.
+
+Assertions establish that MPY reads old selected address `0x8f` and operand
+`0x0002`, produces `0xffff0000`, preserves AR0's upper seven bits while
+decrementing its low-nine-bit counter to `0x08e`, replaces ARP with one, and
+retains those effects through interrupt entry and arbitrary clock-enable
+stalls. The cover reaches completed entry at step 12. This is one fixed
+indirect decrement/ARP-replacement case; it does not prove every indirect
+control encoding, counter wrap, arbitrary instruction placement, or
+unbounded interrupt behavior.
+
+All four harnesses leave DINT ordering, multicycle arrival positions, RET,
+arbitrary multiply-chain placement/length, the complete fetch/execute
+pipeline, and electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
 `OQ-004`, and `OQ-019`.
 No liveness theorem is claimed because arbitrary clock-enable input may remain

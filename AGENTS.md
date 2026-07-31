@@ -330,10 +330,11 @@ cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
 write, followed by another PC+1 fetch. Table retirement also reproduces the
 documented old-stack-bottom loss and old-level-2 duplication.
 Both multiply instructions' interrupt-deferral rule has directed
-model/RTL/native coverage through the following instruction. Actual-core
-12-, 14-, and 20-step formal harnesses check ordinary EINT entry, MPYK
+model/RTL/native coverage through the following instruction. Four actual-core
+formal harnesses at 12, 14, 20, and 20 steps check ordinary EINT entry, MPYK
 extension, held-low relatching, direct data-memory MPY, a fixed repeated
-multiply chain, and arbitrary clock-enable stalls, with reachable covers.
+multiply chain, one indirect MPY old-address/decrement/ARP-replacement case,
+and arbitrary clock-enable stalls, with reachable covers.
 This is not a complete formal proof; no general pipeline, exhaustive
 interrupt entry matrix, or complete pin timing exists.
 The project must not be called instruction-complete or cycle-accurate. Consult

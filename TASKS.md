@@ -878,7 +878,7 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Three actual-core configurations pass bounded checks over
+- **Notes:** Four actual-core configurations pass bounded checks over
   arbitrary clock-enable sequences. The 12-step
   EINT/protected-LACK/dummy/vector fixture
   reaches vector execution at step 6. The 14-step
@@ -886,13 +886,18 @@ objective passing evidence.
   request relatching at step 8. A 20-step fixture preloads deterministic RAM,
   executes LT/EINT/NOP/direct-MPY/MPYK/direct-MPY/LACK/dummy/vector, checks
   three signed products and repeated multiply deferral, and reaches entry at
-  step 12. Together they check initialization, pending retention, MPY/MPYK
+  step 12. A second 20-step fixture executes
+  LT/LAR/LARP/EINT/NOP/indirect-MPY/LACK/dummy/vector, proves that
+  `MPY *-,AR1` reads old address `0x8f`, produces `0xffff0000`, preserves
+  AR0's upper bits while decrementing its low-nine-bit counter from `0x08f`
+  to `0x08e`, replaces ARP, and reaches entry at step 12. Together the four
+  configurations check initialization, pending retention, MPY/MPYK
   extension, program-only entry, stack/vector/INTM effects, bus exclusion,
   relatching, and stall stability.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
-  indirect MPY/address updates, arbitrary chain placement/length, multicycle
-  arrival points, RET, general decode/FSM/RAM/arithmetic properties, and
-  liveness assumptions remain.
+  the other indirect MPY control/update cases, arbitrary chain
+  placement/length, multicycle arrival points, RET, general
+  decode/FSM/RAM/arithmetic properties, and liveness assumptions remain.
   Never describe bounded checks as complete proof.
 
 ## Milestone 19 — FPGA synthesis and timing
@@ -908,7 +913,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Fifty-two-instruction RTL, phase engine, multiplier, and
+- **Notes:** Fifty-three-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in

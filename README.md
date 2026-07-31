@@ -48,10 +48,10 @@ external read order. Complete fetch/execute overlap, every multicycle arrival
 case, RET resumption, and the provisional DINT-at-final-boundary ordering
 remain outside any cycle-accuracy claim.
 Bounded actual-core formal harnesses check fixed EINT entry,
-MPYK-extension/held-low-relatch, and direct-MPY/repeated-multiply-chain slices
-across arbitrary clock-enable stalls. Their 12/14/20-step bounds and reachable
-covers are documented in `formal/README.md`; they are not a general interrupt
-proof.
+MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
+indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
+12/14/20/20-step bounds and reachable covers are documented in
+`formal/README.md`; they are not a general interrupt proof.
 `LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
 provisional under `OQ-015`, based on later TI and independent MAME

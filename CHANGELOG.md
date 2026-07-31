@@ -234,6 +234,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A third actual-core formal harness with a 20-step BMC and cover for
   deterministic direct data-memory MPY operands, a mixed MPY/MPYK/MPY
   deferral chain, signed product results, and final interrupt entry.
+- A fourth actual-core formal harness with a 20-step BMC and cover for
+  indirect `MPY *-,AR1`, old-address data ownership, low-nine-bit AR
+  decrement with upper-bit preservation, ARP replacement, signed product,
+  interrupt deferral, entry effects, and arbitrary clock-enable stalls.
 - Primary-cited exact `RET=0x7f8d` database/fixture support, assembler and
   disassembler round trips, and directed model tests for the old-TOS PC load,
   four-level pop with old-bottom duplication, two-cycle total, state
@@ -592,6 +596,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The same formal stack passes a 20-step direct-MPY/repeated-chain BMC across
   arbitrary clock-enable choices; its cover reaches completed entry at step
   12 after checking three exact signed products.
+- The same formal stack passes a 20-step indirect-MPY BMC across arbitrary
+  clock-enable choices; its cover reaches completed entry at step 12 after
+  checking old address `0x8f`, product `0xffff0000`, AR0
+  `0xaa8f`-to-`0xaa8e` decrement, and ARP replacement.
 - The complete current regression passes 97 repository/ISA/tool tests, 217
   directed model tests, 35 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
@@ -639,10 +647,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.
-- Formal evidence currently covers only three fixed interrupt-entry programs
-  at 12-, 14-, and 20-step bounds. It excludes DINT, indirect MPY/address
-  updates, arbitrary multiply-chain placement/length, multicycle arrival
-  positions, RET, the general pipeline, and broad decode/datapath properties.
+- Formal evidence currently covers only four fixed interrupt-entry programs
+  at 12-, 14-, and two 20-step bounds. It excludes DINT, the other indirect
+  MPY control/update cases, arbitrary multiply-chain placement/length,
+  multicycle arrival positions, RET, the general pipeline, and broad
+  decode/datapath properties.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.
