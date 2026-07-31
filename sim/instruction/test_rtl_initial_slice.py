@@ -193,6 +193,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_apac_arithmetic_status_saturation_and_no_data_access(self) -> None:
+        self._run_testbench(
+            "tb_apac_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_apac_rtl.sv",
+            ],
+        )
+
     def test_sacl_data_write_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_sacl_rtl",

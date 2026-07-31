@@ -29,7 +29,8 @@ package tms32010_pkg;
     OP_LT   = 5'd24,
     OP_MPY  = 5'd25,
     OP_MPYK = 5'd26,
-    OP_PAC  = 5'd27
+    OP_PAC  = 5'd27,
+    OP_APAC = 5'd28
   } tms32010_operation_t;
 endpackage
 

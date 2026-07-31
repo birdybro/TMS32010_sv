@@ -121,12 +121,13 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             0x9000,
             0x8FFF,
             0x7F8E,
+            0x7F8F,
         ):
             append_and_step(word)
 
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(456):
-            family = randomizer.randrange(26)
+        for _ in range(455):
+            family = randomizer.randrange(27)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
@@ -444,6 +445,8 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 word = 0x8000 | randomizer.randrange(0x2000)
             elif family == 23:
                 word = 0x7F8E
+            elif family == 24:
+                word = 0x7F8F
             else:
                 word = randomizer.choice(choices)
             append_and_step(word)

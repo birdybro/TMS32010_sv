@@ -66,6 +66,7 @@ module tms32010_core (
   localparam logic [4:0] OP_MPY  = 5'd25;
   localparam logic [4:0] OP_MPYK = 5'd26;
   localparam logic [4:0] OP_PAC  = 5'd27;
+  localparam logic [4:0] OP_APAC = 5'd28;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -88,6 +89,8 @@ module tms32010_core (
   logic        subs_overflow;
   logic [31:0] multiplier_product;
   logic [15:0] multiplier_operand;
+  logic [31:0] apac_wrapped_result;
+  logic        apac_overflow;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -274,6 +277,10 @@ module tms32010_core (
     accumulator_o - {16'h0000, ram_read_data};
   assign subs_overflow =
     accumulator_o[31] && ~subs_wrapped_result[31];
+  assign apac_wrapped_result = accumulator_o + product_register_o;
+  assign apac_overflow =
+    ~(accumulator_o[31] ^ product_register_o[31]) &&
+    (accumulator_o[31] ^ apac_wrapped_result[31]);
 
   always_ff @(posedge clk_i) begin
     retired_o <= 1'b0;
@@ -325,6 +332,19 @@ module tms32010_core (
           OP_MPY: product_register_o <= multiplier_product;
           OP_MPYK: product_register_o <= multiplier_product;
           OP_PAC: accumulator_o <= product_register_o;
+          OP_APAC: begin
+            if (apac_overflow) begin
+              overflow_flag_o <= 1'b1;
+              if (overflow_mode_o) begin
+                accumulator_o <=
+                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
+              end else begin
+                accumulator_o <= apac_wrapped_result;
+              end
+            end else begin
+              accumulator_o <= apac_wrapped_result;
+            end
+          end
           OP_SAR: begin
           end
           OP_SACL: begin

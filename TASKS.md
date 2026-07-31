@@ -94,7 +94,7 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Twenty-eight encodings (`ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Twenty-nine encodings (`ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are
@@ -104,7 +104,7 @@ objective passing evidence.
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 18,347 supported words without collisions; the remaining 32
+  accepting 18,348 supported words without collisions; the remaining 31
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -124,7 +124,7 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
@@ -148,7 +148,9 @@ objective passing evidence.
   documented `0x8000`-by-`0x8000` exception. `MPYK` multiplies T by a
   sign-extended 13-bit immediate without a data-memory transaction. `PAC`
   copies the complete P register into ACC without a data-memory transaction
-  or status change. Both
+  or status change. `APAC` adds the complete P value to ACC with signed
+  overflow, sticky OV, and OVM-controlled wrap or endpoint saturation, also
+  without a data-memory transaction. Both
   multiply instructions' interrupt deferral remains outside the model until
   interrupt entry exists. ADDS
   covers unsigned-source arithmetic, sticky OV, wrap, and positive saturation.
@@ -177,7 +179,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same twenty-eight instructions as the
+- **Notes:** Qualified slice supports the same twenty-nine instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -185,7 +187,7 @@ objective passing evidence.
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
   ADDS/AND/LDP/LT/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
-  plus the complete signed 13-bit MPYK immediate range and implied PAC. The remaining 32
+  plus the complete signed 13-bit MPYK immediate range and implied PAC/APAC. The remaining 31
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -205,7 +207,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  twenty-eight-instruction slice. `LAC`
+  twenty-nine-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   seventeen common-address data instructions verify direct/indirect read/write
@@ -224,7 +226,8 @@ objective passing evidence.
   combinational portable multiplier infers one Cyclone V DSP block in the
   current Quartus harness. `MPYK` reuses that portable datapath with a
   sign-extended 13-bit immediate and no RAM transaction. `PAC` transfers all
-  32 P bits into ACC without changing P or arithmetic status.
+  32 P bits into ACC without changing P or arithmetic status. `APAC` adds P
+  to ACC with signed overflow, sticky OV, and OVM-controlled saturation.
   ADDS additionally verifies sticky
   overflow, OVM-clear wrap, and OVM-set positive saturation. AND/OR/XOR verify
   low-half logic, AND upper clearing, OR/XOR upper preservation, and unchanged
@@ -256,7 +259,7 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of twenty-eight supported one-cycle instructions, including all
+  retires each of twenty-nine supported one-cycle instructions, including all
   seventeen internal-data operations, on its falling-edge sample and aligns
   PC/native address across stalls, traps, and reset. General overlap, branch,
   multi-cycle, and interrupt control do not exist yet.
@@ -279,7 +282,7 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all twenty-eight
+  release delay. A partial wrapper integrates those phases with all twenty-nine
   supported sequential instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Table cycles, branch/call/return, general pipeline overlap,
@@ -309,7 +312,8 @@ objective passing evidence.
   compares all 144 final words. Remaining instruction interactions remain.
   MPYK separately verifies that its immediate multiply performs no logical
   data-memory transaction. PAC separately verifies that its internal P-to-ACC
-  transfer performs no logical data-memory transaction.
+  transfer performs no logical data-memory transaction. APAC verifies the same
+  program-only boundary for its internal P-plus-ACC arithmetic.
   Variant RAM sizes must not leak into the TMS32010 default.
 
 ## Milestone 11 — I/O interface
@@ -435,6 +439,12 @@ objective passing evidence.
   transfer, P/T/status preservation, and no data-memory transaction. A PAC
   following MPY/MPYK does not yet verify interrupt recognition at the end of
   the documented deferral window under `INT-001`.
+  `APAC` now passes primary-cited database/model/tool/RTL, one-cycle,
+  native-phase, and randomized differential tests for exact `0x7f8f` decode,
+  full-width P-plus-ACC results, sticky OV, both signed-overflow directions,
+  OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
+  no data-memory transaction. Its equivalent multiply-following interrupt
+  boundary remains unverified under `INT-001`.
   `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
   remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family
@@ -504,6 +514,8 @@ objective passing evidence.
   post-update ordering. MPYK cases compare signed immediate endpoints and P
   results while requiring inactive logical data strobes. PAC cases compare
   the full-width ACC result, unchanged P, and inactive logical data strobes.
+  APAC cases compare full-width arithmetic, OV/OVM outcomes, unchanged P, and
+  inactive logical data strobes.
   MAME comparison and
   legal randomized full-ISA streams
   remain. MAME disagreement

@@ -1,6 +1,6 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDP,
+This partial slice supports ADD, ADDS, AND, APAC, LAC, LACK, LAR, LARK, LARP, LDP,
 LDPK, LT, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS,
 XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
@@ -320,6 +320,8 @@ class Tms32010Model:
             self.state.p = (signed_t * operands["constant"]) & ACC_MASK
         elif mnemonic == "PAC":
             self.state.acc = self.state.p
+        elif mnemonic == "APAC":
+            self._add_accumulator(self.state.p)
         elif mnemonic == "SACL":
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
@@ -694,6 +696,7 @@ class Tms32010Model:
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",
             0x7F8E: "PAC",
+            0x7F8F: "APAC",
         }
         mnemonic = fixed.get(opcode)
         if mnemonic is None:

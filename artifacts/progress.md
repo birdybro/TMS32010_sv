@@ -1,21 +1,21 @@
 # Progress summary
 
-- **Current milestone:** PAC product-to-accumulator qualification
+- **Current milestone:** APAC product-accumulate qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 63 repository/provenance/document/ISA/toolchain tests; 108
-  directed model tests; 19 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded twenty-eight-instruction model/RTL
+- **Tests passing:** 64 repository/provenance/document/ISA/toolchain tests; 114
+  directed model tests; 20 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-nine-instruction model/RTL
   differential including T, P, OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the twenty-eight-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,741 ALMs, 2,483 registers, 0 RAM blocks,
+  the twenty-nine-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,723 ALMs, 2,483 registers, 0 RAM blocks,
   1 DSP block, 59.02 MHz worst slow-corner internal Fmax, +3.057 ns setup
-  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  10,287 generic cells and lowering the asynchronous RAM to registers/muxes;
+  10,662 generic cells and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -64,16 +64,19 @@
   a 13-bit program-word constant, multiplies it by signed T into P, and has no
   data-memory transaction; PAC is fixed opcode `0x7f8e`, copies all 32 P bits
   into ACC in one cycle, leaves P/T/OV/OVM and address state unchanged, and
-  has no data-memory transaction
+  has no data-memory transaction; APAC is fixed opcode `0x7f8f`, adds all 32
+  P bits to ACC in one cycle, leaves P/T/address state unchanged, sets sticky
+  OV on signed overflow, wraps when OVM is clear, saturates to the appropriate
+  signed endpoint when OVM is set, and has no data-memory transaction
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, Hard Drivin' INT net, and safe phase adaptation
   without READY
-- **Next task:** research and qualify primary-defined `APAC` P-plus-ACC
+- **Next task:** research and qualify primary-defined `SPAC` ACC-minus-P
   arithmetic, including both OVM modes and sticky OV; keep multiply
   interrupt-deferral gaps under `INT-001` and keep `ADDH` and `ABS` outside
   the supported boundary pending `OQ-011` and `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `8deb4ee5f4b1b46f8361eb8445fe672b8a8e45b4`
+  `d0fd719593ebe00d3a20441208a5caa51e2ee245`

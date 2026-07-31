@@ -278,6 +278,33 @@ deferral window; recognizing a pending interrupt at that boundary remains
 unimplemented under `INT-001`, so these PAC tests are not interrupt-timing
 evidence.
 
+## Qualified `APAC` functional slice
+
+`APAC` is the implied fixed word `0x7f8f`. It performs a full-width two's
+complement addition `(ACC) + (P) -> ACC`, leaves P unchanged, and is one word
+and one cycle. TI's worked example adds P=64 to ACC=32 to produce ACC=96
+[ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64);
+ti-tms32010-assembly-guide-spru002b, `APAC`, printed p. 3-14 (PDF p. 35)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Signed overflow sets sticky `OV`. With `OVM=0`, the wrapped 32-bit result is
+stored; with `OVM=1`, positive overflow stores `0x7fffffff` and negative
+overflow stores `0x80000000`. A nonoverflowing APAC does not clear an already
+set `OV`
+[ti-tms32010-users-guide-spru001b, §§2.2.1.1–2.2.2.1, printed pp. 2-4–2-5
+(PDF pp. 28–29); ti-first-generation-users-guide-1987, §3.5.2 and `APAC`,
+printed pp. 3-19–3-20 and 4-19 (PDF pp. 48–49 and 100)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests cover TI's worked example, both signed-overflow
+directions, OVM-clear wrapping, OVM-set saturation, sticky-OV preservation,
+unchanged P/T/address state, one-cycle retirement, exact fixed-word decode,
+and absence of a logical data-memory transaction. Native-phase and seeded
+differential tests cover the ordinary program fetch and randomized arithmetic
+states. As with PAC, an APAC immediately after MPY or MPYK reaches the
+documented interrupt-deferral boundary; interrupt recognition at that point
+remains outside current evidence under `INT-001`.
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

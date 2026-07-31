@@ -1,9 +1,9 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
+`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
-`SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
+`PAC`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
 `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
 one supported one-cycle instruction. Unsupported words, undocumented SACH
@@ -40,7 +40,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the twenty-seven currently qualified one-cycle sequential instructions it
+For the twenty-nine currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general
@@ -64,7 +64,7 @@ The synthesizable code:
 - leaves physical-reset-unspecified data state unspecified;
 - resets the PC to zero and masks interrupts;
 - preserves `OVM` through physical reset as TI documents;
-- exposes sticky `OV` for ADD/ADDS/SUB/SUBS wrap/saturation verification;
+- exposes sticky `OV` for ADD/ADDS/APAC/SUB/SUBS wrap/saturation verification;
 - exposes T and P for multiply-path differential verification;
 - uses no vendor primitive.
 

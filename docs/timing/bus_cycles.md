@@ -61,6 +61,12 @@ write
 [ti-tms32010-users-guide-spru001b, `PAC`, printed p. 3-48 (PDF p. 98)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`APAC` likewise retains the ordinary external program fetch and has no
+logical data transaction while adding P to ACC. Its arithmetic status and OVM
+behavior are internal to the processor
+[ti-tms32010-users-guide-spru001b, `APAC`, printed p. 3-14 (PDF p. 64)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms

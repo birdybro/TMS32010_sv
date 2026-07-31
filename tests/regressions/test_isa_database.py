@@ -39,6 +39,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "MPY",
                 "MPYK",
                 "PAC",
+                "APAC",
                 "LAC",
                 "SACL",
                 "SACH",
@@ -163,7 +164,13 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(decoded[0]["mnemonic"], "PAC")
         self.assertEqual(decoded[1], {})
         self.assertIsNone(decode_word(self.database, 0x7F8D))
-        self.assertIsNone(decode_word(self.database, 0x7F8F))
+
+    def test_apac_is_the_adjacent_primary_documented_fixed_word(self) -> None:
+        decoded = decode_word(self.database, 0x7F8F)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        self.assertEqual(decoded[0]["mnemonic"], "APAC")
+        self.assertEqual(decoded[1], {})
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))
