@@ -9,13 +9,12 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class InterruptEntryRtlTests(unittest.TestCase):
-    def test_pending_deferral_entry_and_vector_sequence(self) -> None:
+    def _run_testbench(self, name: str) -> str:
         verilator = shutil.which("verilator")
         if verilator is None:
             raise RuntimeError(
                 "Verilator is required once architectural RTL exists"
             )
-        name = "tb_interrupt_entry"
         build = ROOT / "build" / "verilator" / name
         build.mkdir(parents=True, exist_ok=True)
         sources = [
@@ -24,7 +23,7 @@ class InterruptEntryRtlTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_internal_ram.sv",
             ROOT / "rtl" / "core" / "tms32010_multiplier.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
-            ROOT / "sim" / "interrupt" / "tb_interrupt_entry.sv",
+            ROOT / "sim" / "interrupt" / f"{name}.sv",
         ]
         compile_result = subprocess.run(
             [
@@ -62,6 +61,14 @@ class InterruptEntryRtlTests(unittest.TestCase):
             run_result.stdout + run_result.stderr,
         )
         self.assertIn(f"PASS {name}", run_result.stdout)
+        return run_result.stdout
+
+    def test_pending_deferral_entry_and_vector_sequence(self) -> None:
+        self._run_testbench("tb_interrupt_entry")
+
+    def test_every_supported_multicycle_arrival_phase(self) -> None:
+        output = self._run_testbench("tb_interrupt_multicycle_arrivals")
+        self.assertIn("(32 arrival cases)", output)
 
 
 if __name__ == "__main__":

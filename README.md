@@ -44,9 +44,11 @@ program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK
 deferrals, dummy-fetches and stacks the return PC, masks and clears the
 request, and selects vector 2. A native-phase test matches TI Figure 2-12's
-external read order. Complete fetch/execute overlap, every multicycle arrival
-case, RET resumption, and the provisional DINT-at-final-boundary ordering
-remain outside any cycle-accuracy claim.
+external read order. A 32-case core matrix exhausts request arrival at every
+represented machine cycle of all 15 currently supported multicycle families.
+Complete fetch/execute overlap, native-subphase arrival ownership, unsupported
+CALA/RET/PUSH/POP cycles, RET resumption, and the provisional
+DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
 Bounded actual-core formal harnesses check fixed EINT entry,
 MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
 indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their

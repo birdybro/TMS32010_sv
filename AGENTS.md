@@ -283,9 +283,11 @@ boundaries without a data transaction. The core samples active-low `INT`,
 retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
-matches TI Figure 2-12's external address order. Complete fetch/execute
-overlap, exhaustive multicycle arrival coverage, native/RTL CALA/RET
-sequencing, PUSH/POP second-cycle sequencing, and the provisional
+matches TI Figure 2-12's external address order. A 32-case core matrix
+exhausts arrival at every represented machine cycle of all 15 supported
+multicycle families. Complete fetch/execute overlap, native-subphase arrival
+ownership, native/RTL CALA/RET sequencing, PUSH/POP second-cycle sequencing,
+and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while

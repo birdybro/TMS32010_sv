@@ -29,6 +29,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   clock-enable execution core for the fifty-three-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
+- A 32-case interrupt-arrival matrix covering every represented machine cycle
+  of all 15 currently supported multicycle core families, with logical bus,
+  retirement, protected-instruction, dummy-fetch, stack, acknowledge, and
+  vector assertions.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -588,6 +592,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   tests independently assert masked-pulse persistence, one protected
   instruction, MPY/MPYK extension, stack push, INTM set, pending clear, and
   no retirement or data/I/O traffic during the dummy fetch.
+- Active-low interrupt arrival at all 32 represented multicycle machine-cycle
+  boundaries passes: both cycles of the 11 supported two-word control-flow
+  families and IN/OUT, and all three cycles of TBLR/TBLW. Every path completes
+  before service, retires exactly one protected instruction, dummy-fetches the
+  resolved return PC while advertising vector 2 next, and enters with the
+  expected stack and bus state.
 - SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1 pass the 12-step actual-core
   interrupt BMC across arbitrary clock-enable choices; the separate cover
   reaches completed vector execution at step 6.
@@ -602,7 +612,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   `0xaa8f`-to-`0xaa8e` decrement, and ARP replacement.
 - The complete current regression passes 97 repository/ISA/tool tests, 217
   directed model tests, 35 exhaustive/directed instruction RTL tests, ten
-  native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
+  native bus/phase tests, four interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
   one focused interrupt-entry differential.
@@ -636,11 +646,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   sticky OV is PROVISIONAL under `OQ-018`.
 - Interrupt external fetch order and directed entry state are verified, but
   the partial core still collapses fetch and execution at sample boundaries.
-  Complete Figure 2-12 execute overlap, every multicycle arrival point, and
-  native/RTL RET-based resumption remain under
-  `CTRL-002`/`OQ-004`/`OQ-007`. RET's functional model behavior is qualified,
-  but TI's located instruction pages do not identify its second cycle's
-  external address or `MEN` behavior.
+  The 32 represented multicycle machine-cycle arrival points are qualified;
+  complete Figure 2-12 execute overlap, native-subphase arrival ownership,
+  unsupported CALA/RET/PUSH/POP cycles, and native/RTL RET-based resumption
+  remain under `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`. RET's functional model
+  behavior is qualified, but TI's located instruction pages do not identify
+  its second cycle's external address or `MEN` behavior.
 - CALA's state effects and numeric two-cycle total are model/tool-qualified,
   but its located pages likewise do not identify the second cycle's external
   address or `MEN` behavior; RTL/native qualification remains `OQ-007`.

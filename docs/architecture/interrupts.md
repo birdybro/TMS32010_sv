@@ -46,9 +46,17 @@ Directed tests cover a one-cycle pulse, a held-low level that relatches after
 acknowledge, a pulse retained while masked, entry after EINT plus its required
 following instruction, completion of a two-cycle branch before deferral,
 MPY/MPYK protection through one additional instruction, reset clearing, and
-model/RTL state comparison. The native test observes the external address
-sequence `N`, `N+1`, dummy return PC, `0x002` with ordinary `MEN` phases
+model/RTL state comparison. A 32-case core matrix drives a one-machine-cycle
+active-low pulse at each modeled cycle of all 15 currently supported
+multicycle families: the 11 two-word control-flow operations, `IN`, `OUT`,
+`TBLR`, and `TBLW`. Every case asserts the family-specific logical bus shape,
+no midinstruction entry, final retirement before deferral, exactly one
+protected instruction, a nonretiring dummy fetch at the resolved return PC
+with next address `0x002`, and the resulting stack/vector state. The native
+test independently observes the external address sequence `N`, `N+1`, dummy
+return PC, `0x002` with ordinary `MEN` phases
 [`sim/interrupt/tb_interrupt_entry.sv`,
+`sim/interrupt/tb_interrupt_multicycle_arrivals.sv`,
 `sim/interrupt/tb_interrupt_phase.sv`,
 `sim/differential/test_interrupt_model_rtl.py`].
 The instruction-boundary model additionally verifies the primary-described
@@ -60,11 +68,14 @@ absent from the RTL because its second external cycle is unresolved under
 This is not yet a complete pipeline claim. The existing partial core maps a
 fetched word's effect to its program-sample boundary rather than maintaining
 TI's separate fetch and execute registers. It reproduces the cited external
-read order and architectural entry effects for the tested paths, but the
-full Figure 2-12 execute-overlap timeline, every arrival point inside every
-multicycle instruction, native/RTL return through `RET`, and analog input
-timing remain outside the qualified boundary (`CTRL-002`, `OQ-004`,
-`OQ-007`).
+read order and architectural entry effects for the tested paths, and the
+matrix exhausts arrival at each machine-cycle boundary represented by every
+currently supported multicycle core state. It does not establish arrival
+ownership within the four native subphases, the full Figure 2-12
+fetch/execute-overlap timeline, unsupported CALA/RET/PUSH/POP cycles,
+native/RTL return through `RET`, or analog input timing. Those dimensions
+remain outside the qualified boundary (`CTRL-002`, `OQ-004`, `OQ-007`,
+`OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's

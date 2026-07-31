@@ -45,7 +45,9 @@ resolved for:
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
 - complete implementation of the now-transcribed interrupt fetch/execute
-  overlap and exhaustive multicycle arrival matrix (`OQ-004`);
+  overlap and request ownership within native subphases (`OQ-004`); all 32
+  represented machine-cycle arrival points across the 15 currently supported
+  multicycle core families are directed-tested;
 - any external cycle stretching (`OQ-001`).
 
 Until these rows have cited diagrams and automated traces, the project does
@@ -72,8 +74,11 @@ The wrapper still executes each supported fetched word at its sample boundary;
 it does not yet contain separate general fetch and execute registers. Thus the
 address sequence is qualified, while the complete overlapped execution row is
 still an implementation requirement rather than a cycle-accuracy claim.
-`OQ-004` retains that distinction and the unexhausted multicycle-arrival
-matrix.
+`OQ-004` retains that distinction. A separate 32-case core matrix exhausts
+arrival at every represented machine cycle of the 11 supported two-word
+control-flow families, IN, OUT, TBLR, and TBLW; it does not convert the
+collapsed fetch-sample implementation into a physical subphase or
+fetch/execute-overlap claim.
 
 `BANZ` now supplies the first qualified two-word control-flow sequence. Cycle
 1 reads exact opcode `0xf400` at PC. Cycle 2 reads the following target word

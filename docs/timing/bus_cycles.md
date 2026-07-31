@@ -243,7 +243,8 @@ are transcribed and have directed native-phase tests. Remaining work must
 identify:
 
 - branch/call/return prefetch address order;
-- complete interrupt execute-overlap ownership and every multicycle arrival
-  case;
+- complete interrupt execute-overlap ownership and native-subphase arrival
+  ownership; the 32 represented machine-cycle arrival cases for the 15
+  supported multicycle families are qualified;
 - any internal conflict that changes an otherwise normal read;
 - safe wrapper phase pause, if one exists, despite the absence of READY.

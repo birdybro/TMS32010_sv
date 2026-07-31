@@ -87,6 +87,13 @@ on EINT, protected instruction, one non-retiring entry cycle, and vector word
 state; the native program addresses agree with Figure 2-12. These assertions
 qualify the retirement-mapped partial core, not a complete overlapped
 fetch/execute pipeline (`OQ-004`).
+A 32-case directed core matrix additionally samples a one-cycle request at
+each represented machine cycle of B, BANZ, BV, BIOZ, CALL, the six
+accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each
+instruction reaches its documented two- or three-cycle retirement before
+deferral, then permits one protected instruction and performs the dummy/vector
+sequence. This exhausts the currently modeled multicycle machine-cycle
+boundaries, not native subphase ownership or the missing overlapped pipeline.
 Directed `LST` tests assert one-cycle direct/indirect reads, old-DP and
 old-ARP address selection, post-read nine-bit counter updates, `INTM`
 preservation, all four loaded status fields, clock-enable hold, and
@@ -202,10 +209,11 @@ IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
 - table-operation discarded fetch order;
-- complete interrupt fetch/execute overlap, every request arrival point in
-  every multicycle instruction, native/RTL CALA/RET sequencing, and the
-  provisional DINT-at-final-boundary ordering (`OQ-004`, `OQ-007`,
-  `OQ-019`);
+- complete interrupt fetch/execute overlap, request ownership within native
+  subphases, unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
+  CALA/RET sequencing, and the provisional DINT-at-final-boundary ordering
+  (`OQ-004`, `OQ-007`, `OQ-016`, `OQ-019`); the 32 represented machine-cycle
+  arrival points for supported multicycle core states are qualified;
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is
