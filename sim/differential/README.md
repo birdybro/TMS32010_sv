@@ -2,7 +2,7 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-39 supported one-cycle instructions. A focused BANZ trace adds the first
+40 supported one-cycle instructions. A focused BANZ trace adds the first
 two-cycle instruction and checks both branch outcomes; a focused B trace
 checks unconditional two-cycle control flow. A family trace checks taken and
 untaken cases for all six accumulator conditions; a BV trace checks its
@@ -14,7 +14,7 @@ post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
 registers, all four stack levels, and the ARP/DP/INTM status fields.
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SST`/`SUB`/`SUBC`/`SUBH`/`SUBS`/
 `XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
 and cover valid
 direct/indirect addresses, reads, writes, shifts, and auxiliary-register
@@ -44,6 +44,9 @@ SPAC cases compare full-width subtraction with the same status/result policy,
 unchanged P, and inactive logical data-memory strobes.
 ABS cases compare signed magnitude results, OVM-selected most-negative
 behavior, preserved OV, and inactive logical data-memory strobes.
+SST cases compare forced-page direct destinations, old-ARP indirect capture,
+post-update AR/ARP state, exact packed status including reserved bit 1,
+logical writes, one-cycle totals, and final RAM.
 DINT/EINT cases compare exact fixed words, one-cycle `INTM` set/clear effects,
 and inactive logical data-memory strobes. No interrupt request or entry is
 modeled on either side.

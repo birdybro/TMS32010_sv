@@ -297,7 +297,8 @@ module tb_sequential_pipeline_differential;
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
     program_memory[42] = 16'h6203;  // SUBH 3
     program_memory[43] = 16'h7f88;  // ABS
-    program_memory[44] = 16'h7f83;  // unsupported boundary
+    program_memory[44] = 16'h7c0f;  // SST 15
+    program_memory[45] = 16'h7f83;  // unsupported boundary
 
     initialize         = 1'b1;
     rs                 = 1'b1;
@@ -334,7 +335,7 @@ module tb_sequential_pipeline_differential;
     );
     saved_legacy_architecture = legacy_architecture;
 
-    for (int unsigned retirement = 1; retirement <= 44; retirement++) begin
+    for (int unsigned retirement = 1; retirement <= 45; retirement++) begin
       advance_to_shared_sample();
       require(pipeline_retired, "each qualified pipeline word retires");
       require(
@@ -352,7 +353,7 @@ module tb_sequential_pipeline_differential;
         "execute and fetch addresses remain one word apart"
       );
 
-      if (retirement < 44) begin
+      if (retirement < 45) begin
         require(legacy_retired, "legacy oracle retires the next qualified word");
         saved_legacy_architecture = legacy_architecture;
       end
@@ -367,7 +368,7 @@ module tb_sequential_pipeline_differential;
     require(
       legacy_illegal &&
       !legacy_retired &&
-      legacy_cycle_count == 32'd44,
+      legacy_cycle_count == 32'd45,
       "legacy slice rejects the same unsupported boundary without retirement"
     );
 

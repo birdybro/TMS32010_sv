@@ -78,6 +78,7 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             0x7000,
             0x6880,
             0x7BA1,
+            0x7C0F,
             0x7102,
             0x6881,
             0x7B90,
@@ -182,8 +183,8 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             append_and_step(0x7F80)
 
         choices = [0x7F80, 0x7F81, 0x7F82, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(394):
-            family = randomizer.randrange(33)
+        for _ in range(393):
+            family = randomizer.randrange(35)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
@@ -617,11 +618,30 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                         word = 0x7B00 | address
             elif family == 31:
                 word = randomizer.choice(choices)
-            else:
+            elif family == 32:
                 word = 0x7F88
+            elif family == 33:
+                if randomizer.randrange(2):
+                    word = 0x7C00 | randomizer.randrange(16)
+                else:
+                    selected = model.state.status.arp
+                    if (model.state.ar[selected] & 0xFF) < 144:
+                        word = 0x7C00 | randomizer.choice(
+                            [0x88, 0xA8, 0x98, 0x80, 0x81,
+                             0xA0, 0xA1, 0x90, 0x91]
+                        )
+                    else:
+                        word = 0x7C00 | randomizer.randrange(16)
+            else:
+                word = 0x7F80
             append_and_step(word)
 
         self.assertIn(0x7F88, words, "seed must retain randomized ABS coverage")
+        self.assertTrue(
+            any((word & 0xFF00) == 0x7C00 for word in words),
+            "seed must retain SST coverage",
+        )
+        self.assertEqual(len(words), 512)
 
         with tempfile.TemporaryDirectory() as directory:
             image = Path(directory) / "program.hex"

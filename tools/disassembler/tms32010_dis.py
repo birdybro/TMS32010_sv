@@ -94,6 +94,7 @@ class Disassembler:
             "MAR",
             "MPY",
             "OR",
+            "SST",
             "SUBC",
             "SUBH",
             "SUBS",

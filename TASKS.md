@@ -96,28 +96,33 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Fifty-eight encodings (`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Fifty-nine mnemonics (`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `POP`, `PUSH`, `RET`, `SACL`, `SACH`, `SAR`,
-  `SOVM`, `SPAC`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`,
+  `SOVM`, `SPAC`, `SST`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`,
   `SUBC`, `SUBH`, `SUBS`) are primary-transcribed in the opcode research table. The
-  twenty-five
-  common-address data instructions add
+  twenty-five common-address data instructions plus SST's forced-page direct
+  form add
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   IN and OUT add 2,240 legal direct/indirect port/address combinations under
   those same common indirect constraints. TBLR/TBLW add 280 legal common
   address combinations. The decoder exhaustively classifies all 65,536 words
-  against this partial set, accepting 21,727 supported words without
-  collisions; the remaining 2
-  instructions and full reserved-region
+  against this partial set, accepting 21,755 supported words without
+  collisions; the remaining instruction and full reserved-region
   classification remain. Exact `ABS=0x7f88`, accumulator result, OVM-selected
   most-negative wrap/saturation, and one-cycle program-only boundary are
   primary-verified. Original-part OV preservation is `CORROBORATED` by
   SPRU013's instruction-format rule, the absence of status annotations on the
   original ABS page, the later C14/E14 variant's explicit added OV effect,
   and pinned MAME; `SC-007`/`OQ-013` record the resolution. Exact
+  `SST=0x7cxx` contributes 28 legal encodings: direct offsets 0–15 force page
+  1 and twelve indirect controls use the common reserved-field policy. Its
+  defined status fields, address rules, and one-cycle timing are primary-
+  verified; reserved bit 1 and pre-update-status ordering are CORROBORATED by
+  the original SST page, later TI architecture prose/worked result, and
+  pinned MAME under resolved `SC-008`/`OQ-003`. Exact
   `PUSH=0x7f9c` and `POP=0x7f9d` encodings, stack
   transformations, and one-word/two-cycle totals are primary-transcribed in
   the supported database and independent hand fixtures. Their external
@@ -174,9 +179,9 @@ objective passing evidence.
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `TBLR`, `TBLW`,
   `ROVM`, `SACL`, `SACH`,
-  `SAR`, `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBH`, and `SUBS`,
+  `SAR`, `SOVM`, `SPAC`, `SST`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBH`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
-  and deterministic replay. The twenty-five common-address data/table instructions
+  and deterministic replay. The twenty-five common-address data/table instructions plus SST
   cover
   direct/indirect reads or writes and nine-bit AR updates; `LAC` additionally
   covers sign extension and shifts, SACH covers output shifts 0/1/4, and the
@@ -239,6 +244,10 @@ objective passing evidence.
   legally inserted ACC-free following instructions. Intermediate-subtraction
   sticky OV is provisional under `OQ-018`, and same-boundary ACC commit is
   not evidence for prohibited scheduling under `OQ-017`.
+  `SST` exhausts all 32 combinations of the defined status fields, forces
+  direct page 1, captures old ARP in the stored word before indirect
+  post-update, and stores reserved bit 1 high at CORROBORATED confidence
+  under resolved `OQ-003`/`SC-008`.
   `BANZ` fetches the canonical target from `PC+1`, tests the old selected
   low-nine AR counter, decrements it modulo 512 while preserving upper bits,
   selects target or `PC+2`, records both logical program transactions, and
@@ -279,8 +288,8 @@ objective passing evidence.
   program memory, duplicate old stack level 2 into the bottom, apply indirect
   updates at completion, and count three cycles.
   Out-of-range
-  original-RAM addresses and unsupported words trap. Remaining instruction
-  families, complete overlapped pipeline timing, RTL/native
+  original-RAM addresses and unsupported words trap. ADDH, complete
+  overlapped pipeline timing, RTL/native
   CALA/RET/PUSH/POP timing, and untested interrupt arrival combinations
   remain unimplemented.
 
@@ -299,22 +308,23 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same fifty-eight instructions as the
+- **Notes:** Qualified slice supports the same fifty-nine instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
   zero placeholder before a next ARP, SACH's sparse 0/1/4 shifts, and
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
-  ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBH/SUBS/TBLR/TBLW/XOR/ZALH/ZALS syntax without a shift operand,
+  ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SST/SUBC/SUBH/SUBS/TBLR/TBLW/XOR/ZALH/ZALS syntax without a shift operand,
   checked `IN`/`OUT` data-address plus numeric or PA0–PA7 port syntax,
   plus the complete signed 13-bit MPYK immediate range and implied
   ABS/PAC/APAC/SPAC/CALA/DINT/EINT/POP/PUSH/RET and two-word
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 2
-  documented instructions are rejected explicitly. A surviving
+  directed-tested. SST additionally enforces direct offsets 0–15 while
+  retaining common indirect syntax and lossless noncanonical aliases. The
+  remaining documented instruction, ADDH, is rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
 ## Milestone 7 — RTL datapath
@@ -333,18 +343,20 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  fifty-four-instruction slice. `ABS` verifies zero, positive, ordinary
+  fifty-five-instruction slice. `ABS` verifies zero, positive, ordinary
   negative, and most-negative accumulator values under both OVM modes while
   preserving incoming OV. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
-  twenty-five common-address data instructions verify direct/indirect read/write
+  twenty-five common-address data instructions plus SST verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
   indirect load into the selected address register suppresses its otherwise
   requested post-modification. `SAR` verifies the distinct same-source rule:
   it stores the post-modification value at the pre-modification address.
   `MAR` verifies low-nine-bit AR update and ARP replacement without touching
   the RAM datapath.
+  SST verifies forced page-one direct addressing, exact packed status data,
+  reserved bit 1, and pre-update-status/post-update-AR ordering.
   `LDP` verifies old-DP/old-AR address selection and source-bit transfer into
   DP before the common indirect post-update.
   `LT` verifies full-word transfer into T through the same old-address and
@@ -418,8 +430,8 @@ objective passing evidence.
   `formal/sequencer/`
 - **Notes:** Temporary clock-enable execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of 39 supported one-cycle instructions, including all
-  twenty-three internal-data operations, on its falling-edge sample. B, BANZ,
+  retires each of 40 supported one-cycle instructions, including all
+  twenty-four internal-data operations, on its falling-edge sample. B, BANZ,
   BIOZ, BV, CALL, and six accumulator branches share the first two-cycle state:
   opcode and following target receive
   separate normal program reads, retirement occurs only on the target-word
@@ -499,7 +511,7 @@ objective passing evidence.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
   parking on an unsupported control word, and reset recovery. An offset differential
-  runs the full existing 44-word/39-family one-cycle program and compares PC,
+  runs the full existing 45-word/40-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
   and illegal state after every pipelined retirement. Figure 2-12's basic
   EINT/protected/dummy/vector path now has explicit ownership with stalls and
@@ -719,8 +731,12 @@ objective passing evidence.
   status-field tests, directed RTL address/order/cycle/stall/trap checks,
   native-phase retirement, and seeded differential comparison. Original
   manuals leave the indirect next-ARP precedence unstated, so memory-word ARP
-  precedence remains PROVISIONAL under `OQ-015`/`SC-009`; `SST` remains
-  blocked by the reserved-bit conflict under `OQ-003`/`SC-008`.
+  precedence remains PROVISIONAL under `OQ-015`/`SC-009`.
+  `SST` now passes primary-cited database/tool support, exhaustive 32-state
+  model packing tests, directed RTL page-one/address/update/cycle tests,
+  native-phase and explicit-pipeline retirement, and seeded differential RAM/
+  transaction comparison. Reserved bit 1 and pre-update capture ordering are
+  CORROBORATED under resolved `OQ-003`/`SC-008`, not hardware-verified.
   `BANZ` now passes primary-cited exact encoding/database/tool support,
   directed model and RTL state/timing/trap tests, two-read native-phase
   taken/untaken and stall tests, and an instruction-boundary-model versus
@@ -970,7 +986,7 @@ objective passing evidence.
   state including T, P, OV/OVM, logical-cycle,
   `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/
   `ZALH`/`ZALS`
-  reads, `SACL`/`SACH`/`SAR` writes, and final 144-word RAM agreement over an
+  reads, `SACL`/`SACH`/`SAR`/`SST` writes, and final 144-word RAM agreement over an
   identical deterministic image. MAR direct/indirect cases compare AR/ARP
   changes and
   inactive logical data strobes. LDP direct/indirect cases compare the logical
@@ -1092,7 +1108,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Fifty-four-instruction RTL, phase engine, multiplier, and
+- **Notes:** Fifty-five-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in
@@ -1101,9 +1117,9 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,632 generic cells/26 checks) and the
+  harness (13,756 generic cells/26 checks) and the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (15,535 cells/103 checks), each with zero structural
+  pipeline slice (15,611 cells/103 checks), each with zero structural
   problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.

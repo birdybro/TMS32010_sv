@@ -18,7 +18,7 @@
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBH", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
-      "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ", "ABS"
+      "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ", "SST", "ABS"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -2479,6 +2479,60 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "SST",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7c00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0000"},
+            "require": {"mask": "0x0070", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct_page_1", "indirect"],
+      "registers_read": ["OV", "OVM", "INTM", "ARP", "DP", "selected AR for indirect addressing"],
+      "registers_written": ["addressed internal data word", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not alter OV or OVM",
+      "result_behavior": "stores OV:OVM:INTM:1111:ARP:1111111:DP in the addressed word; direct addressing forces data page 1 and permits original-part locations 0x80 through 0x8f; the reserved bit at word bit 1 is stored as one at CORROBORATED confidence; indirect addressing captures the pre-update ARP in the stored word before applying the selected AR and ARP post-modifications",
+      "branch_behavior": "none",
+      "interrupt_interaction": "stores the current INTM bit; no special recognition exception is documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; SST's data write targets internal RAM and does not drive an external data-memory cycle"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Figure 2-7 and SST instruction description", "printed_page": "2-15 and 3-59", "pdf_page": "39 and 109"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.3 Status Register and SST instruction description", "printed_page": "3-24 through 3-26 and 4-65", "pdf_page": "53-55 and 146"},
+        {"source_id": "mame-tms320c1x-core-030fefc", "section": "status masks and sst handler", "printed_page": "not applicable", "pdf_page": "not applicable"}
+      ],
+      "confidence_level": "CORROBORATED",
+      "unresolved_questions": []
     },
     {
       "mnemonic": "ABS",

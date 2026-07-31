@@ -14,13 +14,13 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model and local tools currently support fifty-eight
+The reference model and local tools currently support fifty-nine
 instructions: `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-`POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
+`POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
 boundary support the same set except CALA, POP, PUSH, and RET,
-for fifty-four shared instructions; their second external cycles remain
+for fifty-five shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
@@ -30,7 +30,7 @@ affected status bits, the original ABS block lists none, the later C14/E14
 variant explicitly adds OV effects, and pinned MAME independently agrees.
 The 144-word internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
-`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
+`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR`/`SST` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow
@@ -45,6 +45,12 @@ transaction. An LTD whose source or destination is outside the verified
 DMOV performs only that source-preserving next-address copy, leaving
 ACC/T/P and arithmetic status unchanged; it follows the same explicit
 unresolved-endpoint policy.
+`SST=0x7c00/mask 0xff00` stores the defined status fields and reserved-one
+mask into internal RAM in one cycle. Its direct form forces page 1 and only
+offsets 0–15 are legal on the original part; indirect forms store the old ARP
+before applying AR/ARP post-updates. Reserved bit 1 is written as one at
+`CORROBORATED` confidence under resolved `SC-008`/`OQ-003` and remains
+reserved to software.
 `DINT` and `EINT` set and clear the architectural interrupt mask in one
 program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK
@@ -70,7 +76,7 @@ exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
 accumulator-conditional branches, plus exact IN/OUT execution ownership. Its
 fetch address stays one word ahead of the execute PC for ordinary sequential
 execution,
-all 44 words in the existing 39-family one-cycle stream match the previously
+all 45 words in the existing 40-family one-cycle stream match the previously
 qualified architectural state at a one-retirement offset, and all eleven
 integrated branch/call instructions retain ownership through operand and
 selected-instruction fetches. BANZ selects from the old counter and decrements
@@ -169,7 +175,7 @@ mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
 stack-bottom side effect.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies the normal reads for all 39 supported one-cycle
+native-phase wrapper qualifies the normal reads for all 40 supported one-cycle
 instructions, eleven two-cycle control-flow instructions, and the two
 qualified I/O instructions, plus both three-cycle table transfers; it is not
 a general pipeline or cycle-accuracy claim.

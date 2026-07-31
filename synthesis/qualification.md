@@ -2,7 +2,7 @@
 
 ## 2026-07-31 Quartus fits
 
-These results cover the fifty-four-instruction RTL, signed multiplier,
+These results cover the fifty-five-instruction RTL, signed multiplier,
 144-word internal data RAM, program-bus phase engine, native IN/OUT and
 TBLR/TBLW paths, and the partial interrupt request/entry sequencer.
 They are not complete-core resource or interface-timing results.
@@ -16,14 +16,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 2,136 ALMs (5%).
+- Logic: 2,148 ALMs (5%).
 - Registers: 2,588.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +1.887 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.164 ns.
-- Slow-corner internal Fmax: 56.22 MHz at 100 °C, 55.21 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.697 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.166 ns.
+- Slow-corner internal Fmax: 57.79 MHz at 100 °C, 58.40 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 385 harness-only interface
@@ -95,7 +95,7 @@ Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 26 RTL checks
-remain represented, and the generic result contains 13,632 cells. The
+remain represented, and the generic result contains 13,756 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -108,13 +108,14 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, it passes both structural checks with zero reported problems, retains
-103 RTL checks, and contains 15,535 generic cells. The ABS increment adds 170
-cells without adding or removing retained checks. This result is 406 cells and
-25 checks above the pre-table 15,129-cell/78-check checkpoint, 500 cells and
-36 checks above the IN/OUT 15,035-cell/67-check checkpoint, 757 cells/54 checks
-above the exact-CALL 14,778-cell/49-check checkpoint, 820 cells/56 checks
-above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,259 cells/61 checks
-above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,595 cells/71
+103 RTL checks, and contains 15,611 generic cells. The SST increment adds 76
+cells without adding or removing retained checks; ABS added 170 cells in the
+preceding checkpoint. This result is 482 cells and
+25 checks above the pre-table 15,129-cell/78-check checkpoint, 576 cells and
+36 checks above the IN/OUT 15,035-cell/67-check checkpoint, 833 cells/54 checks
+above the exact-CALL 14,778-cell/49-check checkpoint, 896 cells/56 checks
+above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,335 cells/61 checks
+above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,671 cells/71
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an

@@ -5,7 +5,7 @@ complete TMS32010 assembler. It supports:
 
 - `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`,
+  `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -28,6 +28,11 @@ an explicit next ARP is permitted only on an indirect form.
 
 `SAR` uses the same operand syntax, for example `SAR AR0,6`, `SAR AR1,*+`, or
 `SAR AR0,*-,AR1`.
+
+`SST` accepts offsets 0–15 for its forced page-one direct form and the common
+indirect syntax, for example `SST 15`, `SST *`, or `SST *+,AR0`. Larger direct
+offsets are diagnosed because the original TMS32010 implements only 16 words
+on page one.
 
 `MAR` accepts either its documented direct NOP form or an indirect update,
 such as `MAR 127`, `MAR *`, or `MAR *+,AR1`. `MAR *,AR0/AR1` assembles the

@@ -110,18 +110,18 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and local assembler/disassembler support 58 mnemonics:
+The executable model and local assembler/disassembler support 59 mnemonics:
 `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
 `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`,
 `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
-`POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`,
+`POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
-differential support the same set except CALA, POP, PUSH, and RET, for 54
+differential support the same set except CALA, POP, PUSH, and RET, for 55
 shared mnemonics. Their architectural effects and two-cycle totals are
 model-qualified, while their second external cycles remain unresolved under
-`OQ-007`/`OQ-016`. The 25 common-address
-data/table instructions have independent
+`OQ-007`/`OQ-016`. The 25 common-address data/table instructions plus SST's
+forced-page direct form have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies

@@ -110,6 +110,7 @@ module tms32010_core (
   localparam logic [5:0] OP_TBLW = 6'd51;
   localparam logic [5:0] OP_SUBH = 6'd52;
   localparam logic [5:0] OP_ABS  = 6'd53;
+  localparam logic [5:0] OP_SST  = 6'd54;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -268,6 +269,7 @@ module tms32010_core (
         (decoded_operation == OP_LTA) ||
         (decoded_operation == OP_MPY) ||
         (decoded_operation == OP_LST) ||
+        (decoded_operation == OP_SST) ||
         (decoded_operation == OP_IN) ||
         (decoded_operation == OP_OUT) ||
         (decoded_operation == OP_TBLR) ||
@@ -279,6 +281,8 @@ module tms32010_core (
           auxiliary_register_pointer_o
             ? auxiliary_register_1_o[7:0]
             : auxiliary_register_0_o[7:0];
+      end else if (decoded_operation == OP_SST) begin
+        data_address_o = {4'h8, decoded_addressing_field[3:0]};
       end else begin
         data_address_o = {data_page_pointer_o, decoded_addressing_field};
       end
@@ -470,6 +474,7 @@ module tms32010_core (
           (decoded_operation == OP_SACL) ||
           (decoded_operation == OP_SACH) ||
           (decoded_operation == OP_SAR) ||
+          (decoded_operation == OP_SST) ||
           (decoded_operation == OP_DMOV) ||
           (decoded_operation == OP_LTD)
         )
@@ -529,6 +534,19 @@ module tms32010_core (
           };
         end
       end
+    end else if (decoded_operation == OP_SST) begin
+      // SST captures status before the nonblocking indirect AR/ARP update.
+      // Both TI worked examples and the pinned independent oracle corroborate
+      // that the reserved bit at position 1 is written as one.
+      data_write_data_o = {
+        overflow_flag_o,
+        overflow_mode_o,
+        interrupt_mask_o,
+        4'hf,
+        auxiliary_register_pointer_o,
+        7'h7f,
+        data_page_pointer_o
+      };
     end else if (decoded_operation == OP_SACH) begin
       case (decoded_shift)
         4'd1: data_write_data_o = {
@@ -588,6 +606,7 @@ module tms32010_core (
             (decoded_operation != OP_SUBC) &&
             (decoded_operation != OP_LAR) &&
             (decoded_operation != OP_SAR) &&
+            (decoded_operation != OP_SST) &&
             (decoded_operation != OP_LDP) &&
             (decoded_operation != OP_DMOV) &&
             (decoded_operation != OP_LT) &&
@@ -1061,6 +1080,8 @@ module tms32010_core (
           end
           OP_SAR: begin
           end
+          OP_SST: begin
+          end
           OP_SACL: begin
           end
           OP_SACH: begin
@@ -1227,6 +1248,7 @@ module tms32010_core (
            (decoded_operation == OP_SUBC) ||
            (decoded_operation == OP_LAR) ||
            (decoded_operation == OP_SAR) ||
+           (decoded_operation == OP_SST) ||
            (decoded_operation == OP_MAR) ||
            (decoded_operation == OP_LDP) ||
            (decoded_operation == OP_DMOV) ||

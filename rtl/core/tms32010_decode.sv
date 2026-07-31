@@ -69,6 +69,7 @@ module tms32010_decode (
   localparam logic [5:0] OP_TBLW = 6'd51;
   localparam logic [5:0] OP_SUBH = 6'd52;
   localparam logic [5:0] OP_ABS  = 6'd53;
+  localparam logic [5:0] OP_SST  = 6'd54;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -239,6 +240,20 @@ module tms32010_decode (
       operation_o = OP_LST;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
+      end
+    end else if (instruction_i[15:8] == 8'h7c) begin
+      operation_o = OP_SST;
+      if (!instruction_i[7]) begin
+        // Original TMS32010 direct SST always selects the sixteen-word
+        // page-one RAM, so direct offsets above 0x0f are not encodings for
+        // physical storage locations on this device.
+        valid_o = instruction_i[6:4] == 3'b000;
       end else if (
         (instruction_i[6] == 1'b0) &&
         (instruction_i[2:1] == 2'b00) &&

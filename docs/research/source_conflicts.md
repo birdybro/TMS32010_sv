@@ -106,21 +106,31 @@ electrical result of an out-of-range access.
 ## SC-008 — SST reserved bit 1
 
 - **Original-part sources:** TI SPRU001B Figure 2-7, printed p. 2-15 (PDF
-  p. 39), marks stored status-word bit 1 as “don't care.” The same guide's
-  `LST` page, printed p. 3-38 (PDF p. 88), and SPRU002B `LST`, printed
-  p. 3-38 (PDF p. 59), draw bit 1 as one.
-- **Later family source:** TI SPRU013 `LST`, printed p. 4-43 (PDF p. 124),
-  draws bit 1 as zero even though it covers the TMS32010 among several
-  first-generation variants.
-- **Conflict:** the authoritative documents assign three incompatible
-  descriptions to the same reserved result bit. This does not affect `LST`,
-  which ignores reserved input bits, but it prevents a deterministic `SST`
-  result claim.
-- **Current treatment:** bits 12:9 and 7:2 are documented ones. `SST` remains
-  outside the qualified boundary under `OQ-003` until an original-part erratum
-  or physical measurement resolves bit 1.
-- **Confidence:** VERIFIED_PRIMARY for the contradiction and the other
-  reserved bits; UNKNOWN for stored bit 1.
+  p. 39), marks stored status-word bit 1 as “don't care.” Its individual
+  `SST` page, printed p. 3-59 (PDF p. 109), explicitly draws that output bit
+  as one.
+- **Later family source:** TI SPRU013 §3.6.3, printed pp. 3-24–3-26 (PDF
+  pp. 53–55), says reserved status bits read as logic ones through SST. Its
+  `SST` page, printed p. 4-65 (PDF p. 146), labels bit 1 reserved but its
+  worked result is `0x5efe`, with bit 1 set. The `LST` input drawing at
+  printed p. 4-43 shows zero, but LST ignores reserved input bits and therefore
+  does not define SST output.
+- **Independent oracle:** pinned MAME commit
+  `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` forces status mask `0x1efe`,
+  including bit 1, and passes that status word into `sst()` before its common
+  indirect address helper updates AR/ARP.
+- **Resolution:** implement bit 1 as one. The original instruction page, later
+  TI architecture prose, both TI worked representations, and the structurally
+  independent oracle agree on the deterministic value. Figure 2-7 still
+  establishes that software must treat the bit as don't-care/reserved, and no
+  physical-mask claim is made. Directed tests assert the stored one for every
+  combination of the five defined status fields.
+- **Current treatment:** `SST` is qualified in the database, hand fixture,
+  assembler/disassembler, independent model, RTL, native phase stream, and
+  seeded differential. `OQ-003` retains the evidence boundary.
+- **Confidence:** VERIFIED_PRIMARY for defined fields, address modes, opcode,
+  one-cycle timing, and the fact that the bit is reserved; CORROBORATED for
+  deterministic stored bit 1 and pre-update-status ordering.
 
 ## SC-009 — LST next-ARP precedence
 

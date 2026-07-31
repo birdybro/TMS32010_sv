@@ -99,7 +99,7 @@ set through one additional instruction; directed tests cover both signed
 products, logical bus shapes, stalls, dummy discard, and the post-following
 return PC. Another
 directed test checks the sequential boundary explicitly. A differential test runs
-the existing 44-word stream spanning all 39 qualified one-cycle operation
+the existing 45-word stream spanning all 40 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
 state one retirement apart
 [`sim/bus/tb_sequential_pipeline_slice.sv`,

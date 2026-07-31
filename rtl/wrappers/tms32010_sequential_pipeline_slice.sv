@@ -89,6 +89,7 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_TBLW = 6'd51;
   localparam logic [5:0] OP_SUBH = 6'd52;
   localparam logic [5:0] OP_ABS  = 6'd53;
+  localparam logic [5:0] OP_SST  = 6'd54;
   localparam logic [5:0] OP_MPY  = 6'd25;
   localparam logic [5:0] OP_MPYK = 6'd26;
   localparam logic [5:0] OP_DINT = 6'd33;
@@ -336,7 +337,8 @@ module tms32010_sequential_pipeline_slice (
     (
       (execute_decoded_operation <= OP_SUBC) ||
       (execute_decoded_operation == OP_SUBH) ||
-      (execute_decoded_operation == OP_ABS)
+      (execute_decoded_operation == OP_ABS) ||
+      (execute_decoded_operation == OP_SST)
     );
   assign execute_is_banz =
     execute_valid_o &&

@@ -1,7 +1,7 @@
 # Project-local TMS32010 disassembler
 
 The disassembler is driven by `docs/generated/tms32010_isa.yaml` and currently
-recognizes the fifty-eight-instruction model/tool slice. B, BANZ, BIOZ, BV, CALL, and the six
+recognizes the fifty-nine-instruction model/tool slice. B, BANZ, BIOZ, BV, CALL, and the six
 accumulator-conditional branches consume and render their canonical following
 target words; a lone opcode or noncanonical
 target remains lossless `.word` data. Unknown words are
@@ -9,7 +9,7 @@ rendered as lossless `.word 0xNNNN` directives, so disassembly remains reassembl
 without claiming that an encoding is reserved or inert. A legal but
 noncanonical indirect `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`,
 `SACH`, `SAR`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZALH`,
-`ZALS`, or `LST` whose
+`ZALS`, `LST`, or `SST` whose
 ignored bit 0 is one while ARP is preserved also uses `.word`, retaining its
 exact binary representation.
 The same lossless policy applies to IN, OUT, and MAR; IN/OUT render their

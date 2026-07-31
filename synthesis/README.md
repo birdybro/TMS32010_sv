@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current fifty-four-instruction
+The checked-in projects synthesize the current fifty-five-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
@@ -15,7 +15,7 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current 39 one-cycle instructions, eleven qualified two-cycle
+for the current 40 one-cycle instructions, eleven qualified two-cycle
 control-flow paths, two native IN/OUT paths, and two three-cycle table-transfer
 paths.
 Yosys 0.67+111 from
@@ -42,7 +42,7 @@ integrated, the checkpoint was 14,715 generic cells and 47 retained checks.
 With the basic Figure 2-12 interrupt path integrated, the current checkpoint
 was 15,129 generic cells and 78 retained checks. With exact TBLR/TBLW
 discarded-prefetch, program-transfer, and repeated-prefetch ownership, plus
-ABS execution, the current checkpoint is 15,535 generic cells, 103 retained
+ABS and SST execution, the current checkpoint is 15,611 generic cells, 103 retained
 checks, and zero
 structural-check problems.
 

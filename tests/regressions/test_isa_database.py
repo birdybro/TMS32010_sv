@@ -48,6 +48,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "PAC",
                 "APAC",
                 "SPAC",
+                "SST",
                 "LAC",
                 "SACL",
                 "SACH",
@@ -99,6 +100,20 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(instruction["documented_cycle_count"], 1)
         self.assertEqual(instruction["status_flags_affected"], [])
         self.assertEqual(instruction["confidence_level"], "CORROBORATED")
+
+    def test_sst_forces_page_one_and_has_exactly_28_legal_encodings(self) -> None:
+        legal = []
+        for word in range(0x7C00, 0x7D00):
+            decoded = decode_word(self.database, word)
+            if decoded is not None:
+                legal.append(word)
+                self.assertEqual(decoded[0]["mnemonic"], "SST")
+                self.assertEqual(decoded[0]["documented_cycle_count"], 1)
+                self.assertEqual(decoded[0]["confidence_level"], "CORROBORATED")
+        self.assertEqual(len(legal), 28)
+        self.assertEqual(legal[:16], list(range(0x7C00, 0x7C10)))
+        for word in (0x7C10, 0x7C7F, 0x7CC8, 0x7C8A, 0x7CB8):
+            self.assertIsNone(decode_word(self.database, word))
 
     def test_table_transfers_use_common_addressing_and_three_cycles(self) -> None:
         for match, mnemonic in ((0x6700, "TBLR"), (0x7D00, "TBLW")):

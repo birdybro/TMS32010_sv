@@ -352,6 +352,7 @@ class Assembler:
             "MAR",
             "MPY",
             "OR",
+            "SST",
             "SUBC",
             "SUBH",
             "SUBS",
@@ -445,9 +446,11 @@ class Assembler:
                 f"{operation} next ARP is valid only with indirect addressing"
             )
         address = self._evaluate(operands[0], symbols, location, line)
-        if not 0 <= address <= 127:
+        direct_limit = 15 if operation == "SST" else 127
+        if not 0 <= address <= direct_limit:
             raise line.error(
-                f"{operation} direct address out of range 0..127: {address}"
+                f"{operation} direct address out of range "
+                f"0..{direct_limit}: {address}"
             )
         return address
 

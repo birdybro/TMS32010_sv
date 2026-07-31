@@ -237,23 +237,23 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-31 the machine-readable database, independent model, and local
-tools support fifty-eight instructions:
+tools support fifty-nine instructions:
 `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
-`IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
+`IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`,
 `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 CALA's primary-defined computed-call effects, RET's primary-defined stack
 pop/PC load, and PUSH/POP's primary-defined stack effects at their two-cycle
 model boundaries.
 RTL and seeded differential support the same set except CALA, POP, PUSH, and
-RET, for fifty-four shared instructions; their second external cycles remain
+RET, for fifty-five shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
 The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
-reset priming, the 39 already-qualified one-cycle operation families, and
+reset priming, the 40 already-qualified one-cycle operation families, and
 exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and
 the primary-defined IN/OUT transfer-plus-prefetch and TBLR/TBLW
 discarded-prefetch/table-transfer/repeated-prefetch sequences.
@@ -270,7 +270,7 @@ capture; nested calls prove stack shifting. Selected-fetch stalls cover both
 outcomes for the conditional families and the direct call. These combined
 interval mappings are INFERRED from primary component facts because no
 dedicated branch/call pin waveform has been located. The full-state offset
-differential covers the 44-word directed one-cycle stream and parks before
+differential covers the 45-word directed one-cycle stream and parks before
 an unsupported control word. IN/OUT retain execute ownership while cycle 1
 multiplexes
 the port address and asserts only DEN or WE, sample/hold live transfer data
@@ -302,7 +302,7 @@ reaches prime/stall/replacement/flush/target capture at step 7. This is not
 evidence for correct core integration.
 The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS`
-reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
+reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR`/`SST` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
 wrap/saturation, and sticky-OV evidence. SUBH has directed high-half alignment,
 low-half preservation, both signed-overflow directions, full-accumulator OVM

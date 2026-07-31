@@ -1372,6 +1372,38 @@ class ToolchainSliceTests(unittest.TestCase):
         with self.assertRaisesRegex(AssemblyError, "expects no operands"):
             self.assembler.assemble_text("ABS 1\n")
 
+    def test_sst_round_trips_forced_page_one_and_indirect_forms(self) -> None:
+        source = (
+            "SST 0\n"
+            "SST 15\n"
+            "SST *\n"
+            "SST *+,0\n"
+            "SST *-,1\n"
+        )
+        expected = [0x7C00, 0x7C0F, 0x7C88, 0x7CA0, 0x7C91]
+        result = self.assembler.assemble_text(source)
+        self.assertEqual(list(result.words.values()), expected)
+        disassembly = self.disassembler.disassemble_source(expected)
+        self.assertEqual(disassembly, source)
+        rebuilt = self.assembler.assemble_text(disassembly)
+        self.assertEqual(list(rebuilt.words.values()), expected)
+
+        for text, message in (
+            ("SST 16\n", "direct address out of range 0..15"),
+            ("SST 0,1\n", "only with indirect addressing"),
+            ("SST *+,2\n", "next ARP out of range"),
+            ("SST\n", "1 to 2 operands"),
+        ):
+            with self.subTest(text=text):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(text)
+
+        aliases = [0x7C89, 0x7CA9]
+        disassembly = self.disassembler.disassemble_source(aliases)
+        self.assertEqual(disassembly, ".word 0x7c89\n.word 0x7ca9\n")
+        rebuilt = self.assembler.assemble_text(disassembly)
+        self.assertEqual(list(rebuilt.words.values()), aliases)
+
     def test_expression_language_rejects_code_execution(self) -> None:
         with self.assertRaisesRegex(AssemblyError, "invalid expression"):
             self.assembler.assemble_text(

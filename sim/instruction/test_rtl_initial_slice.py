@@ -254,6 +254,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_sst_status_packing_page_one_and_indirect_ordering(self) -> None:
+        self._run_testbench(
+            "tb_sst_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_sst_rtl.sv",
+            ],
+        )
+
     def test_apac_arithmetic_status_saturation_and_no_data_access(self) -> None:
         self._run_testbench(
             "tb_apac_rtl",

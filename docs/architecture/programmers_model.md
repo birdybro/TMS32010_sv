@@ -61,10 +61,18 @@ ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
 (PDF p. 170)]. **Confidence: VERIFIED_PRIMARY for status fields, address
 ordering, and one-cycle result; PROVISIONAL for next-ARP precedence.**
 
-The exact `SST` value at reserved bit 1 conflicts between primary TI manuals:
-SPRU001B calls it don't-care, its LST diagram and SPRU002B show one, and
-SPRU013 shows zero. `SST` remains blocked under `OQ-003`/`SC-008`; no value is
-guessed.
+`SST` stores `OV:OVM:INTM:1111:ARP:1111111:DP`. Direct SST ignores DP and
+forces original-part page 1, so its legal direct offsets 0–15 select physical
+RAM locations `0x80`–`0x8f`. Indirect SST captures the word—including the old
+ARP—at the old selected-AR address, then applies the ordinary AR and optional
+ARP post-modifications. The output bit at position 1 remains architecturally
+reserved but is stored as one: the original SST page draws one, later TI prose
+says SST reads reserved bits as ones, both TI worked representations set it,
+and pinned MAME independently forces mask `0x1efe`. `SC-008`/`OQ-003` preserve
+the source conflict and physical-evidence boundary. **Confidence:
+VERIFIED_PRIMARY for defined fields, forced-page/direct and indirect address
+rules, and one-cycle behavior; CORROBORATED for reserved bit 1 and
+pre-update-status ordering.**
 
 `ABS` interprets the complete accumulator as signed two's-complement. It
 leaves nonnegative values unchanged and negates ordinary negative values.

@@ -2,13 +2,13 @@
 
 - **Current milestone:** instruction-family qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 100 repository/provenance/document/ISA/toolchain tests; 220
-  directed model tests; one standalone fetch/execute RTL unit; 36 RTL
+- **Tests passing:** 102 repository/provenance/document/ISA/toolchain tests; 224
+  directed model tests; one standalone fetch/execute RTL unit; 37 RTL
   instruction/decode tests; 5 interrupt RTL/phase
   tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
   one
   512-instruction seeded
-  39-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 16 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
@@ -19,23 +19,23 @@
   of all 15 currently supported multicycle core families; four native
   subphase arrivals with a stalled phase-2 case and falling-boundary ownership
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the fifty-four-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,136
-  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 55.21 MHz worst
-  slow-corner internal Fmax, +1.887 ns setup slack, and +0.164 ns worst hold
+  the fifty-five-instruction partial core, multiplier, 144-word RAM, and
+  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,148
+  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 57.79 MHz worst
+  slow-corner internal Fmax, +2.697 ns setup slack, and +0.166 ns worst hold
   slack at 50 MHz. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,632 generic cells with 26 retained checks and lowering the
+  producing 13,756 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,535 generic cells with 103 retained checks and
+  independently passes at 15,611 generic cells with 103 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration;
   this is not a
@@ -114,7 +114,12 @@
   ABS page's absent status annotation meaningful, the later C14/E14 variant
   explicitly adds an OV effect, and pinned MAME independently corroborates
   preservation. Result and timing are VERIFIED_PRIMARY; OV preservation is
-  CORROBORATED under resolved `SC-007`/`OQ-013`; LAR loads either auxiliary
+  CORROBORATED under resolved `SC-007`/`OQ-013`; SST is family `0x7cxx`,
+  stores OV/OVM/INTM/ARP/DP plus documented one-filled fields, forces direct
+  accesses to page-one addresses `0x80` through `0x8f`, and captures the old
+  ARP before indirect post-modification/replacement. SPRU001B and SPRU013,
+  independently corroborated by pinned MAME, resolve reserved output bit 1
+  high under `SC-008`/`OQ-003`; it remains reserved to software. LAR loads either auxiliary
   register from internal data RAM in one
   cycle, replaces ARP when requested, and exceptionally suppresses indirect
   auto-increment/decrement when the loaded target is the selected address
@@ -299,7 +304,7 @@
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
-  control-flow traces, SST reserved bit 1, LST next-ARP precedence,
+  control-flow traces, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
   OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH
@@ -307,13 +312,11 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** qualify `SST` only with an explicitly documented reserved/
-  don't-care-bit policy, or resume original-part `ADDH` boundary research;
+- **Next task:** resume original-part `ADDH` boundary research under `OQ-011`;
   preserve the distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
-  second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
-  bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
+  second-cycle program-bus sequence; keep LST's loaded-ARP
   precedence labeled PROVISIONAL under `OQ-015`; keep complete interrupt
   cycle-accuracy outside the claim boundary until `CTRL-002`/`OQ-004` has
   exhaustive execute-overlap evidence; keep
@@ -321,4 +324,4 @@
   outside the supported boundary pending `OQ-011`, and retain ABS OV
   preservation at `CORROBORATED` until physical evidence justifies an upgrade
 - **Latest committed baseline before this cycle:**
-  `e692572`
+  `21e936c`

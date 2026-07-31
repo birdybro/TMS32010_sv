@@ -8,7 +8,7 @@ Current supported boundary:
 
 - `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-  `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
+  `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
   `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
   and positive saturation with `OVM=1`;

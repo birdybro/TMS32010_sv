@@ -67,6 +67,7 @@ module tb_decode_exhaustive;
       logic expected_dint;
       logic expected_eint;
       logic expected_lst;
+      logic expected_sst;
       logic expected_banz;
       logic expected_bv;
       logic expected_bioz;
@@ -368,6 +369,17 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_sst =
+        (instruction[15:8] == 8'h7c) &&
+        (
+          (!instruction[7] && (instruction[6:4] == 3'b000)) ||
+          (
+            instruction[7] &&
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_banz = instruction == 16'hf400;
       expected_bv = instruction == 16'hf500;
       expected_bioz = instruction == 16'hf600;
@@ -390,7 +402,7 @@ module tb_decode_exhaustive;
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
         expected_abs ||
-        expected_dint || expected_eint || expected_lst ||
+        expected_dint || expected_eint || expected_lst || expected_sst ||
         expected_banz || expected_bv || expected_bioz || expected_call ||
         expected_b ||
         expected_accumulator_branch ||
@@ -609,6 +621,13 @@ module tb_decode_exhaustive;
           $fatal(1, "LST decode mismatch at %04x", word);
         end
       end
+      if (expected_sst) begin
+        if (operation != OP_SST ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "SST decode mismatch at %04x", word);
+        end
+      end
       if (expected_banz && operation != OP_BANZ) begin
         $fatal(1, "BANZ decode mismatch at %04x", word);
       end
@@ -670,8 +689,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 21723) begin
-      $fatal(1, "expected 21723 supported words, got %0d", valid_count);
+    if (valid_count != 21751) begin
+      $fatal(1, "expected 21751 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

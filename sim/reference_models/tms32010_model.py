@@ -3,7 +3,7 @@
 This partial slice supports ABS, ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
-POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBH, SUBS, TBLR,
+POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SST, SUB, SUBC, SUBH, SUBS, TBLR,
 TBLW, XOR, ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O
 transactions and instruction totals are modeled; pin subphases are not
 integrated with this model. The primary-defined CALA, POP, PUSH, and RET state
@@ -410,6 +410,7 @@ class Tms32010Model:
             "SACL",
             "SACH",
             "SAR",
+            "SST",
             "SUB",
             "SUBC",
             "SUBH",
@@ -423,6 +424,10 @@ class Tms32010Model:
             if operands["indirect"]:
                 selected_arp = self.state.status.arp
                 data_address = self.state.ar[selected_arp] & 0xFF
+            elif mnemonic == "SST":
+                # The original part has only 16 words on page one, and SST
+                # forces that page without consulting or changing DP.
+                data_address = 0x80 | operands["addressing_field"]
             else:
                 data_address = (
                     (self.state.status.dp << 7) | operands["addressing_field"]
@@ -486,6 +491,18 @@ class Tms32010Model:
                             transaction_data,
                             -1,
                         )
+            elif mnemonic == "SST":
+                # Capture the status before indirect AR/ARP post-modification.
+                # Bit 1 is reserved but both TI worked examples and the pinned
+                # independent oracle corroborate that SST stores it as one.
+                transaction_data = (
+                    (int(self.state.status.ov) << 15)
+                    | (int(self.state.status.ovm) << 14)
+                    | (int(self.state.status.intm) << 13)
+                    | 0x1EFE
+                    | ((self.state.status.arp & 1) << 8)
+                    | (self.state.status.dp & 1)
+                )
             else:
                 shifted = (self.state.acc << operands["shift"]) & ACC_MASK
                 transaction_data = shifted >> 16
@@ -718,6 +735,8 @@ class Tms32010Model:
                 elif control & 0x10:
                     store_value = self._modify_counter(store_value, -1)
             self.data[operands["effective_address"]] = store_value
+        elif mnemonic == "SST":
+            self.data[operands["effective_address"]] = transaction_data
         elif mnemonic == "SACH":
             shifted = (self.state.acc << operands["shift"]) & ACC_MASK
             self.data[operands["effective_address"]] = shifted >> 16
@@ -821,6 +840,7 @@ class Tms32010Model:
                 "SACL",
                 "SACH",
                 "SAR",
+                "SST",
                 "SUB",
                 "SUBC",
                 "SUBH",
@@ -1162,6 +1182,24 @@ class Tms32010Model:
                 0x7B00: "LST",
             }[opcode & 0xFF00]
             return mnemonic, {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x7C00:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if (
+                (not indirect and (control & 0x70) != 0)
+                or (
+                    indirect
+                    and (
+                        (control & 0x46) != 0
+                        or (control & 0x30) == 0x30
+                    )
+                )
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SST", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

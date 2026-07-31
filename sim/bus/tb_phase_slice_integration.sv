@@ -171,7 +171,8 @@ module tb_phase_slice_integration;
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
     program_memory[42] = 16'h6203;  // SUBH 3
     program_memory[43] = 16'h7f88;  // ABS
-    program_memory[44] = 16'h7f83;  // unsupported and not a silent NOP
+    program_memory[44] = 16'h7c0f;  // SST 15 -> forced page-one address 0x8f
+    program_memory[45] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -635,13 +636,25 @@ module tb_phase_slice_integration;
             "nonnegative ABS preserves ACC, OV, and OVM");
     require(pc == 12'h02c && cycle_count == 32'd44,
             "ABS consumes one native instruction cycle");
+    require(data_write && !data_read && data_address_valid &&
+            data_address == 8'h8f && data_write_data == 16'hbefe,
+            "SST exposes forced page-one address and packed old status");
+
+    advance_to_sample();
+    require(retired && overflow_flag && !overflow_mode && interrupt_mask &&
+            !auxiliary_register_pointer && !data_page_pointer,
+            "SST preserves defined status after its internal write");
+    require(pc == 12'h02d && cycle_count == 32'd45,
+            "SST consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "unsupported boundary performs no internal data transaction");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h02c, "trap holds architectural PC");
-    require(program_address == 12'h02c, "trap holds native program address");
-    require(cycle_count == 32'd44, "trap does not count as retired cycle");
+    require(pc == 12'h02d, "trap holds architectural PC");
+    require(program_address == 12'h02d, "trap holds native program address");
+    require(cycle_count == 32'd45, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.
