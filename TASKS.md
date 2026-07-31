@@ -73,10 +73,13 @@ objective passing evidence.
   behavior is silently assigned to the TMS32010.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
 - **Tests:** `tests/regressions/test_documentation.py`
-- **Notes:** Initial primary-cited baseline and ADR exist. Remaining acceptance
-  work includes exact reserved status bits,
-  out-of-range RAM decode, explicit interrupt ownership beyond the qualified
-  basic Figure 2-12 path, and the
+- **Notes:** Initial primary-cited baseline and ADR exist. The status register
+  is now qualified as exactly five architectural bits plus a 16-bit LST/SST
+  representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
+  input at VERIFIED_PRIMARY confidence, while bit 1 alone retains its
+  CORROBORATED stored-one resolution under `OQ-003`/`SC-008`. Remaining
+  acceptance work includes out-of-range RAM decode, explicit interrupt
+  ownership beyond the qualified basic Figure 2-12 path, and the
   per-cycle program-address/fetched-word ownership of single-word PUSH/POP
   under `OQ-016`. TI's every-cycle `MEN` rule narrows the strobe behavior, but
   does not distinguish a repeated/discarded next-word read from an advancing
@@ -137,7 +140,9 @@ objective passing evidence.
   `SST=0x7cxx` contributes 28 legal encodings: direct offsets 0–15 force page
   1 and twelve indirect controls use the common reserved-field policy. Its
   defined status fields, address rules, and one-cycle timing are primary-
-  verified; reserved bit 1 and pre-update-status ordering are CORROBORATED by
+  verified. Bits 12:9 and 7:2 are primary-verified fixed-one outputs and
+  ignored LST inputs; reserved bit 1 and pre-update-status ordering are
+  CORROBORATED by
   the original SST page, later TI architecture prose/worked result, and
   pinned MAME under resolved `SC-008`/`OQ-003`. Exact
   `PUSH=0x7f9c` and `POP=0x7f9d` encodings, stack
@@ -260,7 +265,8 @@ objective passing evidence.
   request, and selects vector 2. Its DINT-at-final-boundary cancellation is
   PROVISIONAL under `OQ-019`.
   `LST` reads one status word through the old DP/ARP, loads OV/OVM/ARP/DP,
-  preserves INTM, and applies indirect counter updates to the old selected AR.
+  preserves INTM, ignores every non-field source position, and applies
+  indirect counter updates to the old selected AR.
   Memory-sourced ARP precedence over an encoded next ARP is explicitly
   PROVISIONAL under `OQ-015`, supported by later TI and independent MAME
   evidence but not stated in the original-part manuals. `SUBC` implements
@@ -270,7 +276,8 @@ objective passing evidence.
   not evidence for prohibited scheduling under `OQ-017`.
   `SST` exhausts all 32 combinations of the defined status fields, forces
   direct page 1, captures old ARP in the stored word before indirect
-  post-update, and stores reserved bit 1 high at CORROBORATED confidence
+  post-update, stores the ten primary-verified constant positions high, and
+  stores reserved bit 1 high at CORROBORATED confidence
   under resolved `OQ-003`/`SC-008`.
   `ADDH` covers ordinary and both high-half wrap directions under all four
   incoming OV/OVM combinations, always preserves ACC low and arithmetic
@@ -793,14 +800,16 @@ objective passing evidence.
   directed checks under `CTRL-002`; complete execute-overlap and
   physical setup/synchronizer behavior remain open under `OQ-004`.
   `LST` now passes primary-cited database/tool support, exhaustive model
-  status-field tests, directed RTL address/order/cycle/stall/trap checks,
+  status-field tests plus every ignored source position, directed RTL
+  address/order/cycle/stall/trap checks,
   native-phase retirement, and seeded differential comparison. Original
   manuals leave the indirect next-ARP precedence unstated, so memory-word ARP
   precedence remains PROVISIONAL under `OQ-015`/`SC-009`.
   `SST` now passes primary-cited database/tool support, exhaustive 32-state
   model packing tests, directed RTL page-one/address/update/cycle tests,
   native-phase and explicit-pipeline retirement, and seeded differential RAM/
-  transaction comparison. Reserved bit 1 and pre-update capture ordering are
+  transaction comparison. Bits 12:9 and 7:2 are VERIFIED_PRIMARY fixed ones;
+  reserved bit 1 and pre-update capture ordering are
   CORROBORATED under resolved `OQ-003`/`SC-008`, not hardware-verified.
   `BANZ` now passes primary-cited exact encoding/database/tool support,
   directed model and RTL state/timing/trap tests, two-read native-phase

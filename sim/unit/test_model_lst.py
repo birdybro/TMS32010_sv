@@ -52,6 +52,33 @@ class LstModelTests(unittest.TestCase):
                         ],
                     )
 
+    def test_intm_and_every_nonfield_source_position_are_ignored(self) -> None:
+        ignored_mask = 0x3EFE
+        ignored_patterns = [
+            0,
+            ignored_mask,
+            *(1 << bit for bit in (13, 12, 11, 10, 9, 7, 6, 5, 4, 3, 2, 1)),
+        ]
+        for intm in (False, True):
+            for source in ignored_patterns:
+                with self.subTest(intm=intm, source=source):
+                    model = Tms32010Model()
+                    model.state.status.ov = True
+                    model.state.status.ovm = True
+                    model.state.status.intm = intm
+                    model.state.status.arp = 1
+                    model.state.status.dp = 1
+                    model.data[128] = source
+                    model.program[0] = 0x7B00
+
+                    model.step()
+
+                    self.assertFalse(model.state.status.ov)
+                    self.assertFalse(model.state.status.ovm)
+                    self.assertEqual(model.state.status.intm, intm)
+                    self.assertFalse(model.state.status.arp)
+                    self.assertFalse(model.state.status.dp)
+
     def test_direct_address_uses_old_dp_before_loading_new_dp(self) -> None:
         model = Tms32010Model()
         model.state.status.dp = 1

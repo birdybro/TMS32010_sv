@@ -115,8 +115,8 @@ module tb_sst_rtl;
             "SST exposes the expected internal-RAM destination");
     require(data_write_data == expected_data,
             "SST exposes the pre-update packed status word");
-    require(data_write_data[1],
-            "SST stores the corroborated reserved bit as one");
+    require((data_write_data & 16'h1efe) == 16'h1efe,
+            "SST stores all constant positions as ones");
     tick();
     require(retired && !illegal,
             "SST retires without an illegal indication");

@@ -40,15 +40,35 @@ undocumented physical register indices
 
 ## Status register
 
-The five architecturally described status bits are `OV`, `OVM`, `INTM`, `ARP`,
-and `DP`. `SST` stores them in a documented 16-bit layout. `LST` loads all
-status fields except `INTM`; interrupt masking is controlled by reset,
-`DINT`, `EINT`, and interrupt entry
+The status register consists of exactly five architecturally described bits:
+`OV`, `OVM`, `INTM`, `ARP`, and `DP`. The 16-bit value transferred by `LST`
+and `SST` is a status *word representation*, not evidence for eleven
+additional writable status bits. `LST` loads all status-register fields
+except `INTM`; interrupt masking is controlled by reset, `DINT`, `EINT`, and
+interrupt entry
 [ti-tms32010-users-guide-spru001b, §2.2.3 and Figure 2-7, printed
 pp. 2-14–2-15 (PDF pp. 38–39)]. **Confidence: VERIFIED_PRIMARY.**
 
+| Word bit(s) | SST output | LST input effect | Evidence confidence |
+|---|---|---|---|
+| 15 | `OV` | replaces `OV` | VERIFIED_PRIMARY |
+| 14 | `OVM` | replaces `OVM` | VERIFIED_PRIMARY |
+| 13 | `INTM` | ignored; `INTM` is preserved | VERIFIED_PRIMARY |
+| 12:9 | `1111` | ignored | VERIFIED_PRIMARY |
+| 8 | `ARP` | replaces `ARP` | VERIFIED_PRIMARY |
+| 7:2 | `111111` | ignored | VERIFIED_PRIMARY |
+| 1 | project writes `1`; reserved/don't-care to software | ignored | CORROBORATED output, VERIFIED_PRIMARY input irrelevance |
+| 0 | `DP` | replaces `DP` | VERIFIED_PRIMARY |
+
+SPRU001B Figure 2-7, the original `LST` page, and the original `SST` page all
+draw ones in positions 12:9 and 7:2. The two original instruction pages also
+draw bit 1 as one, but Figure 2-7 alone marks that position don't-care. Later
+SPRU013 figures disagree between zero, reserved, and a worked value of one;
+`SC-008` therefore isolates bit 1 as the only unresolved stored-value
+confidence boundary. No reserved position is modeled as writable state.
+
 For `LST`, source bits 15, 14, 8, and 0 replace `OV`, `OVM`, `ARP`, and `DP`;
-source bit 13 does not alter `INTM`, and the remaining source bits have no
+source bit 13 does not alter `INTM`, and source bits 12:9 and 7:1 have no
 architectural effect. Direct address resolution uses the old `DP`. Indirect
 address and counter selection use the old `ARP`. Original-part manuals expose
 both a memory-sourced ARP and optional next-ARP encoding without declaring
@@ -61,17 +81,21 @@ ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
 (PDF p. 170)]. **Confidence: VERIFIED_PRIMARY for status fields, address
 ordering, and one-cycle result; PROVISIONAL for next-ARP precedence.**
 
-`SST` stores `OV:OVM:INTM:1111:ARP:1111111:DP`. Direct SST ignores DP and
+`SST` stores `OV:OVM:INTM:1111:ARP:1111111:DP`. The ten non-field positions
+12:9 and 7:2 are unambiguously one in the original guide; bit 1 is the sole
+conflicting position retained under `SC-008`/`OQ-003`. Direct SST ignores DP and
 forces original-part page 1, so its legal direct offsets 0–15 select physical
 RAM locations `0x80`–`0x8f`. Indirect SST captures the word—including the old
 ARP—at the old selected-AR address, then applies the ordinary AR and optional
 ARP post-modifications. The output bit at position 1 remains architecturally
-reserved but is stored as one: the original SST page draws one, later TI prose
+reserved but is stored as one: both original instruction pages draw one,
+later TI prose
 says SST reads reserved bits as ones, both TI worked representations set it,
 and pinned MAME independently forces mask `0x1efe`. `SC-008`/`OQ-003` preserve
 the source conflict and physical-evidence boundary. **Confidence:
 VERIFIED_PRIMARY for defined fields, forced-page/direct and indirect address
-rules, and one-cycle behavior; CORROBORATED for reserved bit 1 and
+rules, one-cycle behavior, bits 12:9 and 7:2 being one, and all ignored LST
+positions; CORROBORATED for reserved bit 1 and
 pre-update-status ordering.**
 
 `ABS` interprets the complete accumulator as signed two's-complement. It

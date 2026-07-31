@@ -58,9 +58,10 @@ unresolved-endpoint policy.
 `SST=0x7c00/mask 0xff00` stores the defined status fields and reserved-one
 mask into internal RAM in one cycle. Its direct form forces page 1 and only
 offsets 0–15 are legal on the original part; indirect forms store the old ARP
-before applying AR/ARP post-updates. Reserved bit 1 is written as one at
-`CORROBORATED` confidence under resolved `SC-008`/`OQ-003` and remains
-reserved to software.
+before applying AR/ARP post-updates. Bits 12:9 and 7:2 are primary-verified
+ones, while reserved bit 1 is written as one at `CORROBORATED` confidence
+under resolved `SC-008`/`OQ-003` and remains reserved to software. `LST`
+consumes only bits 15, 14, 8, and 0 and cannot change INTM.
 `DINT` and `EINT` set and clear the architectural interrupt mask in one
 program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK

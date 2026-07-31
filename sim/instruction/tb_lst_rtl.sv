@@ -147,7 +147,7 @@ module tb_lst_rtl;
     tick();
     initialize = 1'b0;
     debug_data_address = 8'd127;
-    debug_data         = 16'h6101;  // OV=0 OVM=1 INTM-source=1 ARP=1 DP=1
+    debug_data         = 16'h7fff;  // Same fields; every nonfield input is 1.
     tick();
     debug_data_address = 8'd5;
     debug_data         = 16'h8000;  // OV=1 OVM=0 ARP=0 DP=0
@@ -185,15 +185,15 @@ module tb_lst_rtl;
     require(overflow_flag && !overflow_mode &&
             auxiliary_register_pointer && !data_page_pointer &&
             !interrupt_mask,
-            "LST loads OV/OVM/ARP/DP and preserves INTM");
-    require_lst_read(8'd127, 16'h6101,
+            "LST loads fields while preserving cleared INTM");
+    require_lst_read(8'd127, 16'h7fff,
                      "following direct LST with newly loaded DP");
 
     tick();
     require(!overflow_flag && overflow_mode &&
             auxiliary_register_pointer && data_page_pointer &&
             !interrupt_mask,
-            "second direct LST loads defined fields and ignores source INTM");
+            "second direct LST ignores all-one nonfield inputs");
 
     tick();
     tick();

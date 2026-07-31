@@ -59,7 +59,7 @@ class SstModelTests(unittest.TestCase):
                     self.assertEqual(trace.transactions[1].operation, "write")
                     self.assertEqual(trace.transactions[1].address, address)
                     self.assertEqual(trace.transactions[1].data, expected)
-                    self.assertEqual(expected & 0x0002, 0x0002)
+                    self.assertEqual(expected & 0x1EFE, 0x1EFE)
                     self.assertEqual(model.state.acc, 0x8123_4567)
                     self.assertEqual(model.state.p, 0x89AB_CDEF)
                     self.assertEqual(model.state.t, 0x1357)

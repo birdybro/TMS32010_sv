@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** exhaustive RTL decoder safety
+- **Current milestone:** original status-word evidence qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 230
+- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -99,6 +99,14 @@
   model-only CALA, and upper-MPYK cases. Mnemonic authority remains with the
   database/fixtures; execution, timing, and unsupported-silicon behavior are
   excluded.
+- **Status-word evidence:** SPRU001B defines exactly five architectural status
+  bits. Its overview, LST, and SST figures agree that stored-word bits 12:9
+  and 7:2 are ones; LST ignores bit 13 and every non-field position. Only bit
+  1 conflicts: the overview calls it don't-care while both original
+  instruction pages draw one, and later TI figures are internally
+  inconsistent. Model tests now exercise every ignored source position and
+  the RTL test checks the full `0x1efe` constant mask. Stored bit 1 remains
+  CORROBORATED under `OQ-003`/`SC-008`; no hidden writable status is inferred.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -384,4 +392,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `c435b7c`
+  `412dd8a`

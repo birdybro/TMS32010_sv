@@ -105,16 +105,22 @@ electrical result of an out-of-range access.
 
 ## SC-008 — SST reserved bit 1
 
+- **Uncontested positions:** SPRU001B Figure 2-7 and the original `LST` and
+  `SST` instruction pages all draw stored-word bits 12:9 and 7:2 as ones.
+  They identify only five architectural status fields. `LST` consumes bits
+  15, 14, 8, and 0 while preserving `INTM`, so no other source position is
+  writable hidden status. These positions are VERIFIED_PRIMARY and are not
+  part of the conflict.
 - **Original-part sources:** TI SPRU001B Figure 2-7, printed p. 2-15 (PDF
   p. 39), marks stored status-word bit 1 as “don't care.” Its individual
-  `SST` page, printed p. 3-59 (PDF p. 109), explicitly draws that output bit
-  as one.
+  `LST` and `SST` pages, printed pp. 3-38 and 3-59 (PDF pp. 88 and 109),
+  explicitly draw that position as one.
 - **Later family source:** TI SPRU013 §3.6.3, printed pp. 3-24–3-26 (PDF
-  pp. 53–55), says reserved status bits read as logic ones through SST. Its
-  `SST` page, printed p. 4-65 (PDF p. 146), labels bit 1 reserved but its
-  worked result is `0x5efe`, with bit 1 set. The `LST` input drawing at
-  printed p. 4-43 shows zero, but LST ignores reserved input bits and therefore
-  does not define SST output.
+  pp. 53–55), says reserved status bits read as logic ones through SST, but
+  Figure 3-13 draws bit 1 as zero. Its `LST` input drawing at printed p. 4-43
+  also shows zero, while the `SST` page at printed p. 4-65 labels bit 1
+  reserved and its worked result `0x5efe` sets it. LST ignores that source
+  position, so its zero does not define the SST output.
 - **Independent oracle:** pinned MAME commit
   `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` forces status mask `0x1efe`,
   including bit 1, and passes that status word into `sst()` before its common
@@ -128,9 +134,10 @@ electrical result of an out-of-range access.
 - **Current treatment:** `SST` is qualified in the database, hand fixture,
   assembler/disassembler, independent model, RTL, native phase stream, and
   seeded differential. `OQ-003` retains the evidence boundary.
-- **Confidence:** VERIFIED_PRIMARY for defined fields, address modes, opcode,
-  one-cycle timing, and the fact that the bit is reserved; CORROBORATED for
-  deterministic stored bit 1 and pre-update-status ordering.
+- **Confidence:** VERIFIED_PRIMARY for the five defined fields, bits 12:9 and
+  7:2 being stored as ones, LST ignoring all other source positions, address
+  modes, opcode, one-cycle timing, and the fact that bit 1 is reserved;
+  CORROBORATED for deterministic stored bit 1 and pre-update-status ordering.
 
 ## SC-009 — LST next-ARP precedence
 

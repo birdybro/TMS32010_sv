@@ -435,6 +435,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Original status-word evidence now separates the five architectural fields
+  from the 16-bit LST/SST representation. SPRU001B agrees that SST bits 12:9
+  and 7:2 are ones and LST ignores every non-field source bit; model tests
+  exercise every ignored position and RTL checks the complete `0x1efe`
+  constant mask. Only stored bit 1 remains CORROBORATED under `SC-008` rather
+  than being promoted beyond the conflicting primary figures.
 - All 65,536 partial-RTL decoder inputs match a compact family/field-validity
   predicate in a one-step symbolic proof. Operand projections and operation
   bounds hold, eight classification covers reach step 0, and deferred
@@ -856,7 +862,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 106 repository/ISA/tool tests, 229
+- The complete current regression passes 106 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 23
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
@@ -941,7 +947,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   `0x90` remains unresolved under `OQ-014`; the partial implementation traps
   before all effects and labels that policy provisional.
 - Remaining indirect control-flow/return traces, interrupt execute ownership,
-  reserved status bits, and out-of-range RAM behavior remain open.
+  original-silicon SST bit-1 qualification, and out-of-range RAM behavior
+  remain open.
 - The execution core still has an instruction-step test interface; the
   native-phase wrapper covers the qualified normal, branch, I/O, table, and
   interrupt program-read sequences but not the complete overlapped pipeline.

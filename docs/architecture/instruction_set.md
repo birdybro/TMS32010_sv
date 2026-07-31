@@ -98,8 +98,10 @@ logical-transaction boundary.
 `SST` is a one-word, one-cycle store with opcode family `0x7c`. It writes the
 16-bit status representation
 `OV:OVM:INTM:1111:ARP:1111111:DP` to internal RAM without changing any of the
-five captured fields. Unlike ordinary direct operands, direct SST forces page
-1 and the original TMS32010 supplies only offsets 0–15 at locations
+five captured fields. Positions 12:9 and 7:2 are fixed ones in all three
+relevant original SPRU001B figures; only reserved bit 1 has conflicting source
+representations under `SC-008`. Unlike ordinary direct operands, direct SST
+forces page 1 and the original TMS32010 supplies only offsets 0–15 at locations
 `0x80`–`0x8f`; direct words `0x7c10`–`0x7c7f` are not claimed as storage
 encodings. Indirect SST resolves the old selected AR, captures the old status
 word, performs the write, and then applies the ordinary selected-AR and
@@ -112,11 +114,14 @@ VERIFIED_PRIMARY for encoding, defined fields, address modes, and timing;
 CORROBORATED for the pre-update capture ordering.**
 
 Status-word bit 1 is reserved. SPRU001B Figure 2-7 calls it don't-care, but
-the original SST page draws one; SPRU013 says SST reads reserved bits as ones
+both original `LST` and `SST` instruction pages draw one; SPRU013 says SST
+reads reserved bits as ones
 and its worked `0x5efe` result sets the bit. Pinned MAME independently forces
 status mask `0x1efe`. The qualified implementation therefore writes one while
 forbidding software from assigning meaning to the position. `SC-008` and
-`OQ-003` retain the exact conflict and confidence boundary. Model tests
+`OQ-003` retain the exact conflict and confidence boundary. `LST` ignores
+source bits 13, 12:9, and 7:1 rather than treating them as hidden state. Model
+tests
 exhaust all 32 combinations of `OV/OVM/INTM/ARP/DP`; hand fixtures and tool
 tests cover all form classes and direct-range diagnostics; exhaustive decode
 proves exactly 28 legal encodings; directed RTL checks both packed extremes,
