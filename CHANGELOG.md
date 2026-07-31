@@ -229,6 +229,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A SymbiYosys actual-core interrupt harness with a 12-step BMC task over
   arbitrary clock-enable stalls and a separate non-vacuity cover task for
   EINT, protected execution, dummy entry, and vector execution.
+- A second actual-core formal harness with a 14-step BMC and cover for MPYK
+  extending an armed interrupt through its following instruction, followed by
+  held-low request relatching after acknowledge.
 
 ### Changed
 
@@ -560,6 +563,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1 pass the 12-step actual-core
   interrupt BMC across arbitrary clock-enable choices; the separate cover
   reaches completed vector execution at step 6.
+- The same formal stack passes a 14-step MPYK-extension/held-low-relatch BMC;
+  its separate cover reaches the final masked-pending state at step 8.
 - The complete current regression passes 89 repository/ISA/tool tests, 201
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
@@ -600,9 +605,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.
-- Formal evidence currently covers only one fixed interrupt-entry program at
-  a 12-step bound. It excludes DINT, multiply extension, multicycle arrival
-  positions, held-low relatching, RET, the general pipeline, and broad
+- Formal evidence currently covers only two fixed interrupt-entry programs at
+  12- and 14-step bounds. It excludes DINT, data-memory MPY, repeated multiply
+  chains, multicycle arrival positions, RET, the general pipeline, and broad
   decode/datapath properties.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through

@@ -26,10 +26,11 @@
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
-- **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes a
-  12-step actual-core BMC for the fixed EINT/protected-LACK/dummy/vector
-  fixture across arbitrary clock-enable choices. A separate cover reaches
-  completed vector execution at step 6. This is bounded scenario evidence,
+- **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
+  12- and 14-step actual-core BMCs across arbitrary clock-enable choices. The
+  first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
+  at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
+  held-low request relatching at step 8. This is bounded scenario evidence,
   not a complete interrupt or core proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -168,9 +169,9 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** expand `FORMAL-001` to the MPY/MPYK extension and held-low
-  relatch paths, then continue `CTRL-002` with an exhaustive
-  supported-multicycle arrival matrix and research for
+- **Next task:** expand `FORMAL-001` to data-memory MPY and repeated multiply
+  chains, then continue `CTRL-002` with an exhaustive supported-multicycle
+  arrival matrix and research for
   `OQ-019` plus RET-based resumption; preserve the distinction between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
@@ -183,4 +184,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `94a00da`
+  `3650a5c`

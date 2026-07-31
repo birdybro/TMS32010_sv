@@ -820,14 +820,17 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** The first actual-core configuration passes a 12-step BMC over
-  arbitrary clock-enable sequences for the fixed
-  EINT/protected-LACK/dummy/vector fixture and reaches its vector-execution
-  cover at step 6. It checks initialization, pending retention, program-only
-  entry, stack/vector/INTM effects, bus exclusion, and stall stability.
+- **Notes:** Two actual-core configurations pass bounded checks over arbitrary
+  clock-enable sequences. The 12-step EINT/protected-LACK/dummy/vector fixture
+  reaches vector execution at step 6. The 14-step
+  EINT/NOP/MPYK/following-instruction/dummy/vector fixture reaches held-low
+  request relatching at step 8. Together they check initialization, pending
+  retention, MPYK extension, program-only entry, stack/vector/INTM effects,
+  bus exclusion, relatching, and stall stability.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
-  MPY/MPYK, multicycle arrival points, held-low relatching, RET, general
-  decode/FSM/RAM/arithmetic properties, and liveness assumptions remain.
+  data-memory MPY, multicycle arrival points, repeated multiply chains, RET,
+  general decode/FSM/RAM/arithmetic properties, and liveness assumptions
+  remain.
   Never describe bounded checks as complete proof.
 
 ## Milestone 19 — FPGA synthesis and timing

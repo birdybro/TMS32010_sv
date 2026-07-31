@@ -312,10 +312,10 @@ cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
 write, followed by another PC+1 fetch. Table retirement also reproduces the
 documented old-stack-bottom loss and old-level-2 duplication.
 Both multiply instructions' interrupt-deferral rule has directed
-model/RTL/native coverage through the following instruction. A 12-step
-bounded formal harness checks the EINT/protected-instruction/dummy/vector
-slice with arbitrary clock-enable stalls and reaches the vector cover point.
-This is not a complete formal proof; no general pipeline, exhaustive
-interrupt entry matrix, or complete pin timing exists.
+model/RTL/native coverage through the following instruction. Actual-core
+12- and 14-step formal harnesses check ordinary EINT entry, MPYK extension,
+held-low relatching, and arbitrary clock-enable stalls, with reachable vector
+and relatch covers. This is not a complete formal proof; no general pipeline,
+exhaustive interrupt entry matrix, or complete pin timing exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.
