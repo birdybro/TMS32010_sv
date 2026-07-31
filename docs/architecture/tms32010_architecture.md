@@ -112,9 +112,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-`ZALS`. The seventeen common-address data instructions have independent
+`ZALS`. The eighteen common-address data instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -140,6 +140,9 @@ LDP reads through the old DP or selected AR, transfers source bit 0 to DP, and
 then applies the ordinary indirect AR/ARP post-update.
 LT reads through the same address path, transfers all 16 source bits to T, and
 then applies the ordinary indirect AR/ARP post-update.
+LTA uses that same read/update path while simultaneously adding the previous
+32-bit P value to ACC with sticky signed overflow and OVM-controlled wrap or
+endpoint saturation; P is unchanged.
 MPY signed-multiplies T by the selected 16-bit data word into P through that
 same address/update path. Its documented `0x8000`-by-`0x8000` result is
 `0xc0000000`, and directed tests preserve that physical multiplier exception.

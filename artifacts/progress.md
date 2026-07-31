@@ -1,21 +1,21 @@
 # Progress summary
 
-- **Current milestone:** SPAC product-subtract qualification
+- **Current milestone:** LTA parallel load-and-accumulate qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 65 repository/provenance/document/ISA/toolchain tests; 120
-  directed model tests; 21 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded thirty-instruction model/RTL
+- **Tests passing:** 66 repository/provenance/document/ISA/toolchain tests; 127
+  directed model tests; 22 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded thirty-one-instruction model/RTL
   differential including T, P, OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,844 ALMs, 2,483 registers, 0 RAM blocks,
-  1 DSP block, 61.49 MHz worst slow-corner internal Fmax, +3.737 ns setup
-  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the thirty-one-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,762 ALMs, 2,483 registers, 0 RAM blocks,
+  1 DSP block, 59.0 MHz worst slow-corner internal Fmax, +3.050 ns setup
+  slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  11,029 generic cells and lowering the asynchronous RAM to registers/muxes;
+  11,051 generic cells and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -71,17 +71,21 @@
   is fixed opcode `0x7f90`, subtracts all 32 P bits from ACC in one
   cycle, leaves P/T/address state unchanged, uses the same sticky signed
   overflow and OVM-controlled wrap/saturation policy, and has no data-memory
-  transaction
+  transaction; LTA is opcode family `0x6c`, reads the addressed data word into
+  T while adding the unchanged previous P to ACC in the same cycle, leaves P
+  unchanged, uses the common old-address/post-update ordering, and applies
+  sticky OV with OVM-controlled wrap or signed-endpoint saturation
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, Hard Drivin' INT net, and safe phase adaptation
   without READY
-- **Next task:** research and qualify primary-defined `LTA` data-to-T load plus
-  previous-P accumulation, including exact old-P ordering, common
-  direct/indirect updates, overflow modes, and one-cycle bus behavior; keep
-  multiply interrupt-deferral gaps under `INT-001` and keep `ADDH` and `ABS`
-  outside the supported boundary pending `OQ-011` and `OQ-013`
+- **Next task:** research and qualify primary-defined `LTD`, including its
+  simultaneous data-to-T load, previous-P accumulation, data-memory move to
+  the following address, common indirect updates, exact read/write ordering,
+  and one-cycle bus behavior; keep multiply interrupt-deferral gaps under
+  `INT-001` and keep `ADDH` and `ABS` outside the supported boundary pending
+  `OQ-011` and `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `a20f5b4859ea7fe537b24b4392d4241329fa1e67`
+  `adfd77e2f069b7b482d04940c8dddd091d2229bb`

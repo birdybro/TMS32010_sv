@@ -14,9 +14,9 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty
+The reference model, local tools, and partial RTL currently support thirty-one
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
-`LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+`LDP`, `LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`MPY`/`OR`/`SUB`/
@@ -25,10 +25,12 @@ MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow
 and OVM saturation, and none has a data transaction.
+LTA combines a full-word internal-RAM load to T with previous-P accumulation
+into ACC in the same documented one-cycle transaction.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies normal sequential program reads for this
-thirty-instruction subset only; it is not a general pipeline or
+thirty-one-instruction subset only; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial thirty-instruction model/tool boundary is intentionally partial
+Its initial thirty-one-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -17,6 +17,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `LDP dma` | `0x6f00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LDP` page, printed p. 3-36 |
 | `LDPK K` | `0x6e00` | `0xfffe` | 1 | 1 | individual `LDPK` page, printed p. 3-37 |
 | `LT dma` | `0x6a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LT` page, printed p. 3-39 |
+| `LTA dma` | `0x6c00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LTA` page, printed p. 3-40 |
 | `MPY dma` | `0x6d00` | `0xff00` plus addressing constraints | 1 | 1 | individual `MPY` page, printed p. 3-43 |
 | `MPYK K` | `0x8000` | `0xe000` | 1 | 1 | individual `MPYK` page, printed p. 3-44 |
 | `PAC` | `0x7f8e` | `0xffff` | 1 | 1 | individual `PAC` page, printed p. 3-48 |
@@ -42,10 +43,17 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-31–3-39, 3-42–3-44,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-31–3-40, 3-42–3-44,
 3-46, 3-48, 3-53–3-56, 3-58, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 81–89, 92–94, 96, 98, 103–106, 108, 110, 113, 118,
+pp. 55–57, 60, 62–64, 81–90, 92–94, 96, 98, 103–106, 108, 110, 113, 118,
 and 120–121)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`LTA` fixes bits 15:8 to `0x6c`; bit 7 and bits 6:0 retain the same qualified
+direct/indirect address-field constraints as LT. Reserved indirect fields are
+rejected rather than aliased
+[ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90);
+ti-tms32010-assembly-guide-spru002b, `LTA`, printed p. 3-40 (PDF p. 61)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `APAC` is the exact fixed word `0x7f8f`. No operand fields or aliases are

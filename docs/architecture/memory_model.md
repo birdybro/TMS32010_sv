@@ -48,7 +48,7 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `MPY`, `OR`, `SACL`, `SACH`,
+retire `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `MPY`, `OR`, `SACL`, `SACH`,
 `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
@@ -57,6 +57,12 @@ physical word, pre-modification indirect addressing, and write-to-read
 ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
+
+`LTA` consumes one selected internal data word for its T-register load while
+its previous-P accumulation remains internal to the register datapath. The
+logical read uses the same old-address/post-update ordering as LT
+[ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90)].
+**Confidence: VERIFIED_PRIMARY.**
 
 `MPYK` uses a signed immediate carried in the program word and therefore
 performs no logical or physical data-memory access. Directed and native-phase

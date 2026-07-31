@@ -36,6 +36,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LDP",
                 "LDPK",
                 "LT",
+                "LTA",
                 "MPY",
                 "MPYK",
                 "PAC",
@@ -180,6 +181,28 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(decoded[0]["mnemonic"], "SPAC")
         self.assertEqual(decoded[1], {})
         self.assertIsNone(decode_word(self.database, 0x7F91))
+
+    def test_lta_uses_common_data_addressing_without_reserved_controls(
+        self,
+    ) -> None:
+        direct = decode_word(self.database, 0x6C7F)
+        indirect = decode_word(self.database, 0x6CA1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "LTA")
+        self.assertEqual(
+            direct[1],
+            {"indirect": 0, "addressing_field": 0x7F},
+        )
+        self.assertEqual(indirect[0]["mnemonic"], "LTA")
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
+        for word in (0x6CC8, 0x6C8A, 0x6CB8):
+            with self.subTest(word=word):
+                self.assertIsNone(decode_word(self.database, word))
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))

@@ -68,6 +68,7 @@ module tms32010_core (
   localparam logic [4:0] OP_PAC  = 5'd27;
   localparam logic [4:0] OP_APAC = 5'd28;
   localparam logic [4:0] OP_SPAC = 5'd29;
+  localparam logic [4:0] OP_LTA  = 5'd30;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -128,6 +129,7 @@ module tms32010_core (
         (decoded_operation == OP_SAR) ||
         (decoded_operation == OP_LDP) ||
         (decoded_operation == OP_LT) ||
+        (decoded_operation == OP_LTA) ||
         (decoded_operation == OP_MPY)
       )
     ) begin
@@ -187,6 +189,7 @@ module tms32010_core (
       (decoded_operation == OP_LAR) ||
       (decoded_operation == OP_LDP) ||
       (decoded_operation == OP_LT) ||
+      (decoded_operation == OP_LTA) ||
       (decoded_operation == OP_MPY)
     );
   assign data_write_o =
@@ -258,6 +261,7 @@ module tms32010_core (
         (decoded_operation != OP_SAR) &&
         (decoded_operation != OP_LDP) &&
         (decoded_operation != OP_LT) &&
+        (decoded_operation != OP_LTA) &&
         (decoded_operation != OP_MPY)
       ) ||
       ram_address_valid
@@ -336,6 +340,20 @@ module tms32010_core (
           end
           OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_LT: t_register_o <= ram_read_data;
+          OP_LTA: begin
+            t_register_o <= ram_read_data;
+            if (apac_overflow) begin
+              overflow_flag_o <= 1'b1;
+              if (overflow_mode_o) begin
+                accumulator_o <=
+                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
+              end else begin
+                accumulator_o <= apac_wrapped_result;
+              end
+            end else begin
+              accumulator_o <= apac_wrapped_result;
+            end
+          end
           OP_MPY: product_register_o <= multiplier_product;
           OP_MPYK: product_register_o <= multiplier_product;
           OP_PAC: accumulator_o <= product_register_o;
@@ -468,6 +486,7 @@ module tms32010_core (
            (decoded_operation == OP_MAR) ||
            (decoded_operation == OP_LDP) ||
            (decoded_operation == OP_LT) ||
+           (decoded_operation == OP_LTA) ||
            (decoded_operation == OP_MPY)) &&
           decoded_indirect
         ) begin

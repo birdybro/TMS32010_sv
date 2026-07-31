@@ -194,6 +194,39 @@ ti-tms32010-assembly-guide-spru002b, `LT`, printed p. 3-39
 (PDF p. 60)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
 update bits.**
 
+## Qualified `LTA` functional slice
+
+`LTA` fixes bits 15:8 to `0x6c`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. In one word and one cycle it loads all 16
+selected RAM bits into T while adding the complete previous 32-bit P value to
+ACC. P is unchanged. TI's worked example starts with RAM[24]=`0x0062`,
+T=`0x0003`, P=`0x0000000f`, and ACC=`0x00000005`; afterward T is `0x0062`
+and ACC is `0x00000014`
+[ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90);
+ti-tms32010-assembly-guide-spru002b, `LTA`, printed p. 3-40 (PDF p. 61)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The ACC-plus-P operation affects sticky `OV` and is affected by `OVM`. With
+OVM clear, signed overflow stores the wrapped 32-bit result; with OVM set it
+stores the appropriate signed endpoint. Loading T is independent of that
+result selection
+[ti-first-generation-users-guide-1987, §3.5.2 and `LTA`, printed
+pp. 3-19–3-20 and 4-45 (PDF pp. 48–49 and 126)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Direct addressing resolves the source through the old DP. Indirect addressing
+reads through the AR selected by the old ARP, loads T and accumulates P, then
+applies the ordinary optional nine-bit AR increment/decrement and next-ARP
+replacement. Directed model and RTL tests cover TI's example, page-one and
+indirect reads, counter/ARP ordering, both overflow directions, OVM wrap and
+saturation, sticky OV, unchanged P, one-cycle retirement, reserved controls,
+and trap-before-either parallel effect on an unresolved address. Native-phase
+and seeded differential tests cover the internal read beside a normal program
+fetch. If LTA follows MPY or MPYK, its completion is the end of that multiply
+instruction's documented interrupt-deferral window; actual interrupt
+recognition remains unimplemented under `INT-001`. Simultaneous indirect
+update controls remain under `OQ-010`.
+
 ## Qualified `MPY` functional slice
 
 `MPY` fixes bits 15:8 to `0x6d`; bit 7 and bits 6:0 use the common

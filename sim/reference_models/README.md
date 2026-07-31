@@ -7,7 +7,7 @@ RTL.
 Current supported boundary:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-  `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+  `LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
@@ -30,6 +30,8 @@ Current supported boundary:
   ordering before common indirect AR/ARP updates;
 - `LT` direct/indirect full-word loads into T with the same old-address and
   post-access AR/ARP ordering;
+- `LTA` concurrent full-word T loads and previous-P accumulation into ACC,
+  including sticky OV, OVM-controlled results, and the same address ordering;
 - `MPY` direct/indirect signed 16-by-16 products into P, including the
   original `0x8000`-by-`0x8000` result and common post-access ordering;
 - `MPYK` signed T times a sign-extended 13-bit immediate into P, including

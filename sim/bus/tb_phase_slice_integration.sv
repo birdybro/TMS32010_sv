@@ -139,7 +139,8 @@ module tb_phase_slice_integration;
     program_memory[29] = 16'h7f8e;  // PAC
     program_memory[30] = 16'h7f8f;  // APAC
     program_memory[31] = 16'h7f90;  // SPAC
-    program_memory[32] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[32] = 16'h6c03;  // LTA 3
+    program_memory[33] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -465,13 +466,26 @@ module tb_phase_slice_integration;
             "SPAC preserves P, T, and nonoverflowing arithmetic status");
     require(pc == 12'h020 && cycle_count == 32'd32,
             "SPAC consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h03 && data_read_data == 16'hbeef,
+            "LTA presents its internal read beside normal program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0004_9332 &&
+            t_register == 16'hbeef,
+            "LTA loads T while accumulating the previous P value");
+    require(product_register == 32'h0002_4999 &&
+            !overflow_flag && overflow_mode,
+            "LTA preserves P and nonoverflowing arithmetic status");
+    require(pc == 12'h021 && cycle_count == 32'd33,
+            "LTA consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h020, "trap holds architectural PC");
-    require(program_address == 12'h020, "trap holds native program address");
-    require(cycle_count == 32'd32, "trap does not count as retired cycle");
+    require(pc == 12'h021, "trap holds architectural PC");
+    require(program_address == 12'h021, "trap holds native program address");
+    require(cycle_count == 32'd33, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

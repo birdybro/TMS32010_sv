@@ -2,7 +2,7 @@
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
 `tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
 `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
@@ -40,7 +40,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the thirty currently qualified one-cycle sequential instructions it
+For the thirty-one currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general
@@ -64,8 +64,10 @@ The synthesizable code:
 - leaves physical-reset-unspecified data state unspecified;
 - resets the PC to zero and masks interrupts;
 - preserves `OVM` through physical reset as TI documents;
-- exposes sticky `OV` for ADD/ADDS/APAC/SPAC/SUB/SUBS
+- exposes sticky `OV` for ADD/ADDS/APAC/LTA/SPAC/SUB/SUBS
   wrap/saturation verification;
+- performs LTA's internal-RAM-to-T load and previous-P accumulation in one
+  retirement with APAC's overflow result policy;
 - exposes T and P for multiply-path differential verification;
 - uses no vendor primitive.
 

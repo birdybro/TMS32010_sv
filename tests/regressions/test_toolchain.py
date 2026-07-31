@@ -30,6 +30,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LT *
             LT *+,AR1
             LT *-,0
+            LTA 0
+            LTA 127
+            LTA *
+            LTA *+,AR1
+            LTA *-,0
             MPY 0
             MPY 127
             MPY *
@@ -141,6 +146,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6A88,
                 0x6AA1,
                 0x6A90,
+                0x6C00,
+                0x6C7F,
+                0x6C88,
+                0x6CA1,
+                0x6C90,
                 0x6D00,
                 0x6D7F,
                 0x6D88,
@@ -249,6 +259,11 @@ class ToolchainSliceTests(unittest.TestCase):
             0x7F8E,
             0x7F8F,
             0x7F90,
+            0x6C00,
+            0x6C7F,
+            0x6C88,
+            0x6CA1,
+            0x6C90,
             0x6F00,
             0x6F7F,
             0x6F88,
@@ -421,6 +436,7 @@ class ToolchainSliceTests(unittest.TestCase):
         for mnemonic, noncanonical in (
             ("LDP", 0x6F89),
             ("LT", 0x6A89),
+            ("LTA", 0x6C89),
             ("MPY", 0x6D89),
         ):
             for operand, message in (

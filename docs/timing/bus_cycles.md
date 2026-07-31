@@ -35,12 +35,18 @@ native wait-state transaction to diagram. `TIMING-002` remains a research
 task for safe clock/phase adaptation rather than a presumed handshake.
 
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
-`LAC`, `LAR`, `LDP`, `LT`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`,
+`LAC`, `LAR`, `LDP`, `LT`, `LTA`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`
 perform the same external program fetch as the other qualified sequential
 instructions while their ordinary data operands remain internal,
 verification-visible logical reads/writes. No physical `DEN` or `WE` behavior
 is claimed from those internal transactions.
+
+The phase test verifies that `LTA` performs its internal data-word read and
+previous-P accumulation during the ordinary one-cycle external program fetch;
+it introduces no external data-memory pin transaction
+[ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90)].
+**Confidence: VERIFIED_PRIMARY.**
 
 The same phase test verifies that `MAR` performs neither a logical data read
 nor write while retaining the normal external program fetch. This follows

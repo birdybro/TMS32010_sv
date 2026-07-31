@@ -31,13 +31,18 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the thirty supported one-cycle sequential
-instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `MPY`, `OR`, `SUB`,
+read relationship for the thirty-one supported one-cycle sequential
+instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `MPY`, `OR`, `SUB`,
 `XOR`, `ZALH`, `ZALS`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
 cited normal-read mapping, not a claim that control flow, external data/I/O
 access, or general pipeline overlap is complete.
+
+`LTA` presents its internal data-word read beside the same normal external
+program fetch while also accumulating the previous P value into ACC
+[ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90)].
+**Confidence: VERIFIED_PRIMARY.**
 
 `MPYK` retains the same normal program read and exposes no logical data read or
 write because its signed multiplier operand is carried in the instruction

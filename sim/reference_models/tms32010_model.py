@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LT, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB,
-SUBS, XOR, ZAC, ZALH, and ZALS.
+LDPK, LT, LTA, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC,
+SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -190,6 +190,7 @@ class Tms32010Model:
             "LAR",
             "LDP",
             "LT",
+            "LTA",
             "MPY",
             "OR",
             "SACL",
@@ -219,6 +220,7 @@ class Tms32010Model:
                 "LAR",
                 "LDP",
                 "LT",
+                "LTA",
                 "MPY",
                 "OR",
                 "SUB",
@@ -263,6 +265,7 @@ class Tms32010Model:
                             "LAR",
                             "LDP",
                             "LT",
+                            "LTA",
                             "MPY",
                             "OR",
                             "SUB",
@@ -297,6 +300,9 @@ class Tms32010Model:
             )
         elif mnemonic == "LT":
             self.state.t = self.data[operands["effective_address"]]
+        elif mnemonic == "LTA":
+            self.state.t = self.data[operands["effective_address"]]
+            self._add_accumulator(self.state.p)
         elif mnemonic == "MPY":
             data_word = self.data[operands["effective_address"]]
             if self.state.t == 0x8000 and data_word == 0x8000:
@@ -411,6 +417,7 @@ class Tms32010Model:
                 "LAR",
                 "LDP",
                 "LT",
+                "LTA",
                 "MAR",
                 "MPY",
                 "OR",
@@ -671,6 +678,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "LT", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6C00:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "LTA", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

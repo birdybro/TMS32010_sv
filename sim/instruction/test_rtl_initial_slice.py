@@ -157,6 +157,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_lta_parallel_load_accumulate_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_lta_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_lta_rtl.sv",
+            ],
+        )
+
     def test_mpy_signed_product_address_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_mpy_rtl",

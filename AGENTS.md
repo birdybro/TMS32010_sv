@@ -235,9 +235,9 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support thirty instructions:
+tools, RTL, and seeded differential boundary support thirty-one instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-`LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+`LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
@@ -259,6 +259,8 @@ access. PAC copies P into ACC without a data-memory access or arithmetic
 status change. APAC adds P to ACC with sticky signed overflow and
 OVM-controlled wrapping or saturation. SPAC applies the same arithmetic policy
 while subtracting P from ACC; neither operation has a data-memory access.
+LTA reads an internal data word into T while adding the unchanged previous P
+value to ACC with APAC's overflow policy in the same documented cycle.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt
