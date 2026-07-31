@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' shared program-RAM FPGA adaptation
+- **Current milestone:** Hard Drivin' processor/program-RAM RTL integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 115 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 116 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 27 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 28 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -41,13 +41,16 @@
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 15,779 generic cells
-  with 110 retained checks and zero structural problems, including 46 cells
+  Yosys at 15,782 generic cells
+  with 110 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
   adapter as one registered-read, single-write-port abstract memory in an
   85-cell hierarchy with five checks and zero structural problems.
+  The partial processor/program-RAM board top retains both program and internal
+  data memories and passes at 2,167 abstract cells/122 checks with zero
+  structural problems before technology mapping.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -421,6 +424,11 @@
   writers during invalid overlap. Yosys retains the array as one `$mem_v2`;
   Quartus block-RAM mapping remains unclaimed. A044427's whole-word host path
   conflicts with MAME byte merging under `SC-022`/`OQ-022`.
+- **New integration evidence:** the processor-connected wrapper host-loads the
+  existing ROM-free smoke, performs a conflict-free `/320RES` handoff, and
+  reproduces 12 retirements, 22 cycles, nine physical I/O transfers, the BIOZ
+  path, and final ACC. A second reset/reload proves low-address TBLW readiness
+  and write data route through output port 3 without changing program RAM.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -435,15 +443,14 @@
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
-  divider state, processor/RAM top-level reset handoff and firmware compliance,
+  divider state, 68000-side reset-handoff timing and firmware compliance,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** connect the generic MiSTer callback wrapper to the qualified
-  board decoder/RAM and execute a synthetic host-loaded program through a safe
-  reset handoff; keep exact 68000 timing, byte access, signed DAC mapping, and
-  port 2 provisional.
+- **Next task:** transcribe and test the A044427 communication-RAM/port-control
+  handshake around DSP ports 1 and 3, while keeping exact 68000 timing, byte
+  access, signed DAC mapping, and port 2 provisional.
 - **Latest committed baseline before this cycle:**
-  `ab58521`
+  `76b68ca`

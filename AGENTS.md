@@ -386,6 +386,12 @@ program contents on reset. Its whole-word host port follows the shown
 A12:A1/D15:D0 path; byte-access compatibility is unresolved under
 `SC-022`/`OQ-022`. This is an integration convention, not a claim that the
 physical asynchronous SRAM has ready signaling or registered reads.
+The partial `hard_drivin_sound_mister` connects that storage to the generic
+callback wrapper, separates deterministic initialization from physical
+processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
+alias execution test. It ties Rev-A INT inactive and leaves BIO external. It
+is not a 68000 bridge, peripheral implementation, full MiSTer top, or board
+timing qualification.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

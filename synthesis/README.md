@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs five checked-in scripts. The main synthesis harness targets
+The command runs six checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -53,8 +53,9 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 15,779 generic cells and 110 retained checks, with zero
-structural problems; 46 cells and seven checks are local to the new adapter.
+Yosys 0.67+111 reports 15,782 generic cells and 110 retained checks, with zero
+structural problems; 49 cells and seven checks are local to the adapter after
+separating deterministic initialization from processor reset.
 
 The fourth script targets the storage-free A044427 Rev-A
 `hard_drivin_sound_bus_decode`. It reports 15 generic combinational cells,
@@ -68,6 +69,13 @@ registered read port and one merged synchronous write port. The hierarchy has
 85 cells including the decoder and five retained checks, with zero structural
 problems. This supports portable memory inference; it does not prove Cyclone V
 M10K mapping, fitter timing, or physical asynchronous-SRAM equivalence.
+
+The sixth script stops before technology mapping for the partial
+`hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM and
+144-word internal RAM as two memory objects and reports 2,167 abstract cells,
+122 checks, and zero structural problems. This is not comparable to the
+technology-mapped generic-cell counts above and is not a Cyclone V fit or
+timing result.
 
 ## Quartus
 

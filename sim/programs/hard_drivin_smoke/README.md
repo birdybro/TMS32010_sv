@@ -47,3 +47,11 @@ RAM results, raw outputs, and the derived oracle fields. Run it with:
 ```sh
 python3 -m unittest tests.regressions.test_hard_drivin_smoke_program -v
 ```
+
+The same fixed words also execute through the board-specific RTL wrapper after
+a synthetic host load and safe `/320RES` handoff. That test additionally
+checks physical I/O commits and the low-address TBLW alias:
+
+```sh
+python3 -m unittest sim.bus.test_hard_drivin_sound_mister -v
+```

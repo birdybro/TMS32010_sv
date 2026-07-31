@@ -24,12 +24,14 @@ phase without creating a gated clock. `phase_advance_o` reports when the
 native phase engine can actually advance after combining the host enable,
 callback wait state, reset override, and conservative unsupported-word park.
 
-`reset_i` is active-high and synchronous. While asserted it applies the
-FPGA-only deterministic initialization path. At release, the wrapper keeps
-the modeled active reset condition for exactly five enabled machine cycles,
-the minimum duration required by the original data sheet. The native bus then
-performs its separately qualified full inactive release cycle before fetching
-address zero
+`reset_i` and `processor_reset_i` are active-high and synchronous. `reset_i`
+applies the FPGA-only deterministic initialization path; `processor_reset_i`
+applies the modeled processor reset without clearing the wrapper's external
+program memory. Either request reloads the five-machine-cycle hold counter.
+At release, the wrapper keeps the modeled active reset condition for exactly
+five enabled machine cycles, the minimum duration required by the original
+data sheet. The native bus then performs its separately qualified full
+inactive release cycle before fetching address zero
 [ti-tms32010-users-guide-spru001b, §2.5 and Appendix A data sheet, reset
 timing, printed p. 2-19 and data-sheet p. 19 (PDF pp. 43 and 375)].
 **Confidence: VERIFIED_PRIMARY for the physical minimum and release
@@ -112,6 +114,12 @@ transactions. These are deterministic simulation and integration hooks, not
 original package pins. `execute_address_o` and `execute_word_o` describe the
 current execute slot; they are not yet a separately registered retired-
 instruction trace tuple.
+
+The separate `processor_reset_i` is exercised by the board-specific
+`hard_drivin_sound_mister`, which holds shared program contents while applying
+the same five-cycle processor reset interval. The generic wrapper test retains
+`processor_reset_i=0` and continues to test `reset_i` as deterministic FPGA
+initialization plus reset.
 
 ## Verification and synthesis
 

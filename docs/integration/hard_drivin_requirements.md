@@ -91,6 +91,15 @@ and rejected conflicting writes. Yosys 0.67+111 retains one 4,096-by-16
 **VERIFIED_SIMULATION** and a portable-synthesis structural result, not a
 Quartus block-RAM mapping, 68000 bridge, or complete board timing claim.
 
+`hard_drivin_sound_mister` now joins this storage to the generic synchronous
+callback wrapper. It separates FPGA initialization from physical `/320RES`,
+routes physical I/O readiness back to a low-address TBLW, and exports one
+phase-3 commit pulse for both ordinary I/O and that alias. Its RTL test executes
+the project-authored smoke program after host loading, then executes a focused
+low-TBLW program and reads the unchanged target RAM word back through the host.
+See `docs/integration/hard_drivin_mister_wrapper.md` for the interface contract.
+**Confidence: VERIFIED_SIMULATION; not a 68000 or peripheral implementation.**
+
 MAME maps DSP program words `0x000`–`0xfff` to shared sound DSP RAM and
 allows host reads/writes of the same storage at `0xff4000`–`0xff5fff` without
 checking DSP reset. Its latch bit drives an inverted HALT input rather than
@@ -257,10 +266,10 @@ physical board or game-ROM qualification.**
 The future non-ROM qualification sequence is:
 
 1. synthetic reset and address-0 fetch with schematic clock/reset ratios
-   (generic wrapper evidence exists; board-specific reset/halt control remains);
+   (complete in the same-clock board wrapper; exact 68000 latch timing remains);
 2. synthetic 4K shared-program-RAM ownership and host-load sequence (complete
-   in the standalone storage adapter; processor/top-level reset release and
-   host-bus timing remain);
+   in both the standalone adapter and processor-connected RTL wrapper;
+   host-bus timing remains);
 3. host/DSP communication-memory handshake;
 4. BIO pulse/poll behavior;
 5. synthetic writes through every decoded I/O port and DAC trace (model-level

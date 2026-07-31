@@ -55,6 +55,7 @@ module tb_mister_wrapper;
   tms32010_mister dut (
     .clk_i                         (clk),
     .reset_i                       (reset),
+    .processor_reset_i             (1'b0),
     .clock_enable_i                (clock_enable),
     .bio_i                         (1'b1),
     .int_i                         (1'b1),

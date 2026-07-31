@@ -126,8 +126,8 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 110 checks, and reports 15,779 generic cells. The
-adapter itself contributes 46 cells and seven checks beyond the 15,733-cell,
+with zero problems, retains 110 checks, and reports 15,782 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 15,733-cell,
 103-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
@@ -148,6 +148,14 @@ exclusive host/TMS writes into one clocked write port. The complete hierarchy
 contains 85 cells, including five retained checks and the 12-cell decoder;
 both structural checks report zero problems. This establishes an inferable
 synchronous memory shape, not a Quartus M10K mapping or fitted timing result.
+
+The sixth script applies the same pre-technology boundary to
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,167 abstract cells, 122
+retained checks, and two `$mem_v2` objects: the synchronous 4K-by-16 shared
+program RAM and the core's existing asynchronous-read 144-by-16 internal RAM.
+Both structural checks pass with zero problems. This proves hierarchy and
+memory retention only; it is not a technology-mapped utilization, block-RAM
+placement, fitter, or TimeQuest result.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.

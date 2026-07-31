@@ -6,6 +6,7 @@
 module tms32010_mister (
   input  logic        clk_i,
   input  logic        reset_i,
+  input  logic        processor_reset_i,
   input  logic        clock_enable_i,
   input  logic        bio_i,
   input  logic        int_i,
@@ -80,8 +81,11 @@ module tms32010_mister (
   logic       raw_io_write;
   logic       raw_data_write_address_valid;
   logic       memory_wait;
+  logic       reset_request;
 
-  assign reset_active_o = reset_i || (reset_cycles_remaining != 3'd0);
+  assign reset_request = reset_i || processor_reset_i;
+  assign reset_active_o =
+    reset_request || (reset_cycles_remaining != 3'd0);
 
   // The callback requests are active during native strobe phases 1 through 3.
   // A synchronous memory therefore sees the address/request before the phase-3
@@ -97,7 +101,7 @@ module tms32010_mister (
     wrapper_clock_enable && (reset_active_o || !pipeline_blocked_o);
 
   always_ff @(posedge clk_i) begin
-    if (reset_i) begin
+    if (reset_request) begin
       reset_cycles_remaining <= RESET_MACHINE_CYCLES;
     end else if (
       wrapper_clock_enable &&
@@ -113,7 +117,7 @@ module tms32010_mister (
   // the pipeline's instruction qualification and back into its clock enable.
   // Once held, phase 3 advances on the first host edge after ready was seen.
   always_ff @(posedge clk_i) begin
-    if (reset_i || reset_active_o) begin
+    if (reset_active_o) begin
       memory_wait <= 1'b0;
     end else if (memory_wait) begin
       if (

@@ -147,6 +147,21 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("Physical whole-word program RAM", conflicts)
         self.assertIn("`OQ-022`", conflicts)
 
+    def test_hard_drivin_mister_wrapper_remains_partial_and_physical(self) -> None:
+        wrapper = (
+            DOCS / "integration" / "hard_drivin_mister_wrapper.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "partial, same-clock FPGA top",
+            "does not implement the 68000 bus",
+            "needless FPGA divergence",
+            "neither storage path is acknowledged",
+            "A TBLW to address 0–7 arrives as `io_write_o`",
+            "No Atari ROM data is used",
+            "Cyclone V",
+        ):
+            self.assertIn(required, wrapper)
+
 
 if __name__ == "__main__":
     unittest.main()

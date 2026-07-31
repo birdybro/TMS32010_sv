@@ -1283,7 +1283,9 @@ objective passing evidence.
   A044427 storage-free bus decoder to 15 generic combinational cells with no
   structural problems. A fifth script retains the 4K-by-16 board adapter as
   one synchronous-read, single-write-port abstract memory with 85 total cells
-  and zero structural problems. Full-core
+  and zero structural problems. A sixth pre-technology script checks the
+  partial processor/program-RAM board top as 2,167 abstract cells, 122 checks,
+  and two retained memories with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
@@ -1303,13 +1305,14 @@ objective passing evidence.
 - **Tests:** `sim/bus/tb_mister_wrapper.sv`
 - **Notes:** Vendor resources are permitted only behind this boundary. The
   first portable `tms32010_mister` adapter now supplies active-high
-  synchronous reset with an exact five-machine-cycle modeled RS hold,
+  deterministic initialization plus a distinct synchronous processor-reset
+  request with an exact five-machine-cycle modeled RS hold,
   clock-enable operation, registered same-clock program/I/O request-ready
   callbacks, native phase visibility, active-low INT/BIO pass-through, and
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 15,779 generic
+  unsupported-word parking, and reset recovery. Yosys reports 15,782 generic
   cells/110 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a block-RAM-safe core, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
@@ -1330,7 +1333,8 @@ objective passing evidence.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
-  `sim/bus/tb_hard_drivin_sound_program_ram.sv`
+  `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
+  `sim/bus/tb_hard_drivin_sound_mister.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1346,8 +1350,12 @@ objective passing evidence.
   during invalid overlap. Firmware compliance/release timing remains
   `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
   Complete BIO divider state, signed-audio DAC interpretation, board-variant
-  audit, processor/RAM top-level integration, 68000 bus adaptation, and
-  synthetic wrapper execution tests remain.
+  audit, 68000 bus adaptation, and complete peripheral integration remain.
+  The partial `hard_drivin_sound_mister` now connects the core, native decoder,
+  and shared RAM. A directed RTL test host-loads the fixed ROM-free smoke,
+  performs the safe reset handoff, verifies its 12 retirements/22 cycles and
+  nine physical I/O transfers, then reloads a focused low-TBLW sequence and
+  proves one I/O commit with unchanged RAM word 3.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with

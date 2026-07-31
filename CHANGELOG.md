@@ -64,6 +64,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   synchronous host/TMS reads, explicit write commits, reset-preserved
   contents, no-priority conflict rejection, complete 4,096-word host-load/TMS
   readback coverage, and a memory-retaining Yosys target.
+- A partial `hard_drivin_sound_mister` top connecting the generic processor,
+  board-native decoder, and shared RAM, with physical I/O commit signaling and
+  correct low-address TBLW readiness routing.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -385,6 +388,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Split deterministic FPGA initialization from an independent synchronous
+  processor-reset request in `tms32010_mister`, allowing board `/320RES` to
+  retain shared program contents while preserving the five-cycle reset hold.
 - Defined the board adapter's host program path as whole-word only. A044427
   does not route UDS/LDS into this SRAM bank; byte-preserving MAME writes are
   now isolated as `SC-022`/`OQ-022` rather than promoted to hardware behavior.
@@ -476,6 +482,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
+  Sound smoke: 12 retirements, 22 cycles, six writes, three reads, active-low
+  BIOZ branch, final ACC `0x000055aa`, and raw DAC word `0xf230`. A second
+  reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
+  TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
+- The partial board hierarchy passes pre-technology Yosys with 2,167 abstract
+  cells, 122 retained checks, two memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -500,7 +513,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   delayed readiness, a separate three-clock global pause, exact-once OUT/IN
   and TBLW commits, documented `1/1/2/2/1/3/1 = 11` cycle total, unsupported-
   word parking, and reset recovery. Yosys 0.67+111 independently synthesizes
-  the wrapper top to 15,779 generic cells with 110 retained checks and zero
+  the wrapper top to 15,782 generic cells with 110 retained checks and zero
   structural problems.
 - Complete local assembler/disassembler acceptance across all sixty documented
   mnemonics and the first realistic test-program workflow. The synthetic FIR
@@ -945,8 +958,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 114 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 26
+- The complete current regression passes 116 repository/ISA/tool tests, 231
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 28
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -955,15 +968,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- The FPGA storage adapter is not yet connected to the generic processor as a
-  complete Hard Drivin' top level. Its synchronous ready/commit callbacks are
-  implementation conventions, not physical SRAM pins, and the future 68000
-  bridge must resolve or reject byte accesses under `SC-022`/`OQ-022`.
+- `hard_drivin_sound_mister` is only the processor/program-RAM/physical-I/O
+  callback boundary. It lacks the 68000 bridge and every sound-board peripheral;
+  its synchronous ready/commit callbacks are implementation conventions, not
+  physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
+  and the future 68000 bridge must resolve or reject byte accesses under
+  `SC-022`/`OQ-022`.
 - A044427 has no program-RAM arbiter. Simultaneously selecting the host window
   while `/320RES` is released enables conflicting buffer paths; pinned MAME's
   always-accessible shared array and HALT mapping do not reproduce that
-  electrical contract (`SC-020`/`OQ-021`). The project has only the verified
-  decoder, not shared storage or reset-handoff control.
+  electrical contract (`SC-020`/`OQ-021`). The digital wrapper rejects overlap,
+  but actual 68000 firmware compliance and handoff timing remain unqualified.
 - A044427 Rev A directly wires the 12-bit Am6012 code, while pinned MAME
   complements bit 11 before its unsigned DAC mapper and describes that as a
   schematic inversion. No inverter is present in the reviewed drawing.
