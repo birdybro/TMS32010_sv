@@ -94,3 +94,40 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for encoding, accumulator result, OVM
   result selection, word count, and cycle count; UNKNOWN for original-part
   `OV`.
+
+## SC-008 — SST reserved bit 1
+
+- **Original-part sources:** TI SPRU001B Figure 2-7, printed p. 2-15 (PDF
+  p. 39), marks stored status-word bit 1 as “don't care.” The same guide's
+  `LST` page, printed p. 3-38 (PDF p. 88), and SPRU002B `LST`, printed
+  p. 3-38 (PDF p. 59), draw bit 1 as one.
+- **Later family source:** TI SPRU013 `LST`, printed p. 4-43 (PDF p. 124),
+  draws bit 1 as zero even though it covers the TMS32010 among several
+  first-generation variants.
+- **Conflict:** the authoritative documents assign three incompatible
+  descriptions to the same reserved result bit. This does not affect `LST`,
+  which ignores reserved input bits, but it prevents a deterministic `SST`
+  result claim.
+- **Current treatment:** bits 12:9 and 7:2 are documented ones. `SST` remains
+  outside the qualified boundary under `OQ-003` until an original-part erratum
+  or physical measurement resolves bit 1.
+- **Confidence:** VERIFIED_PRIMARY for the contradiction and the other
+  reserved bits; UNKNOWN for stored bit 1.
+
+## SC-009 — LST next-ARP precedence
+
+- **Original-part sources:** SPRU001B and SPRU002B `LST`, printed p. 3-38,
+  and SPRU013 `LST`, printed p. 4-43, all expose an optional indirect
+  next-ARP operand while stating that data-word bit 8 loads `ARP`. None states
+  which source wins when the two values differ.
+- **Variant clarification:** TI SPRU012 `LST`, printed p. 4-75, explicitly
+  says the next-ARP field is ignored and the memory word supplies `ARP`.
+- **Independent oracle:** pinned MAME commit
+  `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` suppresses the ordinary
+  next-ARP update in its `lst()` handler before loading the status word.
+- **Current treatment:** the model and RTL will ignore LST's encoded next-ARP
+  field and load `ARP` from source bit 8. This is a targeted, tested
+  provisional original-part behavior under `OQ-015`, not a claim that later
+  C25 behavior proves the NMOS TMS32010.
+- **Confidence:** PROVISIONAL for the original TMS32010; CORROBORATED across
+  the later TI guide and independent emulator.

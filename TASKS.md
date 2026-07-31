@@ -94,17 +94,17 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Thirty-five encodings (`ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
-  `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
+- **Notes:** Thirty-six encodings (`ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
+  `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are
-  primary-transcribed in the opcode research table. The twenty
+  primary-transcribed in the opcode research table. The twenty-one
   common-address data instructions add
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 18,771 supported words without collisions; the remaining 25
+  accepting 18,911 supported words without collisions; the remaining 24
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -125,12 +125,12 @@ objective passing evidence.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
 - **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
-  `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
+  `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
   `SAR`, `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
-  and deterministic replay. The twenty common-address data instructions
+  and deterministic replay. The twenty-one common-address data instructions
   cover
   direct/indirect reads or writes and nine-bit AR updates; `LAC` additionally
   covers sign extension and shifts, SACH covers output shifts 0/1/4, and the
@@ -172,7 +172,13 @@ objective passing evidence.
   unchanged OV/OVM.
   DINT/EINT set and clear INTM in one program-only cycle while preserving the
   pending-request latch; recognition, EINT's following-instruction service
-  deferral, and vector entry remain outside the model. Out-of-range
+  deferral, and vector entry remain outside the model.
+  `LST` reads one status word through the old DP/ARP, loads OV/OVM/ARP/DP,
+  preserves INTM, and applies indirect counter updates to the old selected AR.
+  Memory-sourced ARP precedence over an encoded next ARP is explicitly
+  PROVISIONAL under `OQ-015`, supported by later TI and independent MAME
+  evidence but not stated in the original-part manuals.
+  Out-of-range
   original-RAM addresses and unsupported words trap. Remaining memory/I/O
   instructions and pin phases remain unimplemented.
 
@@ -191,16 +197,16 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same thirty-five instructions as the
+- **Notes:** Qualified slice supports the same thirty-six instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
   zero placeholder before a next ARP, SACH's sparse 0/1/4 shifts, and
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
-  ADDS/AND/DMOV/LDP/LT/LTA/LTD/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
+  ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC/DINT/EINT. The remaining 25
+  PAC/APAC/SPAC/DINT/EINT. The remaining 24
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -220,10 +226,10 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  thirty-five-instruction slice. `LAC`
+  thirty-six-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
-  twenty common-address data instructions verify direct/indirect read/write
+  twenty-one common-address data instructions verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
   indirect load into the selected address register suppresses its otherwise
   requested post-modification. `SAR` verifies the distinct same-source rule:
@@ -281,8 +287,8 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of thirty-five supported one-cycle instructions, including all
-  twenty internal-data operations, on its falling-edge sample and aligns
+  retires each of thirty-six supported one-cycle instructions, including all
+  twenty-one internal-data operations, on its falling-edge sample and aligns
   PC/native address across stalls, traps, and reset. General overlap, branch,
   multi-cycle, and interrupt control do not exist yet.
 
@@ -304,7 +310,7 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all thirty-five
+  release delay. A partial wrapper integrates those phases with all thirty-six
   supported sequential instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Table cycles, branch/call/return, general pipeline overlap,
@@ -326,7 +332,7 @@ objective passing evidence.
 - **Tests:** `sim/bus/tb_data_bus.sv`
 - **Notes:** Primary documentation establishes that ordinary operands are
   wholly internal; external storage moves through table or I/O instructions.
-  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
+  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
   `XOR`/`ZALH`/`ZALS` model/RTL tests cover valid address selection, logical
   read/write traces, ordering, and explicitly trap unresolved `0x90`–`0xff`.
   The portable RTL contains exactly 144 words and a nonarchitectural preload
@@ -379,7 +385,7 @@ objective passing evidence.
 
 ### CTRL-002 — Interrupt and BIO behavior
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** CTRL-001, RTL-002
 - **Description:** Implement interrupt recognition, masking, acknowledge,
@@ -418,7 +424,14 @@ objective passing evidence.
   one-cycle/program-only/clock-enable checks, native-phase retirement, and
   seeded INTM differential comparison. Interrupt recognition and EINT's
   following-instruction service deferral remain unimplemented under
-  `CTRL-002`/`OQ-004`. Cycle evidence
+  `CTRL-002`/`OQ-004`.
+  `LST` now passes primary-cited database/tool support, exhaustive model
+  status-field tests, directed RTL address/order/cycle/stall/trap checks,
+  native-phase retirement, and seeded differential comparison. Original
+  manuals leave the indirect next-ARP precedence unstated, so memory-word ARP
+  precedence remains PROVISIONAL under `OQ-015`/`SC-009`; `SST` remains
+  blocked by the reserved-bit conflict under `OQ-003`/`SC-008`.
+  Cycle evidence
   is qualified only for the current sequential native-phase boundary. `LAC`
   now passes primary-cited database/model/tool tests, directed RTL cycle and
   addressing tests, native phase integration, and seeded logical-data
@@ -561,13 +574,16 @@ objective passing evidence.
 - **Tests:** `sim/differential/test_*`
 - **Notes:** Seed `0x32010` runs 512 supported instructions with model/RTL
   state including T, P, OV/OVM, logical-cycle,
-  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/
+  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/
   `ZALH`/`ZALS`
   reads, `SACL`/`SACH`/`SAR` writes, and final 144-word RAM agreement over an
   identical deterministic image. MAR direct/indirect cases compare AR/ARP
   changes and
   inactive logical data strobes. LDP direct/indirect cases compare the logical
-  read, DP source-bit result, and common AR/ARP post-update. LT cases compare
+  read, DP source-bit result, and common AR/ARP post-update.
+  LST cases compare the logical read, all four loaded status fields, preserved
+  INTM, old-address counter update, and provisional memory-word ARP
+  precedence under `OQ-015`. LT cases compare
   the logical read, full-width T result, and common AR/ARP post-update. LTA
   cases additionally compare the simultaneous previous-P accumulation and
   OV/OVM outcomes. LTD cases compare the same state effects plus distinct

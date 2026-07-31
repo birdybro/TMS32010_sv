@@ -14,12 +14,12 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-five
+The reference model, local tools, and partial RTL currently support thirty-six
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
-`LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+`LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
 `SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
@@ -38,10 +38,14 @@ unresolved-endpoint policy.
 `DINT` and `EINT` set and clear the architectural interrupt mask in one
 program-only cycle. Interrupt input recognition, EINT's following-instruction
 service delay, stack entry, and vector fetch are not implemented.
+`LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
+`DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
+provisional under `OQ-015`, based on later TI and independent MAME
+corroboration because the original-part manuals do not state the precedence.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies normal sequential program reads for this
-thirty-five-instruction subset only; it is not a general pipeline or
+thirty-six-instruction subset only; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

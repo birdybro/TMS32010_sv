@@ -75,6 +75,7 @@ module tms32010_core (
   localparam logic [5:0] OP_DMOV = 6'd32;
   localparam logic [5:0] OP_DINT = 6'd33;
   localparam logic [5:0] OP_EINT = 6'd34;
+  localparam logic [5:0] OP_LST  = 6'd35;
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -139,7 +140,8 @@ module tms32010_core (
         (decoded_operation == OP_LT) ||
         (decoded_operation == OP_LTD) ||
         (decoded_operation == OP_LTA) ||
-        (decoded_operation == OP_MPY)
+        (decoded_operation == OP_MPY) ||
+        (decoded_operation == OP_LST)
       )
     ) begin
       if (decoded_indirect) begin
@@ -203,7 +205,8 @@ module tms32010_core (
       (decoded_operation == OP_LT) ||
       (decoded_operation == OP_LTD) ||
       (decoded_operation == OP_LTA) ||
-      (decoded_operation == OP_MPY)
+      (decoded_operation == OP_MPY) ||
+      (decoded_operation == OP_LST)
     );
   assign data_write_o =
     ~reset_i &&
@@ -295,7 +298,8 @@ module tms32010_core (
         (decoded_operation != OP_LT) &&
         (decoded_operation != OP_LTD) &&
         (decoded_operation != OP_LTA) &&
-        (decoded_operation != OP_MPY)
+        (decoded_operation != OP_MPY) &&
+        (decoded_operation != OP_LST)
       ) ||
       (
         ram_address_valid &&
@@ -520,6 +524,12 @@ module tms32010_core (
           end
           OP_DINT: interrupt_mask_o <= 1'b1;
           OP_EINT: interrupt_mask_o <= 1'b0;
+          OP_LST: begin
+            overflow_flag_o              <= ram_read_data[15];
+            overflow_mode_o              <= ram_read_data[14];
+            auxiliary_register_pointer_o <= ram_read_data[8];
+            data_page_pointer_o          <= ram_read_data[0];
+          end
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;
           OP_ROVM: overflow_mode_o <= 1'b0;
           OP_SOVM: overflow_mode_o <= 1'b1;
@@ -549,7 +559,8 @@ module tms32010_core (
            (decoded_operation == OP_LT) ||
            (decoded_operation == OP_LTD) ||
            (decoded_operation == OP_LTA) ||
-           (decoded_operation == OP_MPY)) &&
+           (decoded_operation == OP_MPY) ||
+           (decoded_operation == OP_LST)) &&
           decoded_indirect
         ) begin
           if (
@@ -589,7 +600,10 @@ module tms32010_core (
               };
             end
           end
-          if (!decoded_addressing_field[3]) begin
+          if (
+            !decoded_addressing_field[3] &&
+            (decoded_operation != OP_LST)
+          ) begin
             auxiliary_register_pointer_o <= decoded_addressing_field[0];
           end
         end

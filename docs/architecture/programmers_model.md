@@ -33,11 +33,27 @@ The five architecturally described status bits are `OV`, `OVM`, `INTM`, `ARP`,
 and `DP`. `SST` stores them in a documented 16-bit layout. `LST` loads all
 status fields except `INTM`; interrupt masking is controlled by reset,
 `DINT`, `EINT`, and interrupt entry
-[ti-tms32010-users-guide-spru001b, §2.2.3 and Figure 2-9, printed
+[ti-tms32010-users-guide-spru001b, §2.2.3 and Figure 2-7, printed
 pp. 2-14–2-15 (PDF pp. 38–39)]. **Confidence: VERIFIED_PRIMARY.**
 
-The exact values of reserved bits in an `SST` result are still being
-transcribed from Figure 2-9 (`OQ-003`) and will not be guessed.
+For `LST`, source bits 15, 14, 8, and 0 replace `OV`, `OVM`, `ARP`, and `DP`;
+source bit 13 does not alter `INTM`, and the remaining source bits have no
+architectural effect. Direct address resolution uses the old `DP`. Indirect
+address and counter selection use the old `ARP`. Original-part manuals expose
+both a memory-sourced ARP and optional next-ARP encoding without declaring
+their precedence. Current model/RTL gives the memory word final precedence,
+as later TI TMS320C25 documentation states and pinned MAME independently
+corroborates; this is PROVISIONAL for the TMS32010 under `OQ-015`
+[ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88);
+ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59);
+ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
+(PDF p. 170)]. **Confidence: VERIFIED_PRIMARY for status fields, address
+ordering, and one-cycle result; PROVISIONAL for next-ARP precedence.**
+
+The exact `SST` value at reserved bit 1 conflicts between primary TI manuals:
+SPRU001B calls it don't-care, its LST diagram and SPRU002B show one, and
+SPRU013 shows zero. `SST` remains blocked under `OQ-003`/`SC-008`; no value is
+guessed.
 
 The qualified functional slice writes `INTM=1` for exact opcode `DINT`
 (`0x7f81`) and `INTM=0` for exact opcode `EINT` (`0x7f82`). DINT takes effect

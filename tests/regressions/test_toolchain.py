@@ -71,6 +71,11 @@ class ToolchainSliceTests(unittest.TestCase):
             SOVM
             DINT
             EINT
+            LST 0
+            LST 127
+            LST *
+            LST *+,AR1
+            LST *-,0
             LAC 0
             LAC 127,15
             LAC *
@@ -199,6 +204,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x7F8B,
                 0x7F81,
                 0x7F82,
+                0x7B00,
+                0x7B7F,
+                0x7B88,
+                0x7BA1,
+                0x7B90,
                 0x2000,
                 0x2F7F,
                 0x2088,
@@ -312,6 +322,12 @@ class ToolchainSliceTests(unittest.TestCase):
             0x7F81,
             0x7F82,
             0x7F83,
+            0x7B00,
+            0x7B7F,
+            0x7B88,
+            0x7BA1,
+            0x7B90,
+            0x7B89,
             0x2000,
             0x2F7F,
             0x2088,
@@ -477,6 +493,7 @@ class ToolchainSliceTests(unittest.TestCase):
             ("LTA", 0x6C89),
             ("LTD", 0x6B89),
             ("MPY", 0x6D89),
+            ("LST", 0x7B89),
         ):
             for operand, message in (
                 ("128", "direct address"),

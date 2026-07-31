@@ -48,7 +48,7 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
+retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
 `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
@@ -57,6 +57,14 @@ physical word, pre-modification indirect addressing, and write-to-read
 ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
+
+`LST` performs one ordinary internal-RAM read and uses the old DP or old
+selected AR to resolve that source before replacing status fields. It never
+writes data RAM. Out-of-range sources trap before status or indirect-address
+effects, consistent with the partial core's explicit `OQ-002` boundary
+[ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
+**Confidence: VERIFIED_PRIMARY except indirect next-ARP precedence, which is
+PROVISIONAL under `OQ-015`.**
 
 `DMOV` captures the selected source word and writes it unchanged to the
 numerically next internal-RAM address in the same documented cycle. It uses

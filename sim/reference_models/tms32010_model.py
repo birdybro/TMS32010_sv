@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, DINT, DMOV, EINT, LAC, LACK,
-LAR, LARK, LARP, LDP, LDPK, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM,
-SACH, SACL, SAR, SOVM, SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC,
+ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -190,6 +190,7 @@ class Tms32010Model:
             "LAC",
             "LAR",
             "LDP",
+            "LST",
             "LT",
             "LTA",
             "LTD",
@@ -230,6 +231,7 @@ class Tms32010Model:
                 "LAC",
                 "LAR",
                 "LDP",
+                "LST",
                 "LT",
                 "LTA",
                 "LTD",
@@ -276,6 +278,7 @@ class Tms32010Model:
                             "LAC",
                             "LAR",
                             "LDP",
+                            "LST",
                             "LT",
                             "LTA",
                             "DMOV",
@@ -322,6 +325,12 @@ class Tms32010Model:
             self.state.status.dp = (
                 self.data[operands["effective_address"]] & 1
             )
+        elif mnemonic == "LST":
+            status_word = self.data[operands["effective_address"]]
+            self.state.status.ov = bool(status_word & 0x8000)
+            self.state.status.ovm = bool(status_word & 0x4000)
+            self.state.status.arp = (status_word >> 8) & 1
+            self.state.status.dp = status_word & 1
         elif mnemonic == "LT":
             self.state.t = self.data[operands["effective_address"]]
         elif mnemonic == "LTA":
@@ -453,6 +462,7 @@ class Tms32010Model:
                 "LAC",
                 "LAR",
                 "LDP",
+                "LST",
                 "LT",
                 "LTA",
                 "LTD",
@@ -487,7 +497,7 @@ class Tms32010Model:
                         self.state.ar[selected_arp],
                         -1,
                     )
-            if (control & 0x08) == 0:
+            if (control & 0x08) == 0 and mnemonic != "LST":
                 self.state.status.arp = control & 1
 
         cycles = 1
@@ -665,16 +675,19 @@ class Tms32010Model:
                 "indirect": indirect,
                 "addressing_field": control,
             }
-        if (opcode & 0xFF00) in {0x7800, 0x7900, 0x7A00}:
+        if (opcode & 0xFF00) in {0x7800, 0x7900, 0x7A00, 0x7B00}:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F
             if indirect and (
                 (control & 0x46) != 0 or (control & 0x30) == 0x30
             ):
                 raise UnsupportedOpcode(pc, opcode)
-            mnemonic = {0x7800: "XOR", 0x7900: "AND", 0x7A00: "OR"}[
-                opcode & 0xFF00
-            ]
+            mnemonic = {
+                0x7800: "XOR",
+                0x7900: "AND",
+                0x7A00: "OR",
+                0x7B00: "LST",
+            }[opcode & 0xFF00]
             return mnemonic, {
                 "indirect": indirect,
                 "addressing_field": control,

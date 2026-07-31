@@ -235,11 +235,11 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support thirty-five instructions:
+tools, RTL, and seeded differential boundary support thirty-six instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-`LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+`LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS`
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
 wrap/saturation, and sticky-OV evidence. ADDS and SUBS have directed unsigned
@@ -272,6 +272,9 @@ Its endpoint policy is equally provisional under `OQ-002`/`OQ-014`.
 boundaries without a data transaction. The core does not yet recognize
 interrupts or implement EINT's following-instruction service deferral, stack
 entry, or vector fetch.
+`LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
+preserving `INTM`; the indirect next-ARP precedence remains a labeled
+provisional behavior under `OQ-015`.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

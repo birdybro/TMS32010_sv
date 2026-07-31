@@ -57,6 +57,7 @@ module tb_decode_exhaustive;
       logic expected_spac;
       logic expected_dint;
       logic expected_eint;
+      logic expected_lst;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -281,6 +282,16 @@ module tb_decode_exhaustive;
       expected_spac = instruction == 16'h7f90;
       expected_dint = instruction == 16'h7f81;
       expected_eint = instruction == 16'h7f82;
+      expected_lst =
+        (instruction[15:8] == 8'h7b) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_valid =
         expected_lac || expected_sacl || expected_sach ||
         expected_zalh || expected_zals || expected_adds ||
@@ -291,7 +302,7 @@ module tb_decode_exhaustive;
         expected_lta ||
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
-        expected_dint || expected_eint ||
+        expected_dint || expected_eint || expected_lst ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
         ((instruction & 16'hfe00) == 16'h7000) ||
@@ -466,6 +477,13 @@ module tb_decode_exhaustive;
       if (expected_eint && operation != OP_EINT) begin
         $fatal(1, "EINT decode mismatch at %04x", word);
       end
+      if (expected_lst) begin
+        if (operation != OP_LST ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "LST decode mismatch at %04x", word);
+        end
+      end
       if ((instruction & 16'hff00) == 16'h7e00) begin
         if (operation != OP_LACK || immediate != word[7:0]) begin
           $fatal(1, "LACK decode mismatch at %04x", word);
@@ -489,8 +507,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 18771) begin
-      $fatal(1, "expected 18771 supported words, got %0d", valid_count);
+    if (valid_count != 18911) begin
+      $fatal(1, "expected 18911 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

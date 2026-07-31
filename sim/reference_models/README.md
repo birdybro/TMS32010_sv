@@ -7,7 +7,7 @@ RTL.
 Current supported boundary:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-  `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+  `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
@@ -51,6 +51,10 @@ Current supported boundary:
 - `DINT`/`EINT` exact fixed decode and one-cycle `INTM` set/clear behavior,
   preserving the model's pending-request latch and exposing only a program
   fetch; interrupt recognition, EINT deferral, and vector entry remain absent;
+- `LST` direct/indirect reads, exhaustive `OV`/`OVM`/`ARP`/`DP` source-bit
+  combinations, `INTM` preservation, old-address ordering, and indirect
+  counter updates; memory-sourced ARP precedence is provisional under
+  `OQ-015`;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of

@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -252,6 +252,57 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["CTRL-002/OQ-004: following-instruction interrupt-service deferral and exact vector-entry phase trace"]
+    },
+    {
+      "mnemonic": "LST",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7b00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["OV", "OVM", "ARP", "DP", "selected AR when post-modified"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["OV", "OVM", "ARP", "DP"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; only source bits 15, 14, 8, and 0 are consumed",
+      "shift_behavior": "none except the common indirect nine-bit AR increment/decrement",
+      "overflow_behavior": "source bit 15 replaces OV and may clear a previously sticky overflow; source bit 14 replaces OVM; no arithmetic or saturation occurs",
+      "result_behavior": "OV, OVM, ARP, and DP receive source bits 15, 14, 8, and 0 respectively; INTM and all other architectural state are preserved; provisionally, an encoded indirect next-ARP value is ignored",
+      "branch_behavior": "none",
+      "interrupt_interaction": "INTM is explicitly preserved; no other special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; the concurrent internal status-word read has no external data-memory cycle"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.7, Figure 2-7, 3.3, and LST instruction description", "printed_page": "2-14 through 2-15, 3-2 through 3-3, and 3-38", "pdf_page": "38-39, 52-53, and 88"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "LST instruction description", "printed_page": "3-38", "pdf_page": 59},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.3 and LST instruction description", "printed_page": "3-24 through 3-26 and 4-43", "pdf_page": "53-55 and 124"},
+        {"source_id": "ti-tms320c25-users-guide-spru012-1986", "section": "LST instruction description and Example 1", "printed_page": "4-75", "pdf_page": 170}
+      ],
+      "confidence_level": "PROVISIONAL",
+      "unresolved_questions": ["OQ-002", "OQ-010", "OQ-015"]
     },
     {
       "mnemonic": "LARK",

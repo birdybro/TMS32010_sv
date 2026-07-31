@@ -20,7 +20,7 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the thirty-five-instruction subset,
+program-read cycle for every instruction in the thirty-six-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -64,13 +64,19 @@ retires a following NOP with `INTM` clear before DINT restores it. Because no
 pending-interrupt recognition or vector entry exists, this is not evidence
 for EINT's documented following-instruction service delay or interrupt entry
 latency; both remain under `CTRL-002`/`OQ-004`.
+Directed `LST` tests assert one-cycle direct/indirect reads, old-DP and
+old-ARP address selection, post-read nine-bit counter updates, `INTM`
+preservation, all four loaded status fields, clock-enable hold, and
+trap-before-effects at an unresolved address. Native-phase integration
+observes its internal read beside the ordinary program fetch. The encoded
+next-ARP versus memory-sourced ARP precedence is PROVISIONAL under `OQ-015`.
 
 ## Open timing dimensions
 
 - whether taken and untaken conditions have identical two-cycle totals;
 - exact immediate-word fetch ordering for branch and call;
 - interaction of program fetch with internal data RAM beyond the qualified
-  one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
+  one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
 - table-operation discarded fetch order;
 - interrupt entry latency, recognition boundary, and MPY/MPYK's documented

@@ -66,6 +66,7 @@ class Disassembler:
             "AND",
             "DMOV",
             "LDP",
+            "LST",
             "LT",
             "LTA",
             "LTD",

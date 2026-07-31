@@ -55,6 +55,41 @@ interrupt, so the following-instruction service delay and warning remain
 unimplemented timing requirements under `CTRL-002`/`OQ-004`, not silently
 collapsed into ordinary boundary recognition.
 
+## Qualified `LST` functional slice
+
+`LST` is a one-word, one-cycle instruction with opcode family `0x7b` and the
+common direct/indirect data-address field. It reads a 16-bit internal data
+word, loads `OV=word[15]`, `OVM=word[14]`, `ARP=word[8]`, and `DP=word[0]`,
+and leaves `INTM` unchanged. Other source bits have no architectural effect.
+Direct form uses the pre-instruction `DP`, so a load that changes DP does not
+redirect its own read
+[ti-tms32010-users-guide-spru001b, §2.2.3 and `LST`, printed
+pp. 2-14–2-15 and 3-38 (PDF pp. 38–39 and 88);
+ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59);
+ti-first-generation-users-guide-1987, `LST`, printed p. 4-43
+(PDF p. 124)]. **Confidence: VERIFIED_PRIMARY.**
+
+Indirect form reads through the pre-instruction ARP and applies any
+increment/decrement to that old selected AR. The original-part sources
+provide an optional encoded next-ARP field while also loading ARP from the
+memory word, but do not state which wins. Later TI TMS320C25 documentation
+explicitly says the encoded next ARP is ignored for LST; pinned MAME
+independently does the same. The current model and RTL therefore give the
+memory word final precedence and label only that ordering PROVISIONAL for the
+original TMS32010 under `OQ-015`/`SC-009`
+[ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
+(PDF p. 170); mame-tms320c1x-core-030fefc,
+`tms320c1x_device_base::lst`, lines 594–604].
+
+Hand fixtures cover direct page endpoints and indirect increment/decrement
+forms. Model tests exhaust all 16 combinations of the four loaded fields
+under both old INTM values, force source bit 13 opposite to INTM, and verify
+state preservation, address ordering, and trap-before-effects. Directed RTL,
+native-phase, and seeded differential tests cover the same architectural and
+logical-transaction boundary. This evidence does not qualify `SST`, whose
+reserved output bit 1 remains blocked by conflicting TI diagrams under
+`OQ-003`/`SC-008`.
+
 ## Deferred `ABS` research
 
 `ABS` is an implied one-word, one-cycle instruction encoded as `0x7f88`. If

@@ -22,7 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/APAC/DINT/DMOV/EINT/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LT/LTA/LTD/MAR/MPY/MPYK/OR/PAC/SACH/SACL/SAR/SPAC/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-14, 3-27 through 3-29, 3-31 through 3-44, 3-46, 3-48, 3-53 through 3-58, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-64, 77-79, 81-94, 96, 98, 103-108, 110, 113, 118, and 120-121)",
+        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/APAC/DINT/DMOV/EINT/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/PAC/SACH/SACL/SAR/SPAC/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-14, 3-27 through 3-29, 3-31 through 3-44, 3-46, 3-48, 3-53 through 3-58, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-64, 77-79, 81-94, 96, 98, 103-108, 110, 113, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -50,7 +50,7 @@
       "notes": "Use opcode examples as an independent check, not as the only encoding authority.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "APAC, DINT, DMOV, EINT, LDP, LT, LTA, LTD, MPY, MPYK, PAC, and SPAC assembler syntax, operation, encoding, and examples, printed pages 3-14, 3-27 through 3-29, 3-36, 3-39 through 3-41, 3-43, 3-44, 3-48, and 3-58 (PDF pages 35, 48-50, 57, 60-62, 64, 65, 69, and 79); section 4.5 LTD filter example, printed page 4-4 (PDF page 86)",
+        "APAC, DINT, DMOV, EINT, LDP, LST, LT, LTA, LTD, MPY, MPYK, PAC, and SPAC assembler syntax, operation, encoding, and examples, printed pages 3-14, 3-27 through 3-29, 3-36, 3-38 through 3-41, 3-43, 3-44, 3-48, and 3-58 (PDF pages 35, 48-50, 57, 59-62, 64, 65, 69, and 79); section 4.5 LTD filter example, printed page 4-4 (PDF page 86)",
         "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)"
       ],
       "status": "acquired",
@@ -82,7 +82,7 @@
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
         "Section 3.5.3 multiplier behavior, printed page 3-21 (PDF page 50)",
         "Section 3.4.3 data movement, printed page 3-13 (PDF page 42)",
-        "ABS, ADD, ADDH, ADDS, AND, APAC, DINT, DMOV, EINT, LAR, LDP, LT, LTA, LTD, MAR, MPY, MPYK, OR, PAC, SAR, SPAC, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-19, 4-32 through 4-34, 4-38, 4-41, 4-44 through 4-50, 4-52, 4-54, 4-61 through 4-64, 4-66, 4-70, and 4-73 (PDF pages 95-100, 113-115, 119, 122, 125-131, 133, 135, 142-145, 147, 151, and 154)",
+        "ABS, ADD, ADDH, ADDS, AND, APAC, DINT, DMOV, EINT, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, PAC, SAR, SPAC, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-19, 4-32 through 4-34, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54, 4-61 through 4-64, 4-66, 4-70, and 4-73 (PDF pages 95-100, 113-115, 119, 122, 124-131, 133, 135, 142-145, 147, 151, and 154)",
         "ROVM instruction description, printed page 4-58 (PDF page 139)"
       ],
       "status": "acquired",
@@ -137,6 +137,33 @@
       "sections_or_pages_used": [
         "ABS, ADDH, and ADDS instruction descriptions, printed pages 4-14 and 4-16 through 4-17 (PDF pages 121 and 123-124)",
         "Document control page identifying SPRU032 revision A"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-tms320c25-users-guide-spru012-1986",
+      "title": "TMS320C25 User's Guide, Preliminary",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU012",
+      "publication_date": "1986-07",
+      "revision": "preliminary",
+      "source_url": "https://www.bitsavers.org/components/ti/TMS320xx/320C2x/SPRU0012_TMS320C25_Users_Guide_Preliminary_198607.pdf",
+      "retrieval_date": "2026-07-30",
+      "local_filename": "ti/SPRU012_TMS320C25_Users_Guide_Preliminary_1986-07.pdf",
+      "sha256": "1e0947cf929cfa690210a5f12036cb2b26f2d8204bb3f4e140a6cf182da88cf7",
+      "document_type": "primary later-variant user guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Variant-scoped TI clarification that an indirect LST ignores the encoded next-ARP field",
+      "authority_level": 1,
+      "notes": "The TMS320C25 is not the target TMS32010. Use only as explicitly scoped corroboration for an ambiguity left open by original-part manuals.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "LST instruction description and Example 1, printed page 4-75 (PDF page 170)"
       ],
       "status": "acquired",
       "download": {
@@ -242,7 +269,8 @@
       "sections_or_pages_used": [
         "abst() instruction handler, lines 341-347",
         "getdata() address-update helper, lar_ar0()/lar_ar1() handlers, and larp_mar() handler, lines 260-274, 547-557, and 569-575",
-        "putdata_sar() update/write helper and sar_ar0()/sar_ar1() handlers, lines 291-304 and 697-704"
+        "putdata_sar() update/write helper and sar_ar0()/sar_ar1() handlers, lines 291-304 and 697-704",
+        "lst() status-load handler and address-update exception, lines 594-604"
       ],
       "status": "acquired",
       "download": {

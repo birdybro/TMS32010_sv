@@ -306,6 +306,7 @@ class Assembler:
             "AND",
             "DMOV",
             "LDP",
+            "LST",
             "LT",
             "LTA",
             "LTD",

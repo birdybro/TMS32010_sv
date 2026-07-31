@@ -4,7 +4,7 @@ This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-  `DMOV`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+  `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - two-pass labels;
@@ -33,9 +33,11 @@ an explicit next ARP is permitted only on an indirect form.
 such as `MAR 127`, `MAR *`, or `MAR *+,AR1`. `MAR *,AR0/AR1` assembles the
 documented exact aliases of `LARP 0/1`.
 
-`DMOV`, `LDP`, `LT`, `LTA`, `LTD`, and `MPY` accept the no-shift common
+`DMOV`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, and `MPY` accept the no-shift common
 address forms, such as `DMOV 8`, `LDP 6`, `LT *`, `LTA 24`,
-`LTD *-,AR1`, or `MPY *+,AR1`.
+`LTD *-,AR1`, `LST *+,AR1`, or `MPY *+,AR1`. For LST, accepting a next-ARP
+operand describes the primary encoding; execution precedence remains
+provisional under `OQ-015`.
 
 `MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.

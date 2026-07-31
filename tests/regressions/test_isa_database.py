@@ -33,6 +33,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SOVM",
                 "DINT",
                 "EINT",
+                "LST",
                 "LARK",
                 "LARP",
                 "LDP",
@@ -141,6 +142,12 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertIsNone(decode_word(self.database, 0x6A00 | control))
         self.assertIsNotNone(decode_word(self.database, 0x6A7F))
         self.assertIsNotNone(decode_word(self.database, 0x6AA1))
+
+    def test_lst_rejects_reserved_indirect_controls(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x7B00 | control))
+        self.assertIsNotNone(decode_word(self.database, 0x7B7F))
+        self.assertIsNotNone(decode_word(self.database, 0x7BA1))
 
     def test_dmov_uses_common_data_addressing_without_reserved_controls(
         self,

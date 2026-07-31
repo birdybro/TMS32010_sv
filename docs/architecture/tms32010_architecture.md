@@ -112,9 +112,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-`ZALS`. The twenty common-address data instructions have independent
+`ZALS`. The twenty-one common-address data instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -123,6 +123,11 @@ The exact fixed `DINT`/`EINT` words set and clear `INTM` in one program-only
 cycle while preserving unrelated exposed state. EINT's required
 following-instruction interrupt-service deferral remains outside this
 functional boundary until interrupt recognition and entry are implemented.
+`LST` reads through the common address path and replaces `OV`, `OVM`, `ARP`,
+and `DP` from bits 15, 14, 8, and 0 while preserving `INTM`. The original
+manuals do not state whether a simultaneously encoded indirect next-ARP
+request or the memory word wins; the implemented memory-word precedence is
+PROVISIONAL under `OQ-015`.
 ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
 `OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the

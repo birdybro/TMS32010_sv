@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial thirty-five-instruction model/tool boundary is intentionally partial
+Its initial thirty-six-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -31,6 +31,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `SOVM` | `0x7f8b` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `DINT` | `0x7f81` | `0xffff` | 1 | 1 | individual `DINT` page, printed p. 3-27 |
 | `EINT` | `0x7f82` | `0xffff` | 1 | 1 | individual `EINT` page, printed p. 3-29 |
+| `LST dma` | `0x7b00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LST` page, printed p. 3-38 |
 | `LAC dma,s` | `0x2000` | `0xf000` plus addressing constraints | 1 | 1 | individual `LAC` page, printed p. 3-31 |
 | `LAR AR,dma` | `0x3800` | `0xfe00` plus addressing constraints | 1 | 1 | individual `LAR` page, printed p. 3-33 |
 | `SAR AR,dma` | `0x3000` | `0xfe00` plus addressing constraints | 1 | 1 | individual `SAR` pages, printed pp. 3-55–3-56 |
@@ -52,6 +53,14 @@ descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-27–3-29, 3-31–3-44
 pp. 55–57, 60, 62–64, 77–79, 81–94, 96, 98, 103–106, 108, 110, 113, 118,
 and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
+
+`LST` fixes bits 15:8 to `0x7b`; its low byte uses the common qualified
+direct/indirect address field. Its encoding, operands, one-word size, and
+one-cycle timing are primary-verified. Indirect next-ARP precedence is an
+execution-order ambiguity rather than a decode ambiguity and remains
+PROVISIONAL under `OQ-015`
+[ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88);
+ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59)].
 
 `DINT` and `EINT` are exact adjacent fixed words `0x7f81` and `0x7f82`,
 respectively. They have no variable operand bits or aliases. The next word

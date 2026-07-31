@@ -1,22 +1,22 @@
 # Progress summary
 
-- **Current milestone:** DINT/EINT interrupt-mask control qualification
+- **Current milestone:** LST status-load qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 68 repository/provenance/document/ISA/toolchain tests; 145
-  directed model tests; 24 RTL instruction/decode tests; 1 interrupt-mask RTL
+- **Tests passing:** 69 repository/provenance/document/ISA/toolchain tests; 151
+  directed model tests; 25 RTL instruction/decode tests; 1 interrupt-mask RTL
   test; 2 native bus/phase tests; one 512-instruction seeded
-  thirty-five-instruction model/RTL differential including T, P, OV/OVM/INTM,
-  distinct logical source/write addresses, and all 144 final RAM words; 15
+  thirty-six-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  distinct logical source/write addresses, and all 144 final RAM words; 16
   reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-five-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,842 ALMs, 2,484 registers, 0 RAM blocks,
-  1 DSP block, 59.23 MHz worst slow-corner internal Fmax, +3.116 ns setup
-  slack, and +0.168 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the thirty-six-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,816 ALMs, 2,484 registers, 0 RAM blocks,
+  1 DSP block, 57.22 MHz worst slow-corner internal Fmax, +2.523 ns setup
+  slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  11,212 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
+  11,238 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -84,19 +84,26 @@
   exact implied `DINT=0x7f81` and `EINT=0x7f82` each retire in one
   program-only cycle; DINT sets `INTM` immediately, EINT clears it immediately,
   neither clears a latched request, and interrupt service after EINT remains
-  inhibited until the following instruction completes
+  inhibited until the following instruction completes; LST is opcode family
+  `0x7b`, consumes one internal status-word read in one cycle, loads OV, OVM,
+  ARP, and DP from bits 15, 14, 8, and 0 while preserving INTM, resolves direct
+  and indirect addresses from old status, and applies counter updates to the
+  old selected AR; original-part sources do not specify whether loaded ARP or
+  encoded next ARP wins, while later TI and pinned MAME agree on loaded ARP
 - **Unresolved issues:** general pipeline overlap, control-flow and
-  interrupt-entry traces, reserved SST bits, simultaneous indirect
+  interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
+  simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research `LST` as the next one-cycle status operation while
-  keeping `SST` outside the qualified boundary until its reserved output bits
-  are resolved under `OQ-003`; keep interrupt recognition, EINT's
-  following-instruction service deferral, and entry outside the claim boundary
-  until `CTRL-002`/`OQ-004` has cycle/phase evidence; keep
+- **Next task:** research `PUSH`/`POP` stack behavior and two-cycle sequencing
+  while keeping `SST` outside the qualified boundary until reserved output
+  bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
+  precedence labeled PROVISIONAL under `OQ-015`; keep interrupt recognition,
+  EINT's following-instruction service deferral, and entry outside the claim
+  boundary until `CTRL-002`/`OQ-004` has cycle/phase evidence; keep
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `18ea631`
+  `f879787`

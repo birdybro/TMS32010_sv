@@ -149,7 +149,8 @@ module tb_phase_slice_integration;
     program_memory[35] = 16'h7f82;  // EINT
     program_memory[36] = 16'h7f80;  // instruction following EINT
     program_memory[37] = 16'h7f81;  // DINT
-    program_memory[38] = 16'h7f83;  // unsupported and not a silent NOP
+    program_memory[38] = 16'h7b03;  // LST 3
+    program_memory[39] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -549,13 +550,28 @@ module tb_phase_slice_integration;
             "DINT sets INTM at its native retirement boundary");
     require(pc == 12'h026 && cycle_count == 32'd38,
             "DINT consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h03 && data_read_data == 16'hbeef,
+            "LST exposes its status-word read beside normal program phases");
+
+    advance_to_sample();
+    require(retired && overflow_flag && !overflow_mode &&
+            !auxiliary_register_pointer && data_page_pointer &&
+            interrupt_mask,
+            "LST loads OV/OVM/ARP/DP and preserves DINT-established INTM");
+    require(accumulator == 32'h0006_dccb &&
+            t_register == 16'hbeef &&
+            product_register == 32'h0002_4999,
+            "LST preserves datapath state at its native retirement boundary");
+    require(pc == 12'h027 && cycle_count == 32'd39,
+            "LST consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h026, "trap holds architectural PC");
-    require(program_address == 12'h026, "trap holds native program address");
-    require(cycle_count == 32'd38, "trap does not count as retired cycle");
+    require(pc == 12'h027, "trap holds architectural PC");
+    require(program_address == 12'h027, "trap holds native program address");
+    require(cycle_count == 32'd39, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

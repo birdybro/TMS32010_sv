@@ -145,6 +145,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_lst_status_address_counter_and_mask_behavior(self) -> None:
+        self._run_testbench(
+            "tb_lst_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_lst_rtl.sv",
+            ],
+        )
+
     def test_lt_full_word_address_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_lt_rtl",
