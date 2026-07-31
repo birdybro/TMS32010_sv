@@ -43,6 +43,8 @@ module tb_sequential_pipeline_slice;
     .men_n_o                       (men_n),
     .den_n_o                       (),
     .we_n_o                        (),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .sample_o                      (sample),
     .bus_active_o                  (bus_active),
     .execute_valid_o               (execute_valid),
@@ -118,7 +120,7 @@ module tb_sequential_pipeline_slice;
     program_memory[1] = 16'h7134;  // LARK AR1,0x34
     program_memory[2] = 16'h7ea5;  // LACK 0xa5
     program_memory[3] = 16'h7f80;  // NOP
-    program_memory[4] = 16'h6700;  // TBLR: valid, but outside this slice
+    program_memory[4] = 16'h7f83;  // unsupported control word
     program_memory[5] = 16'h0123;  // following word must not execute
 
     initialize   = 1'b1;
@@ -212,13 +214,13 @@ module tb_sequential_pipeline_slice;
       pc == 12'h004 &&
       cycle_count == 32'd4 &&
       execute_address == 12'h004 &&
-      execute_word == 16'h6700 &&
+      execute_word == 16'h7f83 &&
       program_address == 12'h005,
-      "NOP retires while unsupported TBLR enters execute ownership"
+      "NOP retires while an unsupported word enters execute ownership"
     );
     require(
       pipeline_blocked && !illegal,
-      "unsupported multicycle word parks before timing is invented"
+      "unsupported word parks before any behavior is invented"
     );
 
     repeat (8) begin

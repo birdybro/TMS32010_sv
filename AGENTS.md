@@ -255,10 +255,11 @@ standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 38 already-qualified one-cycle operation families, and
 exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and
-the primary-defined IN/OUT transfer-plus-prefetch sequence.
-All retain execute ownership through a nonexecutable operand fetch and the
-selected target/fallthrough instruction fetch, retiring only as that
-instruction enters the execute slot. BANZ tests the old selected nine-bit
+the primary-defined IN/OUT transfer-plus-prefetch and TBLR/TBLW
+discarded-prefetch/table-transfer/repeated-prefetch sequences.
+The control-flow instructions retain execute ownership through a
+nonexecutable operand fetch and the selected target/fallthrough instruction
+fetch, retiring only as that instruction enters the execute slot. BANZ tests the old selected nine-bit
 counter and defers its modulo-512 decrement until retirement. The
 accumulator-branch matrix covers both outcomes for every predicate and
 zero/positive/negative ACC. BV selects from unchanged OV and clears it only
@@ -270,19 +271,26 @@ outcomes for the conditional families and the direct call. These combined
 interval mappings are INFERRED from primary component facts because no
 dedicated branch/call pin waveform has been located. The full-state offset
 differential covers the 43-word directed one-cycle stream and parks before
-unsupported TBLR. IN/OUT retain execute ownership while cycle 1 multiplexes
+an unsupported control word. IN/OUT retain execute ownership while cycle 1
+multiplexes
 the port address and asserts only DEN or WE, sample/hold live transfer data
 at that falling boundary, and retire only when cycle 2 fetches the following
 instruction under MEN. Directed stalls prove stable phase, address, strobe,
 data, and ownership in both intervals; invalid RAM addresses park before any
 native strobe. Figure 2-9 makes this combined I/O mapping
-VERIFIED_PRIMARY rather than inferred. Figure 2-12's basic
+VERIFIED_PRIMARY rather than inferred. TBLR/TBLW retain ownership through
+Figure 2-10's discarded PC+1 read, ACC-addressed program read/write, and
+repeated PC+1 fetch. Only the repeated-fetch boundary commits RAM, indirect
+AR/ARP, stack-bottom, and retirement state. A self-modifying TBLW test proves
+that the first PC+1 word is discarded and the rewritten word is fetched and
+executed. The explicit native interface exposes program writes separately
+from I/O writes. Figure 2-12's basic
 EINT/protected-instruction/dummy/vector path now has explicit ownership,
 including stalls and deferred vector execution. MPY and MPYK in the protected
 slot now have explicit extension through one additional instruction, including
 signed products, bus shape, stalls, and post-following return-PC ownership.
-The complete arrival matrix remains core-only evidence. Other multicycle and
-table pipeline integration remains absent; do not
+The complete arrival matrix remains core-only evidence. Other multicycle
+pipeline integration remains absent; do not
 generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover

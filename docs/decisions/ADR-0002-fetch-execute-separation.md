@@ -37,8 +37,8 @@ The first implementation was the standalone synthesizable
 `tms32010_fetch_execute` register. The
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
 the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`,
-the six accumulator-conditional branches, and exact `IN`/`OUT` execution
-ownership. It also maps Figure 2-12's qualified interrupt path by discarding
+the six accumulator-conditional branches, exact `IN`/`OUT`, and exact
+`TBLR`/`TBLW` execution ownership. It also maps Figure 2-12's qualified interrupt path by discarding
 N+2, emptying the execute slot during entry, and capturing vector 2. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
@@ -79,6 +79,13 @@ their execution intervals to the explicit pipeline.
   owns the executable PC+1 prefetch. The port word is sampled or held at the
   first falling boundary, while retirement and replacement occur only at the
   second.
+- `TBLR` and `TBLW` retain their execute slot across Figure 2-10's three
+  execution intervals. The first PC+1 fetch is nonexecutable and discarded,
+  the second interval reads or writes program space at the captured
+  `ACC[11:0]` address, and the third repeats the PC+1 fetch. RAM, indirect
+  address, stack-bottom, retirement, and execute-slot replacement effects
+  occur only at that repeated-prefetch boundary. Program writes are exposed
+  separately from I/O writes.
 - An interrupt-protected instruction may complete while its concurrent N+2
   program read is classified as a dummy. Entry then executes in an empty slot
   while vector 2 is fetched; vector execution is deferred to the next fetch.

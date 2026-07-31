@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 21 native bus/phase tests, including eleven explicit pipeline tests;
+  tests; 22 native bus/phase tests, including twelve explicit pipeline tests;
   one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -35,9 +35,9 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,129 generic cells with 78 retained checks and
+  independently passes at 15,365 generic cells with 103 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
-  IN/OUT/interrupt integration;
+  IN/OUT/TBLR/TBLW/interrupt integration;
   this is not a
   Quartus fit or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -261,11 +261,16 @@
   until the following interval; MPY and MPYK in that protected slot now have
   explicit tests for signed products, internal-read versus program-only bus
   shape, independent stalls, one additional retirement, dummy discard,
-  post-following stacked PC, vector capture, and deferred vector execution
+  post-following stacked PC, vector capture, and deferred vector execution;
+  the explicit table pipeline now retains TBLR/TBLW through discarded PC+1,
+  ACC-addressed MEN/WE transfer, and repeated PC+1 intervals, committing
+  RAM/AR/ARP/stack/retirement state only on the repeated fetch; a
+  self-modifying TBLW test proves the old PC+1 word is discarded and only the
+  rewritten word executes
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
-  branches, exact IN/OUT, the basic interrupt path, and MPY/MPYK interrupt
-  extension; table ownership, the complete explicit multicycle arrival
+  branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
+  MPY/MPYK interrupt extension; the complete explicit multicycle arrival
   matrix, and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
@@ -279,9 +284,8 @@
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
 - **Next task:** continue `CTRL-002` by transferring the represented
-  multicycle arrival matrix into the explicit pipeline, or
-  advance `BUS-001` by integrating the already primary-qualified TBLR/TBLW
-  repeated-prefetch ownership; extend `FORMAL-001` only with bounded cases
+  multicycle arrival matrix into the explicit pipeline; extend `FORMAL-001`
+  only with bounded cases
   whose architectural ordering is already documented; preserve the
   distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing;
@@ -294,4 +298,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c3f4e1d`
+  `920d9b2`

@@ -25,8 +25,9 @@ corresponding boundary via dummy, table-transfer, and repeated-prefetch
 intervals. The legacy phase wrapper preserves those external transactions and
 numeric totals but attaches retirement to fetch samples without a distinct
 execute slot. Only the sequential one-cycle subset, exact
-`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six accumulator branches currently
-have explicit fetch/execute ownership
+`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, the six accumulator branches, exact
+`IN`/`OUT`, and exact `TBLR`/`TBLW` currently have explicit fetch/execute
+ownership
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for source cycle labels; VERIFIED_SIMULATION
@@ -143,12 +144,21 @@ stack-bottom duplication at the table-transfer sample rather than retaining
 an explicit execute slot through the repeated prefetch. Tests stall both the
 discarded-prefetch and table phases, while differential tests compare the
 ordered program addresses, direction, numeric total, RAM, stack, and TBLW
-program mutation
+program mutation.
+
+The explicit-pipeline test retains the table opcode through all three
+execution intervals. The first PC+1 fetch is nonexecutable, the transfer
+interval owns TBLR MEN or TBLW WE at `ACC[11:0]`, and the repeated PC+1 MEN
+read completes the instruction and fills the execute slot. TBLR RAM,
+indirect AR/ARP, stack-bottom, and retirement effects are deferred to that
+last boundary. Each interval is independently stalled; a self-modifying TBLW
+case overwrites PC+1 during the transfer and proves that the repeated new word,
+not the discarded old word, is later executed
 [ti-tms32010-users-guide-spru001b, §2.8.2, Table 3-2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17, 3-7, and 3-64–3-67
 (PDF pp. 41, 57, and 114–117)]. **Confidence: VERIFIED_PRIMARY for source
-transactions and numeric total; VERIFIED_SIMULATION for legacy bus order;
-explicit pipeline ownership unqualified.**
+transactions and numeric total; VERIFIED_SIMULATION for legacy bus order and
+explicit pipeline ownership.**
 
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,

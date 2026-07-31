@@ -74,6 +74,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   the mutually exclusive DEN/WE transfer at the encoded port, cycle 2
   prefetches PC+1 under MEN, and retirement/capture occurs only at that
   following-prefetch boundary.
+- Explicit TBLR/TBLW pipeline ownership from primary Figure 2-10: cycle 1
+  discards PC+1, cycle 2 transfers program space at captured `ACC[11:0]`
+  under MEN or WE, and cycle 3 repeats PC+1 before architectural retirement
+  and execute-slot replacement. Separate program-write direction/data outputs
+  keep TBLW distinct from OUT.
 - Explicit Figure 2-12 interrupt ownership for the qualified EINT path:
   protected execution discards N+2, entry uses an empty execute slot while
   fetching vector 2, and vector execution waits for the following interval.
@@ -670,16 +675,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   explicit sequencer assumptions; its cover reaches the complete
   prime/stall/replace/flush/target path at step 7.
 - Yosys 0.67+111 synthesizes the
-  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/interrupt sequential
-  pipeline wrapper to 15,129 generic cells with 78 retained checks and zero
-  structural errors;
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
+  sequential pipeline wrapper to 15,365 generic cells with 103 retained
+  checks and zero structural errors;
   `make synth-yosys` now reproducibly runs this top as well as the unchanged
   13,514-cell/26-check legacy harness.
 - Directed pipeline tests prove that fetch 0 does not retire, fetch and execute
   addresses remain one word apart across stalls, every word in the qualified
   one-cycle stream matches legacy architectural state at one-retirement
-  offset, unsupported TBLR cannot enter the qualified execution path, and
-  reset recovers the parked pipeline.
+  offset, an unsupported control word cannot enter the qualified execution
+  path, and reset recovers the parked pipeline.
 - A directed B pipeline test proves operand nonexecution, retained B ownership,
   redirected target fetch, two execution intervals, target-fetch stall
   stability, no early target effect, target execution in the following
@@ -712,6 +717,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   stalls in both execution intervals, no early RAM or AR/ARP mutation,
   following-word effect deferral, and invalid-address parking before any
   native transaction.
+- A directed TBLR/TBLW pipeline test proves retained execute ownership across
+  all three Figure 2-10 intervals, mutually exclusive MEN/WE activity,
+  independent stalls, deferred RAM/AR/ARP/stack/retirement effects, and a
+  self-modifying TBLW whose discarded old PC+1 word never executes.
 - A directed interrupt pipeline test proves masked-request retention through
   B/EINT, protected-instruction retirement, stalled N+2 discard, stalled
   vector fetch without early stack push, return-PC entry state, and deferred
@@ -721,9 +730,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 21
-  native bus/phase tests including eleven pipeline tests, five interrupt
-  RTL/phase tests, one 512-step seeded
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 22
+  native bus/phase tests including twelve explicit pipeline tests, five
+  interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
   one focused interrupt-entry differential.

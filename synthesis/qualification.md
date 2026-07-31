@@ -105,14 +105,16 @@ generic Yosys synthesis does not map it to a target DSP resource.
 The second checked-in script directly synthesizes
 `tms32010_sequential_pipeline_slice`. After exact B, BANZ, BV, BIOZ, CALL, and
 the six accumulator branches, plus exact IN/OUT transfer and
-following-prefetch ownership and the basic Figure 2-12 interrupt path, it
-passes both structural checks with zero reported problems, retains 78 RTL
-checks, and contains 15,129 generic cells. This is 94 cells and 11 checks
-above the IN/OUT 15,035-cell/67-check checkpoint and 351 cells/29 checks
-above the exact-CALL
-14,778-cell/49-check checkpoint, 414 cells/31 checks above the exact-BIOZ
-14,715-cell/47-check checkpoint, 853 cells/36 checks above the exact-B/BANZ
-14,276-cell/42-check checkpoint, and 1,189 cells/46 checks above the
+following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
+transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
+path, it passes both structural checks with zero reported problems, retains
+103 RTL checks, and contains 15,365 generic cells. This is 236 cells and 25
+checks above the pre-table 15,129-cell/78-check checkpoint, 330 cells and 36
+checks above the IN/OUT 15,035-cell/67-check checkpoint, 587 cells/54 checks
+above the exact-CALL 14,778-cell/49-check checkpoint, 650 cells/56 checks
+above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,089 cells/61 checks
+above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,425 cells/71
+checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
 instruction-complete resource estimate.

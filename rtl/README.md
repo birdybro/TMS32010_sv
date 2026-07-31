@@ -83,11 +83,18 @@ and vector stalls prove retirement, stack push, and vector effects occur only
 at their owning boundaries. If MPY or MPYK occupies that protected slot, the
 wrapper retains protection through one additional instruction; directed tests
 cover both signed products, internal-read versus program-only activity,
-stalls, dummy discard, and the post-following stacked PC. Other
-multicycle, reserved, or invalid-address execute words park the wrapper at
+stalls, dummy discard, and the post-following stacked PC.
+The explicit wrapper also retains TBLR/TBLW through Figure 2-10's discarded
+PC+1 read, ACC-addressed program transfer, and repeated PC+1 read. TBLR
+caches program data at the transfer boundary; TBLW asserts separate
+`program_write_o`/`program_write_data_o` outputs while `we_n_o` is low.
+RAM/AR/ARP/stack effects and retirement occur only when the repeated PC+1
+word is captured. Directed stalls cover all three intervals, and a
+self-modifying TBLW case proves that only the rewritten repeated fetch
+executes. Other multicycle, reserved, or invalid-address execute words park
+the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
-mechanism, not claimed hardware behavior. Table overlap remains in the legacy
-wrapper and is not pipeline-integrated.
+mechanism, not claimed hardware behavior.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one

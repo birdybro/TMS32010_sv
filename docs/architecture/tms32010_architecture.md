@@ -206,9 +206,11 @@ MPY or MPYK is now tested in the model and RTL, including the case where the
 multiply itself occupies the already-pipelined protected slot.
 IN and OUT each execute as an opcode read followed by a distinct I/O cycle.
 TBLR and TBLW execute as an opcode read, a discarded PC+1 read, and an
-ACC-addressed program-space transfer; their third-cycle state, internal-RAM
-effect, indirect updates, stack-bottom duplication, and repeated PC+1 fetch
-are directed-tested.
+ACC-addressed program-space transfer before repeating PC+1. The explicit
+pipeline retains table ownership through that repeated fetch and commits its
+internal-RAM, indirect-update, stack-bottom, and retirement effects only
+there; a self-modifying TBLW case verifies that the discarded old word never
+executes.
 This is partial RTL support only.
 The sequential native-phase wrapper covers qualified normal program reads,
 two-cycle control flow, I/O cycles, and table-transfer reads/writes.

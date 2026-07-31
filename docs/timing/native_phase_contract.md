@@ -32,7 +32,7 @@ TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
 only for sequential one-cycle instructions, exact
 `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, the six accumulator branches, and exact
-`IN`/`OUT`
+`IN`/`OUT` and `TBLR`/`TBLW`
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -123,9 +123,20 @@ repeated next-instruction prefetch. A low FPGA clock enable holds every active
 table phase, address, strobe, write datum, pending operation, and
 architectural state. `sim/bus/tb_table_transfer_phase.sv` asserts the bus
 rows, including `MEN`/`DEN`/`WE` exclusivity and the repeated following
-address; explicit execute ownership remains unqualified.
+address.
+
+The explicit wrapper retains the table opcode in its execute slot across the
+discarded, transfer, and repeated-prefetch intervals. It samples TBLR program
+data or completes the externally visible TBLW write at the transfer boundary,
+but defers TBLR RAM commit, indirect AR/ARP changes, stack-bottom duplication,
+retirement, and execute-slot replacement until the repeated PC+1 fetch
+completes. `program_write_o` and `program_write_data_o` distinguish TBLW from
+I/O writes. `sim/bus/tb_sequential_pipeline_table.sv` independently stalls
+all three intervals, checks exact MEN/WE ownership, and overwrites PC+1 with
+TBLW to prove that the discarded old word cannot execute.
 **Confidence: VERIFIED_PRIMARY for the logical waveform;
-VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
+VERIFIED_SIMULATION for both legacy bus order and explicit execute ownership;
+VERIFIED_HARDWARE is not claimed.**
 
 ## I/O reads and writes
 

@@ -179,6 +179,8 @@ module tb_sequential_pipeline_differential;
     .men_n_o                       (),
     .den_n_o                       (),
     .we_n_o                        (),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .sample_o                      (pipeline_sample),
     .bus_active_o                  (),
     .execute_valid_o               (pipeline_execute_valid),
@@ -294,7 +296,7 @@ module tb_sequential_pipeline_differential;
     program_memory[40] = 16'h6400;  // SUBC 0
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
     program_memory[42] = 16'h6203;  // SUBH 3
-    program_memory[43] = 16'h6700;  // unsupported TBLR boundary
+    program_memory[43] = 16'h7f83;  // unsupported boundary
 
     initialize         = 1'b1;
     rs                 = 1'b1;
@@ -357,15 +359,15 @@ module tb_sequential_pipeline_differential;
 
     require(
       pipeline_blocked &&
-      pipeline_execute_word == 16'h6700 &&
+      pipeline_execute_word == 16'h7f83 &&
       !pipeline_illegal,
-      "pipeline parks on unsupported TBLR without executing it"
+      "pipeline parks on an unsupported word without inventing behavior"
     );
     require(
-      !legacy_illegal &&
+      legacy_illegal &&
       !legacy_retired &&
-      legacy_cycle_count == 32'd44,
-      "legacy slice enters qualified branch cycle one without retirement"
+      legacy_cycle_count == 32'd43,
+      "legacy slice rejects the same unsupported boundary without retirement"
     );
 
     $display("PASS tb_sequential_pipeline_differential");

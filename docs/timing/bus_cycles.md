@@ -50,12 +50,13 @@ boundary, and writes it to the already-resolved old data-memory address.
 `OUT` reads that internal word, drives it during address setup, and asserts
 only `WE` through the falling boundary. The following normal read uses opcode
 PC+1 and completes the second documented execution interval. The legacy
-wrapper applies indirect AR/ARP updates and retirement at the port sample;
-explicit execute ownership through the following prefetch remains unqualified
+wrapper applies indirect AR/ARP updates and retirement at the port sample.
+The explicit wrapper instead holds those architectural effects and execute
+ownership through the following prefetch
 [ti-tms32010-users-guide-spru001b, Table 3-2, `IN`/`OUT`, and Appendix A
 timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
 (PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for the
-waveform; VERIFIED_SIMULATION for legacy bus order.**
+waveform; VERIFIED_SIMULATION for legacy bus order and explicit ownership.**
 
 Directed native testing separately holds active `DEN` and `WE` phases with
 the FPGA clock enable low and requires phase, address, strobe, PC, and cycle
@@ -75,21 +76,26 @@ sample the legacy wrapper applies indirect AR/ARP updates, duplicates old
 stack level 2 into the bottom after the documented temporary push/pop, and
 retires. The following normal read returns to PC+1 and completes the third
 documented execution interval, so even a TBLW that overwrites that address
-changes the word subsequently executed. Explicit execute ownership through
-that repeated prefetch remains unqualified
+changes the word subsequently executed. The explicit wrapper instead retains
+the table instruction until that repeated read completes; only then does it
+commit RAM, AR/ARP, stack-bottom, retirement, and execute-slot replacement.
+Its separate `program_write_o`/`program_write_data_o` outputs identify TBLW
+without conflating it with an I/O write
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10,
 `TBLR`/`TBLW`, and Appendix A table timing, printed pp. 2-17 and
 3-64–3-67 plus data-sheet pp. 15–16
 (PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY for the
-waveform; VERIFIED_SIMULATION for legacy bus order.**
+waveform; VERIFIED_SIMULATION for legacy bus order and explicit ownership.**
 
 Directed native testing holds both the discarded `MEN` phase and active table
 `MEN`/`WE` phases under a low FPGA clock enable and requires phase, address,
 strobe, write data, PC, cycle count, and pending state to remain stable. The
 focused differential independently compares all three external program
 transactions, internal RAM direction, stack state, and final program-memory
-mutation. These tests validate logical phases, not analog delay or arbitrary
-physical-device clock stoppage.
+mutation. The explicit test additionally stalls each interval, checks
+deferred architectural commit, and uses self-modifying TBLW to prove the
+discarded word never enters execution. These tests validate logical phases,
+not analog delay or arbitrary physical-device clock stoppage.
 
 Figure 2-12 now establishes the interrupt program-read order. After a request
 becomes active during fetch N, program space reads N, N+1, a dummy N+2, and

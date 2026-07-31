@@ -399,6 +399,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_bioz.sv`,
   `sim/bus/tb_sequential_pipeline_call.sv`,
   `sim/bus/tb_sequential_pipeline_io.sv`,
+  `sim/bus/tb_sequential_pipeline_table.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
@@ -417,11 +418,12 @@ objective passing evidence.
   enabled falling boundary completes a DEN read or WE write, commits the
   internal RAM effect and indirect AR/ARP update, advances PC, and retires.
   Program MEN is suppressed throughout that I/O cycle.
-  TBLR/TBLW use a three-cycle pending state: the opcode sample captures
-  ACC[11:0] and the old RAM address, the second MEN cycle discards PC+1, and
-  the third cycle performs a MEN table read or WE table write. Retirement,
-  indirect updates, and the documented final stack-bottom duplication occur
-  only on the table sample; the next program cycle repeats PC+1.
+  The legacy wrapper gives TBLR/TBLW a three-cycle pending state and preserves
+  the discarded PC+1, table transfer, and repeated PC+1 bus order. Its
+  retirement remains attached to the table sample. The explicit wrapper
+  instead retains the table opcode through all three Figure 2-10 execution
+  intervals and commits RAM, indirect AR/ARP, documented stack-bottom, and
+  retirement effects only at the repeated-prefetch boundary.
   Interrupt control now includes active-low request latching, one-instruction
   pipeline deferral, MPY/MPYK extension, a non-retiring return-PC dummy read,
   stack entry, mask/flag acknowledge effects, and vector-2 selection.
@@ -448,7 +450,7 @@ objective passing evidence.
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
   it to the core for reset priming, decoded one-cycle operation families, and
   exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional
-  branches, plus exact IN/OUT execution ownership. All branches retain
+  branches, plus exact IN/OUT and TBLR/TBLW execution ownership. All branches retain
   execute ownership across a nonexecutable PC+1 operand
   fetch and the selected target/fallthrough-instruction fetch, retire only as
   that instruction enters the execute slot, and cannot apply its effects until
@@ -477,14 +479,19 @@ objective passing evidence.
   IN data, hold OUT data, prove no early RAM/AR/ARP or following-word effect,
   enforce native-strobe exclusivity, and park invalid addresses before any
   transaction.
+  TBLR/TBLW keep the execute slot through the nonexecutable discarded PC+1
+  MEN read, ACC-addressed MEN/WE transfer, and repeated PC+1 MEN read. The
+  explicit program-write direction/data outputs distinguish TBLW from OUT.
+  Directed stalls prove no early state change, and a self-modifying TBLW
+  proves that only the rewritten repeated word is captured and executed.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
-  parking on unsupported `TBLR`, and reset recovery. An offset differential
+  parking on an unsupported control word, and reset recovery. An offset differential
   runs the full existing 43-word/38-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
   and illegal state after every pipelined retirement. Figure 2-12's basic
   EINT/protected/dummy/vector path now has explicit ownership with stalls and
-  deferred vector execution. Table pipeline integration remains absent.
+  deferred vector execution.
 
 ## Milestone 9 — Program-memory interface
 
@@ -500,7 +507,9 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/external_interface.md`,
   `docs/timing/bus_cycles.md`
 - **Tests:** `sim/bus/tb_program_bus_phase.sv`,
-  `sim/bus/tb_phase_slice_integration.sv`
+  `sim/bus/tb_phase_slice_integration.sv`,
+  `sim/bus/tb_table_transfer_phase.sv`,
+  `sim/bus/tb_sequential_pipeline_table.sv`
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
@@ -521,16 +530,18 @@ objective passing evidence.
   IN/OUT additionally retain execute ownership through Figure 2-9's distinct
   transfer and following-prefetch intervals, including independent stalls,
   mutually exclusive DEN/WE then MEN, sampled/held data, retirement-only
-  state commit, and fetched-word effect deferral. TBLR/TBLW verify
-  opcode and discarded MEN reads, captured ACC address, third-cycle MEN/WE
-  ownership, RAM and program-write data, stack-bottom transformation, stalls,
-  and the repeated PC+1 address. Interrupt testing adds Figure 2-12's
+  state commit, and fetched-word effect deferral. TBLR/TBLW additionally
+  retain explicit execute ownership across the discarded MEN read, captured
+  ACC-addressed MEN/WE transfer, and repeated PC+1 MEN read. Tests cover
+  independent stalls, RAM/program-write data, deferred AR/ARP/stack/retirement
+  commit, and a self-modifying TBLW whose rewritten word is the only one
+  captured. Interrupt testing adds Figure 2-12's
   protected instruction, return-PC dummy read, and vector-2 read. A 32-case
   logical-core matrix tests each represented multicycle arrival boundary;
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
-  indirect-call/return, pipeline ownership for table operations,
+  indirect-call/return,
   exhaustive explicit interrupt ownership, and unsupported CALA/RET/PUSH/POP
   cycles
   remain. Do not collapse Harvard
@@ -1055,8 +1066,9 @@ objective passing evidence.
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
   harness (13,514 generic cells/26 checks) and the
-  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/interrupt pipeline slice
-  (15,129 cells/78 checks), each with zero structural problems. Full-core
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
+  pipeline slice (15,365 cells/103 checks), each with zero structural
+  problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 

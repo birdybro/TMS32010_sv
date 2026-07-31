@@ -40,8 +40,10 @@ cells and 43 retained checks. With exact BV integrated, the
 checkpoint was 14,567 generic cells and 44 retained checks. With exact BIOZ
 integrated, the checkpoint was 14,715 generic cells and 47 retained checks.
 With the basic Figure 2-12 interrupt path integrated, the current checkpoint
-is 15,129 generic cells, 78 retained checks, and zero structural-check
-problems.
+was 15,129 generic cells and 78 retained checks. With exact TBLR/TBLW
+discarded-prefetch, program-transfer, and repeated-prefetch ownership, the
+current checkpoint is 15,365 generic cells, 103 retained checks, and zero
+structural-check problems.
 
 ## Quartus
 

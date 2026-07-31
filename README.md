@@ -75,14 +75,19 @@ branch/call pin waveform has been located. Figure 2-9 directly defines the
 I/O mapping: cycle 1 asserts only DEN or WE at the encoded port, cycle 2
 fetches PC+1 under MEN, and IN/OUT retires as that word enters the execute
 slot. Both intervals are independently stallable, IN data is sampled at the
-port boundary, and OUT data remains stable through it. The wrapper parks on
-unsupported TBLR. Figure 2-12 interrupt ownership is now integrated for the
+port boundary, and OUT data remains stable through it. Figure 2-10 table
+ownership is also integrated: TBLR/TBLW retain the execute slot through the
+discarded PC+1 prefetch, ACC-addressed program transfer, and repeated PC+1
+prefetch. Only the repeated-prefetch boundary commits RAM, AR/ARP,
+stack-bottom, and retirement effects. TBLW uses explicit program-write
+direction/data outputs, and a self-modifying test proves that only the
+rewritten repeated fetch executes. Figure 2-12 interrupt ownership is now
+integrated for the
 qualified path: one protected instruction executes while N+2 is fetched but
 discarded, vector 2 is fetched during a nonexecuting entry interval, and only
 the following interval executes it. MPY and MPYK in the protected slot defer
 that entry until one additional instruction retires; directed tests verify
-both products, bus shapes, stalls, and the resulting return PC. Table
-ownership remains unintegrated.
+both products, bus shapes, stalls, and the resulting return PC.
 Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.

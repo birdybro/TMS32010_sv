@@ -2188,9 +2188,9 @@
       "documented_cycle_count": 3,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word TBLR opcode with MEN active"},
-        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "second machine cycle reads the following instruction address with MEN active but discards the input word"},
-        {"space": "program", "operation": "table_read", "count": 1, "phase_detail": "third machine cycle drives ACC[11:0], asserts MEN, and samples the program word into internal data memory; the following machine cycle fetches the discarded address again"}
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "the opcode-prefetch boundary reads the one-word TBLR opcode with MEN active"},
+        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "execution cycle 1 reads the following instruction address with MEN active but discards the input word"},
+        {"space": "program", "operation": "table_read", "count": 1, "phase_detail": "execution cycle 2 drives ACC[11:0], asserts MEN, and samples the program word into internal data memory; execution cycle 3 fetches the discarded address again"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.8.2, Figure 2-10, Table 3-2, and TBLR instruction description", "printed_page": "2-17, 3-7, and 3-64 through 3-65", "pdf_page": "41, 57, and 114 through 115"},
@@ -2240,9 +2240,9 @@
       "documented_cycle_count": 3,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word TBLW opcode with MEN active"},
-        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "second machine cycle reads the following instruction address with MEN active but discards the input word"},
-        {"space": "program", "operation": "table_write", "count": 1, "phase_detail": "third machine cycle drives ACC[11:0] and the selected data word and asserts WE; the following machine cycle fetches the discarded address again"}
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "the opcode-prefetch boundary reads the one-word TBLW opcode with MEN active"},
+        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "execution cycle 1 reads the following instruction address with MEN active but discards the input word"},
+        {"space": "program", "operation": "table_write", "count": 1, "phase_detail": "execution cycle 2 drives ACC[11:0] and the selected data word and asserts WE; execution cycle 3 fetches the discarded address again"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.8.2, Figure 2-10, Table 3-2, and TBLW instruction description", "printed_page": "2-17, 3-7, and 3-66 through 3-67", "pdf_page": "41, 57, and 116 through 117"},

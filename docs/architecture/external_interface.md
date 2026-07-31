@@ -40,7 +40,8 @@ internal logical reads, while `SACL`, `SACH`, and `SAR` expose writes,
 without changing the physical `MEN` activity from a normal program fetch.
 IN/OUT instead replace the second-cycle address with the port and assert
 `DEN` or `WE`. Table transfers and the Figure 2-12 interrupt program-read
-order are also qualified below. Remaining instructions and general
+order are also qualified below; the explicit wrapper now owns both I/O and
+table execution intervals. Remaining instructions and general
 fetch/execute overlap are not complete.
 
 The explicit pipeline prefetches `BANZ` at opcode PC, then reads its canonical
@@ -262,23 +263,28 @@ trap-before-effects, while the focused differential compares model and RTL
 cycles, transactions, state, and final RAM. The core exposes no READY input
 because the original pinout contains none.
 
-For `TBLR` and `TBLW`, the opcode is read at PC under `MEN` in cycle 1 and
-PC advances to PC+1 without retirement. Cycle 2 performs another full `MEN`
-read at PC+1, but its input is discarded. In cycle 3,
-`program_address_o` changes to the captured low 12 ACC bits. TBLR asserts
-`program_read_o`/`MEN`, samples `program_data_i`, and writes the selected
-internal-RAM word. TBLW asserts `program_write_o`/`WE` and drives
-`program_write_data_o` from that RAM word. `DEN` is inactive throughout.
-Indirect updates and the table instruction retire only at the cycle-3
-falling boundary; the following phase-zero address returns to PC+1
+For `TBLR` and `TBLW`, the opcode prefetch at PC enters the execute slot.
+Execution cycle 1 performs a full `MEN` read at PC+1 but classifies its input
+as nonexecutable and discards it. Execution cycle 2 changes
+`program_address_o` to the captured low 12 ACC bits. TBLR asserts `MEN` and
+samples `program_data_i`; TBLW asserts the distinct `program_write_o` while
+`WE` is active and drives `program_write_data_o` from the old resolved RAM
+word. `DEN` is inactive throughout. Execution cycle 3 repeats the full
+`MEN` read at PC+1. Only that repeated-fetch falling boundary commits the
+TBLR RAM word, indirect AR/ARP changes, documented stack-bottom duplication,
+retirement, and execute-slot replacement
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10,
 `TBLR`/`TBLW`, and Appendix A table timing, printed pp. 2-17 and
 3-64–3-67 plus data-sheet pp. 15–16
 (PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY.**
 
-`sim/bus/tb_table_transfer_phase.sv` checks the opcode, discarded, table,
-and repeated-following phases, all strobe combinations, clock-enable holds,
-read/write data, and retirement. `sim/instruction/tb_table_transfers_rtl.sv`
+`sim/bus/tb_table_transfer_phase.sv` checks the legacy opcode, discarded,
+table, and repeated-following phases, all strobe combinations, clock-enable
+holds, read/write data, and bus order.
+`sim/bus/tb_sequential_pipeline_table.sv` checks explicit execute ownership,
+independent stalls in all three execution intervals, deferred state commit,
+and a self-modifying TBLW whose repeated PC+1 fetch observes and executes the
+new word. `sim/instruction/tb_table_transfers_rtl.sv`
 checks direct/indirect data addressing and stack effects; the focused
 differential additionally validates final RAM and program-memory contents.
 

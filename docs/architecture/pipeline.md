@@ -77,7 +77,17 @@ both I/O strobes and fetches PC+1 under MEN. IN samples the live external
 word at the cycle-1 falling boundary; OUT holds the old resolved RAM word
 through that boundary. Architectural RAM/AR/ARP effects, retirement, and
 replacement with PC+1 occur only at the cycle-2 boundary, so the captured
-following instruction cannot execute early. Figure 2-12 is mapped explicitly
+following instruction cannot execute early. `TBLR` and `TBLW` retain the
+execute slot across Figure 2-10's three execution intervals. Cycle 1 fetches
+PC+1 under MEN but marks it nonexecutable and discards it. Cycle 2 addresses
+program space with the captured `ACC[11:0]`; TBLR samples a program word
+under MEN, whereas TBLW drives the old resolved RAM word under WE. Cycle 3
+repeats the PC+1 MEN read. Only that last boundary commits TBLR RAM data,
+indirect AR/ARP changes, documented stack-bottom duplication, retirement, and
+replacement with the repeated word. Stalls hold all addresses, strobes, data,
+and architectural state. A self-modifying TBLW test proves that the first
+PC+1 input is discarded and the rewritten repeated word is the one captured
+and later executed. Figure 2-12 is mapped explicitly
 for the qualified interrupt path: the protected instruction retains execute
 ownership while N+2 is read under MEN but marked nonexecutable; its boundary
 empties the slot and selects vector 2. Entry pushes the resolved return PC
@@ -100,6 +110,7 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_bioz.sv`,
 `sim/bus/tb_sequential_pipeline_call.sv`,
 `sim/bus/tb_sequential_pipeline_io.sv`,
+`sim/bus/tb_sequential_pipeline_table.sv`,
 `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
 `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
@@ -107,13 +118,12 @@ state one retirement apart
 This wrapper is intentionally a qualification slice. It parks at phase zero
 when the execute slot contains any other multicycle, reserved, or
 invalid-address word; it does not claim that parking is TMS32010 hardware
-behavior. The legacy phase wrapper retains the separately verified bus order
-for the remaining table sequences until those states are
-reworked around explicit pipeline ownership. **Confidence:
+behavior. **Confidence:
 VERIFIED_PRIMARY for the required overlap; INFERRED for exact
 B/BANZ/BV/BIOZ/CALL/accumulator-branch interval ownership because no
 dedicated branch/call waveform has been located; VERIFIED_PRIMARY for the
-IN/OUT interval mapping in §2.8.1 and Figure 2-9; implementation behavior
+IN/OUT and TBLR/TBLW interval mappings in §§2.8.1–2.8.2 and Figures 2-9–2-10;
+implementation behavior
 VERIFIED_PRIMARY for Figure 2-12 interrupt ownership; VERIFIED_SIMULATION
 only within this stated slice.**
 
@@ -134,14 +144,11 @@ gate topology.
 ## Unresolved sequences
 
 Normal read, table, I/O, and reset pin sequences are transcribed in
-`docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
+`docs/timing/native_phase_contract.md`. Their bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
 one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
-accumulator branches, plus `IN`/`OUT`:
+accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 
-- TBLR and TBLW retain the primary opcode prefetch, discarded PC+1 read,
-  ACC-addressed table transfer, and repeated PC+1 read bus order but not yet
-  explicit execute-slot ownership through the repeated-prefetch boundary;
 - CALA and RET have model-qualified state/cycle behavior but externally
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);

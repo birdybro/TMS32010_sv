@@ -47,6 +47,8 @@ module tb_sequential_pipeline_interrupt;
     .men_n_o                       (men_n),
     .den_n_o                       (den_n),
     .we_n_o                        (we_n),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .sample_o                      (sample),
     .bus_active_o                  (bus_active),
     .execute_valid_o               (execute_valid),

@@ -473,11 +473,11 @@ are unchanged
 (PDF pp. 114–117); ti-tms32010-assembly-guide-spru002b, `TBLR`/`TBLW`,
 printed pp. 3-64–3-67 (PDF pp. 85–88)]. **Confidence: VERIFIED_PRIMARY.**
 
-Both are one-word, three-cycle instructions. Cycle 1 reads the opcode under
-`MEN`; cycle 2 reads the following instruction address under `MEN` but
-discards the word; cycle 3 drives `ACC[11:0]` and either reads under `MEN`
-for TBLR or writes under `WE` for TBLW. The following normal program cycle
-then fetches the discarded address again. The temporary documented
+Both are one-word, three-cycle instructions. The opcode prefetch boundary
+places the table word in execution. Execution cycle 1 reads the following
+instruction address under `MEN` but discards the word; execution cycle 2
+drives `ACC[11:0]` and either reads under `MEN` for TBLR or writes under `WE`
+for TBLW; execution cycle 3 fetches the discarded address again. The temporary documented
 PC-to-stack, ACC-to-PC, and stack-to-PC sequence has a visible final stack
 effect: the old bottom is lost, the old level-2 value is duplicated into the
 bottom, and the upper three entries remain unchanged
@@ -491,7 +491,10 @@ Directed model, RTL, native-phase, and differential tests cover both
 directions, all three cycles, the repeated following address, program-memory
 mutation, direct and indirect RAM addressing, AR/ARP post-modification,
 clock-enable stalls, mutually exclusive `MEN`/`WE`, and the stack-bottom
-transformation. Unresolved data addresses trap before the discarded prefetch
+transformation. The explicit-pipeline test retains the table word through all
+three execution intervals, defers RAM/AR/ARP/stack/retirement effects until
+the repeated-prefetch boundary, and uses a self-modifying TBLW to prove the
+discarded old word cannot execute. Unresolved data addresses trap before the discarded prefetch
 or stack effect under the project's provisional `OQ-002` policy. Pinned MAME
 independently agrees on data direction, three-cycle totals, and the final
 stack-bottom duplication, but is not used as pin-timing proof
