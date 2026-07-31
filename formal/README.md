@@ -65,8 +65,33 @@ control path and held-low relatching at the stated bound. It does not prove
 data-memory MPY, arbitrary instruction placement, repeated multiply chains,
 or every interrupt arrival point.
 
-Both harnesses leave DINT ordering, multicycle arrival positions, RET, the
-complete fetch/execute pipeline, and electrical timing to simulation/research
-or future formal work under `CTRL-002`, `FORMAL-001`, `OQ-004`, and `OQ-019`.
+## Data-memory MPY and repeated-chain harness
+
+`tms32010_interrupt_multiply_chain.sby` checks a third fixed actual-core
+program with a 20-step BMC and cover. Three initialization cycles use the
+explicit nonarchitectural debug port to preload data words `0x8000`, `0x0002`,
+and `0xffff`; this is a formal-fixture convenience, not a physical reset or
+RAM-initialization claim. The program then:
+
+1. loads `T=0x8000` through direct `LT`;
+2. executes EINT and samples a request during the following NOP;
+3. executes direct `MPY 1`, `MPYK -2`, and direct `MPY 2` as a repeated
+   multiply chain;
+4. executes one final protected `LACK 0x55`; and
+5. performs the return-PC dummy fetch and vector entry.
+
+Assertions check both data-memory reads and addresses, all three signed product
+results (`0xffff0000`, `0x00010000`, and `0x00008000`), pending retention
+through the chain, final ACC and product preservation, dummy-bus exclusion,
+stack/vector/mask effects, and architectural plus bus-output stability across
+arbitrary clock-enable stalls. The cover reaches completed entry at step 12.
+This qualifies these direct MPY operands and this finite mixed chain only; it
+does not prove indirect MPY address updates, arbitrary chain lengths or
+placements, or every interrupt arrival point.
+
+All three harnesses leave DINT ordering, multicycle arrival positions, RET,
+the complete fetch/execute pipeline, and electrical timing to
+simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
+`OQ-004`, and `OQ-019`.
 No liveness theorem is claimed because arbitrary clock-enable input may remain
 disabled forever; the covers supply non-vacuity evidence for enabled paths.

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** RET architectural/model/tool qualification
+- **Current milestone:** data-memory MPY/repeated-chain formal qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 91 repository/provenance/document/ISA/toolchain tests; 203
   directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
@@ -27,11 +27,14 @@
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
-  12- and 14-step actual-core BMCs across arbitrary clock-enable choices. The
+  12-, 14-, and 20-step actual-core BMCs across arbitrary clock-enable
+  choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
-  held-low request relatching at step 8. This is bounded scenario evidence,
-  not a complete interrupt or core proof.
+  held-low request relatching at step 8; the third deterministic
+  LT/EINT/NOP/MPY/MPYK/MPY/LACK/dummy/vector cover reaches completed entry at
+  step 12 after checking three exact signed products. This is bounded scenario
+  evidence, not a complete interrupt or core proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -175,9 +178,9 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** expand `FORMAL-001` to data-memory MPY and repeated multiply
-  chains, then continue `CTRL-002` with an exhaustive supported-multicycle
-  arrival matrix and research for `OQ-019` plus RET's unresolved external
+- **Next task:** continue `FORMAL-001` with DINT and indirect-MPY/address-update
+  scenarios, then continue `CTRL-002` with an exhaustive
+  supported-multicycle arrival matrix and research for `OQ-019` plus RET's unresolved external
   cycle under `OQ-007`; preserve the distinction between model-qualified RET
   state/cycle behavior and absent native/RTL timing, and between the
   verified Figure 2-12 external address order and the still-collapsed
@@ -191,4 +194,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `b813e7a`
+  `e64e616`

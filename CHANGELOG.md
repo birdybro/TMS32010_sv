@@ -232,6 +232,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A second actual-core formal harness with a 14-step BMC and cover for MPYK
   extending an armed interrupt through its following instruction, followed by
   held-low request relatching after acknowledge.
+- A third actual-core formal harness with a 20-step BMC and cover for
+  deterministic direct data-memory MPY operands, a mixed MPY/MPYK/MPY
+  deferral chain, signed product results, and final interrupt entry.
 - Primary-cited exact `RET=0x7f8d` database/fixture support, assembler and
   disassembler round trips, and directed model tests for the old-TOS PC load,
   four-level pop with old-bottom duplication, two-cycle total, state
@@ -572,6 +575,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   reaches completed vector execution at step 6.
 - The same formal stack passes a 14-step MPYK-extension/held-low-relatch BMC;
   its separate cover reaches the final masked-pending state at step 8.
+- The same formal stack passes a 20-step direct-MPY/repeated-chain BMC across
+  arbitrary clock-enable choices; its cover reaches completed entry at step
+  12 after checking three exact signed products.
 - The complete current regression passes 91 repository/ISA/tool tests, 203
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
@@ -615,10 +621,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.
-- Formal evidence currently covers only two fixed interrupt-entry programs at
-  12- and 14-step bounds. It excludes DINT, data-memory MPY, repeated multiply
-  chains, multicycle arrival positions, RET, the general pipeline, and broad
-  decode/datapath properties.
+- Formal evidence currently covers only three fixed interrupt-entry programs
+  at 12-, 14-, and 20-step bounds. It excludes DINT, indirect MPY/address
+  updates, arbitrary multiply-chain placement/length, multicycle arrival
+  positions, RET, the general pipeline, and broad decode/datapath properties.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.
