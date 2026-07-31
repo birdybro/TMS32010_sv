@@ -402,6 +402,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_table.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -433,7 +434,8 @@ objective passing evidence.
   test now
   asserts falling-boundary request ownership from each modeled subphase,
   including a stalled pre-sample phase, while leaving physical setup/CDC
-  behavior unclaimed. A 32-case core matrix exhausts arrival at every
+  behavior unclaimed. Matching 32-case core and explicit matrices exhaust
+  arrival at every
   represented machine cycle of the 11 supported two-word control-flow
   families, IN, OUT, TBLR, and TBLW. SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
@@ -536,13 +538,14 @@ objective passing evidence.
   independent stalls, RAM/program-write data, deferred AR/ARP/stack/retirement
   commit, and a self-modifying TBLW whose rewritten word is the only one
   captured. Interrupt testing adds Figure 2-12's
-  protected instruction, return-PC dummy read, and vector-2 read. A 32-case
-  logical-core matrix tests each represented multicycle arrival boundary;
+  protected instruction, return-PC dummy read, and vector-2 read. Matching
+  32-case logical-core and explicit-pipeline matrices test each represented
+  multicycle arrival boundary;
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
   indirect-call/return,
-  exhaustive explicit interrupt ownership, and unsupported CALA/RET/PUSH/POP
+  unsupported CALA/RET/PUSH/POP interrupt ownership,
   cycles
   remain. Do not collapse Harvard
   spaces in the native interface.
@@ -659,10 +662,11 @@ objective passing evidence.
   model/RTL/native/differential evidence for masked pulse retention, held-low
   relatching, EINT and MPY/MPYK deferral, multicycle completion, dummy return
   fetch, stack push, internal acknowledge effects, and vector-2 selection.
-  A 32-case directed core matrix now covers active-low arrival at both
+  Matching 32-case directed core and explicit-pipeline matrices now cover
+  active-low arrival at both
   machine-cycle boundaries of all eleven supported two-word control-flow
   families and IN/OUT, plus all three boundaries of TBLR/TBLW. Each case
-  asserts the family-specific logical bus shape, no midinstruction entry,
+  asserts the family-specific logical/native bus shape, no midinstruction entry,
   exactly one protected retirement, the resolved-return-PC dummy fetch, stack
   state, acknowledge effects, and vector-2 selection.
   The model also verifies that EINT protects a following RET long enough to
@@ -672,8 +676,7 @@ objective passing evidence.
   vector effect through independently stalled reads. MPY and MPYK in that
   protected slot now explicitly extend service through one more instruction;
   directed checks cover signed results, internal-read versus program-only bus
-  shape, stalls, dummy discard, return-PC ownership, and vector deferral. The
-  complete multicycle arrival matrix remains legacy/core-only evidence.
+  shape, stalls, dummy discard, return-PC ownership, and vector deferral.
   Physical setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP
   arrival cycles, RTL/native RET behavior, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete
@@ -876,10 +879,11 @@ objective passing evidence.
   asserted through the partial native-phase
   integration. Figure 2-12 interrupt program reads, entry effects, EINT
   deferral, multiply deferral, and a 32-case matrix over every represented
-  cycle of all 15 supported multicycle families are directed-tested. A
+  cycle of all 15 supported multicycle families are directed-tested in both
+  the core and explicit pipeline. A
   four-case native test additionally proves digital falling-boundary ownership
-  from each modeled subphase, including a stalled phase 2, while complete
-  execute overlap, physical setup/CDC, and unsupported CALA/RET/PUSH/POP
+  from each modeled subphase, including a stalled phase 2, while physical
+  setup/CDC and unsupported CALA/RET/PUSH/POP
   arrivals remain.
   BANZ's two-word/two-cycle opcode and following-target
   normal reads, taken/untaken selection, second-cycle stall, and retirement

@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 22 native bus/phase tests, including twelve explicit pipeline tests;
+  tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
   one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -249,7 +249,8 @@
   indirect-MPY case across arbitrary clock-enable stalls, including the old
   selected data address, signed product, low-nine-bit AR decrement with
   upper-bit preservation, ARP replacement, following-instruction protection,
-  dummy entry, stack push, and vector selection; a directed 32-case matrix now
+  dummy entry, stack push, and vector selection; matching directed 32-case
+  core and explicit-pipeline matrices now
   exhausts active-low request arrival at both modeled cycles of the 11
   supported two-word control-flow families and IN/OUT, plus all three modeled
   cycles of TBLR/TBLW, checking family-specific logical bus activity,
@@ -266,12 +267,17 @@
   ACC-addressed MEN/WE transfer, and repeated PC+1 intervals, committing
   RAM/AR/ARP/stack/retirement state only on the repeated fetch; a
   self-modifying TBLW test proves the old PC+1 word is discarded and only the
-  rewritten word executes
+  rewritten word executes; matching core and explicit-pipeline 32-case
+  matrices now cover every
+  represented execution interval of the 11 supported two-word control-flow
+  families, IN/OUT, and TBLR/TBLW, including native strobe ownership,
+  no midinstruction entry, one protected retirement, dummy discard, stack
+  entry, acknowledge state, and vector capture
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
-  MPY/MPYK interrupt extension; the complete explicit multicycle arrival
-  matrix, and physical interrupt setup/synchronizer behavior, CALA/RET
+  MPY/MPYK interrupt extension; physical interrupt setup/synchronizer
+  behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
@@ -283,9 +289,8 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` by transferring the represented
-  multicycle arrival matrix into the explicit pipeline; extend `FORMAL-001`
-  only with bounded cases
+- **Next task:** extend `FORMAL-001` only with bounded integrated-pipeline
+  cases
   whose architectural ordering is already documented; preserve the
   distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing;
@@ -298,4 +303,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `920d9b2`
+  `de54787`

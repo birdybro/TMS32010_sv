@@ -115,7 +115,10 @@ accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each
 instruction reaches its documented two- or three-cycle retirement before
 deferral, then permits one protected instruction and performs the dummy/vector
 sequence. This exhausts the currently modeled multicycle machine-cycle
-boundaries, not the missing overlapped pipeline. A separate native test drives
+boundaries. A matching explicit-pipeline matrix checks those 32 execution
+intervals with family-specific MEN/DEN/WE ownership, no midinstruction entry,
+one protected retirement, dummy discard, stack entry, acknowledge state, and
+vector capture. A separate native test drives
 a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin
@@ -296,15 +299,13 @@ VERIFIED_SIMULATION for explicit and legacy implementations.**
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
-- explicit execute ownership through table-operation repeated prefetch;
-- the complete multicycle-arrival matrix in the explicit fetch/execute
-  wrapper, unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
+- unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
   CALA/RET sequencing, physical interrupt
   setup/synchronizer behavior, and the provisional DINT-at-final-boundary
   ordering (`OQ-004`, `OQ-007`, `OQ-016`, `OQ-019`); the basic Figure 2-12
-  protected/dummy/vector path, MPY/MPYK protected-slot extension, and the 32
-  represented machine-cycle arrival points in the legacy/core path are
-  qualified;
+  protected/dummy/vector path, MPY/MPYK protected-slot extension, table
+  repeated-prefetch ownership, and all 32 represented arrival intervals in
+  both the core and explicit pipeline are qualified;
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is

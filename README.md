@@ -44,8 +44,11 @@ program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK
 deferrals, dummy-fetches and stacks the return PC, masks and clears the
 request, and selects vector 2. A native-phase test matches TI Figure 2-12's
-external read order. A 32-case core matrix exhausts request arrival at every
-represented machine cycle of all 15 currently supported multicycle families.
+external read order. Matching 32-case core and explicit-pipeline matrices
+exhaust request arrival at every represented execution interval of all 15
+currently supported multicycle families. The explicit matrix checks native
+MEN/DEN/WE ownership, no midinstruction entry, one protected retirement,
+dummy discard, stack entry, acknowledge state, and vector capture.
 A four-case native test also checks the enabled falling-boundary sample from
 each modeled subphase, including a stalled phase. Complete fetch/execute
 overlap, physical pin setup/synchronizer behavior, unsupported

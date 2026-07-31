@@ -46,17 +46,20 @@ Directed tests cover a one-cycle pulse, a held-low level that relatches after
 acknowledge, a pulse retained while masked, entry after EINT plus its required
 following instruction, completion of a two-cycle branch before deferral,
 MPY/MPYK protection through one additional instruction, reset clearing, and
-model/RTL state comparison. A 32-case core matrix drives a one-machine-cycle
-active-low pulse at each modeled cycle of all 15 currently supported
+model/RTL state comparison. Matching 32-case core and explicit-pipeline
+matrices drive a one-machine-cycle active-low pulse at each modeled execution
+interval of all 15 currently supported
 multicycle families: the 11 two-word control-flow operations, `IN`, `OUT`,
 `TBLR`, and `TBLW`. Every case asserts the family-specific logical bus shape,
 no midinstruction entry, final retirement before deferral, exactly one
 protected instruction, a nonretiring dummy fetch at the resolved return PC
-with next address `0x002`, and the resulting stack/vector state. The native
+with next address `0x002`, and the resulting stack/vector state. The explicit
+matrix also checks family-specific MEN/DEN/WE ownership. The native
 test independently observes the external address sequence `N`, `N+1`, dummy
 return PC, `0x002` with ordinary `MEN` phases
 [`sim/interrupt/tb_interrupt_entry.sv`,
 `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`,
+`sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
 `sim/interrupt/tb_interrupt_native_sampling.sv`,
 `sim/interrupt/tb_interrupt_phase.sv`,
 `sim/differential/test_interrupt_model_rtl.py`].
@@ -90,12 +93,21 @@ discard, the post-following stacked PC, vector capture, and deferred vector
 execution
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
 
-This remains an incomplete pipeline claim. The explicit tests do not yet
-cover every multicycle request-arrival position or protected instruction,
-DINT's provisional cancellation, physical synchronizer/setup behavior,
-unsupported CALA/RET/PUSH/POP cycles, native/RTL return through `RET`, or
-analog input timing. The legacy/core matrix remains the evidence for those
-represented arrival cases (`CTRL-002`, `OQ-004`, `OQ-007`, `OQ-016`).
+The 32-case explicit-pipeline matrix now pulses active-low INT in every
+represented execution interval of B, BANZ, BV, BIOZ, CALL, all six
+accumulator branches, IN, OUT, TBLR, and TBLW. It checks the family-specific
+MEN/DEN/WE shape, no midinstruction entry, completion before service, one
+protected retirement, dummy discard, resolved return PC, stack entry,
+acknowledge state, and vector capture. A separate core matrix provides the
+same interval coverage at the architectural interface
+[`sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
+`sim/interrupt/tb_interrupt_multicycle_arrivals.sv`].
+
+This remains an incomplete pipeline claim. The explicit tests do not cover
+DINT's provisional cancellation at every placement, physical
+synchronizer/setup behavior, unsupported CALA/RET/PUSH/POP cycles, native/RTL
+return through `RET`, or analog input timing (`CTRL-002`, `OQ-004`,
+`OQ-007`, `OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's

@@ -153,11 +153,9 @@ accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
-  vector path and MPY/MPYK protected-slot extension, particularly the complete
-  multicycle arrival matrix (`OQ-004`); all 32 represented machine-cycle
-  arrival points
-  across the 15 currently supported multicycle families remain directed-tested
-  in the legacy/core path;
+  vector path, MPY/MPYK protected-slot extension, and matching 32-case
+  core/explicit arrival matrices for the 15 supported multicycle families
+  (`OQ-004`);
 - any external cycle stretching (`OQ-001`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
@@ -191,11 +189,12 @@ including across a five-FPGA-clock stall in phase 2, then follows the
 protected-instruction/dummy/vector sequence. This qualifies digital phase
 ownership only; it does not model the data sheet's 50 ns setup aperture or
 prove how an asynchronous transition maps into a physical synchronizer.
-A separate 32-case core matrix exhausts
-arrival at every represented machine cycle of the 11 supported two-word
-control-flow families, IN, OUT, TBLR, and TBLW; it does not convert the
-collapsed fetch-sample implementation into a physical subphase or
-fetch/execute-overlap claim.
+Matching 32-case core and explicit-pipeline matrices exhaust arrival at every
+represented execution interval of the 11 supported two-word control-flow
+families, IN, OUT, TBLR, and TBLW. The explicit matrix checks native strobes,
+no midinstruction entry, one protected retirement, dummy discard, stack and
+acknowledge effects, and vector capture. Neither matrix models a physical
+input synchronizer or setup aperture.
 
 Exact `BANZ` now has the same explicit two-interval ownership structure as B.
 Opcode-prefetch completion places `0xf400` in the execute slot. Its canonical

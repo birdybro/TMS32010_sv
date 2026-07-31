@@ -413,4 +413,6 @@ directed native-phase tests, including INT ownership at the enabled falling
 boundary for all four modeled arrival phases. The basic EINT/protected-word/
 discarded-N+2/vector sequence also has explicit fetch/execute ownership;
 MPY/MPYK in the protected slot explicitly extend ownership through one
-additional instruction. The complete multicycle-arrival matrix does not.
+additional instruction. Matching core and explicit-pipeline matrices cover
+all 32 represented execution intervals of the 15 supported multicycle
+families.

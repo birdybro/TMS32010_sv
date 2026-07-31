@@ -332,9 +332,7 @@ identify:
 
 - branch/call/return prefetch address order;
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
-  discarded-N+2/vector path and MPY/MPYK extension, including the complete
-  multicycle-arrival matrix; the 32 represented machine-cycle arrival cases
-  for the 15 supported multicycle families remain qualified in the
-  legacy/core path;
+  discarded-N+2/vector path, MPY/MPYK extension, and the matching 32-case
+  core/explicit matrices for the 15 supported multicycle families;
 - any internal conflict that changes an otherwise normal read;
 - safe wrapper phase pause, if one exists, despite the absence of READY.

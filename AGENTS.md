@@ -289,7 +289,11 @@ EINT/protected-instruction/dummy/vector path now has explicit ownership,
 including stalls and deferred vector execution. MPY and MPYK in the protected
 slot now have explicit extension through one additional instruction, including
 signed products, bus shape, stalls, and post-following return-PC ownership.
-The complete arrival matrix remains core-only evidence. Other multicycle
+The 32 represented arrival intervals across all 15 supported multicycle
+families now have matching core and explicit-pipeline matrices; the explicit
+matrix checks family-specific native strobes, no midinstruction entry, one
+protected retirement, dummy ownership, stack entry, acknowledge state, and
+vector capture. Other multicycle
 pipeline integration remains absent; do not
 generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
@@ -333,15 +337,15 @@ boundaries without a data transaction. The core samples active-low `INT`,
 retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
-matches TI Figure 2-12's external address order. A 32-case core matrix
-exhausts arrival at every represented machine cycle of all 15 supported
-multicycle families. A four-case native test also proves the current digital
+matches TI Figure 2-12's external address order. Matching 32-case core and
+explicit-pipeline matrices exhaust arrival at every represented execution
+interval of all 15 supported multicycle families. A four-case native test
+also proves the current digital
 wrapper samples a held-low request only at the enabled falling boundary from
 each modeled subphase, including a phase stall. The explicit pipeline
 additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
-sequence, including the MPY/MPYK protected-slot extension. The complete
-multicycle-arrival matrix in that pipeline, physical setup/synchronizer
-behavior, native/RTL CALA/RET
+sequence, including the MPY/MPYK protected-slot extension. Physical
+setup/synchronizer behavior, native/RTL CALA/RET
 sequencing, PUSH/POP second-cycle sequencing, and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.

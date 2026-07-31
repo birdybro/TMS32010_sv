@@ -56,7 +56,9 @@ Tests also prove that an EINT executed while already enabled does not add a
 second deferral. The warning against placing EINT before branch remains a
 software restriction. The explicit pipeline now qualifies the basic
 EINT/protected-word/discarded-N+2/vector path and MPY/MPYK protected-slot
-extension, but the complete multicycle-arrival matrix remains `OQ-004`.
+extension. Matching core and explicit-pipeline matrices cover all 32
+represented arrival intervals across the 15 supported multicycle families;
+physical sampling and unsupported instruction cycles remain `OQ-004`.
 
 ## Qualified `LST` functional slice
 

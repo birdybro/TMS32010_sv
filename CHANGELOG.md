@@ -41,6 +41,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   including a stalled pre-sample phase, with no early pending/cycle change and
   exact falling-boundary, protected-instruction, dummy, stack, and vector
   assertions.
+- A matching 32-case explicit-pipeline interrupt-arrival matrix covering both
+  execution intervals of all eleven supported two-word control families and
+  IN/OUT, plus all three TBLR/TBLW intervals. It checks native strobe
+  ownership, no midinstruction entry, one protected retirement, dummy
+  discard, stack entry, acknowledge state, and vector capture.
 - Fetch/execute-separation ADR and a standalone synthesizable pipeline register
   with explicit word/address validity, completion, stall, and flush ownership;
   directed tests cover Figure 2-2 priming/overlap and Figure 2-12
@@ -651,8 +656,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   tests independently assert masked-pulse persistence, one protected
   instruction, MPY/MPYK extension, stack push, INTM set, pending clear, and
   no retirement or data/I/O traffic during the dummy fetch.
-- Active-low interrupt arrival at all 32 represented multicycle machine-cycle
-  boundaries passes: both cycles of the 11 supported two-word control-flow
+- Active-low interrupt arrival at all 32 represented multicycle execution
+  intervals passes in both core and explicit-pipeline matrices: both cycles
+  of the 11 supported two-word control-flow
   families and IN/OUT, and all three cycles of TBLR/TBLW. Every path completes
   before service, retires exactly one protected instruction, dummy-fetches the
   resolved return PC while advertising vector 2 next, and enters with the
@@ -730,8 +736,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 22
-  native bus/phase tests including twelve explicit pipeline tests, five
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 23
+  native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
@@ -766,9 +772,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   sticky OV is PROVISIONAL under `OQ-018`.
 - Interrupt external fetch order and directed entry state are verified, but
   the partial core still collapses fetch and execution at sample boundaries.
-  The 32 represented multicycle machine-cycle arrival points are qualified;
+  The 32 represented multicycle arrival intervals are independently qualified
+  in the core and explicit pipeline;
   the current wrapper's four digital subphases now have falling-boundary
-  sampling assertions. Complete Figure 2-12 execute overlap, physical
+  sampling assertions. Physical
   setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP cycles, and
   native/RTL RET-based resumption remain under
   `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`. RET's functional model behavior is
