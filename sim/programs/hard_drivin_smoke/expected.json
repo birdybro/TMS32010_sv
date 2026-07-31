@@ -1,0 +1,78 @@
+{
+  "program_words": [
+    "0x4810",
+    "0x4120",
+    "0x4b11",
+    "0x4c12",
+    "0x4d13",
+    "0x4e14",
+    "0x4f15",
+    "0x4021",
+    "0x4222",
+    "0xf600",
+    "0x000c",
+    "0x7eee",
+    "0x2020",
+    "0x7f80"
+  ],
+  "initial_data": {
+    "0x10": "0xf230",
+    "0x11": "0x00a5",
+    "0x12": "0x0001",
+    "0x13": "0x0000",
+    "0x14": "0x000b",
+    "0x15": "0x3456"
+  },
+  "io_inputs": {
+    "0": "0x6a80",
+    "1": "0x55aa",
+    "2": "0x0000"
+  },
+  "io_transactions": [
+    [1, "write", 0, "0xf230"],
+    [3, "read", 1, "0x55aa"],
+    [5, "write", 3, "0x00a5"],
+    [7, "write", 4, "0x0001"],
+    [9, "write", 5, "0x0000"],
+    [11, "write", 6, "0x000b"],
+    [13, "write", 7, "0x3456"],
+    [15, "read", 0, "0x6a80"],
+    [17, "read", 2, "0x0000"]
+  ],
+  "program_transactions": [
+    [0, "instruction_fetch", "0x000", "0x4810"],
+    [2, "instruction_fetch", "0x001", "0x4120"],
+    [4, "instruction_fetch", "0x002", "0x4b11"],
+    [6, "instruction_fetch", "0x003", "0x4c12"],
+    [8, "instruction_fetch", "0x004", "0x4d13"],
+    [10, "instruction_fetch", "0x005", "0x4e14"],
+    [12, "instruction_fetch", "0x006", "0x4f15"],
+    [14, "instruction_fetch", "0x007", "0x4021"],
+    [16, "instruction_fetch", "0x008", "0x4222"],
+    [18, "instruction_fetch", "0x009", "0xf600"],
+    [19, "following_word_fetch", "0x00a", "0x000c"],
+    [20, "instruction_fetch", "0x00c", "0x2020"],
+    [21, "instruction_fetch", "0x00d", "0x7f80"]
+  ],
+  "expected_final": {
+    "pc": "0x00e",
+    "acc": "0x000055aa",
+    "cycles": 22,
+    "data": {
+      "0x20": "0x55aa",
+      "0x21": "0x6a80",
+      "0x22": "0x0000"
+    },
+    "io_outputs": {
+      "0": "0xf230",
+      "3": "0x00a5",
+      "4": "0x0001",
+      "5": "0x0000",
+      "6": "0x000b",
+      "7": "0x3456"
+    },
+    "mame_dac_12bit": "0x0723",
+    "sound_rom_bank": "0x000b",
+    "sound_rom_address": "0x3456"
+  }
+}

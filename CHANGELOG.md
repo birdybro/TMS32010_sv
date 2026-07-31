@@ -48,6 +48,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   program/I/O request-ready callbacks, registered phase-3 waits, native-phase
   visibility, interrupt/BIO inputs, and deterministic state/RAM debug ports.
   It contains no Atari-specific memory or peripheral behavior.
+- A project-authored, ROM-free Hard Drivin' Driver Sound Board smoke program
+  covering every working mapped I/O role, active-low BIO control flow, fixed
+  opcodes, raw program/I/O traces, model state, and explicitly scoped MAME
+  adapter expectations. Port 2 and physical DAC polarity remain disclosed as
+  unqualified rather than inferred from the fixture.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -450,6 +455,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The synthetic Hard Drivin' source/image/tool/model workflow: twelve executed
+  instructions consume 22 documented cycles, BIOZ skips the sentinel word,
+  nine raw I/O transactions occur in exact order, host/sound-ROM words land in
+  internal RAM, and all six output ports retain their expected words. This is
+  model-level integration evidence, not game-ROM or physical-board evidence.
 - Generic wrapper integration with registered program and I/O responders,
   delayed readiness, a separate three-clock global pause, exact-once OUT/IN
   and TBLW commits, documented `1/1/2/2/1/3/1 = 11` cycle total, unsupported-

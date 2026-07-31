@@ -29,6 +29,9 @@ The first generic `tms32010_mister` wrapper supplies standard synchronous
 reset and same-clock program/I/O request-ready callbacks around the partial
 explicit pipeline. It is synthesizable and directed-tested, but is not yet an
 SDRAM bridge, board top level, or complete processor wrapper.
+A separate ROM-free Hard Drivin' smoke program now exercises the pinned
+Driver Sound Board port roles and BIO branch in the assembler/model workflow;
+it does not contain game code or claim physical board qualification.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

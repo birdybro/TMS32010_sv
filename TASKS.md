@@ -1328,8 +1328,11 @@ objective passing evidence.
   resampled by `CLKOUT` before reaching `/BIOS`. The distinct `320IRQ` net
   feeds the 68000-side interrupt path. Exact program-RAM arbitration phases,
   complete BIO divider state, DAC polarity, board-variant audit, and synthetic
-  smoke tests remain. User-supplied ROM hashes may enable local tests; ROMs
-  are never committed.
+  wrapper tests remain. The first ROM-free model/tool smoke program now covers
+  raw accesses to every mapped port role, an asserted-BIO branch, exact
+  program/I/O transaction traces, a 22-cycle total, the pinned MAME DAC
+  transform, and explicit provisional port-2 behavior. User-supplied ROM
+  hashes may enable local tests; ROMs are never committed.
 
 ## Milestone 22 — Release qualification
 

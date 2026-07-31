@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** generic MiSTer/FPGA callback wrapper
+- **Current milestone:** ROM-free Hard Drivin' I/O smoke qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 109 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 112 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -137,6 +137,11 @@
   history, and starting the next product; the new source and numeric fixture
   are independently project-authored and do not elevate the application
   report above the original instruction definitions;
+  the pinned Hard Drivin' adapter maps port 0 as sound-ROM read/DAC write,
+  port 1 as communication-RAM read, port 2 as an incompletely modeled compare
+  read, ports 3–5 as communication/mute/68000-IRQ writes, and ports 6–7 as
+  sound-ROM bank/address writes; the synthetic smoke fixture verifies raw
+  processor transactions while retaining these roles below primary authority;
   reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
   transfers are three; falling CLKOUT samples program/I/O data, INT, and BIO;
@@ -409,8 +414,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** extend generic integration toward a separately clocked SDRAM
-  adapter only with explicit CDC, or continue the highest-priority unblocked
-  instruction/timing task needed before that bridge can be qualified.
+- **Next task:** qualify the A044427 program-RAM arbitration and DAC polarity
+  from the primary schematic before implementing a Hard Drivin'-specific
+  adapter; keep port 2 provisional until its compare circuit is resolved.
 - **Latest committed baseline before this cycle:**
-  `70d953f`
+  `45d7abb`

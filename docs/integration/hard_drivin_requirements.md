@@ -117,13 +117,32 @@ so it corroborates function and approximate cadence only
 
 ## Integration acceptance path
 
+### ROM-free smoke evidence
+
+`sim/programs/hard_drivin_smoke/` now supplies the first project-authored
+synthetic program for this path. It performs raw writes to ports 0, 3, 4, 5,
+6, and 7; reads synthetic host, sound-ROM, and compare values from ports 1,
+0, and 2; and takes a BIOZ branch under asserted active-low BIO. Its committed
+fixture fixes the assembled words, every logical program/I/O transaction,
+the skipped sentinel address, all RAM/output results, and a 22-cycle total.
+
+The fixture also records the pinned MAME adapter's derived DAC value and
+sound-ROM bank/address fields, but it does not implement them in the processor
+model or promote them to hardware facts. In particular, port 2 remains
+PROVISIONAL because the pinned handler returns zero without modeling the
+compare circuit. This is **VERIFIED_SIMULATION for the project-local
+model/tool workflow, CORROBORATED for the MAME-facing port roles, and not a
+physical board or game-ROM qualification.**
+
 The future non-ROM qualification sequence is:
 
-1. synthetic reset and address-0 fetch with schematic clock/reset ratios;
+1. synthetic reset and address-0 fetch with schematic clock/reset ratios
+   (generic wrapper evidence exists; board-specific reset/halt control remains);
 2. synthetic 4K shared-program-RAM arbitration;
 3. host/DSP communication-memory handshake;
 4. BIO pulse/poll behavior;
-5. synthetic writes through every decoded I/O port and DAC trace;
+5. synthetic writes through every decoded I/O port and DAC trace (model-level
+   raw-port smoke complete; board adapter and primary DAC polarity remain);
 6. optional user-supplied ROM hash validation and MAME-aligned execution
    trace.
 
