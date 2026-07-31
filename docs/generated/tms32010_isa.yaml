@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1734,6 +1734,44 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and B instruction description", "printed_page": "3-6 and 3-15", "pdf_page": "56 and 65"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "B instruction description", "printed_page": "3-15", "pdf_page": 36},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and B instruction description", "printed_page": "4-10 and 4-20", "pdf_page": "89 and 101"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BV",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xf500",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["OV"],
+      "registers_written": ["PC", "OV"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": ["OV"],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "if OV is one, the branch is taken and OV is cleared; if OV is zero, it remains zero",
+      "result_behavior": "all architectural state other than PC and the taken-path OV clear is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when OV is one; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; next read is target when OV was one or opcode PC plus two when OV was zero"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BV instruction description", "printed_page": "3-6 and 3-23", "pdf_page": "56 and 73"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BV instruction description", "printed_page": "3-23", "pdf_page": 44},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BV instruction description", "printed_page": "4-10 and 4-28", "pdf_page": "89 and 109"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]

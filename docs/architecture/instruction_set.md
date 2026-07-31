@@ -222,6 +222,25 @@ verify opcode/target reads and target/fallthrough address selection. Pinned
 MAME corroborates every predicate but shortens untaken paths; the project does
 not copy that timing abstraction (`SC-013`).
 
+## Qualified branch-on-overflow slice
+
+`BV` is exact opcode `0xf500` followed by a canonical 12-bit absolute target.
+If `OV=1`, PC receives the target and `OV` clears. If `OV=0`, PC advances to
+opcode PC+2 and OV remains clear. Both outcomes consume two words and two
+cycles; ACC, T, P, OVM, ARs, ARP, DP, stack, and internal RAM are unchanged
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
+3-23 (PDF pp. 56 and 73);
+ti-tms32010-assembly-guide-spru002b, `BV`, printed p. 3-23 (PDF p. 44);
+ti-first-generation-users-guide-1987, `BV`, printed p. 4-28
+(PDF p. 109)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests cover taken/untaken selection, taken-path OV
+clear, untaken clear preservation, two program transactions, target-phase
+stall, non-PC state preservation, and malformed-target trap-before-clear.
+Native-phase and differential tests place the clear at the taken target-word
+retirement boundary. Pinned MAME agrees on status behavior but shortens the
+untaken path; `SC-014` preserves that timing disagreement.
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

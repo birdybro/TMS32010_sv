@@ -35,8 +35,8 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
 resolved for:
 
-- `BIOZ` and `BV`; B, BANZ, and the six accumulator-tested conditions are
-  now qualified (`OQ-007`);
+- `BIOZ`; B, BANZ, BV, and the six accumulator-tested conditions are now
+  qualified (`OQ-007`);
 - `CALL`, `CALA`, and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -74,6 +74,14 @@ one-cycle untaken abstraction is disclosed in `SC-013`, not adopted
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 (PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+
+`BV` uses the same two-read shape and tests unchanged sticky OV at the second
+sample. OV set selects the canonical target and clears OV at retirement; OV
+clear selects PC+2 and remains clear. Both paths consume the second read, and
+a clock-enable stall holds PC, OV, and the target phase. MAME's shorter
+untaken abstraction is disclosed in `SC-014`
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
+3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

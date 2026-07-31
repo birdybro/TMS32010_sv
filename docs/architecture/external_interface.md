@@ -32,7 +32,8 @@ pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
 read relationship for the 37 supported one-cycle sequential instructions and
-both cycles of `B`, `BANZ`, and the six accumulator-conditional branches. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
+both cycles of `B`, `BANZ`, `BV`, and the six accumulator-conditional
+branches. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
 `SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
@@ -64,6 +65,13 @@ every mnemonic
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 (PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY.**
+
+`BV` likewise presents `0xf500` at PC and its canonical target at PC+1 for
+both OV states. The second falling-edge sample selects target or PC+2 and
+clears OV only on the target path. No data or I/O transaction accompanies
+either BV cycle
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
+3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
 
 `DINT` and `EINT` retain the same normal external program fetch and have no
 logical data-memory transaction. The current phase wrapper verifies their

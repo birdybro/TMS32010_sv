@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current forty-five-instruction
+The checked-in projects synthesize the current forty-six-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
@@ -15,7 +15,7 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current 37 one-cycle instructions and eight qualified two-cycle
+for the current 37 one-cycle instructions and nine qualified two-cycle
 branch paths.
 Yosys 0.67+111 from
 the 2026-07-29 OSS CAD Suite is the currently verified open-source synthesis

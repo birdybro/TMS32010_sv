@@ -5,7 +5,8 @@ the partial SystemVerilog core over a deterministic mixed stream of the
 37 supported one-cycle instructions. A focused BANZ trace adds the first
 two-cycle instruction and checks both branch outcomes; a focused B trace
 checks unconditional two-cycle control flow. A family trace checks taken and
-untaken cases for all six accumulator conditions. The tests check
+untaken cases for all six accumulator conditions; a BV trace checks its
+taken-path OV clear and untaken path. The tests check
 pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
@@ -68,8 +69,12 @@ skipped words, per-cycle retirement, cumulative cycles, PC, and ACC at every
 instruction commit. Zero, positive-one, and negative-one setup values
 distinguish every predicate.
 
+The focused BV trace loads OV from an internal status word, executes a taken
+BV that clears OV, then an untaken BV. It compares both program transactions
+per branch, per-cycle OV, retirement, PC, and cumulative cycles.
+
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/family differentials supply logical per-cycle evidence; their separate native
+B/BANZ/BV/family differentials supply logical per-cycle evidence; their separate native
 phase test supplies the physical subphase relationship. Neither result
 qualifies the remaining pipeline. MAME comparison is not yet implemented.
 

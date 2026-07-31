@@ -410,6 +410,8 @@ class ToolchainSliceTests(unittest.TestCase):
             0x6689,
             0xF400,
             0x035A,
+            0xF500,
+            0x0100,
             0xF900,
             0x0123,
             0xFA00,
@@ -532,6 +534,51 @@ class ToolchainSliceTests(unittest.TestCase):
             ("B 4096\n", "program address"),
             ("B\n", "1 operand"),
             ("B 1,2\n", "1 operand"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
+    def test_bv_round_trips_target_and_diagnostics(self) -> None:
+        result = self.assembler.assemble_text(
+            "BV TARGET\nZAC\nTARGET: NOP\n"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0: 0xF500,
+                1: 0x0003,
+                2: 0x7F89,
+                3: 0x7F80,
+            },
+        )
+        self.assertEqual(result.symbols["TARGET"], 3)
+        source = self.disassembler.disassemble_source(
+            [0xF500, 0x035A, 0x7F80]
+        )
+        self.assertEqual(source, "BV 0x35a\nNOP\n")
+        self.assertEqual(
+            self.disassembler.disassemble_listing(
+                [0xF500, 0x035A],
+                origin=0x100,
+            ),
+            "100 f500  BV 0x35a\n"
+            "101 035a  .word 0x035a ; BV target\n",
+        )
+        self.assertEqual(
+            list(self.assembler.assemble_text(source).words.values()),
+            [0xF500, 0x035A, 0x7F80],
+        )
+        self.assertEqual(
+            self.disassembler.disassemble_word(0xF500),
+            ".word 0xf500",
+        )
+
+        for invalid, message in (
+            ("BV -1\n", "program address"),
+            ("BV 4096\n", "program address"),
+            ("BV\n", "1 operand"),
+            ("BV 1,2\n", "1 operand"),
         ):
             with self.subTest(source=invalid):
                 with self.assertRaisesRegex(AssemblyError, message):

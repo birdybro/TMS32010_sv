@@ -64,6 +64,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SAR",
                 "MAR",
                 "BANZ",
+                "BV",
                 "B",
                 "BGEZ",
                 "BGZ",
@@ -197,6 +198,19 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(decoded[0]["word_count"], 2)
         self.assertEqual(decoded[0]["documented_cycle_count"], 2)
         self.assertIsNone(decode_word(self.database, 0xF901))
+
+    def test_bv_is_exact_two_word_and_conditionally_clears_ov(self) -> None:
+        decoded = decode_word(self.database, 0xF500)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        instruction, operands = decoded
+        self.assertEqual(instruction["mnemonic"], "BV")
+        self.assertEqual(operands, {})
+        self.assertEqual(instruction["word_count"], 2)
+        self.assertEqual(instruction["documented_cycle_count"], 2)
+        self.assertEqual(instruction["status_flags_affected"], ["OV"])
+        self.assertEqual(instruction["conditional_cycle_differences"], [])
+        self.assertIsNone(decode_word(self.database, 0xF501))
 
     def test_accumulator_branches_are_exact_two_word_opcodes(self) -> None:
         expected = {

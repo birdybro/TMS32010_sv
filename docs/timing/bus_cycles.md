@@ -71,6 +71,14 @@ individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`BV` also reads its opcode and following target at PC and PC+1 regardless of
+OV. The next read is the target when OV was set or PC+2 when clear. OV clears
+at the taken second-cycle retirement boundary; neither cycle emits `DEN` or
+`WE`. MAME's untaken shortcut is recorded in `SC-014`
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
+printed pp. 2-2, 2-13, 3-6, and 3-23
+(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

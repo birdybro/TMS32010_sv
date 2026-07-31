@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BLEZ,
-BLZ, BNZ, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP, LDPK, LST,
-LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM,
-SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
+BLZ, BNZ, BV, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP, LDPK,
+LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR,
+SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -22,7 +22,7 @@ PROGRAM_WORDS = 4096
 DATA_WORDS = 144
 IO_PORTS = 8
 ACCUMULATOR_BRANCHES = frozenset({"BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"})
-TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ"}
+TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ", "BV"}
 
 
 class UnsupportedOpcode(RuntimeError):
@@ -235,6 +235,14 @@ class Tms32010Model:
                 )
             elif mnemonic == "B":
                 self.state.pc = target
+            elif mnemonic == "BV":
+                branch_taken = self.state.status.ov
+                operands["branch_taken"] = int(branch_taken)
+                self.state.pc = (
+                    target if branch_taken else (pc + 2) & PC_MASK
+                )
+                if branch_taken:
+                    self.state.status.ov = False
             else:
                 branch_taken = self._accumulator_branch_taken(
                     mnemonic,
@@ -690,6 +698,8 @@ class Tms32010Model:
             return "B", {}
         if opcode == 0xF400:
             return "BANZ", {}
+        if opcode == 0xF500:
+            return "BV", {}
         if opcode & 0xF000 == 0x0000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

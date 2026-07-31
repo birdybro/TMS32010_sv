@@ -216,3 +216,20 @@ electrical result of an out-of-range access.
   paths.
 - **Confidence:** VERIFIED_PRIMARY for project timing and predicates;
   documented secondary-source timing disagreement.
+
+## SC-014 — MAME BV untaken cycle abstraction
+
+- **Primary sources:** SPRU001B Table 3-2 and the `BV` instruction page define
+  `BV` as two words and two cycles without a taken/untaken exception. The
+  operation advances PC past both words when OV is clear; when OV is set it
+  loads the following target and clears OV.
+- **Independent oracle:** pinned MAME tests and clears OV consistently with
+  TI, but reads the target and charges its additional branch cycle only when
+  OV is set [mame-tms320c1x-core-030fefc, `bv()`, lines 480–489; opcode table
+  and `add_branch_cycle()`, lines 841 and 855–857].
+- **Current treatment:** follow TI's unconditional two-word/two-cycle total
+  and perform the second normal program read on both paths. MAME corroborates
+  the predicate and taken-path clear but is not used as an untaken timing
+  oracle.
+- **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
+  documented secondary-source timing disagreement.

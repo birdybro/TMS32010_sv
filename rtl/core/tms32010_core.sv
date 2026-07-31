@@ -86,11 +86,13 @@ module tms32010_core (
   localparam logic [5:0] OP_BLZ  = 6'd42;
   localparam logic [5:0] OP_BNZ  = 6'd43;
   localparam logic [5:0] OP_BZ   = 6'd44;
+  localparam logic [5:0] OP_BV   = 6'd45;
 
   function automatic logic is_two_word_branch(input logic [5:0] operation);
     case (operation)
       OP_B,
       OP_BANZ,
+      OP_BV,
       OP_BGEZ,
       OP_BGZ,
       OP_BLEZ,
@@ -250,6 +252,11 @@ module tms32010_core (
             end else begin
               program_next_address_o = pc_o + 12'h001;
             end
+          end
+          OP_BV: begin
+            program_next_address_o = overflow_flag_o
+              ? program_data_i[11:0]
+              : pc_o + 12'h001;
           end
           OP_BGEZ,
           OP_BGZ,
@@ -506,6 +513,14 @@ module tms32010_core (
                     : pc_o + 12'h001;
               end
             end
+            OP_BV: begin
+              pc_o <= overflow_flag_o
+                ? program_data_i[11:0]
+                : pc_o + 12'h001;
+              if (overflow_flag_o) begin
+                overflow_flag_o <= 1'b0;
+              end
+            end
             OP_BGEZ,
             OP_BGZ,
             OP_BLEZ,
@@ -712,6 +727,8 @@ module tms32010_core (
           OP_BANZ: begin
           end
           OP_B: begin
+          end
+          OP_BV: begin
           end
           OP_BGEZ: begin
           end

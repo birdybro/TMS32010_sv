@@ -947,6 +947,105 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             self.assertEqual(int(rtl[7], 16), model_state["ar"][1])
             self.assertEqual(int(rtl[13], 16), model_state["cycle_count"])
 
+    def test_bv_taken_clear_and_untaken_trace_matches_model(self) -> None:
+        words = [
+            0x7B00,  # LST 0 sets OV from data word 0.
+            0xF500,  # BV taken.
+            0x0004,
+            0x7F89,  # Skipped ZAC.
+            0xF500,  # BV untaken after the first BV clears OV.
+            0x0008,
+            0x7F80,  # Fallthrough NOP.
+            0x7F89,
+            0x7F80,
+        ]
+        data_words = [0] * 144
+        data_words[0] = 0x8000
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        model.data[:] = data_words
+        expected = [model.step() for _ in range(4)]
+
+        self.assertEqual(
+            [trace.mnemonic for trace in expected],
+            ["LST", "BV", "BV", "NOP"],
+        )
+        self.assertEqual([trace.cycles for trace in expected], [1, 2, 2, 1])
+        self.assertEqual(
+            [trace.operands.get("branch_taken") for trace in expected],
+            [None, 1, 0, None],
+        )
+        self.assertEqual(
+            [trace.state_after["status"]["ov"] for trace in expected],
+            [1, 0, 0, 0],
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    "+COUNT=6",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line for line in result.stdout.splitlines() if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), 6)
+        fields = [line.split() for line in lines]
+        self.assertEqual(
+            [int(field[1], 16) for field in fields],
+            [0, 1, 2, 4, 5, 6],
+        )
+        self.assertEqual(
+            [int(field[2], 16) for field in fields],
+            [0x7B00, 0xF500, 0x0004, 0xF500, 0x0008, 0x7F80],
+        )
+        self.assertEqual(
+            [int(field[11], 16) for field in fields],
+            [1, 0, 1, 0, 1, 1],
+        )
+        self.assertEqual(
+            [int(field[13], 16) for field in fields],
+            list(range(1, 7)),
+        )
+        self.assertEqual(
+            [int(field[22], 16) for field in fields],
+            [1, 1, 0, 0, 0, 0],
+            "BV clears OV only when its taken target word retires",
+        )
+        self.assertTrue(all(int(field[10], 16) for field in fields))
+        self.assertTrue(all(not int(field[12], 16) for field in fields))
+
+        for rtl_index, model_index in ((0, 0), (2, 1), (4, 2), (5, 3)):
+            rtl = fields[rtl_index]
+            model_state = expected[model_index].state_after
+            self.assertEqual(int(rtl[3], 16), model_state["pc"])
+            self.assertEqual(int(rtl[4], 16), model_state["acc"])
+            self.assertEqual(
+                int(rtl[22], 16),
+                model_state["status"]["ov"],
+            )
+            self.assertEqual(int(rtl[13], 16), model_state["cycle_count"])
+
     def test_accumulator_branch_family_trace_matches_model(self) -> None:
         cases = [
             ("BLZ", 0xFA00, 0x2000, True),

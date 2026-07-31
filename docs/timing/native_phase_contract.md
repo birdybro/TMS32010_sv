@@ -144,6 +144,23 @@ individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
 **Confidence: VERIFIED_PRIMARY.**
 
+## Branch on overflow
+
+`BV` uses the same native shape:
+
+| Cycle | Address role | Result at falling-edge sample |
+|---:|---|---|
+| 1 | opcode PC | recognize exact `0xf500`; advance PC/address to the following word without changing OV |
+| 2 | opcode PC + 1 | sample the canonical target; if OV was set, select target and clear OV, otherwise select opcode PC + 2; retire |
+| following | selected target/fallthrough | normal next instruction read |
+
+Both outcomes consume cycle 2. A clock-enable stall during its active target
+phase holds PC, address, pending operation, and OV. Directed phase tests cover
+both outcomes and verify no data transaction
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
+printed pp. 2-2, 2-13, 3-6, and 3-23
+(PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Reset assertion and release
 
 `RS` may change at any point in a processor cycle. To guarantee synchronous
