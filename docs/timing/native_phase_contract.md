@@ -30,8 +30,8 @@ accounts and retires them at fetch-sample boundaries without a distinct
 execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
-only for sequential one-cycle instructions, exact `B`/`BANZ`, and the six
-accumulator branches
+only for sequential one-cycle instructions, exact `B`/`BANZ`/`BV`, and the
+six accumulator branches
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -172,7 +172,7 @@ VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
-Except for exact `B`, `BANZ`, and the six accumulator branches, the
+Except for exact `B`, `BANZ`, `BV`, and the six accumulator branches, the
 branch-family tables below describe transaction order in the legacy wrapper.
 Their numbered read slots are not TI's post-prefetch execution-cycle labels.
 TI establishes two words, two cycles, the following target word, and ordinary
@@ -246,21 +246,25 @@ execute-interval mapping; VERIFIED_SIMULATION for the implementation.**
 
 ## Branch on overflow
 
-The legacy wrapper gives `BV` the same ordered-read shape:
+The explicit pipeline drives `BV` through these source-derived intervals:
 
-| Legacy read slot | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize exact `0xf500`; advance PC/address to the following word without changing OV |
-| 2 | opcode PC + 1 | sample the canonical target; if OV was set, select target and clear OV, otherwise select opcode PC + 2; retire |
-| following | selected target/fallthrough | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize exact `0xf500`; BV enters execute ownership |
+| execution cycle 1 | opcode PC + 1 | sample canonical target operand; old sticky OV selects target or fallthrough fetch without clearing |
+| execution cycle 2 | target if old OV was set; otherwise opcode PC + 2 | fetch selected instruction; retire BV, capture fetched word, and clear OV only on the taken path |
 
-Both outcomes consume cycle 2. A clock-enable stall during its active target
-phase holds PC, address, pending operation, and OV. Directed phase tests cover
-both outcomes and verify no data transaction
+Both outcomes consume both execution intervals. Every transaction uses the
+normal address/`MEN`/falling-edge relationship and adds no `DEN` or `WE`
+phase. A low clock enable in an active selected-fetch phase holds the bus,
+execute owner, PC, OV, and numeric cycle total. Directed tests cover both
+old-OV outcomes, both selected-path stalls, deferred instruction effects, and
+malformed-operand parking before OV clear
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
 printed pp. 2-2, 2-13, 3-6, and 3-23
 (PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for combined transaction/commit mapping.**
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the stated implementation.**
 
 ## Branch on I/O status
 

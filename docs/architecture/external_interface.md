@@ -80,13 +80,17 @@ printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 component facts; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for the implementation.**
 
-`BV` likewise presents `0xf500` at PC and its canonical target at PC+1 for
-both OV states. The second falling-edge sample selects target or PC+2 and
-clears OV only on the target path. No data or I/O transaction accompanies
-either BV cycle
+The explicit pipeline prefetches exact BV opcode `0xf500` at PC, reads its
+canonical operand at PC+1 during execution cycle 1, and uses old sticky OV to
+select execution cycle 2's instruction fetch at target or PC+2. BV owns
+execution until that fetch completes, when it retires, captures the selected
+word without executing it, and clears OV only on the taken path. OV is stable
+through an active selected-fetch stall. No data or I/O transaction
+accompanies either execution interval
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
 3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for the legacy combined transaction/commit mapping.**
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 `BIOZ` presents exact opcode `0xf600` at PC and the canonical target at PC+1
 on both input levels. The physical BIO input is active low, sampled every

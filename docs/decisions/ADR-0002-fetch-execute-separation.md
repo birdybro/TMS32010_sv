@@ -36,7 +36,7 @@ The final sequencer will represent fetch and execute ownership explicitly:
 The first implementation was the standalone synthesizable
 `tms32010_fetch_execute` register. The
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
-the qualified one-cycle subset plus exact `B`, `BANZ`, and the six
+the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, and the six
 accumulator-conditional branches. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
@@ -64,6 +64,10 @@ their execution intervals to the explicit pipeline.
   rule and select the second execution interval's fetch from the unchanged
   full 32-bit accumulator. They preserve ACC and retire only as the selected
   instruction is captured.
+- Exact `BV` uses old sticky OV to select target or fallthrough after its
+  operand fetch. OV remains unchanged through that decision and any
+  selected-fetch stall, then clears only when a taken BV retires as the
+  selected instruction is captured.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 
@@ -79,6 +83,6 @@ their execution intervals to the explicit pipeline.
 These claims use
 [ti-tms32010-users-guide-spru001b]. **Confidence: VERIFIED_PRIMARY for
 separate fetch/execute ownership and the table/interrupt dummy-fetch rules;
-INFERRED for the exact B/BANZ/accumulator-branch execute-interval mappings
+INFERRED for the exact B/BANZ/BV/accumulator-branch execute-interval mappings
 synthesized from Figure 2-2, Table 3-2, and the individual instruction pages
 because TI supplies no dedicated branch pin waveform.**

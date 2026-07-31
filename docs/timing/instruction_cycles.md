@@ -193,14 +193,18 @@ printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 component facts; INFERRED for the combined interval mapping;
 VERIFIED_SIMULATION for the implementation and legacy ordering.**
 
-Directed `BV` tests assert two complete program reads for OV set and clear,
-with OV stable through the opcode cycle and any target-phase stall. A taken
-BV clears OV only at second-sample retirement; an untaken BV retains clear OV
-and still consumes that sample. Malformed target words trap before the clear
+Legacy `BV` tests assert two complete program reads for OV set and clear. The
+explicit-pipeline test separately primes exact opcode `0xf500`, retains BV
+through the nonexecutable PC+1 operand fetch in execution cycle 1, and uses
+old sticky OV to select execution cycle 2's instruction fetch at target or
+PC+2. Only completion of that fetch retires BV, captures the fetched word,
+and clears OV on the taken path. Both selected paths are stalled in directed
+cases, proving stable OV and execute ownership, deferred fetched-instruction
+effects, and malformed-operand parking before clear
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
 3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
-facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
-unqualified.**
+facts; INFERRED for the combined interval mapping; VERIFIED_SIMULATION for
+the implementation and legacy ordering.**
 
 Directed `BIOZ` tests assert two complete program reads for BIO low and high.
 The opcode cycle never retires. The target-word sample uses the live,

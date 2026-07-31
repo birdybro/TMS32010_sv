@@ -55,17 +55,19 @@ The first core-connected use is
 address separate from the core PC. Fetch 0 primes an empty slot; while fetch
 N+1 runs, the core owns and retires one-cycle instruction N. Arbitrary
 clock-enable stalls hold both addresses, and recognized reset empties both
-domains. Exact `B`, `BANZ`, and the six accumulator-conditional branches are
-the first integrated multicycle cases. After a branch prefetch enters execute
-ownership, its operand fetch is explicitly nonexecutable execution cycle 1.
-B redirects unconditionally; BANZ selects from the old selected `AR[8:0]`;
-the accumulator family selects from the unchanged full 32-bit ACC. The
-selected instruction fetch is execution cycle 2, and only its boundary
-retires the branch and captures that instruction. BANZ's selected counter
-decrements modulo 512 only at this retirement boundary. Directed tests check
-B, both BANZ outcomes, all six ACC predicates in both directions,
-target/fallthrough fetch stalls, no early fetched-instruction effect, ACC
-preservation, and conservative parking on malformed operands. Another
+domains. Exact `B`, `BANZ`, `BV`, and the six accumulator-conditional
+branches are the first integrated multicycle cases. After a branch prefetch
+enters execute ownership, its operand fetch is explicitly nonexecutable
+execution cycle 1. B redirects unconditionally; BANZ selects from the old
+selected `AR[8:0]`; the accumulator family selects from the unchanged full
+32-bit ACC; BV selects from old sticky OV. The selected instruction fetch is
+execution cycle 2, and only its boundary retires the branch and captures that
+instruction. BANZ's selected counter decrements modulo 512 only at this
+retirement boundary, and taken BV clears OV only there. Directed tests check
+B, both BANZ and BV outcomes, all six ACC predicates in both directions,
+target/fallthrough fetch stalls, no early fetched-instruction effect,
+architectural-source preservation, and conservative parking on malformed
+operands. Another
 directed test checks the sequential boundary explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
@@ -74,6 +76,7 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_b.sv`,
 `sim/bus/tb_sequential_pipeline_banz.sv`,
 `sim/bus/tb_sequential_pipeline_accumulator_branches.sv`,
+`sim/bus/tb_sequential_pipeline_bv.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
@@ -83,7 +86,7 @@ behavior. The legacy phase wrapper retains the separately verified bus order
 for the remaining branch, I/O, table, and interrupt sequences until those
 states are reworked around explicit pipeline ownership. **Confidence:
 VERIFIED_PRIMARY for the required overlap; INFERRED for exact
-B/BANZ/accumulator-branch interval ownership because no dedicated branch
+B/BANZ/BV/accumulator-branch interval ownership because no dedicated branch
 waveform has been located; implementation behavior VERIFIED_SIMULATION only
 within this stated slice.**
 
@@ -106,9 +109,10 @@ gate topology.
 Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
-one-cycle instructions, exact `B`/`BANZ`, and the six accumulator branches:
+one-cycle instructions, exact `B`/`BANZ`/`BV`, and the six accumulator
+branches:
 
-- BIOZ, BV, and CALL retain legacy two-read evidence but not yet explicit
+- BIOZ and CALL retain legacy two-read evidence but not yet explicit
   execute-slot ownership;
 - IN and OUT retain the primary opcode-prefetch, mutually exclusive DEN/WE
   transfer, and next-prefetch bus order but not yet explicit execute-slot
@@ -210,15 +214,21 @@ printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 component facts; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for the implementation.**
 
-The legacy wrapper gives `BV` the same transaction order and tests unchanged
-sticky OV at its operand sample. OV set selects the canonical target and
-clears OV at legacy retirement; OV clear selects PC+2 and remains clear. Both
-paths consume the operand read, and a clock-enable stall holds PC, OV, and
-that phase. Explicit execute ownership remains unintegrated. MAME's shorter
-untaken abstraction is disclosed in `SC-014`
+The explicit pipeline gives `BV` the same ownership shape as the other
+integrated conditional branches. Opcode-prefetch completion enters BV
+ownership; the nonexecutable PC+1 operand fetch is execution cycle 1 and uses
+old sticky OV to select target or PC+2 without clearing it; execution cycle 2
+fetches that selected instruction. Only the selected-fetch boundary retires
+BV and captures—but does not execute—the fetched word. OV clears there only
+on the taken path. A directed test covers both old-OV outcomes, stalls both
+selected paths, proves OV and execute ownership stable before retirement,
+defers selected-instruction effects, and parks a malformed operand before OV
+mutation. Legacy tests retain additional native transaction coverage. MAME's
+shorter untaken abstraction is disclosed in `SC-014`, not adopted
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
 3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for the legacy combined transaction/commit mapping.**
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 The legacy wrapper gives `BIOZ` the same transaction order, but its predicate
 is the raw external active-low BIO level. TI says BIO is sampled every machine

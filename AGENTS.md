@@ -254,18 +254,20 @@ flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 38 already-qualified one-cycle operation families, and
-exact B, BANZ, and the six accumulator-conditional branches. All retain
+exact B, BANZ, BV, and the six accumulator-conditional branches. All retain
 execute ownership through a nonexecutable operand fetch and the selected
 target/fallthrough instruction fetch, retiring only as that instruction
 enters the execute slot. BANZ tests the old selected nine-bit counter and
 defers its modulo-512 decrement until retirement. The accumulator-branch
-matrix covers both outcomes for every predicate, zero/positive/negative ACC,
-and selected-fetch stalls on both outcomes. These combined interval mappings
-are INFERRED from primary component facts because no dedicated branch pin
-waveform has been located. The full-state offset differential covers the
-43-word directed one-cycle stream and parks before unsupported BV. Other
-multicycle, interrupt, I/O, and table pipeline integration remains absent; do
-not generalize this narrow evidence into a complete fetch/execute claim.
+matrix covers both outcomes for every predicate and zero/positive/negative
+ACC. BV selects from unchanged OV and clears it only at taken retirement.
+Selected-fetch stalls cover both outcomes for the conditional families. These
+combined interval mappings are INFERRED from primary component facts because
+no dedicated branch pin waveform has been located. The full-state offset
+differential covers the 43-word directed one-cycle stream and parks before
+unsupported BIOZ. Other multicycle, interrupt, I/O, and table pipeline
+integration remains absent; do not generalize this narrow evidence into a
+complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover
 reaches prime/stall/replacement/flush/target capture at step 7. This is not

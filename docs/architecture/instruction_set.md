@@ -258,6 +258,18 @@ Native-phase and differential tests place the clear at the taken target-word
 retirement boundary. Pinned MAME agrees on status behavior but shortens the
 untaken path; `SC-014` preserves that timing disagreement.
 
+The source-derived explicit-pipeline mapping places `0xf500` in execute
+ownership at opcode-prefetch completion, reads its nonexecutable canonical
+operand at PC+1 during execution cycle 1, and selects execution cycle 2's
+instruction fetch from old sticky OV. BV retires and captures—but does not
+execute—that word only when the selected fetch completes; a taken BV clears
+OV at that same boundary, while an untaken BV preserves clear OV. A directed
+test covers both outcomes, stalls both selected paths, proves no early OV
+mutation or selected-instruction effect, and parks a malformed operand before
+clear. **Confidence: VERIFIED_PRIMARY for the component facts; INFERRED for
+the combined execute-interval mapping; VERIFIED_SIMULATION for the
+implementation.**
+
 ## Qualified branch-on-I/O-status slice
 
 `BIOZ` is exact opcode `0xf600` followed by a canonical 12-bit absolute

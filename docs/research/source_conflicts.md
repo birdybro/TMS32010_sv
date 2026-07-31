@@ -232,7 +232,10 @@ electrical result of an out-of-range access.
 - **Current treatment:** follow TI's unconditional two-word/two-cycle total
   and perform the second normal program read on both paths. MAME corroborates
   the predicate and taken-path clear but is not used as an untaken timing
-  oracle.
+  oracle. The explicit pipeline holds BV ownership through the nonexecutable
+  operand and condition-selected instruction fetch in both outcomes. It
+  samples old OV for selection and clears OV only when a taken BV retires;
+  this combined interval mapping remains labeled INFERRED.
 - **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
   documented secondary-source timing disagreement.
 

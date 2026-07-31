@@ -118,11 +118,11 @@ data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
 No dedicated original-part pin waveform has been located for the two-word
-branch family. Except for the newly integrated exact `B`, `BANZ`, and six
-accumulator-conditional branches, the ordered reads below are derived from
-the primary word/cycle totals, following-word operand definitions, normal
-program-read rules, and legacy directed traces. They remain INFERRED as
-combined pipeline mappings even though the component facts are
+branch family. Except for the newly integrated exact `B`, `BANZ`, `BV`, and
+six accumulator-conditional branches, the ordered reads below are derived
+from the primary word/cycle totals, following-word operand definitions,
+normal program-read rules, and legacy directed traces. They remain INFERRED
+as combined pipeline mappings even though the component facts are
 VERIFIED_PRIMARY.
 
 Exact `BANZ` now has explicit pipeline ownership. Opcode `0xf400` prefetches
@@ -171,14 +171,19 @@ and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
 **Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
 interval mapping; VERIFIED_SIMULATION for the implementation.**
 
-`BV` also reads its opcode and following target at PC and PC+1 regardless of
-OV. The next read is the target when OV was set or PC+2 when clear. OV clears
-at the taken second-cycle retirement boundary; neither cycle emits `DEN` or
-`WE`. MAME's untaken shortcut is recorded in `SC-014`
+Exact `BV` now has explicit pipeline ownership. Opcode `0xf500` prefetches at
+PC and enters the execute slot. Its canonical PC+1 operand is a nonexecutable
+execution-cycle-1 read, and old sticky OV selects execution cycle 2's normal
+`MEN` read at target or opcode PC+2. BV owns execution and preserves OV until
+that selected word is captured and the branch retires; only a taken
+retirement clears OV. No `DEN` or `WE` phase occurs. A directed test stalls
+both selected paths and parks malformed operands before clear. MAME's
+untaken shortcut is recorded in `SC-014`
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BV`,
 printed pp. 2-2, 2-13, 3-6, and 3-23
 (PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for combined pipeline mapping.**
+facts; INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
+implementation.**
 
 `BIOZ` likewise reads exact opcode `0xf600` at PC and its following target at
 PC+1 on both pin levels. Both are normal `MEN` reads; neither emits `DEN` or

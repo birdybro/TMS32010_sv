@@ -2,10 +2,10 @@
 
 - **Current milestone:** multicycle fetch/execute integration
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
+- **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 15 native bus/phase tests, including five explicit pipeline tests; one
+  tests; 16 native bus/phase tests, including six explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -34,8 +34,9 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 14,525 generic cells with 43 retained checks and
-  no structural problems after exact B/BANZ/accumulator-branch integration;
+  independently passes at 14,567 generic cells with 44 retained checks and
+  no structural problems after exact B/BANZ/BV/accumulator-branch
+  integration;
   this is not a
   Quartus fit or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -185,8 +186,12 @@
   the original TI two-word/two-cycle definitions; BV is exact
   opcode `0xf500`, tests sticky OV, always reads its canonical target word,
   selects target and clears OV when set, or selects PC+2 with OV clear when
-  not set; both outcomes take two cycles, and MAME's shorter untaken
-  abstraction is recorded as `SC-014`; BIOZ is exact opcode `0xf600`,
+  not set; both outcomes take two cycles; its INFERRED explicit-pipeline
+  mapping holds BV through the nonexecutable operand and condition-selected
+  fetch, uses old OV for selection, and clears OV only at taken retirement;
+  directed tests cover both outcomes, selected-fetch stalls, effect deferral,
+  and malformed-operand parking; MAME's shorter untaken abstraction is
+  recorded as `SC-014`; BIOZ is exact opcode `0xf600`,
   exposes the physical active-low input without an opcode-time latch, samples
   its live value at the target-word falling edge, and consumes the mandatory
   target read/two cycles in both pin states; MAME's abstract asserted callback
@@ -239,7 +244,7 @@
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
 - **Unresolved issues:** pipeline ownership beyond sequential one-cycle
-  instructions, exact B/BANZ, and the six accumulator branches; interrupt
+  instructions, exact B/BANZ/BV, and the six accumulator branches; interrupt
   execute-overlap
   ownership and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
@@ -253,10 +258,10 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend explicit pipeline ownership to exact BV under a
-  directed set/clear-OV and target/fallthrough-fetch contract, prove that OV
-  clears only at taken retirement, retain its interval mapping as INFERRED,
-  and move the unsupported-scope sentinel forward; then continue
+- **Next task:** extend explicit pipeline ownership to exact BIOZ under its
+  live active-low input contract, prove which execute interval samples BIO,
+  retain its interval mapping as INFERRED, and move the unsupported-scope
+  sentinel forward; then continue
   `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
@@ -275,4 +280,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `e6d5a05`
+  `deca6c9`

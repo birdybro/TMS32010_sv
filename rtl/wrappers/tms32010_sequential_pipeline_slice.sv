@@ -1,9 +1,9 @@
 `default_nettype none
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
-// instructions, exact B/BANZ, and the exact accumulator-conditional branch
-// family. Program fetch owns a separate address from the core PC. Other
-// multicycle, reserved, and invalid-data-address instructions park the
+// instructions, exact B/BANZ/BV, and the exact accumulator-conditional
+// branch family. Program fetch owns a separate address from the core PC.
+// Other multicycle, reserved, and invalid-data-address instructions park the
 // wrapper before execution; the legacy phase wrapper remains responsible for
 // their separately qualified traces.
 module tms32010_sequential_pipeline_slice (
@@ -66,6 +66,7 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_BLZ  = 6'd42;
   localparam logic [5:0] OP_BNZ  = 6'd43;
   localparam logic [5:0] OP_BZ   = 6'd44;
+  localparam logic [5:0] OP_BV   = 6'd45;
   localparam logic [5:0] OP_SUBH = 6'd52;
 
   function automatic logic is_accumulator_branch(
@@ -123,6 +124,7 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_is_banz;
   logic        execute_is_b;
   logic        execute_is_accumulator_branch;
+  logic        execute_is_bv;
   logic        execute_control_supported;
   logic        control_operand_step;
   logic        control_target_step;
@@ -178,6 +180,11 @@ module tms32010_sequential_pipeline_slice (
             accumulator_condition_taken
               ? program_data_i[11:0]
               : program_bus_address + 12'h001;
+        end else if (execute_is_bv) begin
+          next_fetch_address =
+            overflow_flag_o
+              ? program_data_i[11:0]
+              : program_bus_address + 12'h001;
         end
       end
     end
@@ -201,10 +208,15 @@ module tms32010_sequential_pipeline_slice (
     execute_valid_o &&
     execute_decoded_valid &&
     is_accumulator_branch(execute_decoded_operation);
+  assign execute_is_bv =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_BV);
   assign execute_control_supported =
     execute_is_banz ||
     execute_is_b ||
-    execute_is_accumulator_branch;
+    execute_is_accumulator_branch ||
+    execute_is_bv;
   assign control_operand_step =
     execute_control_supported &&
     (pipeline_state == PIPELINE_SEQUENTIAL);
@@ -407,6 +419,15 @@ module tms32010_sequential_pipeline_slice (
               program_bus_address ==
               (
                 accumulator_condition_taken
+                  ? branch_operand_word[11:0]
+                : pc_o + 12'h001
+              )
+            );
+          end else if (execute_is_bv) begin
+            assert (
+              program_bus_address ==
+              (
+                overflow_flag_o
                   ? branch_operand_word[11:0]
                   : pc_o + 12'h001
               )
