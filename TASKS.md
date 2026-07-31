@@ -1041,17 +1041,29 @@ objective passing evidence.
 
 ### TIMING-002 — Stall protocol and stability
 
-- **Status:** NOT STARTED
+- **Status:** COMPLETE
 - **Priority:** P0
 - **Dependencies:** BUS-001, BUS-002, BUS-003
-- **Description:** Reproduce ready sampling and wait insertion for all external
-  spaces and relevant phases.
-- **Acceptance criteria:** zero/multiple waits pass; address/control/write data
-  remain stable; liveness holds under an eventually-ready assumption.
-- **Documentation:** `docs/timing/bus_cycles.md`
-- **Tests:** `sim/bus/tb_wait_states.sv`, `formal/bus/`
+- **Description:** Define and verify the synchronous platform phase-pause
+  adaptation used when an FPGA integration cannot complete a represented bus
+  phase at the nominal host-clock rate. This is not a native READY protocol.
+- **Acceptance criteria:** zero and multiple host-clock holds produce identical
+  architectural results; phase, address, control, and write data remain stable;
+  no sample or retirement occurs early; execution resumes within a directed
+  finite bound after re-enable. Any unbounded liveness claim requires an
+  explicit eventually-enabled environment assumption.
+- **Documentation:** `docs/timing/bus_cycles.md`,
+  `docs/timing/native_phase_contract.md`
+- **Tests:** `sim/bus/tb_wait_states.sv`,
+  `formal/tms32010_program_bus_reset.sby`,
+  `formal/tms32010_pipeline_table.sby`,
+  `formal/tms32010_pipeline_table_write.sby`
 - **Notes:** Original 40-pin TMS32010 has no READY/WAIT input. Research safe
-  clock/phase adaptation under OQ-001; do not invent a native wait protocol.
+  physical clock adaptation remains under OQ-001; do not invent a native wait
+  protocol. The unified directed test inserts 16 host clocks across ordinary
+  MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases and compares the final
+  state with a zero-pause run. Existing transaction-specific tests independently
+  exercise live-read sampling and deferred commit.
 
 ## Milestone 17 — Differential testing
 

@@ -75,6 +75,14 @@ module tms32010_program_bus_reset_formal (
           assert (phase == $past(phase) + 2'd1);
         end else begin
           assert (phase == $past(phase));
+          assert (clkout == $past(clkout));
+
+          // program_read_i is a combinational transaction qualifier rather
+          // than retained DUT state.  With that wrapper-owned qualifier held
+          // stable, a disabled host clock also holds the native MEN level.
+          if (program_read_i == $past(program_read_i)) begin
+            assert (men_n == $past(men_n));
+          end
         end
 
         if (!$past(clock_enable_i) || $past(phase) != 2'd3) begin

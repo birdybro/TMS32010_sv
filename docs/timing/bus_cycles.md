@@ -38,8 +38,40 @@ periods, but their retirement-mapped cycle counter is not evidence of
 distinct execute ownership. See `docs/timing/native_phase_contract.md`.
 
 No READY pin appears in the original pinout. There is therefore no verified
-native wait-state transaction to diagram. `TIMING-002` remains a research
-task for safe clock/phase adaptation rather than a presumed handshake.
+native wait-state transaction to diagram. Slow-memory integration therefore
+uses a separately labeled synchronous platform adaptation, not a presumed
+handshake.
+
+## Portable synchronous phase pause
+
+The portable wrappers expose `clock_enable_i` to hold one of the four modeled
+digital subphases. When it is low during an active retained phase, the phase,
+`CLKOUT`, program/port address, `MEN`/`DEN`/`WE`, direction, write data,
+execute ownership, architectural registers, internal RAM, and architectural
+cycle count remain unchanged. Event observations such as `sample_o` and
+`retired_o` are pulses and remain inactive while paused; they are not retained
+level signals. Wrapper-owned combinational qualifiers must also remain stable.
+In particular, the standalone program-bus proof makes `MEN` stability
+conditional on stable `program_read_i`.
+
+Read data is deliberately live until the enabled falling-boundary sample.
+An integration adapter may therefore wait for program or I/O input data, then
+present it before re-enabling the phase. It must not change a write address,
+direction, or output word during the pause.
+
+`sim/bus/tb_wait_states.sv` compares the same synthetic program with zero
+holds and with 16 host-clock holds distributed across an ordinary program
+read, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE. It checks every exposed retained
+state/control value on each held clock, exact elapsed-host-clock extension,
+finite resumption, and identical final PC, ACC, RAM, and program memory.
+Transaction-specific tests separately check that IN and program read inputs
+remain live until the enabled sample. The 40-step standalone program-bus BMC
+proves phase/address/transaction retention for arbitrary clock-enable choices;
+the integrated TBLR/TBLW BMCs cover their fixed programs under arbitrary
+holds. None of this proves a native wait protocol, arbitrary physical clock
+stoppage, electrical timing, or unbounded liveness. **Confidence:
+VERIFIED_SIMULATION for the FPGA phase-pause adaptation; UNKNOWN for physical
+clock stretching under `OQ-001`.**
 
 `IN` and `OUT` have a primary-defined native transaction sequence. The
 ordinary one-word opcode prefetch uses `MEN`. At that falling-edge sample the

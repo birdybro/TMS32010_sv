@@ -385,6 +385,32 @@ vector-2 selection. This is an assertion about the explicit digital phase
 mapping. A phase-3 transition in this simulation is not evidence that a
 physical pin transition violating the 50 ns setup time would be recognized.
 
+## Platform phase-pause contract
+
+`clock_enable_i` is an FPGA integration control, not an original processor
+pin. Deasserting it holds the current modeled phase and all retained
+transaction and architectural state. For active program, I/O, and table
+phases, the integrated wrapper keeps address, active-low strobe, transaction
+direction, output data, execute ownership, and architectural cycle count
+stable. `sample_o` and `retired_o` are event pulses; they remain low rather
+than becoming held level signals. Live read inputs may change during a pause
+and are consumed only when an enabled phase-3-to-phase-0 boundary occurs.
+
+The zero-pause/multiple-pause comparison in `sim/bus/tb_wait_states.sv`
+inserts exactly 16 host clocks over ordinary MEN, IN/DEN, OUT/WE, TBLR/MEN,
+and TBLW/WE transactions. The paused and unpaused runs reach identical PC,
+ACC, internal-RAM, and program-memory results, and the paused run takes exactly
+16 additional host clocks. Existing focused transaction tests and the two
+table formal harnesses provide independent per-family evidence. The standalone
+program-bus proof leaves clock enable arbitrary and additionally proves
+`CLKOUT` stability plus `MEN` stability when its combinational read qualifier
+is stable.
+
+This contract supports a synchronous slow-memory adapter that eventually
+re-enables the host phase. It neither asserts unbounded liveness without that
+environment condition nor resolves whether physical TMS32010 clock stretching
+is electrically safe. That silicon question remains `OQ-001`.
+
 ## RTL mapping status
 
 The standalone `tms32010_program_bus` primitive represents the normal read

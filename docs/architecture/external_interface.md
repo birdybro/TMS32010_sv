@@ -316,10 +316,13 @@ documented clock-stretching rule.**
 
 Consequently a modern `ready` input must not be described as original
 TMS32010 behavior. If integration needs slow memory, a separate adapter may
-pause explicit emulation phases under documented-safe clock conditions; its
-behavior and divergence will be tested and labeled. TASKS milestone
-`TIMING-002` must be revised around evidence rather than presuming a READY
-protocol.
+pause explicit emulation phases with the platform-only `clock_enable_i`.
+`TIMING-002` now verifies that digital adaptation across ordinary program,
+I/O, and table transactions: retained address/control/write-data state does
+not advance, sample/retirement events remain inactive, and re-enabling resumes
+the same transaction. This is **VERIFIED_SIMULATION** platform behavior, not
+evidence that an NMOS TMS32010 clock may be stopped at an arbitrary point.
+Physical clock-stretching legality remains `OQ-001`.
 
 ## Native RTL signal groups
 

@@ -107,7 +107,9 @@ arbitrary in the safety proof.
 Assertions check deterministic FPGA initialization, exact four-phase
 progression, `CLKOUT` and active-low `MEN` relationships, phase/address/
 transaction retention across arbitrary clock-enable stalls, and single-pulse
-sampling. They also prove that reset assertion does not abort an active read
+sampling. A disabled host clock holds `CLKOUT`; `MEN` is also proven stable
+when its wrapper-owned combinational `program_read_i` qualifier is stable.
+They also prove that reset assertion does not abort an active read
 before an enabled phase-3 falling boundary, that a recognized boundary makes
 the bus inactive at address zero, that the first deasserted boundary only
 synchronizes release, and that the second deasserted boundary starts the

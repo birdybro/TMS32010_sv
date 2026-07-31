@@ -135,7 +135,12 @@ harness proves the digital reset/release transition relation for arbitrary
 logical reset, clock-enable, read-qualification, and next-address inputs; its
 five-cycle-reset/address-0/address-1 cover reaches step 34. This is bounded
 wrapper evidence, not electrical or original-silicon qualification. Another
-40-step integrated-pipeline harness checks one direct TBLR
+directed zero-pause/multiple-pause regression holds ordinary program, IN,
+OUT, TBLR, and TBLW phases for a total of 16 host clocks and obtains the same
+architectural and memory result with exactly 16 clocks of extension. This is
+a synchronous FPGA adaptation through `clock_enable_i`, not a native READY
+protocol or proof that a physical NMOS clock can be stopped arbitrarily.
+A 40-step integrated-pipeline harness also checks one direct TBLR
 discarded/transfer/repeated-fetch sequence and
 reaches its LACK/TBLR/LAC/NOP cover at step 34. A complementary 40-step direct-TBLW
 harness proves one synchronous phase-3 program write and rewritten-word

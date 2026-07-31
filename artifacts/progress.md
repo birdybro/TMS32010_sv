@@ -1,12 +1,13 @@
 # Progress summary
 
-- **Current milestone:** original status-word evidence qualification
-- **Completed task IDs:** REPO-001, REF-001, BUS-003
+- **Current milestone:** portable synchronous phase-pause qualification
+- **Completed task IDs:** REPO-001, REF-001, BUS-003, TIMING-002
 - **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
+  tests; 24 native bus/phase tests, including thirteen explicit pipeline tests
+  plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -99,6 +100,16 @@
   model-only CALA, and upper-MPYK cases. Mnemonic authority remains with the
   database/fixtures; execution, timing, and unsupported-silicon behavior are
   excluded.
+- **Phase-pause evidence:** the original part has no READY/WAIT pin. The
+  platform `clock_enable_i` adaptation is now directed-tested across ordinary
+  MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases. Sixteen inserted host
+  clocks hold every exposed retained control/state value, produce no early
+  sample or retirement, add exactly 16 clocks to completion, and converge to
+  the zero-pause PC/ACC/RAM/program-memory result. The standalone 40-step bus
+  proof additionally checks held `CLKOUT` and conditionally held `MEN` under
+  arbitrary enable choices. This is synchronous FPGA evidence only; physical
+  clock stretching remains open as `OQ-001` and no unbounded liveness theorem
+  is claimed.
 - **Status-word evidence:** SPRU001B defines exactly five architectural status
   bits. Its overview, LST, and SST figures agree that stored-word bits 12:9
   and 7:2 are ones; LST ignores bit 13 and every non-field position. Only bit
@@ -377,14 +388,16 @@
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
-  safe phase adaptation without READY; the opcode audit still has 28,656
-  primary-unlisted words with unknown silicon behavior and 372 unresolved
-  simultaneous-update words
-- **Next task:** retain the complete opcode documentation partition without
-  promoting primary-unlisted words to reserved behavior; resolve the 372
-  simultaneous-update combinations only from further primary or physical
-  evidence under `OQ-010`. Continue with the next unblocked P0 architecture or
-  RTL task. For `CTRL-001`, physical electrical timing and original-silicon
+  physical TMS32010 clock-stretching legality without READY; the opcode audit
+  still has 28,656 primary-unlisted words with unknown silicon behavior and
+  372 unresolved simultaneous-update words
+- **Next task:** continue the next unblocked P0 architecture or RTL timing task
+  without treating the remaining physical-clock question as a native wait
+  protocol. Retain the
+  complete opcode documentation partition without promoting primary-unlisted
+  words to reserved behavior; resolve the 372 simultaneous-update combinations
+  only from further primary or physical evidence under `OQ-010`. For
+  `CTRL-001`, physical electrical timing and original-silicon
   values for TI-unlisted state remain outside current evidence. Keep PUSH/POP
   outside RTL
   until `OQ-016` gains the measured address/word-ownership trace; keep LST's
@@ -392,4 +405,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `412dd8a`
+  `fb6f5d2`

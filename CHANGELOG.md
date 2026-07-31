@@ -113,6 +113,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Standalone four-subphase program-read engine with distinct FPGA
   initialization and physical-reset controls, plus directed phase/reset/stall
   verification.
+- A unified synchronous phase-pause regression comparing zero holds with 16
+  host-clock holds across ordinary program reads, IN, OUT, TBLR, and TBLW. It
+  checks retained controls and architectural state on every held clock, exact
+  elapsed-clock extension, bounded resumption, and identical final RAM and
+  program-memory results without claiming a native READY protocol.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
 - Sequential native-phase wrapper that retires the 41 supported one-cycle
@@ -435,6 +440,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The platform-only `clock_enable_i` phase-pause contract across every
+  currently represented external transaction class. The complete native
+  bus/phase suite now passes 24 tests. The 40-step program-bus BMC also proves
+  held `CLKOUT` and conditionally held `MEN` when its wrapper-owned read
+  qualifier is stable. Physical clock stretching and unbounded liveness remain
+  outside this evidence under `OQ-001`.
 - Original status-word evidence now separates the five architectural fields
   from the 16-bit LST/SST representation. SPRU001B agrees that SST bits 12:9
   and 7:2 are ones and LST ignores every non-field source bit; model tests
@@ -863,7 +874,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 106 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 23
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 24
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
