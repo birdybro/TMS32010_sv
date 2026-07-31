@@ -60,15 +60,18 @@ execute-slot ownership.
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-fifty-three-instruction RTL subset, then check retirement on the falling-edge
+fifty-four-instruction RTL subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
-`ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBH`, `SUBS`, `XOR`,
+`ABS`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBH`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
 direct and indirect cases, including every documented SACH shift, positive
 and negative ADD/SUB/SUBH saturation, ADDS/SUBS overflow-mode outcomes, and every
 logic upper-half effect. This qualifies the documented
 one-cycle totals only inside the current sequential subset; it does not
 qualify general fetch/execute overlap or any unimplemented instruction.
+Directed ABS tests separately assert one program fetch, no data or I/O
+transaction, and exactly one architectural cycle for ordinary and
+most-negative values under both OVM modes.
 Directed MAR tests additionally assert one-cycle direct-NOP and indirect
 AR/ARP-update cases with no data-memory transaction. Directed LDP tests assert
 one-cycle direct/indirect reads, source-bit transfer, and AR/ARP update ordering.

@@ -96,7 +96,7 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Fifty-seven encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Fifty-eight encodings (`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `POP`, `PUSH`, `RET`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`,
@@ -109,13 +109,16 @@ objective passing evidence.
   IN and OUT add 2,240 legal direct/indirect port/address combinations under
   those same common indirect constraints. TBLR/TBLW add 280 legal common
   address combinations. The decoder exhaustively classifies all 65,536 words
-  against this partial set, accepting 21,726 supported words without
-  collisions; the remaining 3
+  against this partial set, accepting 21,727 supported words without
+  collisions; the remaining 2
   instructions and full reserved-region
-  classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
-  the research notes but deliberately withheld from the supported database
-  and fixtures until its original-part `OV` behavior is resolved under
-  `SC-007`/`OQ-013`. Exact `PUSH=0x7f9c` and `POP=0x7f9d` encodings, stack
+  classification remain. Exact `ABS=0x7f88`, accumulator result, OVM-selected
+  most-negative wrap/saturation, and one-cycle program-only boundary are
+  primary-verified. Original-part OV preservation is `CORROBORATED` by
+  SPRU013's instruction-format rule, the absence of status annotations on the
+  original ABS page, the later C14/E14 variant's explicit added OV effect,
+  and pinned MAME; `SC-007`/`OQ-013` record the resolution. Exact
+  `PUSH=0x7f9c` and `POP=0x7f9d` encodings, stack
   transformations, and one-word/two-cycle totals are primary-transcribed in
   the supported database and independent hand fixtures. Their external
   second-cycle sequence remains explicitly unresolved under `OQ-016`; this
@@ -167,7 +170,7 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `TBLR`, `TBLW`,
   `ROVM`, `SACL`, `SACH`,
@@ -214,6 +217,11 @@ objective passing evidence.
   endpoint saturation, and common direct/indirect address updates.
   SUBS covers unsigned-source subtraction, sticky OV, negative wrap, and
   negative saturation.
+  ABS negates only negative ACC values, selects two's-complement wrap or
+  positive saturation for the most-negative input through OVM, preserves OV
+  and all unrelated state, and consumes one program-only cycle. The result,
+  OVM selection, and timing are primary-verified; OV preservation is
+  `CORROBORATED` under resolved `SC-007`/`OQ-013`.
   AND/OR/XOR cover low-half logic, their distinct upper-half behavior, and
   unchanged OV/OVM.
   DINT/EINT set and clear INTM in one program-only cycle while preserving the
@@ -291,7 +299,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same fifty-seven instructions as the
+- **Notes:** Qualified slice supports the same fifty-eight instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -301,11 +309,11 @@ objective passing evidence.
   ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBH/SUBS/TBLR/TBLW/XOR/ZALH/ZALS syntax without a shift operand,
   checked `IN`/`OUT` data-address plus numeric or PA0–PA7 port syntax,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC/CALA/DINT/EINT/POP/PUSH/RET and two-word
+  ABS/PAC/APAC/SPAC/CALA/DINT/EINT/POP/PUSH/RET and two-word
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 3
+  directed-tested. The remaining 2
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -325,7 +333,9 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  fifty-three-instruction slice. `LAC`
+  fifty-four-instruction slice. `ABS` verifies zero, positive, ordinary
+  negative, and most-negative accumulator values under both OVM modes while
+  preserving incoming OV. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty-five common-address data instructions verify direct/indirect read/write
@@ -408,7 +418,7 @@ objective passing evidence.
   `formal/sequencer/`
 - **Notes:** Temporary clock-enable execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of 38 supported one-cycle instructions, including all
+  retires each of 39 supported one-cycle instructions, including all
   twenty-three internal-data operations, on its falling-edge sample. B, BANZ,
   BIOZ, BV, CALL, and six accumulator branches share the first two-cycle state:
   opcode and following target receive
@@ -489,7 +499,7 @@ objective passing evidence.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
   parking on an unsupported control word, and reset recovery. An offset differential
-  runs the full existing 43-word/38-family one-cycle program and compares PC,
+  runs the full existing 44-word/39-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
   and illegal state after every pipelined retirement. Figure 2-12's basic
   EINT/protected/dummy/vector path now has explicit ownership with stalls and
@@ -855,8 +865,11 @@ objective passing evidence.
   preservation from full-accumulator OVM saturation, cover both overflow
   directions and sticky OV, and exercise direct/indirect address ordering.
   The apparent wording tension is resolved and recorded as `SC-016`.
-  `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
-  remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
+  `ABS` now passes exact-decode, hand-fixture, model/tool/RTL, one-cycle native,
+  OV-preservation, OVM-boundary, seeded differential, and pipeline-stream
+  tests. Its original-part OV preservation is `CORROBORATED`; result and
+  timing are `VERIFIED_PRIMARY` under resolved `SC-007`/`OQ-013`. `ADDH`
+  remains explicitly unimplemented under `SC-006`/`OQ-011`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family
   when implementation begins.
 
@@ -979,6 +992,8 @@ objective passing evidence.
   inactive logical data strobes.
   SPAC cases compare full-width subtraction, OV/OVM outcomes, unchanged P,
   and inactive logical data strobes.
+  ABS cases compare ordinary negation, most-negative OVM wrap/saturation,
+  preserved incoming OV, one-cycle totals, and inactive logical data strobes.
   A focused BANZ differential aligns model instruction boundaries with the
   RTL's two machine-cycle traces and compares both program-read addresses,
   retirement, cumulative cycles, branch/fallthrough PC, and counter effects.
@@ -1077,7 +1092,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Fifty-three-instruction RTL, phase engine, multiplier, and
+- **Notes:** Fifty-four-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in
@@ -1086,9 +1101,9 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,514 generic cells/26 checks) and the
+  harness (13,632 generic cells/26 checks) and the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (15,365 cells/103 checks), each with zero structural
+  pipeline slice (15,535 cells/103 checks), each with zero structural
   problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.

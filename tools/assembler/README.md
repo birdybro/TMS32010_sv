@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
@@ -43,6 +43,7 @@ provisional under `OQ-015`.
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.
 `PAC`, `APAC`, `SPAC`, `CALA`, `DINT`, `EINT`, `POP`, and `PUSH` are
 implied instructions with no operands.
+`ABS` is likewise implied and emits exact word `0x7f88`.
 
 `ADD` and `SUB` accept the same address and shift syntax as `LAC`, for example
 `ADD 6,4`, `SUB 6,4`, or `SUB *+,8,AR1`.

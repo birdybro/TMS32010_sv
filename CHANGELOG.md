@@ -21,7 +21,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   `CLKOUT` into `/BIOS`, and the separate `320IRQ` net belongs to the
   68000-side interrupt path.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fifty-seven model/tool encodings.
+  mnemonics and fully describes the first fifty-eight model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -30,7 +30,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the fifty-three-instruction slice.
+  clock-enable execution core for the fifty-four-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - A 32-case interrupt-arrival matrix covering every represented machine cycle
@@ -53,7 +53,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A core-connected sequential pipeline qualification wrapper with a distinct
   fetch address, first-fetch priming, one-cycle retirement overlap, visible
   multicycle parking, reset recovery, and full-state offset comparison across
-  the existing 43-word/38-family one-cycle stream.
+  the existing 44-word/39-family one-cycle stream.
 - Explicit unconditional-B pipeline ownership: the operand fetch is
   nonexecutable cycle 1, the redirected target fetch is cycle 2, B retains
   the execute slot until target capture, and malformed operands park before
@@ -106,7 +106,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the 38 supported one-cycle
+- Sequential native-phase wrapper that retires the 39 supported one-cycle
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -151,9 +151,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Primary-cited `SUBS` database, model, assembler/disassembler, RTL,
   native-phase, and differential support for unsigned-source subtraction,
   sticky overflow, wrapped results, and negative OVM saturation.
-- A scoped `ABS` evidence record that separates its primary-verified opcode,
-  result, OVM behavior, and one-cycle timing from its unresolved original-part
-  sticky-OV side effect.
+- Primary-cited exact `ABS=0x7f88` database, independent fixture,
+  assembler/disassembler, model, RTL, native-phase, and differential support
+  for ordinary negation and OVM-selected most-negative wrap/saturation while
+  preserving incoming OV.
 - Primary-cited `LAR` database, model, assembler/disassembler, RTL,
   native-phase, and differential support for either auxiliary-register target,
   including TI's exceptional suppression of indirect post-modification when
@@ -336,10 +337,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated fifty-three-instruction
-  phase/RAM/multiplier/I/O/table/interrupt-entry slice in 2,098 ALMs/2,588
-  registers and one DSP block, with +1.634 ns worst setup and +0.168 ns worst
-  hold slack at 50 MHz and 54.45 MHz worst slow-corner internal Fmax; 385
+- Quartus 17.0.2 fits the integrated fifty-four-instruction
+  phase/RAM/multiplier/I/O/table/interrupt-entry slice in 2,136 ALMs/2,588
+  registers and one DSP block, with +1.887 ns worst setup and +0.164 ns worst
+  hold slack at 50 MHz and 55.21 MHz worst slow-corner internal Fmax; 385
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -354,15 +355,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers fifty-three of 60 documented
+- The qualified model/tool/RTL boundary now covers fifty-four of 60 documented
   mnemonics: twenty-four common-address internal-data families, two
   common-address I/O families, and two table-transfer families.
 - The instruction-boundary model represents interrupt acknowledge as a
   non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
-- The model/tool boundary now contains 57 instructions while RTL/differential
-  remains at 53. CALA/RET/PUSH/POP second external cycles are not fabricated
+- The model/tool boundary now contains 58 instructions while RTL/differential
+  remains at 54. CALA/RET/PUSH/POP second external cycles are not fabricated
   in model transaction traces and remain outside RTL under
   `OQ-007`/`OQ-016`.
 - Timing documentation now follows TI's explicit opcode-prefetch convention:
@@ -482,8 +483,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Atari drawing A044427 identifies a physical TMS32010 with a 20 MHz crystal;
   MAME's C10 device selection is recorded as a secondary-source conflict.
 - Original TI pages and the later C14/E14 variant page were compared directly
-  with pinned MAME for `ABS`; the disagreement is preserved as
-  `SC-007`/`OQ-013`, and no provisional implementation was admitted.
+  with pinned MAME for `ABS`. SPRU013's instruction-format rule makes the
+  original page's absent status annotation meaningful, while the later
+  variant explicitly adds an OV effect; `SC-007` records the scoped variant
+  difference and `OQ-013` is resolved with `CORROBORATED` original-part OV
+  preservation.
+- Directed ABS model/RTL tests cover zero, positive, ordinary negative, and
+  most-negative accumulator values under both OVM modes and both incoming OV
+  values. Exact one-cycle program-only timing, exhaustive decode, implied
+  assembler/disassembler round trips, seeded differential inclusion, and
+  native/explicit-pipeline state preservation are checked automatically.
 - Hand fixtures and directed model/RTL tests verify both `LAR` targets,
   direct/page-one and indirect reads, status preservation, unresolved-address
   traps, reserved target rejection, ARP replacement, and the selected-target
@@ -492,8 +501,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.67+111 synthesizes the fifty-three-instruction hierarchy and partial
-  interrupt-entry sequencer to 13,514 generic cells with 26 retained checks,
+- Yosys 0.67+111 synthesizes the fifty-four-instruction hierarchy and partial
+  interrupt-entry sequencer to 13,632 generic cells with 26 retained checks,
   zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
@@ -698,10 +707,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   once at program address 2, refetched, and executed as `LACK 0x44`.
 - Yosys 0.67+111 synthesizes the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  sequential pipeline wrapper to 15,365 generic cells with 103 retained
+  sequential pipeline wrapper to 15,535 generic cells with 103 retained
   checks and zero structural errors;
   `make synth-yosys` now reproducibly runs this top as well as the unchanged
-  13,514-cell/26-check legacy harness.
+  13,632-cell/26-check legacy harness.
 - Directed pipeline tests prove that fetch 0 does not retire, fetch and execute
   addresses remain one word apart across stalls, every word in the qualified
   one-cycle stream matches legacy architectural state at one-retirement
@@ -751,8 +760,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 23
+- The complete current regression passes 100 repository/ISA/tool tests, 220
+  directed model/unit tests, 36 exhaustive/directed instruction RTL tests, 23
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -761,8 +770,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- Fifty-seven of 60 documented instruction mnemonics have model/tool evidence;
-  fifty-three also have RTL/differential evidence.
+- Fifty-eight of 60 documented instruction mnemonics have model/tool evidence;
+  fifty-four also have RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).
@@ -816,9 +825,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   multicycle-arrival matrix, indirect table addressing, RET, the general
   pipeline, general external-memory behavior, and broad decode/datapath
   properties.
-- Original-part ADDH overflow/saturation, physical-reset retention of unlisted
-  state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
-  OQ-013.
+- Original-part ADDH overflow/saturation and physical-reset retention of
+  unlisted state remain unresolved as `OQ-011` and `OQ-012`. ABS result and
+  timing are primary-verified; its OV preservation is explicitly
+  `CORROBORATED`, not physical-hardware verified, under resolved `OQ-013`.
 - Original-part DMOV/LTD behavior when source `0x8f` implies destination
   `0x90` remains unresolved under `OQ-014`; the partial implementation traps
   before all effects and labels that policy provisional.

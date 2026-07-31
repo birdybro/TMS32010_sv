@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
   `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
   `XOR`, `ZAC`, `ZALH`, and `ZALS`;
@@ -91,6 +91,8 @@ Current supported boundary:
   or signed-endpoint saturation, unchanged P, and no logical data transaction;
 - `SPAC` full-width ACC-minus-P arithmetic with the same sticky-OV and
   OVM-controlled result policy, unchanged P, and no logical data transaction;
+- `ABS` signed magnitude conversion, the OVM-selected most-negative result,
+  preserved incoming OV, one-cycle total, and no logical data transaction;
 - `DINT`/`EINT` exact fixed decode and one-cycle `INTM` set/clear behavior,
   active-low request sampling, masked request persistence, EINT and MPY/MPYK
   deferral, a non-instruction return-PC dummy-fetch step, stack entry,

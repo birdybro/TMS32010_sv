@@ -1360,6 +1360,18 @@ class ToolchainSliceTests(unittest.TestCase):
         ):
             self.assembler.assemble_text("ADDH 0\n")
 
+    def test_abs_round_trips_exact_implied_word(self) -> None:
+        result = self.assembler.assemble_text("ABS\n")
+        self.assertEqual(list(result.words.values()), [0x7F88])
+        self.assertEqual(self.disassembler.disassemble_source([0x7F88]), "ABS\n")
+        rebuilt = self.assembler.assemble_text(
+            self.disassembler.disassemble_source([0x7F88])
+        )
+        self.assertEqual(list(rebuilt.words.values()), [0x7F88])
+
+        with self.assertRaisesRegex(AssemblyError, "expects no operands"):
+            self.assembler.assemble_text("ABS 1\n")
+
     def test_expression_language_rejects_code_execution(self) -> None:
         with self.assertRaisesRegex(AssemblyError, "invalid expression"):
             self.assembler.assemble_text(

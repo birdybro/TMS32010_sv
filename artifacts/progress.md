@@ -1,14 +1,14 @@
 # Progress summary
 
-- **Current milestone:** multicycle fetch/execute integration
+- **Current milestone:** instruction-family qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
-  directed model tests; one standalone fetch/execute RTL unit; 35 RTL
+- **Tests passing:** 100 repository/provenance/document/ISA/toolchain tests; 220
+  directed model tests; one standalone fetch/execute RTL unit; 36 RTL
   instruction/decode tests; 5 interrupt RTL/phase
   tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
   one
   512-instruction seeded
-  38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  39-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 16 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
@@ -19,23 +19,23 @@
   of all 15 currently supported multicycle core families; four native
   subphase arrivals with a stalled phase-2 case and falling-boundary ownership
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the fifty-three-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,098
-  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 54.45 MHz worst
-  slow-corner internal Fmax, +1.634 ns setup slack, and +0.168 ns worst hold
+  the fifty-four-instruction partial core, multiplier, 144-word RAM, and
+  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,136
+  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 55.21 MHz worst
+  slow-corner internal Fmax, +1.887 ns setup slack, and +0.164 ns worst hold
   slack at 50 MHz. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,514 generic cells with 26 retained checks and lowering the
+  producing 13,632 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,365 generic cells with 103 retained checks and
+  independently passes at 15,535 generic cells with 103 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration;
   this is not a
@@ -108,9 +108,14 @@
   wraps with OVM clear, and saturates at either signed endpoint with OVM set;
   SUBS instead zero-extends its RAM word, can overflow only negatively, and
   follows the same sticky-OV/wrap/saturation policy; ABS is opcode `0x7f88`,
-  one word and one cycle, and selects wrap or positive saturation for
-  `0x80000000` through OVM, but original sources do not say whether it sets
-  sticky OV; LAR loads either auxiliary register from internal data RAM in one
+  one word and one program-only cycle, negates ordinary negative ACC values,
+  and selects wrap or positive saturation for `0x80000000` through OVM. It
+  preserves incoming OV: SPRU013's instruction-format rule makes the original
+  ABS page's absent status annotation meaningful, the later C14/E14 variant
+  explicitly adds an OV effect, and pinned MAME independently corroborates
+  preservation. Result and timing are VERIFIED_PRIMARY; OV preservation is
+  CORROBORATED under resolved `SC-007`/`OQ-013`; LAR loads either auxiliary
+  register from internal data RAM in one
   cycle, replaces ARP when requested, and exceptionally suppresses indirect
   auto-increment/decrement when the loaded target is the selected address
   register while retaining normal post-modification for the other target; SAR
@@ -297,15 +302,14 @@
   control-flow traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
   OV stage, simultaneous indirect
-  increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
+  increment/decrement, out-of-range RAM behavior, original-part ADDH
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend `FORMAL-001` only with a bounded indirect-table case
-  whose architectural ordering is already documented, or return to
-  primary-source research for unresolved CALA/RET/PUSH/POP timing; preserve the
-  distinction between model-qualified CALA/RET/PUSH/POP
+- **Next task:** qualify `SST` only with an explicitly documented reserved/
+  don't-care-bit policy, or resume original-part `ADDH` boundary research;
+  preserve the distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
@@ -313,7 +317,8 @@
   precedence labeled PROVISIONAL under `OQ-015`; keep complete interrupt
   cycle-accuracy outside the claim boundary until `CTRL-002`/`OQ-004` has
   exhaustive execute-overlap evidence; keep
-  DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
-  `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
+  DMOV/LTD source-`0x8f` behavior provisional under `OQ-014`, keep `ADDH`
+  outside the supported boundary pending `OQ-011`, and retain ABS OV
+  preservation at `CORROBORATED` until physical evidence justifies an upgrade
 - **Latest committed baseline before this cycle:**
-  `f63a70a`
+  `e692572`

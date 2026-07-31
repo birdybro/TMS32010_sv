@@ -236,9 +236,9 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-30 the machine-readable database, independent model, and local
-tools support fifty-seven instructions:
-`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+As of 2026-07-31 the machine-readable database, independent model, and local
+tools support fifty-eight instructions:
+`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
 `IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
 `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
@@ -246,14 +246,14 @@ CALA's primary-defined computed-call effects, RET's primary-defined stack
 pop/PC load, and PUSH/POP's primary-defined stack effects at their two-cycle
 model boundaries.
 RTL and seeded differential support the same set except CALA, POP, PUSH, and
-RET, for fifty-three shared instructions; their second external cycles remain
+RET, for fifty-four shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
 The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
-reset priming, the 38 already-qualified one-cycle operation families, and
+reset priming, the 39 already-qualified one-cycle operation families, and
 exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and
 the primary-defined IN/OUT transfer-plus-prefetch and TBLR/TBLW
 discarded-prefetch/table-transfer/repeated-prefetch sequences.
@@ -270,7 +270,7 @@ capture; nested calls prove stack shifting. Selected-fetch stalls cover both
 outcomes for the conditional families and the direct call. These combined
 interval mappings are INFERRED from primary component facts because no
 dedicated branch/call pin waveform has been located. The full-state offset
-differential covers the 43-word directed one-cycle stream and parks before
+differential covers the 44-word directed one-cycle stream and parks before
 an unsupported control word. IN/OUT retain execute ownership while cycle 1
 multiplexes
 the port address and asserts only DEN or WE, sample/hold live transfer data

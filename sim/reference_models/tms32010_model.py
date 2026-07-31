@@ -1,6 +1,6 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
+This partial slice supports ABS, ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
 POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBH, SUBS, TBLR,
@@ -780,6 +780,12 @@ class Tms32010Model:
             pass
         elif mnemonic == "LDPK":
             self.state.status.dp = operands["constant"]
+        elif mnemonic == "ABS":
+            if self.state.acc & 0x8000_0000:
+                if self.state.acc == 0x8000_0000 and self.state.status.ovm:
+                    self.state.acc = 0x7FFF_FFFF
+                else:
+                    self.state.acc = (-self.state.acc) & ACC_MASK
         elif mnemonic == "ZAC":
             self.state.acc = 0
         elif mnemonic == "ROVM":
@@ -1254,6 +1260,7 @@ class Tms32010Model:
             0x7F80: "NOP",
             0x7F81: "DINT",
             0x7F82: "EINT",
+            0x7F88: "ABS",
             0x7F89: "ZAC",
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",

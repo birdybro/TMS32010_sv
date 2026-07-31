@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its current fifty-seven-instruction model/tool boundary is intentionally partial
+Its current fifty-eight-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -396,11 +396,10 @@ which is UNKNOWN.**
 No claim is yet made about unlisted bit patterns. A complete 65,536-word
 decode audit is an acceptance criterion of `ISA-001`.
 
-## Researched encoding withheld from support
+## Qualified exact `ABS` encoding
 
-The original instruction page verifies `ABS` as the exact word `0x7f88`, but
-its original-part sticky-`OV` behavior is unresolved. The encoding remains
-outside the machine-readable supported-instruction list and independent
-fixtures so that decode coverage cannot be mistaken for execution
-qualification. See `SC-007` and `OQ-013`
+`ABS` is the exact word `0x7f88`. It is represented in the machine-readable
+database and independent hand fixture and has no operand fields or aliases
 [ti-tms32010-users-guide-spru001b, `ABS`, printed p. 3-9 (PDF p. 59)].
+**Confidence: VERIFIED_PRIMARY for encoding; `SC-007`/`OQ-013` scope the
+CORROBORATED original-part OV-preservation behavior.**

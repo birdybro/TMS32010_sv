@@ -109,6 +109,7 @@ module tms32010_core (
   localparam logic [5:0] OP_TBLR = 6'd50;
   localparam logic [5:0] OP_TBLW = 6'd51;
   localparam logic [5:0] OP_SUBH = 6'd52;
+  localparam logic [5:0] OP_ABS  = 6'd53;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -1151,6 +1152,15 @@ module tms32010_core (
           OP_LARP: auxiliary_register_pointer_o <= decoded_immediate[0];
           OP_LDPK: data_page_pointer_o          <= decoded_immediate[0];
           OP_MAR: begin
+          end
+          OP_ABS: begin
+            if (accumulator_o[31]) begin
+              accumulator_o <=
+                (overflow_mode_o &&
+                 (accumulator_o == 32'h8000_0000))
+                  ? 32'h7fff_ffff
+                  : (~accumulator_o + 32'h0000_0001);
+            end
           end
           OP_NOP:  begin
           end

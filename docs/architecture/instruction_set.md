@@ -540,7 +540,7 @@ stack operation. `PUSH` and `POP` therefore remain outside the RTL/native and
 differential qualification boundary until `OQ-016` is resolved sufficiently
 to implement their two-cycle sequencer without fabricating observable timing.
 
-## Deferred `ABS` research
+## Qualified `ABS` research
 
 `ABS` is an implied one-word, one-cycle instruction encoded as `0x7f88`. If
 `ACC` is nonnegative it is unchanged; if negative it is replaced by its
@@ -552,13 +552,22 @@ ti-first-generation-users-guide-1987, `ABS`, printed p. 4-14 (PDF p. 95)].
 **Confidence: VERIFIED_PRIMARY for encoding, result, OVM selection, word
 count, and cycle count.**
 
-Neither original-part page states whether the unrepresentable negation sets
-sticky `OV`. The TMS320C14/E14 variant guide explicitly says ABS affects OV,
-while the pinned MAME handler leaves OV unchanged. Because software can
-observe that distinction, the project does not select either behavior.
-`ABS` is therefore absent from the supported database, opcode fixtures,
-assembler/disassembler, model, and RTL pending `SC-007`/`OQ-013`.
-**Confidence: UNKNOWN for original-TMS32010 OV behavior.**
+SPRU013's instruction-format rules state that each instruction `Execution`
+block lists the status bits it affects. The TMS32010-family ABS page lists no
+affected status bit; arithmetic instructions that do change `OV` say so
+explicitly. The later C14/E14 variant page adds `Affects OV`, making that a
+documented variant distinction rather than behavior to import into the NMOS
+part. Pinned MAME independently preserves `OV`. The qualified original-part
+behavior therefore preserves the incoming `OV` value, including for
+`0x80000000` in either OVM mode
+[ti-first-generation-users-guide-1987, §4.3 and `ABS`, printed pp. 4-11 through
+4-14 (PDF pp. 92-95); ti-tms320c14-e14-users-guide-1988, `ABS`, printed
+p. 4-14 (PDF p. 121); mame-tms320c1x-core-030fefc, `abst()` handler].
+**Confidence: CORROBORATED for OV preservation; see `SC-007`/`OQ-013`.**
+
+The model and RTL cover zero, ordinary positive and negative boundaries, the
+most-negative OVM-clear wrap and OVM-set saturation cases, both prior OV
+values, one-cycle retirement, and absence of a data-memory transaction.
 
 ## Qualified `LAC` research slice
 

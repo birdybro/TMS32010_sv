@@ -242,6 +242,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_abs_boundaries_status_preservation_and_no_data_access(self) -> None:
+        self._run_testbench(
+            "tb_abs_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_abs_rtl.sv",
+            ],
+        )
+
     def test_apac_arithmetic_status_saturation_and_no_data_access(self) -> None:
         self._run_testbench(
             "tb_apac_rtl",

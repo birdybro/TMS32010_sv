@@ -79,6 +79,11 @@ electrical result of an out-of-range access.
   `0x7f88`, the ordinary absolute-value result, the OVM-dependent
   `ABS(0x80000000)` result, and one-cycle timing. Neither page states whether
   that boundary case sets sticky `OV`.
+- **Instruction-format rule:** SPRU013 §4.3, printed pp. 4-11 through 4-13
+  (PDF pp. 92-94), says affected status bits are listed in each instruction's
+  `Execution` block. The ABS page lists no affected status bit. Other
+  arithmetic pages in the same guide explicitly list `Affects OV` when it
+  applies.
 - **Variant source:** TI SPRU032A for the TMS320C14/E14, `ABS`, printed
   p. 4-14 (PDF p. 121), explicitly states that ABS affects `OV` and is
   affected by `OVM`. This is evidence about a later variant, not proof of the
@@ -86,14 +91,17 @@ electrical result of an out-of-range access.
 - **Secondary source:** pinned MAME commit
   `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` implements negation and OVM
   saturation in `tms320c1x.cpp:341`, but its handler never writes `OV`.
-- **Competing hypotheses:** the original part sets sticky `OV` on the unique
-  unrepresentable negation, consistent with the variant guide; or it leaves
-  `OV` unchanged, consistent with the original pages' omission and MAME.
-- **Current treatment:** `ABS` remains outside the database/model/tool/RTL
-  support boundary under `OQ-013`. No provisional status behavior is selected.
+- **Resolution:** Treat the C14/E14 annotation as a documented variant
+  difference. For the original TMS32010, ABS preserves prior `OV`; the
+  instruction-format rule supplies primary textual evidence and MAME supplies
+  structurally independent corroboration. Directed tests cover both incoming
+  OV values at `0x80000000`, with both OVM modes.
+- **Current treatment:** `ABS` is supported by the database, hand fixture,
+  assembler/disassembler, independent model, RTL, native phase wrapper, and
+  seeded differential regression. `OQ-013` retains the evidence boundary.
 - **Confidence:** VERIFIED_PRIMARY for encoding, accumulator result, OVM
-  result selection, word count, and cycle count; UNKNOWN for original-part
-  `OV`.
+  result selection, word count, and cycle count; CORROBORATED for
+  original-TMS32010 `OV` preservation.
 
 ## SC-008 — SST reserved bit 1
 

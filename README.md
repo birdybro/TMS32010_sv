@@ -14,14 +14,20 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model and local tools currently support fifty-seven
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model and local tools currently support fifty-eight
+instructions: `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
 `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
 boundary support the same set except CALA, POP, PUSH, and RET,
-for fifty-three shared instructions; their second external cycles remain
+for fifty-four shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
+`ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
+negative accumulator, and uses OVM to choose wrap or positive saturation for
+`0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is
+`CORROBORATED`: SPRU013 states that an instruction's Execution block lists
+affected status bits, the original ABS block lists none, the later C14/E14
+variant explicitly adds OV effects, and pinned MAME independently agrees.
 The 144-word internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
 `SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
@@ -64,7 +70,7 @@ exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
 accumulator-conditional branches, plus exact IN/OUT execution ownership. Its
 fetch address stays one word ahead of the execute PC for ordinary sequential
 execution,
-all 43 words in the existing 38-family one-cycle stream match the previously
+all 44 words in the existing 39-family one-cycle stream match the previously
 qualified architectural state at a one-retirement offset, and all eleven
 integrated branch/call instructions retain ownership through operand and
 selected-instruction fetches. BANZ selects from the old counter and decrements
@@ -163,7 +169,7 @@ mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
 stack-bottom side effect.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies the normal reads for all 38 supported one-cycle
+native-phase wrapper qualifies the normal reads for all 39 supported one-cycle
 instructions, eleven two-cycle control-flow instructions, and the two
 qualified I/O instructions, plus both three-cycle table transfers; it is not
 a general pipeline or cycle-accuracy claim.

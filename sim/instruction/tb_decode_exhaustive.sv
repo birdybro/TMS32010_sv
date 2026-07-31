@@ -63,6 +63,7 @@ module tb_decode_exhaustive;
       logic expected_pac;
       logic expected_apac;
       logic expected_spac;
+      logic expected_abs;
       logic expected_dint;
       logic expected_eint;
       logic expected_lst;
@@ -354,6 +355,7 @@ module tb_decode_exhaustive;
       expected_pac = instruction == 16'h7f8e;
       expected_apac = instruction == 16'h7f8f;
       expected_spac = instruction == 16'h7f90;
+      expected_abs = instruction == 16'h7f88;
       expected_dint = instruction == 16'h7f81;
       expected_eint = instruction == 16'h7f82;
       expected_lst =
@@ -387,6 +389,7 @@ module tb_decode_exhaustive;
         expected_lta ||
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
+        expected_abs ||
         expected_dint || expected_eint || expected_lst ||
         expected_banz || expected_bv || expected_bioz || expected_call ||
         expected_b ||
@@ -590,6 +593,9 @@ module tb_decode_exhaustive;
       if (expected_spac && operation != OP_SPAC) begin
         $fatal(1, "SPAC decode mismatch at %04x", word);
       end
+      if (expected_abs && operation != OP_ABS) begin
+        $fatal(1, "ABS decode mismatch at %04x", word);
+      end
       if (expected_dint && operation != OP_DINT) begin
         $fatal(1, "DINT decode mismatch at %04x", word);
       end
@@ -664,8 +670,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 21722) begin
-      $fatal(1, "expected 21722 supported words, got %0d", valid_count);
+    if (valid_count != 21723) begin
+      $fatal(1, "expected 21723 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

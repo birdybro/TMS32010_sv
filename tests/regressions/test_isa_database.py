@@ -26,6 +26,7 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(
             set(coverage["supported_mnemonics"]),
             {
+                "ABS",
                 "LACK",
                 "NOP",
                 "ZAC",
@@ -87,6 +88,17 @@ class IsaDatabaseTests(unittest.TestCase):
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
+
+    def test_abs_is_exact_one_cycle_and_preserves_status(self) -> None:
+        decoded = decode_word(self.database, 0x7F88)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        instruction, operands = decoded
+        self.assertEqual(instruction["mnemonic"], "ABS")
+        self.assertEqual(operands, {})
+        self.assertEqual(instruction["documented_cycle_count"], 1)
+        self.assertEqual(instruction["status_flags_affected"], [])
+        self.assertEqual(instruction["confidence_level"], "CORROBORATED")
 
     def test_table_transfers_use_common_addressing_and_three_cycles(self) -> None:
         for match, mnemonic in ((0x6700, "TBLR"), (0x7D00, "TBLW")):

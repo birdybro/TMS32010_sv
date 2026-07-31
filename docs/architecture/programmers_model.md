@@ -66,6 +66,14 @@ SPRU001B calls it don't-care, its LST diagram and SPRU002B show one, and
 SPRU013 shows zero. `SST` remains blocked under `OQ-003`/`SC-008`; no value is
 guessed.
 
+`ABS` interprets the complete accumulator as signed two's-complement. It
+leaves nonnegative values unchanged and negates ordinary negative values.
+For `0x80000000`, OVM clear retains that wrapped value and OVM set selects
+`0x7fffffff`. Prior `OV` is preserved; `SC-007`/`OQ-013` records the primary
+instruction-format rule, the C14/E14 variant difference, and independent MAME
+corroboration. **Confidence: VERIFIED_PRIMARY for the result and OVM
+selection; CORROBORATED for OV preservation.**
+
 `SUBH` subtracts the selected 16-bit word aligned to `ACC[31:16]`. Ordinary
 and OVM-clear wrapped results preserve `ACC[15:0]`; signed overflow sets
 sticky `OV`, and OVM-enabled overflow replaces the complete ACC with the

@@ -110,14 +110,14 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and local assembler/disassembler support 57 mnemonics:
-`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
+The executable model and local assembler/disassembler support 58 mnemonics:
+`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
 `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`,
 `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
 `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
-differential support the same set except CALA, POP, PUSH, and RET, for 53
+differential support the same set except CALA, POP, PUSH, and RET, for 54
 shared mnemonics. Their architectural effects and two-cycle totals are
 model-qualified, while their second external cycles remain unresolved under
 `OQ-007`/`OQ-016`. The 25 common-address
@@ -126,6 +126,13 @@ fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
 all three documented output shifts and rejects all five other field values.
+ABS has an exact fixed encoding and program-only one-cycle boundary; directed
+model/RTL tests cover zero, positive, ordinary negative, and most-negative
+values in both OVM modes while preserving incoming OV. Result, OVM selection,
+and timing are `VERIFIED_PRIMARY`; original-part OV preservation is
+`CORROBORATED` by SPRU013's instruction-format rule, the original ABS page's
+absence of status annotations, the later C14/E14 variant's explicit status
+annotation, and pinned MAME (`SC-007`/resolved `OQ-013`).
 The exact fixed `DINT`/`EINT` words set and clear `INTM` in one program-only
 cycle while preserving unrelated exposed state. The partial model and RTL now
 also latch active-low requests while masked, apply EINT's

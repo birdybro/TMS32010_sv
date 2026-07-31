@@ -18,7 +18,7 @@
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBH", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
-      "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
+      "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ", "ABS"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -2479,6 +2479,41 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "ABS",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f88",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": ["ACC", "OVM"],
+      "registers_written": ["ACC when negative"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "not applicable; ACC is interpreted as a signed 32-bit two's-complement value",
+      "shift_behavior": "none",
+      "overflow_behavior": "the original TMS32010 result for 0x80000000 is unchanged with OVM clear and saturates to 0x7fffffff with OVM set; OV is preserved under the first-generation guide's explicit status-effect enumeration, corroborated by the independent MAME oracle; the C14/E14 variant explicitly differs by affecting OV",
+      "result_behavior": "nonnegative ACC is unchanged; other negative values are replaced by their 32-bit two's-complement magnitude; 0x80000000 follows the documented OVM selection",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; ABS has no data-memory transaction"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and ABS instruction description", "printed_page": "3-5 and 3-9", "pdf_page": "55 and 59"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "4.3 instruction-description format and ABS instruction description", "printed_page": "4-11 through 4-14", "pdf_page": "92-95"},
+        {"source_id": "ti-tms320c14-e14-users-guide-1988", "section": "ABS instruction description (variant difference)", "printed_page": "4-14", "pdf_page": 121},
+        {"source_id": "mame-tms320c1x-core-030fefc", "section": "abst handler", "printed_page": "not applicable", "pdf_page": "not applicable"}
+      ],
+      "confidence_level": "CORROBORATED",
+      "unresolved_questions": []
     }
   ]
 }
