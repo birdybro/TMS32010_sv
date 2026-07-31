@@ -116,14 +116,14 @@ secondary adapter behavior:
 
 | DSP port | Direction | Working function | Confidence |
 |---:|---|---|---|
-| 0 | read | serial sound ROM data | VERIFIED_PRIMARY |
+| 0 | read | parallel sample-ROM byte, signed and shifted left 7 | VERIFIED_PRIMARY |
 | 0 | write | 12-bit DAC latch from `TD15..TD4` | VERIFIED_PRIMARY for raw code; signed-audio interpretation unresolved |
 | 1 | read | 512-word host communication RAM at shared `SA8:SA0` | VERIFIED_PRIMARY |
 | 2 | read | compare path, incompletely emulated | PROVISIONAL |
 | 3 | write | decoded `/CPORT`; no loaded consumer found | UNKNOWN (`OQ-023`) |
 | 4 | write | mute control | VERIFIED_PRIMARY |
 | 5 | write | generate 68000 IRQ | VERIFIED_PRIMARY |
-| 6 | write | low-nibble serial-ROM block latch | VERIFIED_PRIMARY |
+| 6 | write | low-nibble sample-ROM block latch | VERIFIED_PRIMARY |
 | 7 | write | 16-bit shared sound-address counter load | VERIFIED_PRIMARY |
 
 Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 5–7,
@@ -170,7 +170,7 @@ RAM topology
 Four LS191 counters provide `SA15:SA0`. Port 7 asynchronously loads all sixteen
 bits. The counter clocks on the trailing low-to-high `/PDEN` edge after every
 input-port read and counts upward; port 6 separately latches the low four data
-bits as serial-ROM block selection. Thus even a port-2 compare read increments
+bits as sample-ROM block selection. Thus even a port-2 compare read increments
 the physical counter. Pinned MAME increments only its port-0 and port-1
 handlers and returns communication RAM to the DSP regardless of `CRAMEN`.
 Those abstractions are isolated as `SC-023` and `SC-024`
@@ -192,7 +192,24 @@ pre-technology Yosys target retains one memory with zero structural problems.
 The processor/program-RAM board top now routes port 1 to this path, preloads a
 synthetic word through the whole-word host callback, and verifies execution,
 global read increments, and reset retention. A 68000 host latch/bus adapter,
-serial sound-ROM data, and physical timing remain acceptance work.
+sample-ROM data callback, and physical timing remain acceptance work.
+
+### Parallel sample ROM
+
+A044427 does not draw a serial shifter. Port 6 latches `SCD:SCA`; two LS138s
+select one of `/SR0` through `/SR11`, and the selected byte-wide ROM is
+addressed directly by `SA15:SA0`. Blocks 12-15 have no connected select.
+The ROM byte `SD14:SD7` reaches TMS input bits as a signed left shift:
+`TDI15=SD14`, `TDI14:TDI7=SD14:SD7`, and `TDI6:TDI0=0`
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 5-6 of 10,
+PDF pp. 9-12; ti-sn74ls138-datasheet, printed pp. 1-2;
+ti-snx4ls24x-datasheet, printed pp. 11-13]. **Confidence: VERIFIED_PRIMARY.**
+
+Pinned MAME's byte/block address composition agrees with the board topology,
+but its unsigned `byte << 7` omits the duplicated sign bit at TDI15. `SC-026`
+records the conflict, and `OQ-026` tracks unpopulated-block behavior and exact
+population by revision. Complete details and FPGA requirements are in
+`docs/integration/hard_drivin_sound_rom.md`.
 
 ### DAC path
 

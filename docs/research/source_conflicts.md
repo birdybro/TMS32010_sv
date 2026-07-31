@@ -500,7 +500,7 @@ electrical result of an out-of-range access.
 - **Conflict:** MAME permits simultaneous logical visibility that the physical
   buffer selection does not provide. The value on TDI during an out-of-
   contract DSP read in host mode is not established.
-- **Current treatment:** future FPGA storage grants one side from CRAMEN and
+- **Current treatment:** the current FPGA storage grants one side from CRAMEN and
   holds or reports a DSP port-1 read while the host owns the RAM. See
   `OQ-025` for firmware discipline.
 - **Confidence:** VERIFIED_PRIMARY for Rev-A ownership; CORROBORATED for the
@@ -538,3 +538,25 @@ electrical result of an out-of-range access.
   writes. `OQ-024` tracks firmware use and physical out-of-contract behavior.
 - **Confidence:** VERIFIED_PRIMARY for Rev-A whole-word wiring;
   CORROBORATED for MAME's abstraction; UNKNOWN for byte accesses on hardware.
+
+## SC-026 — Sound-ROM sign extension versus unsigned MAME shift
+
+- **Primary board evidence:** A044427 buffers ROM `SD14` to both `TDI15` and
+  `TDI14`, maps `SD13:SD7` to `TDI13:TDI7`, and grounds `TDI6:TDI0` during a
+  port-0 `/SROM` read. Defining the eight ROM bits as `SD14:SD7`, the returned
+  word is `{{2{byte[7]}}, byte[6:0], 7'b0}`
+  [atari-driver-sound-board-schematic, sheet 5 of 10, PDF p. 9;
+  ti-snx4ls24x-datasheet, printed pp. 11-13].
+- **Secondary abstraction:** pinned MAME stores the ROM region as `uint8_t`
+  and returns `m_sound_rom[m_sound_rom_offs++] << 7`. The unsigned promotion
+  leaves bit 15 clear even when byte bit 7 is one
+  [mame-harddriv-header-030fefc, `m_sound_rom`; mame-harddriv-audio-030fefc,
+  `hdsnddsp_rom_r`].
+- **Conflict:** bytes below `0x80` agree, but byte `0x80` is physical word
+  `0xc000` versus MAME word `0x4000`, and byte `0xff` is physical `0xff80`
+  versus MAME `0x7f80`.
+- **Current treatment:** board adapters must implement the duplicated sign
+  bit and keep MAME's unsigned shift only as a named secondary-oracle
+  difference. Invalid/unpopulated block behavior remains `OQ-026`.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A wiring; documented
+  secondary-source mismatch.

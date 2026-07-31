@@ -73,6 +73,20 @@ class HardDrivinSmokeProgramTests(unittest.TestCase):
             ((raw_dac >> 4) ^ 0x800) & 0x0FFF,
             _hex(expected["mame_dac_12bit"]),
         )
+        sound_byte = _hex(expected["sound_rom_byte"])
+        physical_sound_word = (
+            ((sound_byte & 0x80) << 8) | (sound_byte << 7)
+        ) & 0xFFFF
+        self.assertEqual(
+            physical_sound_word,
+            _hex(expected["physical_sound_rom_word"]),
+        )
+        self.assertEqual(
+            (sound_byte << 7) & 0xFFFF,
+            _hex(expected["mame_sound_rom_word"]),
+        )
+        self.assertEqual(model.data[0x21], physical_sound_word)
+        self.assertEqual(_hex(expected["sound_rom_bank"]), 3)
         self.assertEqual(model.io_output[6] & 0xF, _hex(expected["sound_rom_bank"]))
         self.assertEqual(model.io_output[7], _hex(expected["sound_rom_address"]))
 

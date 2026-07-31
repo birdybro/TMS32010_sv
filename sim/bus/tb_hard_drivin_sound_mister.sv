@@ -157,7 +157,7 @@ module tb_hard_drivin_sound_mister;
 
   always_comb begin
     case (io_port)
-      3'd0: io_read_data = 16'h6a80;
+      3'd0: io_read_data = 16'hea80;
       3'd1: io_read_data = 16'hdead;
       3'd2: io_read_data = 16'h0000;
       default: io_read_data = 16'hffff;
@@ -347,7 +347,7 @@ module tb_hard_drivin_sound_mister;
     debug_write_word(8'h11, 16'h00a5);
     debug_write_word(8'h12, 16'h0001);
     debug_write_word(8'h13, 16'h0000);
-    debug_write_word(8'h14, 16'h000b);
+    debug_write_word(8'h14, 16'h0003);
     debug_write_word(8'h15, 16'h3456);
 
     // Host preload at SA8:SA0=0x056 supplies the later processor port-1 read.
@@ -375,7 +375,7 @@ module tb_hard_drivin_sound_mister;
     require(output_ports[3] == 16'h00a5 &&
             output_ports[4] == 16'h0001 &&
             output_ports[5] == 16'h0000 &&
-            output_ports[6] == 16'h000b &&
+            output_ports[6] == 16'h0003 &&
             output_ports[7] == 16'h3456,
             "all synthetic board control outputs match the fixed fixture");
     require(accumulator == 32'h0000_55aa && cycle_count == 32'd22,
@@ -384,8 +384,8 @@ module tb_hard_drivin_sound_mister;
             "BIOZ skips the sentinel and retires the expected final NOP");
     require(
       sound_address_valid && sound_address == 16'h3459 &&
-      sound_rom_block_valid && sound_rom_block == 4'hb,
-      "ports 7/6 load control state and port-1/2 reads increment globally"
+      sound_rom_block_valid && sound_rom_block == 4'h3,
+      "ports 7/6 load control state and all three input reads increment globally"
     );
     require(!port_1_blocked && !port_1_address_invalid,
             "processor port-1 communication read completed from internal RAM");

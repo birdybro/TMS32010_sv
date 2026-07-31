@@ -1334,7 +1334,9 @@ objective passing evidence.
 - **Acceptance criteria:** each mapping has schematic/manual/MAME citations and
   confidence; synthetic smoke program tests reset, handshake, interrupt, and
   DAC traces without copyrighted ROMs.
-- **Documentation:** `docs/integration/hard_drivin_requirements.md`
+- **Documentation:** `docs/integration/hard_drivin_requirements.md`,
+  `docs/integration/hard_drivin_communication_ram.md`,
+  `docs/integration/hard_drivin_sound_rom.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1388,8 +1390,16 @@ objective passing evidence.
   retains one memory in an 82-cell hierarchy with seven checks. The board top
   now routes processor port 1 internally, proves it ignores an external
   sentinel, verifies `0x3456` to `0x3459` global increments, and reads the
-  retained word back after processor reset. Host latch/68000 bus adaptation,
-  serial-ROM data, and physical timing remain acceptance work.
+  retained word back after processor reset.
+  Sheets 5 and 6 plus official TI LS138/LS244/LS374 data sheets establish that
+  the sample-ROM path is parallel: port 6 selects one of twelve drawn 64K-byte
+  positions, the shared pre-increment `SA15:SA0` addresses a byte, and port 0
+  returns `{{2{byte[7]}}, byte[6:0], 7'b0}`. Pinned MAME omits the duplicated
+  sign bit (`SC-026`). The smoke fixture now derives physical byte `0xd5` as
+  `0xea80` and selects populated Hard Drivin' block 3 rather than the Rev-A
+  unpopulated block 11. Population and absent-block reads remain `OQ-026`.
+  Host latch/68000 bus adaptation, the sample-ROM callback RTL, and physical
+  timing remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

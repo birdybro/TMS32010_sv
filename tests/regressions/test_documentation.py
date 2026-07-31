@@ -194,6 +194,28 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ):
             self.assertIn(required, conflicts)
 
+    def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
+        sound_rom = (
+            DOCS / "integration" / "hard_drivin_sound_rom.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "not a serial shifter",
+            "Blocks 12-15 therefore select no drawn ROM",
+            "`TDI15` | `SD14`",
+            "`0xc000`",
+            "pre-increment `SA15:SA0`",
+            "accept only authorized user-supplied data",
+        ):
+            self.assertIn(required, sound_rom)
+        self.assertIn("SC-026 — Sound-ROM sign extension", conflicts)
+        self.assertIn("| OQ-026 |", questions)
+
 
 if __name__ == "__main__":
     unittest.main()

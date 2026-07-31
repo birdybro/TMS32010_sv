@@ -7,6 +7,8 @@
 - `hard_drivin_communication_ram.md`: primary-transcribed CRAMEN ownership,
   512-word communication RAM, shared sound-address counter, and source
   conflicts around ports 1–3.
+- `hard_drivin_sound_rom.md`: primary-transcribed parallel sample-ROM block,
+  address, population, port-0 word alignment, and MAME sign-bit conflict.
 - `hard_drivin_mister_wrapper.md`: partial same-clock processor/program-RAM
   top, reset/ownership protocol, physical I/O callback, and test boundary.
 
@@ -31,7 +33,9 @@ peripheral implementations and the 68000 bridge external.
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every
 word. `hard_drivin_sound_mister` now routes processor port 1 to that adapter
 and exposes its whole-word host callback, but still does not implement a 68000
-bus/latch decode, physical HM6116 timing, or serial sound-ROM data path.
+bus/latch decode, physical HM6116 timing, or parallel sound-ROM data path.
+`hard_drivin_sound_rom.md` records the selected-ROM mapping and corrects older
+serial-path shorthand.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

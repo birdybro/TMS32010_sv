@@ -20,11 +20,11 @@
     "0x11": "0x00a5",
     "0x12": "0x0001",
     "0x13": "0x0000",
-    "0x14": "0x000b",
+    "0x14": "0x0003",
     "0x15": "0x3456"
   },
   "io_inputs": {
-    "0": "0x6a80",
+    "0": "0xea80",
     "1": "0x55aa",
     "2": "0x0000"
   },
@@ -34,9 +34,9 @@
     [5, "write", 3, "0x00a5"],
     [7, "write", 4, "0x0001"],
     [9, "write", 5, "0x0000"],
-    [11, "write", 6, "0x000b"],
+    [11, "write", 6, "0x0003"],
     [13, "read", 1, "0x55aa"],
-    [15, "read", 0, "0x6a80"],
+    [15, "read", 0, "0xea80"],
     [17, "read", 2, "0x0000"]
   ],
   "program_transactions": [
@@ -60,7 +60,7 @@
     "cycles": 22,
     "data": {
       "0x20": "0x55aa",
-      "0x21": "0x6a80",
+      "0x21": "0xea80",
       "0x22": "0x0000"
     },
     "io_outputs": {
@@ -68,12 +68,15 @@
       "3": "0x00a5",
       "4": "0x0001",
       "5": "0x0000",
-      "6": "0x000b",
+      "6": "0x0003",
       "7": "0x3456"
     },
     "physical_dac_code": "0x0f23",
     "mame_dac_12bit": "0x0723",
-    "sound_rom_bank": "0x000b",
+    "sound_rom_byte": "0x00d5",
+    "physical_sound_rom_word": "0xea80",
+    "mame_sound_rom_word": "0x6a80",
+    "sound_rom_bank": "0x0003",
     "sound_rom_address": "0x3456"
   }
 }

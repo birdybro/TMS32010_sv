@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 24-source
+- Reference-provenance policy, safe acquisition/hash tools, a 27-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -77,6 +77,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   shared 16-bit sound-address state, port-7 load, every-input-read increment,
   port-6 block latch, and explicit physical-state validity. Port 3 remains a
   no-effect unresolved decode instead of being assigned invented behavior.
+- Primary-transcribed Driver Sound parallel sample-ROM wiring, backed by
+  newly pinned TI LS138, LS244, and LS374 data sheets. The contract identifies
+  twelve decoded 64K-byte positions, exact pre-increment addressing,
+  population validity, and the physical signed-byte-left-seven TMS input
+  mapping while isolating MAME's unsigned-shift discrepancy as `SC-026`.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -398,6 +403,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Replaced the misleading serial-ROM shorthand with parallel sample-ROM
+  terminology after tracing the direct `SA15:SA0` address and `SD14:SD7` data
+  wiring in A044427.
 - Corrected the Driver Sound port-3 description: Rev-A decodes `/CPORT` but no
   loaded consumer was found, and pinned MAME only logs the word. The synthetic
   smoke retains it as a decode probe rather than a communication-control claim.
@@ -471,6 +479,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Corrected the synthetic Hard Drivin' port-0 response for byte `0xd5` from
+  MAME's unsigned `0x6a80` to the physical schematic value `0xea80`, where
+  `SD14` drives both `TDI15` and `TDI14`. The fixture now selects populated
+  Hard Drivin' block 3 instead of Rev-A's unpopulated block 11.
 - Reordered the project-authored Hard Drivin' smoke so port 7 qualifies the
   physically uncleared sound-address counters before the first
   communication-RAM read. The independent opcode and transaction fixture
@@ -500,6 +512,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- A documentation/model-fixture invariant independently derives physical
+  sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
+  pinned-MAME oracle value, and rejects absent-block behavior as unverified.
 - Complete host loading and exact DSP port-1 readback across all 512
   communication words; both CRAMEN ownership states, blocked non-owner
   accesses, owner-tagged synchronous responses, port-2 increment, 16-bit
@@ -507,8 +522,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   preload state, and initialization-time memory retention. Pre-technology
   Yosys retains one 512-by-16 memory in an 82-cell hierarchy with seven checks
   and zero structural problems.
-- All 24 acquired reference files match their pinned SHA-256 values, including
-  the official TI-hosted SDLS072 LS191 and SDLS086 LS259 data sheets.
+- All 27 acquired reference files match their pinned SHA-256 values, including
+  the official TI-hosted LS138, LS191, LS244, LS259, and LS374 data sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
   Sound smoke: the host preloads communication word `0x056`, port 7 first
   qualifies the address chain, internal port 1 ignores an external sentinel,
@@ -989,7 +1004,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 117 repository/ISA/tool tests, 231
+- The complete current regression passes 118 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 29
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
@@ -999,6 +1014,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- The parallel sample-ROM path is primary-specified but not yet implemented in
+  `hard_drivin_sound_mister`. Exact population remains board/revision data,
+  and an absent block leaves the shown ROM data bus undriven; returning zero
+  would be a protective convention, not verified hardware (`OQ-026`).
 - The communication-RAM/address adapter is connected to
   `hard_drivin_sound_mister`, but CRAMEN remains an external input and no
   68000 latch/bus bridge exists. Its registered response is an FPGA convention,

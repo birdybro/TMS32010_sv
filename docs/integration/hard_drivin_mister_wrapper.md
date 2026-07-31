@@ -8,7 +8,7 @@ communication-memory paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
-1. It does not implement the 68000 bus/latches, sound-ROM shifter, compare
+1. It does not implement the 68000 bus/latches, parallel sound-ROM path, compare
 circuit, DAC analog path, mute/IRQ consumers, BIO divider, or a MiSTer
 framework top level.
 
@@ -114,7 +114,8 @@ corrected synthetic sequence that loads port 7 before the first input read.
 The processor receives the internal word even though the external port-1
 callback supplies a deliberately different sentinel. Port-1, port-0, and
 port-2 reads advance the shared address from `0x3456` to `0x3459`; port 6
-retains block nibble `0xb`. A processor-reset/host-read handoff then proves the
+retains populated block nibble `0x3`. A processor-reset/host-read handoff then
+proves the
 communication word survived execution and reset.
 
 The pre-technology Yosys target retains three memories and reports 2,259

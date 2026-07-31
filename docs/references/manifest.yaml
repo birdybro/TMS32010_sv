@@ -280,7 +280,7 @@
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
         "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): /320BIO generator and distinct 320IRQ/68000 path",
-        "Drawing A044427 Rev A, sheets 3 through 7 of 10 (PDF pages 5-14): TMS32010 pins, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, optional not-loaded PR1 switching, and DAC"
+        "Drawing A044427 Rev A, sheets 3 through 7 of 10 (PDF pages 5-14): TMS32010 pins, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, communication RAM, sample-ROM block/address/data mapping and population, optional not-loaded PR1 switching, and DAC"
       ],
       "status": "acquired",
       "download": {
@@ -453,7 +453,9 @@
       "authority_level": 6,
       "notes": "Sound-board behavior is split into harddriv_a.cpp in this commit.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Hard Drivin' serialroms region size, four 0x10000-byte loads, and physical socket labels"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -672,6 +674,87 @@
       "download": {
         "enabled": true,
         "expected_content_types": ["text/html", "application/xhtml+xml"]
+      }
+    },
+    {
+      "id": "ti-sn74ls138-datasheet",
+      "title": "3-Line to 8-Line Decoders/Demultiplexers",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS014",
+      "publication_date": "1972-12; revised 1988-03",
+      "revision": "March 1988",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls138.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SN74LS138_3-Line_to_8-Line_Decoder.pdf",
+      "sha256": "9c33e08a3bfb7ab3b685848eee0d80457774918ce0bd3224e17cd0c1970a20a9",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component truth table for the two-level A044427 sound-ROM block decode",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, and active-low one-of-eight decode behavior, printed pages 1-2"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-snx4ls24x-datasheet",
+      "title": "SNx4LS24x, SNx4S24x Octal Buffers and Line Drivers With 3-State Outputs",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS144D",
+      "publication_date": "1985-04; revised 2016-10",
+      "revision": "D",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls244.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SNx4LS24x_Octal_Buffers_and_Line_Drivers.pdf",
+      "sha256": "dadc6c2ec62540ffe433a7915aac34b444c751a0eac873a69ab4dcd030a0264a",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for the A044427 sound-ROM-to-TMS input buffer",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Detailed Description and SNx4LS244 logic/function table, printed pages 11-13"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74ls374-datasheet-sdls165b",
+      "title": "Octal D-Type Transparent Latches and Edge-Triggered Flip-Flops",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS165B",
+      "publication_date": "1975-10; revised 2002-08",
+      "revision": "B",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls374.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDLS165B_SN74LS374_Octal_D_Flip-Flop.pdf",
+      "sha256": "506b193ccfe68d3d59f55d4dcbc6c96a13c43b702ad986d9c0a6942eadf92e9f",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for the A044427 port-6 sound-ROM block latch",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, and positive-edge LS374 behavior, printed pages 1-3"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
     }
   ]

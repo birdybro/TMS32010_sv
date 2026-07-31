@@ -56,9 +56,15 @@ adapter is now connected to `hard_drivin_sound_mister`: a host callback
 preloads a synthetic communication word, processor port 1 reads it internally,
 and the full address/block side effects survive the expected execution/reset
 sequence. This is not a 68000 bus/latch implementation, physical HM6116
-timing, or serial sound-ROM implementation. Port 3 remains an unresolved
+timing, or sample-ROM implementation. Port 3 remains an unresolved
 decoded `/CPORT` strobe with no loaded consumer found on Rev A and has no
 invented state effect.
+A044427 sheets 5–6 now define the remaining port-0 input as a parallel
+sample-ROM path: a present block and the pre-increment 16-bit sound address
+select one byte, which reaches the TMS as a signed byte shifted left seven.
+Pinned MAME omits the duplicated sign bit at TDI15 (`SC-026`). The board
+adapter is not implemented yet, and unpopulated-block reads remain explicitly
+unknown under `OQ-026`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

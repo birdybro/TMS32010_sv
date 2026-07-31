@@ -28,8 +28,9 @@ The harness supplies the following synthetic values:
 - host communication word `0x55aa` from port 1;
 - unresolved port-3 probe value `0x00a5`, mute value 1, and one 68000 IRQ
   request;
-- sound-ROM bank `0x0b` and address `0x3456` through ports 6 and 7;
-- synthetic sound-ROM response `0x6a80` from port 0;
+- populated Hard Drivin' sound-ROM block `0x03` and address `0x3456` through
+  ports 6 and 7;
+- synthetic physical sound-ROM response `0xea80` from raw byte `0xd5` at port 0;
 - provisional compare response zero from port 2; and
 - asserted active-low BIO, causing `BIOZ` to skip a sentinel `LACK 0xee`.
 
@@ -39,6 +40,14 @@ the following port-1, port-0, and port-2 reads then each advance the full
 counter once. Reordering that project-authored sequence corrects the earlier
 abstract-callback fixture without changing its instruction count, documented
 cycle total, or final architectural results.
+
+The port-0 word also follows the newly transcribed Rev-A sign extension:
+byte `0xd5` maps to `0xea80` because its MSB drives both TDI15 and TDI14.
+Pinned MAME's unsigned shift would instead produce `0x6a80`; that distinct
+secondary-oracle result is `SC-026`, not the physical fixture value.
+Block 3 corresponds to the populated `30A` position in the pinned Hard Drivin'
+declaration. The earlier synthetic block-11 choice was invalid for this board
+population because A044427 marks its C-row position not loaded.
 
 The expected raw DAC write is preserved as `0xf230`. A044427 Rev A and the
 Am6012 manufacturer data establish the physical DAC input code as

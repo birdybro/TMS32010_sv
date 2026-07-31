@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' integrated communication-RAM execution
+- **Current milestone:** Hard Drivin' parallel sample-ROM research
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 117 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 118 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -12,7 +12,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 24 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 27 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -452,6 +452,14 @@
   512-by-16 memory in an 82-cell hierarchy with seven checks. The board-top
   execution described above now qualifies its processor callback connection;
   physical HM6116 timing and a 68000 bridge remain unimplemented.
+- **New sample-ROM evidence:** A044427 implements a parallel, byte-wide path,
+  not a serial shifter. Port 6 selects one of twelve drawn 64K-byte blocks,
+  the pre-increment shared address drives `SA15:SA0`, and port 0 maps byte
+  `SD14:SD7` as `{{2{byte[7]}}, byte[6:0], 7'b0}`. Pinned MAME omits TDI15 for
+  negative bytes (`SC-026`). Official TI LS138/LS244/LS374 sources are
+  hash-pinned. The smoke fixture now selects populated Hard Drivin' block 3
+  and expects physical byte `0xd5` as `0xea80`; block population and absent
+  reads remain `OQ-026`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -467,14 +475,16 @@
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state, 68000-side reset-handoff timing and firmware compliance,
-  communication-RAM byte behavior and CRAMEN firmware discipline, loaded
+  communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
+  population and absent-block behavior,
+  loaded
   `/CPORT` purpose,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** transcribe and qualify the A044427 port-0 serial sound-ROM
-  shift/data path before selecting a synthesizable FPGA adapter boundary.
+- **Next task:** implement and exhaustively verify a present-block-aware
+  parallel sample-ROM callback adapter, then route processor port 0 internally.
 - **Latest committed baseline before this cycle:**
-  `afd2ccd`
+  `8a2f6e0`
