@@ -177,6 +177,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "No clear or board-reset input is drawn",
             "Port 3 is unresolved",
             "not a claimed control command",
+            "hard_drivin_sound_communication_path",
+            "loads every one of the 512 words",
+            "not yet connected",
+            "physical HM6116 timing",
         ):
             self.assertIn(required, communication)
         for required in (

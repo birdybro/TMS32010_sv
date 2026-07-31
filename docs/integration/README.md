@@ -26,6 +26,12 @@ generic processor callback wrapper. It can execute a host-loaded synthetic
 program and correctly routes low-address TBLW to physical I/O, but leaves all
 peripheral implementations and the 68000 bridge external.
 
+`rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
+512-by-16 communication-RAM adapter with the primary-defined shared-address
+and port-6 control state. It exhaustively verifies CRAMEN ownership and every
+word, but is not yet connected to `hard_drivin_sound_mister` and does not
+implement a 68000 bus, physical HM6116 timing, or serial sound-ROM data path.
+
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a
 separate Hard Drivin'-specific integration layer after their evidence is

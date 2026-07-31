@@ -184,6 +184,14 @@ consumer was found, and MAME's handler only logs the write. It remains
 control command. Complete wiring, conflicts, and FPGA requirements are in
 `docs/integration/hard_drivin_communication_ram.md`.
 
+The standalone `hard_drivin_sound_communication_path` now implements the
+qualified 512-word storage/ownership boundary and shared address/block state.
+Its exhaustive simulation covers all 512 words plus the global port-2 read
+increment, wrap, validity, ownership, and port-3 non-effect cases; its
+pre-technology Yosys target retains one memory with zero structural problems.
+Connection to the processor/program-RAM board top, a host latch/bus adapter,
+serial sound-ROM data, and physical timing remain acceptance work.
+
 ### DAC path
 
 Sheet 7 shows `/DACL` clocking two LS374 latches. Their outputs connect

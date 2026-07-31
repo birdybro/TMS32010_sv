@@ -71,6 +71,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   contract, backed by newly pinned TI LS191/LS259 component data sheets. It
   records 512-word CRAMEN ownership, read-only DSP access, port-7 load,
   every-input-read increment, and three explicit MAME abstraction conflicts.
+- A standalone synthesizable Driver Sound communication path comprising a
+  512-by-16 CRAMEN-selected host/DSP memory, read-only DSP port-1 view,
+  shared 16-bit sound-address state, port-7 load, every-input-read increment,
+  port-6 block latch, and explicit physical-state validity. Port 3 remains a
+  no-effect unresolved decode instead of being assigned invented behavior.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -489,6 +494,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Complete host loading and exact DSP port-1 readback across all 512
+  communication words; both CRAMEN ownership states, blocked non-owner
+  accesses, owner-tagged synchronous responses, port-2 increment, 16-bit
+  wrap, port-7 load, port-6 low-nibble latch, port-3 non-effect, invalid
+  preload state, and initialization-time memory retention. Pre-technology
+  Yosys retains one 512-by-16 memory in an 82-cell hierarchy with seven checks
+  and zero structural problems.
 - All 24 acquired reference files match their pinned SHA-256 values, including
   the official TI-hosted SDLS072 LS191 and SDLS086 LS259 data sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
@@ -968,7 +980,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 117 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 28
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 29
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -977,10 +989,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- Communication-RAM RTL is not implemented. Rev-A hardware disables the DSP
-  RAM data buffer while CRAMEN grants host ownership, but pinned MAME still
-  returns RAM; its port-2 handler also omits the global `/PDEN` address
-  increment. Port 3 remains an unresolved decoded strobe (`OQ-023`–`OQ-025`).
+- The standalone communication-RAM/address adapter is not yet connected to
+  `hard_drivin_sound_mister`, a CRAMEN host latch, or a 68000 bridge. Its
+  registered response is an FPGA convention, not physical HM6116 timing.
+  Pinned MAME still conflicts by returning RAM during host ownership and by
+  omitting the global `/PDEN` increment from port 2; port 3 remains an
+  unresolved decoded strobe (`OQ-023`–`OQ-025`).
 - `hard_drivin_sound_mister` is only the processor/program-RAM/physical-I/O
   callback boundary. It lacks the 68000 bridge and every sound-board peripheral;
   its synchronous ready/commit callbacks are implementation conventions, not

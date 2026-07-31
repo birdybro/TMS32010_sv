@@ -40,16 +40,22 @@ loading while the DSP is reset, and refuses conflicting writes. These pieces
 are exhaustive-tested and synthesizable. They remain usable independently of
 the partial processor/RAM top and are not a 68000 bus bridge or complete
 sound-board wrapper.
-A partial board top now connects the processor, native decoder, and shared RAM.
+A partial board top now connects the processor, native decoder, and shared
+program RAM.
 It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
-bridge, communication RAM, sound-ROM path, BIO generator, and audio/control
-peripherals remain absent.
-The communication-RAM research now establishes a distinct 512-by-16,
-CRAMEN-selected host/DSP path and a shared 16-bit sound-address counter.
-It also corrects port 3 from presumed “communication control” to an unresolved
-decoded `/CPORT` strobe with no loaded consumer found on Rev A. No
-communication-RAM RTL is claimed yet.
+bridge, communication-path connection, sound-ROM data path, BIO generator,
+and audio/control peripherals remain absent.
+A separate synthesizable communication-path adapter now implements the
+primary-transcribed 512-by-16, CRAMEN-selected host/DSP storage relationship,
+read-only DSP port-1 access, shared 16-bit sound-address counter, port-7 load,
+every-input-read increment, and port-6 block latch. Its exhaustive directed
+test covers all 512 words, ownership handoff, full-address wrap, and invalid
+preload state; a memory-retaining Yosys target passes structural checks. The
+adapter is not yet connected to `hard_drivin_sound_mister`, and it is not a
+68000 bus, physical HM6116 timing, or serial sound-ROM implementation. Port 3
+remains an unresolved decoded `/CPORT` strobe with no loaded consumer found on
+Rev A and has no invented state effect.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

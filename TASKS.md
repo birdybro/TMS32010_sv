@@ -1285,8 +1285,11 @@ objective passing evidence.
   one synchronous-read, single-write-port abstract memory with 85 total cells
   and zero structural problems. A sixth pre-technology script checks the
   partial processor/program-RAM board top as 2,167 abstract cells, 122 checks,
-  and two retained memories with zero structural problems. Full-core
-  resources, a block-RAM-safe
+  and two retained memories with zero structural problems. A seventh
+  pre-technology script checks the standalone communication-RAM and
+  sound-address path as 82 abstract cells, seven retained checks, and one
+  retained 512-by-16 memory with zero structural problems. This is not a
+  Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
@@ -1334,7 +1337,8 @@ objective passing evidence.
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
-  `sim/bus/tb_hard_drivin_sound_mister.sv`
+  `sim/bus/tb_hard_drivin_sound_mister.sv`,
+  `sim/bus/tb_hard_drivin_sound_communication_path.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1374,8 +1378,14 @@ objective passing evidence.
   6 holds a separate ROM-block nibble. Pinned MAME's unconditional DSP RAM
   visibility, selective port-0/1-only increment, and byte merge remain
   `SC-023` through `SC-025`. Rev-A `/CPORT` has no identified loaded consumer,
-  so port 3 is `OQ-023`, not established communication control. FPGA storage,
-  address-control RTL, and execution tests remain acceptance work.
+  so port 3 is `OQ-023`, not established communication control. The standalone
+  FPGA communication path now exhaustively host-loads and DSP-reads all 512
+  words, rejects the non-owning side, preserves storage across initialization,
+  tracks explicit counter/block validity, verifies global port-2 increment and
+  16-bit wrap, and assigns port 3 no effect. Its pre-technology Yosys target
+  retains one memory in an 82-cell hierarchy with seven checks. Processor-top
+  connection, host latch/bus adaptation, serial-ROM data, and physical timing
+  remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

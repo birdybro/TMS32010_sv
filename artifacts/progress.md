@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' communication-RAM/address-path research
+- **Current milestone:** Hard Drivin' standalone communication-RAM/address RTL
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 117 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 28 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 29 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -50,7 +50,9 @@
   85-cell hierarchy with five checks and zero structural problems.
   The partial processor/program-RAM board top retains both program and internal
   data memories and passes at 2,167 abstract cells/122 checks with zero
-  structural problems before technology mapping.
+  structural problems before technology mapping. A seventh target retains the
+  standalone 512-by-16 communication memory as one `$mem_v2` in an 82-cell
+  hierarchy with seven checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -146,7 +148,8 @@
   report above the original instruction definitions;
   the pinned Hard Drivin' adapter maps port 0 as sound-ROM read/DAC write,
   port 1 as communication-RAM read, port 2 as an incompletely modeled compare
-  read, ports 3–5 as communication/mute/68000-IRQ writes, and ports 6–7 as
+  read, port 3 as an unresolved `/CPORT` decode probe, ports 4–5 as
+  mute/68000-IRQ writes, and ports 6–7 as
   sound-ROM bank/address writes; the synthetic smoke fixture verifies raw
   processor transactions while retaining these roles below primary authority;
   reset requires at least five machine cycles and leaves
@@ -436,6 +439,14 @@
   block nibble. Port 3 has only an unresolved `/CPORT` decode. Official TI
   LS191/LS259 sources are hash-pinned, and `SC-023`–`SC-025` isolate MAME's
   unconditional DSP access, selective increment, and byte merge.
+- **New communication implementation evidence:** the standalone adapter loads
+  all 512 complete words from the host and reads them at exact low-nine
+  addresses through DSP port 1. Directed simulation covers both ownership
+  states, blocked non-owner requests, owner-tagged synchronous reads, global
+  port-2 increment, 16-bit wrap, port-7 load, port-6 low-nibble state, port-3
+  non-effect, invalid pre-load state, and memory retention. Yosys retains one
+  512-by-16 memory in an 82-cell hierarchy with seven checks; this is not
+  physical HM6116 timing or board-top integration.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -458,8 +469,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement and exhaustively test a whole-word same-clock
-  512-by-16 communication-RAM adapter plus the primary-defined sound-address
-  load/increment control; expose unresolved port 3 without assigning effects.
+- **Next task:** connect the standalone communication path to
+  `hard_drivin_sound_mister` with an explicit CRAMEN/host callback and qualify
+  a processor-executed port-1 read without inventing 68000 byte behavior.
 - **Latest committed baseline before this cycle:**
-  `6b23480`
+  `22b7279`

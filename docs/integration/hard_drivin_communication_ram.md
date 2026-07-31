@@ -115,3 +115,40 @@ commit pulses, provided it labels those as FPGA conventions. It must:
 
 These requirements describe the digital relationship, not the HM6116 AC
 timing, 68000 DTACK generation, or firmware handoff interval.
+
+## Current FPGA implementation
+
+Three standalone modules implement this qualified digital boundary:
+
+- `hard_drivin_sound_address_control` models the four-counter relationship and
+  separate port-6 nibble, while retaining explicit validity flags because the
+  drawing shows no physical clear on either state element;
+- `hard_drivin_sound_communication_ram` retains 512 complete words, gives the
+  selected host side read/write access, gives the selected DSP side read-only
+  access, and returns registered owner-tagged read responses; and
+- `hard_drivin_sound_communication_path` restricts the internal DSP request to
+  physical port 1 at `sound_address[8:0]` while forwarding every committed
+  physical input read to the global address increment logic.
+
+`initialize_i` clears response-valid and state-valid metadata, but it neither
+clears the communication memory nor claims a deterministic physical counter
+or latch power-up value. A port-1 request before a port-7 load is explicitly
+reported as an invalid address and is not acknowledged. A request by the
+non-owning side is reported as blocked rather than returning RAM contents.
+Port 3 is visible to the commit stream but has no state effect.
+
+`tb_hard_drivin_sound_communication_path` loads every one of the 512 words
+through whole-word host writes and reads every word through the DSP port-1
+path at the exact low-nine address. It also checks both CRAMEN ownership
+states, blocked accesses, synchronous response ownership, exactly-once
+increments including port 2, 16-bit wrap, port-7 load, port-6 low-nibble
+latching, port-3 non-effect, invalid initial address state, and storage
+retention across FPGA initialization. **Confidence: VERIFIED_SIMULATION for
+the stated adapter contract.**
+
+The pre-technology Yosys target retains one `$mem_v2` in an 82-cell hierarchy
+with seven checks and zero structural problems. This is portable memory-shape
+evidence only; it is not a Quartus block-RAM mapping, physical HM6116 timing
+result, or completed board top. The communication path is not yet connected
+to `hard_drivin_sound_mister`, and there is still no 68000 byte-lane/DTACK
+adapter or serial sound-ROM data implementation.

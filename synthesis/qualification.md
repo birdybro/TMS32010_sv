@@ -157,6 +157,13 @@ Both structural checks pass with zero problems. This proves hierarchy and
 memory retention only; it is not a technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
+The seventh script applies the pre-technology boundary to
+`hard_drivin_sound_communication_path`. Yosys 0.67+111 retains its 512-by-16
+communication RAM as one `$mem_v2` and reports 82 abstract cells with seven
+retained checks. Both structural checks pass with zero problems. This proves
+standalone hierarchy and memory retention only; it is not physical HM6116
+timing, a 68000 bus, a Quartus memory mapping, or board-top timing closure.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -169,7 +176,9 @@ make YOSYS=/path/to/oss-cad-suite/bin/yosys synth-yosys
 
 The ignored outputs are `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and
-`build/yosys/tms32010_mister.json`. Tool-version differences
+`build/yosys/tms32010_mister.json`; the board-specific scripts also write
+ignored JSON outputs including
+`build/yosys/hard_drivin_sound_communication_path.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.
