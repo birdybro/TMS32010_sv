@@ -20,9 +20,9 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the thirty-two-instruction subset,
+program-read cycle for every instruction in the thirty-three-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
-`ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
+`ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
 direct and indirect cases, including every documented SACH shift, positive
 and negative ADD/SUB saturation, ADDS/SUBS overflow-mode outcomes, and every
@@ -34,6 +34,10 @@ AR/ARP-update cases with no data-memory transaction. Directed LDP tests assert
 one-cycle direct/indirect reads, source-bit transfer, and AR/ARP update ordering.
 Directed LT tests assert one-cycle full-word reads into T and the same
 pre-modification address and post-modification AR/ARP ordering.
+Directed DMOV tests assert the one-cycle source-preserving copy to the next
+internal-RAM address, distinct source/write diagnostics, page crossing,
+unrelated-state preservation, and trap-before-effects at an unresolved
+destination.
 Directed LTA tests assert the same one-cycle T load and address ordering while
 also checking previous-P accumulation, both overflow directions, both OVM
 result modes, sticky OV, and unchanged P.
@@ -59,7 +63,7 @@ preservation, and no data-memory transaction.
 - whether taken and untaken conditions have identical two-cycle totals;
 - exact immediate-word fetch ordering for branch and call;
 - interaction of program fetch with internal data RAM beyond the qualified
-  one-cycle `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
+  one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
 - table-operation discarded fetch order;
 - interrupt entry latency, recognition boundary, and MPY/MPYK's documented

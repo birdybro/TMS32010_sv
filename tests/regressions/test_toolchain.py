@@ -25,6 +25,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LDP *
             LDP *+,AR1
             LDP *-,0
+            DMOV 0
+            DMOV 127
+            DMOV *
+            DMOV *+,AR1
+            DMOV *-,0
             LT 0
             LT 127
             LT *
@@ -146,6 +151,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6F88,
                 0x6FA1,
                 0x6F90,
+                0x6900,
+                0x697F,
+                0x6988,
+                0x69A1,
+                0x6990,
                 0x6A00,
                 0x6A7F,
                 0x6A88,
@@ -269,6 +279,11 @@ class ToolchainSliceTests(unittest.TestCase):
             0x7F8E,
             0x7F8F,
             0x7F90,
+            0x6900,
+            0x697F,
+            0x6988,
+            0x69A1,
+            0x6990,
             0x6C00,
             0x6C7F,
             0x6C88,
@@ -450,6 +465,7 @@ class ToolchainSliceTests(unittest.TestCase):
     def test_common_address_operand_diagnostics_and_noncanonical_aliases(self) -> None:
         for mnemonic, noncanonical in (
             ("LDP", 0x6F89),
+            ("DMOV", 0x6989),
             ("LT", 0x6A89),
             ("LTA", 0x6C89),
             ("LTD", 0x6B89),

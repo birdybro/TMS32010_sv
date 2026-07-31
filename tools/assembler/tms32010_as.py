@@ -304,6 +304,7 @@ class Assembler:
         elif operation in {
             "ADDS",
             "AND",
+            "DMOV",
             "LDP",
             "LT",
             "LTA",

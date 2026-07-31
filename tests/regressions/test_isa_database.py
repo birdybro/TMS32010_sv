@@ -35,6 +35,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LARP",
                 "LDP",
                 "LDPK",
+                "DMOV",
                 "LT",
                 "LTD",
                 "LTA",
@@ -138,6 +139,28 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertIsNone(decode_word(self.database, 0x6A00 | control))
         self.assertIsNotNone(decode_word(self.database, 0x6A7F))
         self.assertIsNotNone(decode_word(self.database, 0x6AA1))
+
+    def test_dmov_uses_common_data_addressing_without_reserved_controls(
+        self,
+    ) -> None:
+        direct = decode_word(self.database, 0x697F)
+        indirect = decode_word(self.database, 0x69A1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "DMOV")
+        self.assertEqual(
+            direct[1],
+            {"indirect": 0, "addressing_field": 0x7F},
+        )
+        self.assertEqual(indirect[0]["mnemonic"], "DMOV")
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
+        for word in (0x69C8, 0x698A, 0x69B8):
+            with self.subTest(word=word):
+                self.assertIsNone(decode_word(self.database, word))
 
     def test_mpy_rejects_reserved_indirect_controls(self) -> None:
         for control in (0xC8, 0x8A, 0xB8):

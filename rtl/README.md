@@ -1,7 +1,7 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
+`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
 `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
@@ -14,9 +14,10 @@ assert `illegal_o` and do not advance the PC.
 Its asynchronous read lets the present single-boundary execution slice consume
 an operand without inventing another architectural cycle. This is an
 implementation convenience, not a claim about the physical memory array, and
-currently maps to registers and muxes in both qualified synthesis flows. LTD
-uses independent RAM read and write addresses so it can copy the unchanged
-source word to the next location while loading T and accumulating P. The
+currently maps to registers and muxes in both qualified synthesis flows. DMOV
+and LTD use independent RAM read and write addresses to copy the unchanged
+source word to the next location; LTD additionally loads T and accumulates P.
+The
 explicit debug write port is only for deterministic verification preload;
 physical reset never initializes the RAM, and assertions reject preload during
 live execution or collision with an architectural write. Logical source
@@ -42,7 +43,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the thirty-two currently qualified one-cycle sequential instructions it
+For the thirty-three currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general

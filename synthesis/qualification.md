@@ -2,7 +2,7 @@
 
 ## 2026-07-30 Quartus fits
 
-These results cover the thirty-two-instruction RTL, signed multiplier,
+These results cover the thirty-three-instruction RTL, signed multiplier,
 144-word internal data RAM, and first program-bus phase engine. They are not
 complete-core resource or interface-timing results.
 
@@ -15,14 +15,14 @@ complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,838 ALMs (4%).
+- Logic: 1,824 ALMs (4%).
 - Registers: 2,483.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +3.797 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 61.88 MHz at 100 °C, 61.72 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.877 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.168 ns.
+- Slow-corner internal Fmax: 58.95 MHz at 100 °C, 58.40 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 278 harness-only interface
@@ -93,7 +93,7 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.33 from Ubuntu 24.04 successfully elaborates and synthesizes the same
 integrated partial hierarchy. Both pre- and post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, nine RTL assertions
-remain represented, and the generic result contains 11,138 cells. The
+remain represented, and the generic result contains 11,184 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 2,318 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone

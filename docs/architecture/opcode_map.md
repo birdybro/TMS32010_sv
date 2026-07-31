@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial thirty-two-instruction model/tool boundary is intentionally partial
+Its initial thirty-three-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -16,6 +16,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `MAR dma` | `0x6800` | `0xff00` plus alias/addressing constraints | 1 | 1 | individual `MAR` page, printed p. 3-42 |
 | `LDP dma` | `0x6f00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LDP` page, printed p. 3-36 |
 | `LDPK K` | `0x6e00` | `0xfffe` | 1 | 1 | individual `LDPK` page, printed p. 3-37 |
+| `DMOV dma` | `0x6900` | `0xff00` plus addressing constraints | 1 | 1 | individual `DMOV` page, printed p. 3-28 |
 | `LT dma` | `0x6a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LT` page, printed p. 3-39 |
 | `LTD dma` | `0x6b00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LTD` page, printed p. 3-41 |
 | `LTA dma` | `0x6c00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LTA` page, printed p. 3-40 |
@@ -44,10 +45,18 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-31–3-44,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-28, 3-31–3-44,
 3-46, 3-48, 3-53–3-56, 3-58, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 81–94, 96, 98, 103–106, 108, 110, 113, 118,
+pp. 55–57, 60, 62–64, 78, 81–94, 96, 98, 103–106, 108, 110, 113, 118,
 and 120–121)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`DMOV` fixes bits 15:8 to `0x69`; bit 7 and bits 6:0 retain the common
+qualified direct/indirect address field. Its execution-time destination is
+`source+1`, not another opcode field. Reserved indirect controls remain
+rejected rather than aliased
+[ti-tms32010-users-guide-spru001b, `DMOV`, printed p. 3-28 (PDF p. 78);
+ti-tms32010-assembly-guide-spru002b, `DMOV`, printed p. 3-28 (PDF p. 49)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `LTA` fixes bits 15:8 to `0x6c`; bit 7 and bits 6:0 retain the same qualified

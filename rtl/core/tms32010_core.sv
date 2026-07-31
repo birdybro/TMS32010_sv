@@ -40,40 +40,41 @@ module tms32010_core (
 );
   // Yosys 0.33 cannot import the operation enum package. These encodings are
   // checked against tms32010_pkg through the exhaustive decoder regression.
-  localparam logic [4:0] OP_LACK = 5'd0;
-  localparam logic [4:0] OP_NOP  = 5'd1;
-  localparam logic [4:0] OP_ZAC  = 5'd2;
-  localparam logic [4:0] OP_ROVM = 5'd3;
-  localparam logic [4:0] OP_SOVM = 5'd4;
-  localparam logic [4:0] OP_LARK = 5'd5;
-  localparam logic [4:0] OP_LARP = 5'd6;
-  localparam logic [4:0] OP_LDPK = 5'd7;
-  localparam logic [4:0] OP_LAC  = 5'd8;
-  localparam logic [4:0] OP_SACL = 5'd9;
-  localparam logic [4:0] OP_SACH = 5'd10;
-  localparam logic [4:0] OP_ZALH = 5'd11;
-  localparam logic [4:0] OP_ZALS = 5'd12;
-  localparam logic [4:0] OP_ADDS = 5'd13;
-  localparam logic [4:0] OP_XOR  = 5'd14;
-  localparam logic [4:0] OP_AND  = 5'd15;
-  localparam logic [4:0] OP_OR   = 5'd16;
-  localparam logic [4:0] OP_ADD  = 5'd17;
-  localparam logic [4:0] OP_SUB  = 5'd18;
-  localparam logic [4:0] OP_SUBS = 5'd19;
-  localparam logic [4:0] OP_LAR  = 5'd20;
-  localparam logic [4:0] OP_SAR  = 5'd21;
-  localparam logic [4:0] OP_MAR  = 5'd22;
-  localparam logic [4:0] OP_LDP  = 5'd23;
-  localparam logic [4:0] OP_LT   = 5'd24;
-  localparam logic [4:0] OP_MPY  = 5'd25;
-  localparam logic [4:0] OP_MPYK = 5'd26;
-  localparam logic [4:0] OP_PAC  = 5'd27;
-  localparam logic [4:0] OP_APAC = 5'd28;
-  localparam logic [4:0] OP_SPAC = 5'd29;
-  localparam logic [4:0] OP_LTA  = 5'd30;
-  localparam logic [4:0] OP_LTD  = 5'd31;
+  localparam logic [5:0] OP_LACK = 6'd0;
+  localparam logic [5:0] OP_NOP  = 6'd1;
+  localparam logic [5:0] OP_ZAC  = 6'd2;
+  localparam logic [5:0] OP_ROVM = 6'd3;
+  localparam logic [5:0] OP_SOVM = 6'd4;
+  localparam logic [5:0] OP_LARK = 6'd5;
+  localparam logic [5:0] OP_LARP = 6'd6;
+  localparam logic [5:0] OP_LDPK = 6'd7;
+  localparam logic [5:0] OP_LAC  = 6'd8;
+  localparam logic [5:0] OP_SACL = 6'd9;
+  localparam logic [5:0] OP_SACH = 6'd10;
+  localparam logic [5:0] OP_ZALH = 6'd11;
+  localparam logic [5:0] OP_ZALS = 6'd12;
+  localparam logic [5:0] OP_ADDS = 6'd13;
+  localparam logic [5:0] OP_XOR  = 6'd14;
+  localparam logic [5:0] OP_AND  = 6'd15;
+  localparam logic [5:0] OP_OR   = 6'd16;
+  localparam logic [5:0] OP_ADD  = 6'd17;
+  localparam logic [5:0] OP_SUB  = 6'd18;
+  localparam logic [5:0] OP_SUBS = 6'd19;
+  localparam logic [5:0] OP_LAR  = 6'd20;
+  localparam logic [5:0] OP_SAR  = 6'd21;
+  localparam logic [5:0] OP_MAR  = 6'd22;
+  localparam logic [5:0] OP_LDP  = 6'd23;
+  localparam logic [5:0] OP_LT   = 6'd24;
+  localparam logic [5:0] OP_MPY  = 6'd25;
+  localparam logic [5:0] OP_MPYK = 6'd26;
+  localparam logic [5:0] OP_PAC  = 6'd27;
+  localparam logic [5:0] OP_APAC = 6'd28;
+  localparam logic [5:0] OP_SPAC = 6'd29;
+  localparam logic [5:0] OP_LTA  = 6'd30;
+  localparam logic [5:0] OP_LTD  = 6'd31;
+  localparam logic [5:0] OP_DMOV = 6'd32;
 
-  logic [4:0] decoded_operation;
+  logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
   logic [12:0] decoded_immediate_13;
   logic       decoded_auxiliary_register;
@@ -132,6 +133,7 @@ module tms32010_core (
         (decoded_operation == OP_LAR) ||
         (decoded_operation == OP_SAR) ||
         (decoded_operation == OP_LDP) ||
+        (decoded_operation == OP_DMOV) ||
         (decoded_operation == OP_LT) ||
         (decoded_operation == OP_LTD) ||
         (decoded_operation == OP_LTA) ||
@@ -195,6 +197,7 @@ module tms32010_core (
       (decoded_operation == OP_SUBS) ||
       (decoded_operation == OP_LAR) ||
       (decoded_operation == OP_LDP) ||
+      (decoded_operation == OP_DMOV) ||
       (decoded_operation == OP_LT) ||
       (decoded_operation == OP_LTD) ||
       (decoded_operation == OP_LTA) ||
@@ -208,13 +211,17 @@ module tms32010_core (
       (decoded_operation == OP_SACL) ||
       (decoded_operation == OP_SACH) ||
       (decoded_operation == OP_SAR) ||
+      (decoded_operation == OP_DMOV) ||
       (decoded_operation == OP_LTD)
     );
   assign data_address_valid_o =
     (data_read_o || data_write_o) && ram_address_valid;
   always_comb begin
     data_write_address_o = data_address_o;
-    if (decoded_operation == OP_LTD) begin
+    if (
+      (decoded_operation == OP_DMOV) ||
+      (decoded_operation == OP_LTD)
+    ) begin
       data_write_address_o = data_address_o + 8'd1;
     end
   end
@@ -223,7 +230,10 @@ module tms32010_core (
   assign data_read_data_o     = ram_read_data;
   always_comb begin
     data_write_data_o = accumulator_o[15:0];
-    if (decoded_operation == OP_LTD) begin
+    if (
+      (decoded_operation == OP_DMOV) ||
+      (decoded_operation == OP_LTD)
+    ) begin
       data_write_data_o = ram_read_data;
     end else if (decoded_operation == OP_SAR) begin
       data_write_data_o =
@@ -279,6 +289,7 @@ module tms32010_core (
         (decoded_operation != OP_LAR) &&
         (decoded_operation != OP_SAR) &&
         (decoded_operation != OP_LDP) &&
+        (decoded_operation != OP_DMOV) &&
         (decoded_operation != OP_LT) &&
         (decoded_operation != OP_LTD) &&
         (decoded_operation != OP_LTA) &&
@@ -287,7 +298,10 @@ module tms32010_core (
       (
         ram_address_valid &&
         (
-          (decoded_operation != OP_LTD) ||
+          (
+            (decoded_operation != OP_DMOV) &&
+            (decoded_operation != OP_LTD)
+          ) ||
           ram_write_address_valid
         )
       )
@@ -366,6 +380,8 @@ module tms32010_core (
           end
           OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_LT: t_register_o <= ram_read_data;
+          OP_DMOV: begin
+          end
           OP_LTD: begin
             t_register_o <= ram_read_data;
             if (apac_overflow) begin
@@ -525,6 +541,7 @@ module tms32010_core (
            (decoded_operation == OP_SAR) ||
            (decoded_operation == OP_MAR) ||
            (decoded_operation == OP_LDP) ||
+           (decoded_operation == OP_DMOV) ||
            (decoded_operation == OP_LT) ||
            (decoded_operation == OP_LTD) ||
            (decoded_operation == OP_LTA) ||

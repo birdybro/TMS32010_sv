@@ -14,13 +14,13 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-two
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support thirty-three
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
-`ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
-`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `LTD`/`SACL`/`SACH`/`SAR` writes;
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
+`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow
@@ -32,10 +32,13 @@ source word to the next internal-RAM address; the logical verification
 interface exposes separate read and write addresses for this dual-address
 transaction. An LTD whose source or destination is outside the verified
 144-word RAM traps provisionally rather than inventing wrap or alias behavior.
+DMOV performs only that source-preserving next-address copy, leaving
+ACC/T/P and arithmetic status unchanged; it follows the same explicit
+unresolved-endpoint policy.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies normal sequential program reads for this
-thirty-two-instruction subset only; it is not a general pipeline or
+thirty-three-instruction subset only; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

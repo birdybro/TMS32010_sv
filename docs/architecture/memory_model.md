@@ -48,7 +48,7 @@ to file/wrapper formats, not to the CPU architecture.
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
+retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
 `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
@@ -57,6 +57,14 @@ physical word, pre-modification indirect addressing, and write-to-read
 ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
+
+`DMOV` captures the selected source word and writes it unchanged to the
+numerically next internal-RAM address in the same documented cycle. It uses
+distinct logical source and destination addresses but has no T, P, ACC, or
+arithmetic-status effect
+[ti-tms32010-users-guide-spru001b, `DMOV`, printed p. 3-28 (PDF p. 78);
+ti-first-generation-users-guide-1987, §3.4.3 and `DMOV`, printed pp. 3-13 and
+4-33 (PDF pp. 42 and 114)]. **Confidence: VERIFIED_PRIMARY.**
 
 `LTA` consumes one selected internal data word for its T-register load while
 its previous-P accumulation remains internal to the register datapath. The
@@ -74,11 +82,11 @@ the source address and occurs after the access
 ti-first-generation-users-guide-1987, §3.4.3 and `LTD`, printed pp. 3-13 and
 4-46 (PDF pp. 42 and 127)]. **Confidence: VERIFIED_PRIMARY.**
 
-The original-part sources do not establish what happens when LTD selects
-source `0x8f`, whose next higher destination is outside the documented
+The original-part sources do not establish what happens when DMOV or LTD
+selects source `0x8f`, whose next higher destination is outside the documented
 144-word RAM. The current model and RTL reject either unresolved endpoint
-before T, ACC, AR/ARP, or RAM changes. This is an explicitly provisional
-implementation boundary under `OQ-002` and `OQ-014`.
+before instruction-specific state, AR/ARP, or RAM changes. This is an
+explicitly provisional implementation boundary under `OQ-002` and `OQ-014`.
 
 `MPYK` uses a signed immediate carried in the program word and therefore
 performs no logical or physical data-memory access. Directed and native-phase
@@ -104,7 +112,7 @@ ACC-minus-P operation requires no data-memory access
 The current array has an asynchronous read because the temporary execution
 slice samples program data and commits a one-cycle instruction at one
 boundary. Independent source-read and destination-write addresses also support
-LTD's documented dual-address operation. This is an implementation
+DMOV/LTD's documented dual-address operation. This is an implementation
 convenience, not evidence about the
 physical TMS32010 RAM. It consequently synthesizes as registers and muxes in
 the qualified Yosys and Quartus flows. Replacing it with an FPGA block-RAM
@@ -114,5 +122,5 @@ the same externally visible cycle without speculative latency.
 An explicit synchronous preload port exists for simulation and integration
 debug only. It is forbidden during live CPU execution, does not run on
 physical reset, and does not imply deterministic hardware power-up contents.
-`SACL`, `SACH`, `SAR`, and `LTD` supply architectural write paths; assertions exclude
+`DMOV`, `SACL`, `SACH`, `SAR`, and `LTD` supply architectural write paths; assertions exclude
 simultaneous CPU/debug writes and invalid CPU write addresses.

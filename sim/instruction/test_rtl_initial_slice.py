@@ -181,6 +181,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_dmov_copy_address_boundary_and_state_preservation(self) -> None:
+        self._run_testbench(
+            "tb_dmov_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_dmov_rtl.sv",
+            ],
+        )
+
     def test_mpy_signed_product_address_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_mpy_rtl",

@@ -3,7 +3,7 @@
 module tms32010_decode (
   input  logic [15:0] instruction_i,
   output logic        valid_o,
-  output logic [4:0]  operation_o,
+  output logic [5:0]  operation_o,
   output logic [7:0]  immediate_o,
   output logic [12:0] immediate_13_o,
   output logic        auxiliary_register_o,
@@ -14,38 +14,39 @@ module tms32010_decode (
   // Keep the module boundary a packed vector: Ubuntu 24.04's Yosys 0.33
   // cannot elaborate a package-qualified enum port. The exhaustive decoder
   // test compares these values with tms32010_pkg and prevents silent drift.
-  localparam logic [4:0] OP_LACK = 5'd0;
-  localparam logic [4:0] OP_NOP  = 5'd1;
-  localparam logic [4:0] OP_ZAC  = 5'd2;
-  localparam logic [4:0] OP_ROVM = 5'd3;
-  localparam logic [4:0] OP_SOVM = 5'd4;
-  localparam logic [4:0] OP_LARK = 5'd5;
-  localparam logic [4:0] OP_LARP = 5'd6;
-  localparam logic [4:0] OP_LDPK = 5'd7;
-  localparam logic [4:0] OP_LAC  = 5'd8;
-  localparam logic [4:0] OP_SACL = 5'd9;
-  localparam logic [4:0] OP_SACH = 5'd10;
-  localparam logic [4:0] OP_ZALH = 5'd11;
-  localparam logic [4:0] OP_ZALS = 5'd12;
-  localparam logic [4:0] OP_ADDS = 5'd13;
-  localparam logic [4:0] OP_XOR  = 5'd14;
-  localparam logic [4:0] OP_AND  = 5'd15;
-  localparam logic [4:0] OP_OR   = 5'd16;
-  localparam logic [4:0] OP_ADD  = 5'd17;
-  localparam logic [4:0] OP_SUB  = 5'd18;
-  localparam logic [4:0] OP_SUBS = 5'd19;
-  localparam logic [4:0] OP_LAR  = 5'd20;
-  localparam logic [4:0] OP_SAR  = 5'd21;
-  localparam logic [4:0] OP_MAR  = 5'd22;
-  localparam logic [4:0] OP_LDP  = 5'd23;
-  localparam logic [4:0] OP_LT   = 5'd24;
-  localparam logic [4:0] OP_MPY  = 5'd25;
-  localparam logic [4:0] OP_MPYK = 5'd26;
-  localparam logic [4:0] OP_PAC  = 5'd27;
-  localparam logic [4:0] OP_APAC = 5'd28;
-  localparam logic [4:0] OP_SPAC = 5'd29;
-  localparam logic [4:0] OP_LTA  = 5'd30;
-  localparam logic [4:0] OP_LTD  = 5'd31;
+  localparam logic [5:0] OP_LACK = 6'd0;
+  localparam logic [5:0] OP_NOP  = 6'd1;
+  localparam logic [5:0] OP_ZAC  = 6'd2;
+  localparam logic [5:0] OP_ROVM = 6'd3;
+  localparam logic [5:0] OP_SOVM = 6'd4;
+  localparam logic [5:0] OP_LARK = 6'd5;
+  localparam logic [5:0] OP_LARP = 6'd6;
+  localparam logic [5:0] OP_LDPK = 6'd7;
+  localparam logic [5:0] OP_LAC  = 6'd8;
+  localparam logic [5:0] OP_SACL = 6'd9;
+  localparam logic [5:0] OP_SACH = 6'd10;
+  localparam logic [5:0] OP_ZALH = 6'd11;
+  localparam logic [5:0] OP_ZALS = 6'd12;
+  localparam logic [5:0] OP_ADDS = 6'd13;
+  localparam logic [5:0] OP_XOR  = 6'd14;
+  localparam logic [5:0] OP_AND  = 6'd15;
+  localparam logic [5:0] OP_OR   = 6'd16;
+  localparam logic [5:0] OP_ADD  = 6'd17;
+  localparam logic [5:0] OP_SUB  = 6'd18;
+  localparam logic [5:0] OP_SUBS = 6'd19;
+  localparam logic [5:0] OP_LAR  = 6'd20;
+  localparam logic [5:0] OP_SAR  = 6'd21;
+  localparam logic [5:0] OP_MAR  = 6'd22;
+  localparam logic [5:0] OP_LDP  = 6'd23;
+  localparam logic [5:0] OP_LT   = 6'd24;
+  localparam logic [5:0] OP_MPY  = 6'd25;
+  localparam logic [5:0] OP_MPYK = 6'd26;
+  localparam logic [5:0] OP_PAC  = 6'd27;
+  localparam logic [5:0] OP_APAC = 6'd28;
+  localparam logic [5:0] OP_SPAC = 6'd29;
+  localparam logic [5:0] OP_LTA  = 6'd30;
+  localparam logic [5:0] OP_LTD  = 6'd31;
+  localparam logic [5:0] OP_DMOV = 6'd32;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -202,6 +203,17 @@ module tms32010_decode (
       end
     end else if (instruction_i[15:8] == 8'h6f) begin
       operation_o = OP_LDP;
+      if (!instruction_i[7]) begin
+        valid_o = 1'b1;
+      end else if (
+        (instruction_i[6] == 1'b0) &&
+        (instruction_i[2:1] == 2'b00) &&
+        (instruction_i[5:4] != 2'b11)
+      ) begin
+        valid_o = 1'b1;
+      end
+    end else if (instruction_i[15:8] == 8'h69) begin
+      operation_o = OP_DMOV;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
       end else if (

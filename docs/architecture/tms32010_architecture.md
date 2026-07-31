@@ -112,9 +112,9 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-`ZALS`. The nineteen common-address data instructions have independent
+`ZALS`. The twenty common-address data instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -150,6 +150,10 @@ both logical addresses and require the read and write in the same one-cycle
 retirement. Source `0x8f` would select an unimplemented destination `0x90`;
 the current trap-before-effects policy is provisional under `OQ-014`, not a
 claim about physical decode behavior.
+DMOV is the copy-only subset of that transfer: it reads the selected source
+through the same old-address/common-post-update path and writes the unchanged
+word to `source+1`, but does not load T or change ACC, P, OV, OVM, or DP.
+The same provisional `0x8f`-to-`0x90` endpoint policy applies under OQ-014.
 MPY signed-multiplies T by the selected 16-bit data word into P through that
 same address/update path. Its documented `0x8000`-by-`0x8000` result is
 `0xc0000000`, and directed tests preserve that physical multiplier exception.

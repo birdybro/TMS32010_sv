@@ -194,6 +194,35 @@ ti-tms32010-assembly-guide-spru002b, `LT`, printed p. 3-39
 (PDF p. 60)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
 update bits.**
 
+## Qualified `DMOV` functional slice
+
+`DMOV` fixes bits 15:8 to `0x69`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. In one word and one cycle, it copies the
+complete selected 16-bit internal RAM word unchanged to the next higher
+data-memory address and leaves the source unchanged. TI's worked example
+starts with RAM[8]=`0x0043` and RAM[9]=`0x0002`; afterward both locations hold
+`0x0043`
+[ti-tms32010-users-guide-spru001b, `DMOV`, printed p. 3-28 (PDF p. 78);
+ti-tms32010-assembly-guide-spru002b, `DMOV`, printed p. 3-28 (PDF p. 49)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The instruction changes neither ACC nor the arithmetic datapath state. The
+first-generation guide describes DMOV as the data-move subset of LTD; its
+execution list changes only the normal PC and destination memory word. Model
+and RTL tests therefore require T, P, ACC, OV, OVM, and DP to remain unchanged
+[ti-first-generation-users-guide-1987, §3.4.3 and `DMOV`, printed
+pp. 3-13 and 4-33 (PDF pp. 42 and 114)]. **Confidence: VERIFIED_PRIMARY.**
+
+Direct addressing resolves the source through the old DP. Indirect addressing
+uses the AR selected by the old ARP and applies the common optional nine-bit
+AR increment/decrement and ARP replacement after capturing the source.
+Directed tests cover TI's example, both pages, the 127-to-128 page crossing,
+old-AR ordering, state preservation, one-cycle retirement, distinct logical
+read/write addresses, and reserved controls. A source of `0x8f` implies an
+undocumented destination `0x90`; the current partial implementation traps
+before any state or RAM effect under `OQ-002`/`OQ-014`. Simultaneous indirect
+increment/decrement remains rejected under `OQ-010`.
+
 ## Qualified `LTA` functional slice
 
 `LTA` fixes bits 15:8 to `0x6c`; bit 7 and bits 6:0 use the common

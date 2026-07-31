@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first thirty-two model/tool encodings.
+  mnemonics and fully describes the first thirty-three model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the thirty-two-instruction slice.
+  clock-enable execution core for the thirty-three-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the thirty-two supported
+- Sequential native-phase wrapper that retires the thirty-three supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -134,6 +134,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Separate logical source and destination RAM address diagnostics for
   dual-address instructions, with independent internal-RAM read/write
   addresses and validity assertions.
+- Primary-cited `DMOV` database, hand fixtures, model,
+  assembler/disassembler, RTL, native-phase, and differential support for an
+  unchanged source-word copy to the next internal-RAM address without LTD's
+  T-load or accumulator effects.
 
 ### Changed
 
@@ -143,10 +147,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated thirty-two-instruction
-  phase/RAM/multiplier slice in 1,838 ALMs/2,483 registers and one DSP block,
-  with +3.797 ns worst setup and +0.165 ns worst hold slack at 50 MHz and
-  61.72 MHz worst slow-corner internal Fmax; 278
+- Quartus 17.0.2 fits the integrated thirty-three-instruction
+  phase/RAM/multiplier slice in 1,824 ALMs/2,483 registers and one DSP block,
+  with +2.877 ns worst setup and +0.168 ns worst hold slack at 50 MHz and
+  58.40 MHz worst slow-corner internal Fmax; 278
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -154,13 +158,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Decoder operation ports use an explicitly encoded packed vector at module
   boundaries so the same RTL elaborates in Verilator, Quartus 17.0.2, and
   Yosys 0.33; exhaustive decode tests guard the package/RTL encoding contract.
+- The internal packed operation code is now six bits wide to represent the
+  33rd qualified operation without aliasing an existing decode.
 - Data-memory documentation now distinguishes verification-visible logical
   RAM accesses from physical pins; ordinary operands are entirely on-chip.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers thirty-two of 60 documented
-  mnemonics and nineteen common-address data-operation families.
+- The qualified model/tool/RTL boundary now covers thirty-three of 60 documented
+  mnemonics and twenty common-address data-operation families.
 
 ### Fixed
 
@@ -277,7 +283,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.33 synthesizes the thirty-two-instruction hierarchy to 11,138 generic
+- Yosys 0.33 synthesizes the thirty-three-instruction hierarchy to 11,184 generic
   cells with nine assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   five scoped harness warnings.
@@ -368,13 +374,22 @@ Changelog, and the project follows semantic versioning once releases begin.
   read and destination write plus all 144 final RAM words; native-phase
   integration verifies both internal transactions beside the ordinary
   external program fetch.
-- The complete current regression passes 67 repository/ISA/tool tests, 135
-  directed model tests, 23 exhaustive/directed RTL tests, two native bus/phase
+- Hand fixtures and directed model/RTL tests verify DMOV's `0x69` family,
+  TI's source-preserving worked example, direct/page-one and indirect
+  accesses, 127-to-128 page crossing, ACC/T/P/status preservation, common
+  post-update ordering, one-cycle retirement, reserved controls, and
+  trap-before-effects for an unresolved destination.
+- The seeded 512-step differential compares DMOV's distinct logical source
+  read and destination write plus all 144 final RAM words; native-phase
+  integration verifies both internal transactions beside the ordinary
+  external program fetch without LTD's T/ACC side effects.
+- The complete current regression passes 68 repository/ISA/tool tests, 141
+  directed model tests, 24 exhaustive/directed RTL tests, two native bus/phase
   tests, and one 512-step model/RTL differential.
 
 ### Known Issues
 
-- Only thirty-two of 60 documented instruction mnemonics have model, tool, and
+- Only thirty-three of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - MPY/MPYK functional results and one-cycle transactions are verified, but
   their documented suppression of interrupt service through the following
@@ -382,9 +397,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.
-- Original-part LTD behavior when source `0x8f` implies destination `0x90`
-  remains unresolved under `OQ-014`; the partial implementation traps before
-  all effects and labels that policy provisional.
+- Original-part DMOV/LTD behavior when source `0x8f` implies destination
+  `0x90` remains unresolved under `OQ-014`; the partial implementation traps
+  before all effects and labels that policy provisional.
 - Control-flow bus traces, interrupt entry phases, reserved status bits, and
   out-of-range RAM behavior remain open.
 - The execution core still has an instruction-step test interface; the

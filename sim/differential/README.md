@@ -2,12 +2,12 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-thirty-two supported instructions. It checks pre-execution PC/opcode,
+thirty-three supported instructions. It checks pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
 registers and the ARP/DP status fields.
-`ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
 `XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
 and cover valid
 direct/indirect addresses, reads, writes, shifts, and auxiliary-register
@@ -23,6 +23,8 @@ the simultaneous T result through the same address/update path.
 LTD cases additionally compare the source read, distinct next-address write,
 unchanged copied data, simultaneous T/ACC results, OV/OVM outcomes, and final
 RAM contents.
+DMOV cases compare the same source/destination transaction topology and final
+RAM without the LTD T-register or accumulator effects.
 MPY cases compare logical reads, signed P results, the most-negative hardware
 exception, and indirect post-modification.
 MPYK cases compare signed immediate endpoints and P results while requiring

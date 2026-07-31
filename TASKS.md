@@ -94,17 +94,17 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Thirty-two encodings (`ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Thirty-three encodings (`ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are
-  primary-transcribed in the opcode research table. The nineteen
+  primary-transcribed in the opcode research table. The twenty
   common-address data instructions add
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 18,629 supported words without collisions; the remaining 28
+  accepting 18,769 supported words without collisions; the remaining 27
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -124,13 +124,13 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
   `SAR`, `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
-  and deterministic replay. The nineteen common-address data instructions
+  and deterministic replay. The twenty common-address data instructions
   cover
   direct/indirect reads or writes and nine-bit AR updates; `LAC` additionally
   covers sign extension and shifts, SACH covers output shifts 0/1/4, and the
@@ -148,7 +148,9 @@ objective passing evidence.
   OVM-controlled wrap or signed-endpoint saturation. `LTD` adds the unchanged
   source-word copy to the next internal-RAM address, with distinct logical
   read/write transactions and provisional trap-before-effects for unresolved
-  endpoints under `OQ-014`. `MPY` produces a
+  endpoints under `OQ-014`. `DMOV` performs only that unchanged-word copy,
+  preserves ACC/T/P/arithmetic status, and applies the same address/update and
+  endpoint policy. `MPY` produces a
   signed 16-by-16 P result through that same path and reproduces the
   documented `0x8000`-by-`0x8000` exception. `MPYK` multiplies T by a
   sign-extended 13-bit immediate without a data-memory transaction. `PAC`
@@ -186,16 +188,16 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same thirty-two instructions as the
+- **Notes:** Qualified slice supports the same thirty-three instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
   zero placeholder before a next ARP, SACH's sparse 0/1/4 shifts, and
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
-  ADDS/AND/LDP/LT/LTA/LTD/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
+  ADDS/AND/DMOV/LDP/LT/LTA/LTD/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC. The remaining 28
+  PAC/APAC/SPAC. The remaining 27
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -215,10 +217,10 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  thirty-two-instruction slice. `LAC`
+  thirty-three-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
-  nineteen common-address data instructions verify direct/indirect read/write
+  twenty common-address data instructions verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
   indirect load into the selected address register suppresses its otherwise
   requested post-modification. `SAR` verifies the distinct same-source rule:
@@ -234,6 +236,9 @@ objective passing evidence.
   `LTD` adds a simultaneous unchanged-word copy to the following RAM address;
   distinct source/write addresses, page crossing, and unresolved-destination
   trap-before-effects are verified.
+  `DMOV` reuses the dual-address RAM path without LTD's T/ACC effects;
+  source and unrelated-state preservation, page crossing, indirect
+  post-update, and unresolved-destination trapping are verified.
   `MPY` verifies signed products, the original most-negative exception, and
   P replacement through the same old-address/post-update order. Its
   combinational portable multiplier infers one Cyclone V DSP block in the
@@ -273,8 +278,8 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of thirty-two supported one-cycle instructions, including all
-  nineteen internal-data operations, on its falling-edge sample and aligns
+  retires each of thirty-three supported one-cycle instructions, including all
+  twenty internal-data operations, on its falling-edge sample and aligns
   PC/native address across stalls, traps, and reset. General overlap, branch,
   multi-cycle, and interrupt control do not exist yet.
 
@@ -296,7 +301,7 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all thirty-two
+  release delay. A partial wrapper integrates those phases with all thirty-three
   supported sequential instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Table cycles, branch/call/return, general pipeline overlap,
@@ -318,7 +323,7 @@ objective passing evidence.
 - **Tests:** `sim/bus/tb_data_bus.sv`
 - **Notes:** Primary documentation establishes that ordinary operands are
   wholly internal; external storage moves through table or I/O instructions.
-  `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
+  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
   `XOR`/`ZALH`/`ZALS` model/RTL tests cover valid address selection, logical
   read/write traces, ordering, and explicitly trap unresolved `0x90`–`0xff`.
   The portable RTL contains exactly 144 words and a nonarchitectural preload
@@ -451,6 +456,11 @@ objective passing evidence.
   source/write addresses, page crossing, both overflow/OVM result directions,
   common indirect post-update, and provisional trap-before-effects when the
   destination is unresolved under `OQ-014`.
+  `DMOV` now passes the same primary-cited database/model/tool/RTL,
+  one-cycle, native-phase, and randomized differential path for the copy-only
+  subset: unchanged source, distinct next-address write, ACC/T/P/status
+  preservation, page crossing, common indirect post-update, and provisional
+  trap-before-effects at an unresolved destination under `OQ-014`.
   `MPY` now passes functional database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for signed P results,
   including TI's most-negative multiplier exception. Its documented
@@ -497,7 +507,7 @@ objective passing evidence.
 - **Documentation:** `docs/timing/instruction_cycles.md`
 - **Tests:** `sim/instruction/test_cycles_*`
 - **Notes:** Normal memory read, TBLR/TBLW, IN/OUT, reset, INT, and BIO pin
-  timing is transcribed. One-cycle retirement for all nineteen qualified
+  timing is transcribed. One-cycle retirement for all twenty qualified
   internal-data instructions plus MAR, including all three logic operations, is
   asserted through the partial native-phase
   integration. Control-flow, interrupt-entry, and most per-instruction
@@ -535,7 +545,7 @@ objective passing evidence.
 - **Tests:** `sim/differential/test_*`
 - **Notes:** Seed `0x32010` runs 512 supported instructions with model/RTL
   state including T, P, OV/OVM, logical-cycle,
-  `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/
+  `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/
   `ZALH`/`ZALS`
   reads, `SACL`/`SACH`/`SAR` writes, and final 144-word RAM agreement over an
   identical deterministic image. MAR direct/indirect cases compare AR/ARP
@@ -545,7 +555,9 @@ objective passing evidence.
   the logical read, full-width T result, and common AR/ARP post-update. LTA
   cases additionally compare the simultaneous previous-P accumulation and
   OV/OVM outcomes. LTD cases compare the same state effects plus distinct
-  source-read and next-address-write transactions and final RAM. MPY
+  source-read and next-address-write transactions and final RAM. DMOV cases
+  compare the same two-address copy topology and final RAM while requiring
+  the LTD-specific T/ACC effects to be absent. MPY
   cases compare signed P results, TI's most-negative exception, and common
   post-update ordering. MPYK cases compare signed immediate endpoints and P
   results while requiring inactive logical data strobes. PAC cases compare

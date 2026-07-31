@@ -145,7 +145,8 @@ module tb_phase_slice_integration;
     program_memory[31] = 16'h7f90;  // SPAC
     program_memory[32] = 16'h6c03;  // LTA 3
     program_memory[33] = 16'h6b03;  // LTD 3
-    program_memory[34] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[34] = 16'h6904;  // DMOV 4
+    program_memory[35] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -502,13 +503,32 @@ module tb_phase_slice_integration;
             "nonoverflowing LTD preserves arithmetic status");
     require(pc == 12'h022 && cycle_count == 32'd34,
             "LTD consumes one native instruction cycle");
+    require(data_read && data_write && data_address_valid &&
+            data_address == 8'h04 && data_read_data == 16'hbeef,
+            "DMOV presents its source read beside normal program phases");
+    require(data_write_address_valid && data_write_address == 8'h05 &&
+            data_write_data == 16'hbeef,
+            "DMOV exposes its distinct next-address copy transaction");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0006_dccb &&
+            t_register == 16'hbeef &&
+            product_register == 32'h0002_4999,
+            "DMOV preserves ACC, T, and P");
+    require(dut.core.data_ram.memory[4] == 16'hbeef &&
+            dut.core.data_ram.memory[5] == 16'hbeef,
+            "DMOV preserves its source and commits the next-address copy");
+    require(!overflow_flag && overflow_mode,
+            "DMOV preserves arithmetic status");
+    require(pc == 12'h023 && cycle_count == 32'd35,
+            "DMOV consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h022, "trap holds architectural PC");
-    require(program_address == 12'h022, "trap holds native program address");
-    require(cycle_count == 32'd34, "trap does not count as retired cycle");
+    require(pc == 12'h023, "trap holds architectural PC");
+    require(program_address == 12'h023, "trap holds native program address");
+    require(cycle_count == 32'd35, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -35,6 +35,9 @@ Current supported boundary:
 - `LTD` concurrent source-to-T load, previous-P accumulation, and unchanged
   source copy to the following internal-RAM address, with separate logical
   read/write transactions and trap-before-effects for unresolved endpoints;
+- `DMOV` unchanged source copy to the following internal-RAM address without
+  T/ACC/P/arithmetic-status effects, using the same separate logical
+  source/write transactions and unresolved-endpoint policy;
 - `MPY` direct/indirect signed 16-by-16 products into P, including the
   original `0x8000`-by-`0x8000` result and common post-access ordering;
 - `MPYK` signed T times a sign-extended 13-bit immediate into P, including

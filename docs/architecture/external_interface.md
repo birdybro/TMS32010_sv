@@ -31,8 +31,8 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the thirty-two supported one-cycle sequential
-instructions. Its `ADD`, `ADDS`, `AND`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
+read relationship for the thirty-three supported one-cycle sequential
+instructions. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
 `XOR`, `ZALH`, `ZALS`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
@@ -42,6 +42,13 @@ access, or general pipeline overlap is complete.
 `LTA` presents its internal data-word read beside the same normal external
 program fetch while also accumulating the previous P value into ACC
 [ti-tms32010-users-guide-spru001b, `LTA`, printed p. 3-40 (PDF p. 90)].
+**Confidence: VERIFIED_PRIMARY.**
+
+`DMOV` retains the normal external program fetch while internal RAM performs
+a source read and distinct `source+1` write. These logical verification
+transactions do not assert physical `DEN` or `WE`
+[ti-tms32010-users-guide-spru001b, `DMOV`, printed p. 3-28 (PDF p. 78);
+ti-first-generation-users-guide-1987, §3.4.3, printed p. 3-13 (PDF p. 42)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `LTD` retains that normal external program fetch while its internal data RAM

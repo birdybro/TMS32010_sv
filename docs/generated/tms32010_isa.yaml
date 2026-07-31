@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -400,6 +400,56 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []
+    },
+    {
+      "mnemonic": "DMOV",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6900",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read", "internal_data_write_to_next_higher_address"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; the complete 16-bit source word is copied unchanged",
+      "shift_behavior": "the data move changes address by one word, not bit position; common indirect AR increment/decrement independently modifies the selected AR's low nine bits",
+      "overflow_behavior": "does not affect OV or apply OVM saturation",
+      "result_behavior": "the next higher data-memory address receives the selected internal data word while the source word and arithmetic registers remain unchanged",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; the concurrent internal source read and next-address write have no external data-memory cycle"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "DMOV instruction description", "printed_page": "3-28", "pdf_page": 78},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "DMOV instruction description", "printed_page": "3-28", "pdf_page": 49},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.4.3 and DMOV instruction description", "printed_page": "3-13 and 4-33", "pdf_page": "42 and 114"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010", "OQ-014"]
     },
     {
       "mnemonic": "LT",

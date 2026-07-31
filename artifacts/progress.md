@@ -1,21 +1,21 @@
 # Progress summary
 
-- **Current milestone:** LTD parallel load/accumulate/move qualification
+- **Current milestone:** DMOV data-move qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 67 repository/provenance/document/ISA/toolchain tests; 135
-  directed model tests; 23 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded thirty-two-instruction model/RTL
+- **Tests passing:** 68 repository/provenance/document/ISA/toolchain tests; 141
+  directed model tests; 24 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded thirty-three-instruction model/RTL
   differential including T, P, OV/OVM, distinct logical source/write
   addresses, and all 144 final RAM words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-two-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,838 ALMs, 2,483 registers, 0 RAM blocks,
-  1 DSP block, 61.72 MHz worst slow-corner internal Fmax, +3.797 ns setup
-  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the thirty-three-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,824 ALMs, 2,483 registers, 0 RAM blocks,
+  1 DSP block, 58.40 MHz worst slow-corner internal Fmax, +2.877 ns setup
+  slack, and +0.168 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  11,138 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
+  11,184 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -77,18 +77,19 @@
   sticky OV with OVM-controlled wrap or signed-endpoint saturation; LTD is
   opcode family `0x6b` and adds an unchanged source-word copy to the next
   internal-RAM address in that same cycle, so source and destination must be
-  observable independently
+  observable independently; DMOV is opcode family `0x69`, performs only that
+  unchanged-word next-address copy in one cycle, and preserves ACC, T, P,
+  OV, OVM, and DP while retaining common indirect AR/ARP post-update behavior
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
-  MPY/MPYK interrupt deferral, LTD source-`0x8f` destination behavior,
+  MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify primary-defined `DMOV`, reusing the
-  now-tested distinct source/next-address RAM path only where TI evidence
-  establishes equivalent ordering; keep LTD's source-`0x8f` behavior
-  provisional under `OQ-014`, multiply interrupt-deferral gaps under
-  `INT-001`, and `ADDH`/`ABS` outside the supported boundary pending
-  `OQ-011`/`OQ-013`
+- **Next task:** research and qualify the primary-defined `DINT`/`EINT`
+  interrupt-mask controls while keeping interrupt recognition and entry
+  outside the claim boundary until `INT-001` has cycle/phase evidence; keep
+  DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
+  `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `0ae57e7c1c29449aefff799051d3e1cc8b5423c3`
+  `51ece6b855436906e9542e7a2fbe7a7a55ed425a`

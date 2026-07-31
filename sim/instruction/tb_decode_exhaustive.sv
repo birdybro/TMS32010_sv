@@ -46,6 +46,7 @@ module tb_decode_exhaustive;
       logic expected_sar;
       logic expected_mar;
       logic expected_ldp;
+      logic expected_dmov;
       logic expected_lt;
       logic expected_ltd;
       logic expected_lta;
@@ -222,6 +223,16 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_dmov =
+        (instruction[15:8] == 8'h69) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_lt =
         (instruction[15:8] == 8'h6a) &&
         (
@@ -271,7 +282,8 @@ module tb_decode_exhaustive;
         expected_zalh || expected_zals || expected_adds ||
         expected_xor || expected_and || expected_or || expected_add ||
         expected_sub || expected_subs || expected_lar || expected_sar ||
-        expected_mar || expected_ldp || expected_lt || expected_ltd ||
+        expected_mar || expected_ldp || expected_dmov ||
+        expected_lt || expected_ltd ||
         expected_lta ||
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
@@ -394,6 +406,13 @@ module tb_decode_exhaustive;
           $fatal(1, "LDP decode mismatch at %04x", word);
         end
       end
+      if (expected_dmov) begin
+        if (operation != OP_DMOV ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "DMOV decode mismatch at %04x", word);
+        end
+      end
       if (expected_lt) begin
         if (operation != OP_LT ||
             indirect != word[7] ||
@@ -459,8 +478,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 18629) begin
-      $fatal(1, "expected 18629 supported words, got %0d", valid_count);
+    if (valid_count != 18769) begin
+      $fatal(1, "expected 18769 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

@@ -64,6 +64,7 @@ class Disassembler:
         if mnemonic in {
             "ADDS",
             "AND",
+            "DMOV",
             "LDP",
             "LT",
             "LTA",
