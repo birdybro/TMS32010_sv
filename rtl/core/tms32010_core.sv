@@ -108,6 +108,7 @@ module tms32010_core (
   localparam logic [5:0] OP_OUT  = 6'd49;
   localparam logic [5:0] OP_TBLR = 6'd50;
   localparam logic [5:0] OP_TBLW = 6'd51;
+  localparam logic [5:0] OP_SUBH = 6'd52;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -174,6 +175,9 @@ module tms32010_core (
   logic        add_overflow;
   logic [31:0] sub_wrapped_result;
   logic        sub_overflow;
+  logic [31:0] subh_operand;
+  logic [31:0] subh_wrapped_result;
+  logic        subh_overflow;
   logic [31:0] subs_wrapped_result;
   logic        subs_overflow;
   logic [31:0] subc_operand;
@@ -251,6 +255,7 @@ module tms32010_core (
         (decoded_operation == OP_OR) ||
         (decoded_operation == OP_ADD) ||
         (decoded_operation == OP_SUB) ||
+        (decoded_operation == OP_SUBH) ||
         (decoded_operation == OP_SUBS) ||
         (decoded_operation == OP_SUBC) ||
         (decoded_operation == OP_LAR) ||
@@ -427,6 +432,7 @@ module tms32010_core (
           (decoded_operation == OP_OR) ||
           (decoded_operation == OP_ADD) ||
           (decoded_operation == OP_SUB) ||
+          (decoded_operation == OP_SUBH) ||
           (decoded_operation == OP_SUBS) ||
           (decoded_operation == OP_SUBC) ||
           (decoded_operation == OP_LAR) ||
@@ -576,6 +582,7 @@ module tms32010_core (
             (decoded_operation != OP_OR) &&
             (decoded_operation != OP_ADD) &&
             (decoded_operation != OP_SUB) &&
+            (decoded_operation != OP_SUBH) &&
             (decoded_operation != OP_SUBS) &&
             (decoded_operation != OP_SUBC) &&
             (decoded_operation != OP_LAR) &&
@@ -619,6 +626,11 @@ module tms32010_core (
   assign sub_overflow =
     (accumulator_o[31] ^ shifted_data_operand[31]) &&
     (accumulator_o[31] ^ sub_wrapped_result[31]);
+  assign subh_operand = {ram_read_data, 16'h0000};
+  assign subh_wrapped_result = accumulator_o - subh_operand;
+  assign subh_overflow =
+    (accumulator_o[31] ^ subh_operand[31]) &&
+    (accumulator_o[31] ^ subh_wrapped_result[31]);
   assign subs_wrapped_result =
     accumulator_o - {16'h0000, ram_read_data};
   assign subs_overflow =
@@ -1101,6 +1113,19 @@ module tms32010_core (
               accumulator_o <= sub_wrapped_result;
             end
           end
+          OP_SUBH: begin
+            if (subh_overflow) begin
+              overflow_flag_o <= 1'b1;
+              if (overflow_mode_o) begin
+                accumulator_o <=
+                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
+              end else begin
+                accumulator_o <= subh_wrapped_result;
+              end
+            end else begin
+              accumulator_o <= subh_wrapped_result;
+            end
+          end
           OP_SUBS: begin
             if (subs_overflow) begin
               overflow_flag_o <= 1'b1;
@@ -1187,6 +1212,7 @@ module tms32010_core (
            (decoded_operation == OP_OR) ||
            (decoded_operation == OP_ADD) ||
            (decoded_operation == OP_SUB) ||
+           (decoded_operation == OP_SUBH) ||
            (decoded_operation == OP_SUBS) ||
            (decoded_operation == OP_SUBC) ||
            (decoded_operation == OP_LAR) ||

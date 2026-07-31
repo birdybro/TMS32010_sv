@@ -31,11 +31,11 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the 37 supported one-cycle sequential instructions and
+read relationship for the 38 supported one-cycle sequential instructions and
 both cycles of `B`, `BANZ`, `BIOZ`, `BV`, `CALL`, the six
 accumulator-conditional branches, `IN`, and `OUT`. Its `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
-`SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent
+`SUBC`, `SUBH`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent
 internal logical reads, while `SACL`, `SACH`, and `SAR` expose writes,
 without changing the physical `MEN` activity from a normal program fetch.
 IN/OUT instead replace the second-cycle address with the port and assert

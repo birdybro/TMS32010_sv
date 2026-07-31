@@ -111,6 +111,11 @@ class ToolchainSliceTests(unittest.TestCase):
             SUB *-
             SUB *+,8,AR1
             SUB *+,8,0
+            SUBH 0
+            SUBH 127
+            SUBH *
+            SUBH *+,AR1
+            SUBH *-,0
             SUBS 0
             SUBS 127
             SUBS *
@@ -244,6 +249,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x1098,
                 0x18A1,
                 0x18A0,
+                0x6200,
+                0x627F,
+                0x6288,
+                0x62A1,
+                0x6290,
                 0x6300,
                 0x637F,
                 0x6388,
@@ -1071,6 +1081,23 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x6389\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x6389])
+
+    def test_subh_operand_diagnostics_and_noncanonical_alias(self) -> None:
+        cases = (
+            ("SUBH 128\n", "direct address"),
+            ("SUBH *+,2\n", "next ARP"),
+            ("SUBH 0,1\n", "only with indirect"),
+            ("SUBH\n", "1 to 2 operands"),
+        )
+        for source, message in cases:
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+
+        source = self.disassembler.disassemble_source([0x6289])
+        self.assertEqual(source, ".word 0x6289\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x6289])
 
     def test_subc_encodings_round_trip_and_diagnose_operands(self) -> None:
         result = self.assembler.assemble_text(

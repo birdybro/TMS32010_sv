@@ -95,6 +95,7 @@ class Disassembler:
             "MPY",
             "OR",
             "SUBC",
+            "SUBH",
             "SUBS",
             "TBLR",
             "TBLW",

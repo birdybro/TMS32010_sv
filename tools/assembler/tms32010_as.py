@@ -353,6 +353,7 @@ class Assembler:
             "MPY",
             "OR",
             "SUBC",
+            "SUBH",
             "SUBS",
             "TBLR",
             "TBLW",

@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBH", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1316,6 +1316,56 @@
         {"source_id": "ti-tms320c14-e14-users-guide-1988", "section": "ADDS instruction description", "printed_page": "4-17", "pdf_page": 124}
       ],
       "confidence_level": "CORROBORATED",
+      "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "SUBH",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6200",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "OVM", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "OV on overflow", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["OV is set on signed overflow and otherwise preserved", "ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "the complete 16-bit data-word bit pattern becomes ACC operand bits 31:16; operand bits 15:0 are zero",
+      "shift_behavior": "the data word is aligned to the high accumulator half, equivalent to its 16-bit pattern multiplied by 2^16",
+      "overflow_behavior": "signed 32-bit overflow sets sticky OV; OVM=1 replaces the full accumulator with the signed endpoint and OVM=0 retains the wrapped result",
+      "result_behavior": "ACC receives ACC - (data_word << 16); nonoverflowing and OVM-clear wrapped results preserve the old low half, while documented OVM saturation replaces the full accumulator",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; execution overlap pending"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "SUBH instruction description", "printed_page": "3-62", "pdf_page": 112},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "SUBH instruction description", "printed_page": "3-62", "pdf_page": 83},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.2 and SUBH instruction description", "printed_page": "3-19 through 3-20 and 4-69", "pdf_page": "48-49 and 150"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]
     },
     {

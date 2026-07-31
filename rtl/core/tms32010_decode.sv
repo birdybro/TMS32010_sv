@@ -67,6 +67,7 @@ module tms32010_decode (
   localparam logic [5:0] OP_OUT  = 6'd49;
   localparam logic [5:0] OP_TBLR = 6'd50;
   localparam logic [5:0] OP_TBLW = 6'd51;
+  localparam logic [5:0] OP_SUBH = 6'd52;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -174,11 +175,13 @@ module tms32010_decode (
       end
     end else if (
       (instruction_i[15:8] == 8'h61) ||
+      (instruction_i[15:8] == 8'h62) ||
       (instruction_i[15:8] == 8'h63) ||
       (instruction_i[15:8] == 8'h64)
     ) begin
       case (instruction_i[15:8])
         8'h61: operation_o = OP_ADDS;
+        8'h62: operation_o = OP_SUBH;
         8'h63: operation_o = OP_SUBS;
         default: operation_o = OP_SUBC;
       endcase

@@ -38,12 +38,12 @@ UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-fifty-two-instruction subset, then check retirement on the falling-edge
+fifty-three-instruction RTL subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
-`ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
+`ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBH`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
 direct and indirect cases, including every documented SACH shift, positive
-and negative ADD/SUB saturation, ADDS/SUBS overflow-mode outcomes, and every
+and negative ADD/SUB/SUBH saturation, ADDS/SUBS overflow-mode outcomes, and every
 logic upper-half effect. This qualifies the documented
 one-cycle totals only inside the current sequential subset; it does not
 qualify general fetch/execute overlap or any unimplemented instruction.

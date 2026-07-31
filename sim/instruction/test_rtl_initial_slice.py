@@ -338,6 +338,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_subh_high_half_overflow_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_subh_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_subh_rtl.sv",
+            ],
+        )
+
     def test_subs_unsigned_source_overflow_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_subs_rtl",

@@ -66,6 +66,17 @@ SPRU001B calls it don't-care, its LST diagram and SPRU002B show one, and
 SPRU013 shows zero. `SST` remains blocked under `OQ-003`/`SC-008`; no value is
 guessed.
 
+`SUBH` subtracts the selected 16-bit word aligned to `ACC[31:16]`. Ordinary
+and OVM-clear wrapped results preserve `ACC[15:0]`; signed overflow sets
+sticky `OV`, and OVM-enabled overflow replaces the complete ACC with the
+documented positive or negative endpoint. The apparent tension between
+“low-order bits unaffected” and full-accumulator saturation is resolved in
+`SC-016`
+[ti-tms32010-users-guide-spru001b, `SUBH`, printed p. 3-62 (PDF p. 112);
+ti-first-generation-users-guide-1987, §3.5.2 and `SUBH`, printed
+pp. 3-19–3-20 and 4-69 (PDF pp. 48–49 and 150)].
+**Confidence: VERIFIED_PRIMARY.**
+
 `SUBC` is documented as affecting `OV` and as ignoring `OVM`, so its result
 never saturates. The located original and later TI instruction descriptions
 do not identify which internal subtraction/shift stage produces OV. The

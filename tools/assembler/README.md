@@ -5,7 +5,7 @@ complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
+  `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -63,6 +63,10 @@ shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
 
 `SUBS` uses the same no-shift common address forms, for example `SUBS 6` or
 `SUBS *+,AR1`.
+
+`SUBH` also uses the no-shift common address forms, for example `SUBH 6` or
+`SUBH *+,AR1`; its architectural operation aligns the selected word to
+accumulator bits 31:16.
 
 `SUBC` also uses those no-shift common address forms, for example `SUBC 6` or
 `SUBC *+,AR1`. Assembly support does not hide TI's requirement that the next

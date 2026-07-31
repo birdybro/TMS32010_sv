@@ -169,7 +169,8 @@ module tb_phase_slice_integration;
     program_memory[39] = 16'h6e00;  // LDPK 0
     program_memory[40] = 16'h6400;  // SUBC 0
     program_memory[41] = 16'h7f80;  // required ACC-free instruction
-    program_memory[42] = 16'h7f83;  // unsupported and not a silent NOP
+    program_memory[42] = 16'h6203;  // SUBH 3
+    program_memory[43] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -614,13 +615,23 @@ module tb_phase_slice_integration;
             "the required ACC-free instruction preserves the SUBC result");
     require(pc == 12'h02a && cycle_count == 32'd42,
             "the post-SUBC NOP consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h03 && data_read_data == 16'hbeef,
+            "SUBH exposes its high-half operand beside normal program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h4117_b997 &&
+            overflow_flag && !overflow_mode,
+            "SUBH preserves ACC low and sticky OV on a nonoverflowing result");
+    require(pc == 12'h02b && cycle_count == 32'd43,
+            "SUBH consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h02a, "trap holds architectural PC");
-    require(program_address == 12'h02a, "trap holds native program address");
-    require(cycle_count == 32'd42, "trap does not count as retired cycle");
+    require(pc == 12'h02b, "trap holds architectural PC");
+    require(program_address == 12'h02b, "trap holds native program address");
+    require(cycle_count == 32'd43, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

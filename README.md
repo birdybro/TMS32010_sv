@@ -14,17 +14,17 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model and local tools currently support fifty-six
+The reference model and local tools currently support fifty-seven
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-`POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
+`POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
 boundary support the same set except CALA, POP, PUSH, and RET,
-for fifty-two shared instructions; their second external cycles remain
+for fifty-three shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
 The 144-word internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
-`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
+`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow
@@ -61,6 +61,11 @@ common data-address path. Tests use the documented requirement that its next
 instruction not consume ACC; the exact illegal-scheduling result availability
 and the precise arithmetic stage that sets sticky `OV` remain explicitly
 provisional under `OQ-017` and `OQ-018`.
+`SUBH` subtracts the selected word aligned to `ACC[31:16]`. Directed
+model/RTL/native and seeded differential tests cover low-half retention,
+sticky OV, both wrapped overflow directions, full-accumulator OVM
+saturation, and common address updates; `SC-016` records the primary wording
+that distinguishes ordinary low-half preservation from saturation.
 `BANZ` is the first qualified control-flow instruction. It always performs two
 normal program reads: exact opcode `0xf400`, then a canonical 12-bit target
 word. It tests the old selected auxiliary-register counter, decrements only
@@ -106,7 +111,7 @@ mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
 stack-bottom side effect.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
+native-phase wrapper qualifies the normal reads for all 38 supported one-cycle
 instructions, eleven two-cycle control-flow instructions, and the two
 qualified I/O instructions, plus both three-cycle table transfers; it is not
 a general pipeline or cycle-accuracy claim.

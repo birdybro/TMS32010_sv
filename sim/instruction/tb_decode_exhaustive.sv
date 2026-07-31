@@ -47,6 +47,7 @@ module tb_decode_exhaustive;
       logic expected_or;
       logic expected_add;
       logic expected_sub;
+      logic expected_subh;
       logic expected_subs;
       logic expected_subc;
       logic expected_lar;
@@ -238,6 +239,16 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_subh =
+        (instruction[15:8] == 8'h62) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_subc =
         (instruction[15:8] == 8'h64) &&
         (
@@ -369,7 +380,7 @@ module tb_decode_exhaustive;
         expected_zalh || expected_zals || expected_tblr || expected_tblw ||
         expected_adds ||
         expected_xor || expected_and || expected_or || expected_add ||
-        expected_sub || expected_subs || expected_subc ||
+        expected_sub || expected_subh || expected_subs || expected_subc ||
         expected_lar || expected_sar ||
         expected_mar || expected_ldp || expected_dmov ||
         expected_lt || expected_ltd ||
@@ -484,6 +495,13 @@ module tb_decode_exhaustive;
             indirect != word[7] ||
             addressing_field != word[6:0]) begin
           $fatal(1, "SUBS decode mismatch at %04x", word);
+        end
+      end
+      if (expected_subh) begin
+        if (operation != OP_SUBH ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "SUBH decode mismatch at %04x", word);
         end
       end
       if (expected_subc) begin
@@ -646,8 +664,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 21582) begin
-      $fatal(1, "expected 21582 supported words, got %0d", valid_count);
+    if (valid_count != 21722) begin
+      $fatal(1, "expected 21722 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

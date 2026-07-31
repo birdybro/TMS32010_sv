@@ -1,11 +1,11 @@
 # Progress summary
 
-- **Current milestone:** CALA architectural/model/tool qualification
+- **Current milestone:** SUBH high-half subtraction qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 95 repository/provenance/document/ISA/toolchain tests; 210
-  directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
+- **Tests passing:** 97 repository/provenance/document/ISA/toolchain tests; 217
+  directed model tests; 35 RTL instruction/decode tests; 3 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
-  37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 16 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
@@ -13,18 +13,18 @@
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
   EINT/protected-instruction/dummy-entry/vector model/RTL differential
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the fifty-two-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,080
-  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 56.44 MHz worst
-  slow-corner internal Fmax, +2.282 ns setup slack, and +0.164 ns worst hold
+  the fifty-three-instruction partial core, multiplier, 144-word RAM, and
+  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,098
+  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 54.45 MHz worst
+  slow-corner internal Fmax, +1.634 ns setup slack, and +0.168 ns worst hold
   slack at 50 MHz. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,391 generic cells with 26 retained checks and lowering the
+  producing 13,514 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
-  contributes 1,756 generic cells; Yosys
+  contributes 1,753 generic cells; Yosys
   is not installed on the host path
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and 20-step actual-core BMCs across arbitrary clock-enable
@@ -175,7 +175,14 @@
   one word/two cycles, with low-12-bit push/old-bottom discard and
   zero-extending pop/old-bottom duplication respectively; model/tool tests
   cover repeated overflow/underflow and PC wrap, while their second external
-  program cycles remain unknown under `OQ-016`
+  program cycles remain unknown under `OQ-016`; SUBH is opcode family
+  `0x62xx`, subtracts the complete selected 16-bit pattern aligned at bit 16,
+  preserves ACC[15:0] for ordinary and OVM-clear wrapped results, sets sticky
+  OV on signed overflow, and replaces the full accumulator with the signed
+  endpoint when OVM is set; direct and indirect addressing, both overflow
+  directions, and its one-cycle data-read transaction are model/RTL/native/
+  differential qualified, with the primary-wording resolution recorded as
+  `SC-016`
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
   ownership and exhaustive multicycle arrival cases, CALA/RET second external
   cycles and native/RTL resumption,
@@ -187,10 +194,8 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research `SUBH` across original TI revisions and either
-  qualify its arithmetic/status behavior or record the precise primary-source
-  ambiguity without inference; then continue `FORMAL-001` with
-  indirect-MPY/address-update scenarios and `CTRL-002` with an exhaustive
+- **Next task:** continue `FORMAL-001` with indirect-MPY/address-update
+  scenarios and `CTRL-002` with an exhaustive
   supported-multicycle arrival matrix; preserve the distinction between
   model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing, and between the
@@ -205,4 +210,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `551ac13`
+  `c5cb3e3`

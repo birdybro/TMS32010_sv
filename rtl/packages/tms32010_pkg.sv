@@ -53,7 +53,8 @@ package tms32010_pkg;
     OP_IN   = 6'd48,
     OP_OUT  = 6'd49,
     OP_TBLR = 6'd50,
-    OP_TBLW = 6'd51
+    OP_TBLW = 6'd51,
+    OP_SUBH = 6'd52
   } tms32010_operation_t;
 endpackage
 

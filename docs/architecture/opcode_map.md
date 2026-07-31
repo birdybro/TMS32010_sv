@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its current fifty-six-instruction model/tool boundary is intentionally partial
+Its current fifty-seven-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -48,6 +48,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ADD dma,s` | `0x0000` | `0xf000` plus addressing constraints | 1 | 1 | individual `ADD` page, printed p. 3-10 |
 | `SUB dma,s` | `0x1000` | `0xf000` plus addressing constraints | 1 | 1 | individual `SUB` page, printed p. 3-60 |
 | `ADDS dma` | `0x6100` | `0xff00` plus addressing constraints | 1 | 1 | individual `ADDS` page, printed p. 3-12 |
+| `SUBH dma` | `0x6200` | `0xff00` plus addressing constraints | 1 | 1 | individual `SUBH` page, printed p. 3-62 |
 | `SUBS dma` | `0x6300` | `0xff00` plus addressing constraints | 1 | 1 | individual `SUBS` page, printed p. 3-63 |
 | `SUBC dma` | `0x6400` | `0xff00` plus addressing constraints | 1 | 1 | individual `SUBC` page, printed p. 3-61 |
 | `XOR dma` | `0x7800` | `0xff00` plus addressing constraints | 1 | 1 | individual `XOR` page, printed p. 3-68 |
@@ -69,7 +70,7 @@ documented mnemonics so missing coverage remains machine-visible.
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
 descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-29,
-3-31–3-44, 3-46, 3-48–3-51, 3-53–3-56, 3-58, 3-60–3-61, 3-63–3-68, and
+3-31–3-44, 3-46, 3-48–3-51, 3-53–3-56, 3-58, 3-60–3-68, and
 3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–79, 81–94, 96, 98–101,
 103–106, 108, 110–118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**

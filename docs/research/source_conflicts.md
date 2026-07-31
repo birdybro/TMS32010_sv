@@ -251,3 +251,26 @@ electrical result of an out-of-range access.
   its callback assertion convention is not physical pin polarity evidence.
 - **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
   documented secondary-source timing disagreement.
+
+## SC-016 — SUBH low-half wording and full-accumulator saturation
+
+- **Original instruction page:** SPRU001B `SUBH`, printed p. 3-62 (PDF
+  p. 112), defines `ACC - (dma × 2^16)` and its ordinary worked result but
+  does not state status behavior. SPRU013 `SUBH`, printed p. 4-69 (PDF
+  p. 150), explicitly says the low 16 accumulator bits are unaffected while
+  also saying the instruction affects `OV` and is affected by `OVM`.
+- **General primary rule:** SPRU013 §3.5.2, printed pp. 3-19–3-20 (PDF
+  pp. 48–49), defines OVM-enabled overflow as loading the complete accumulator
+  with `0x7fffffff` or `0x80000000`.
+- **Resolution:** low-half preservation applies to the ordinary arithmetic
+  result and to an OVM-clear wrapped result because the aligned subtrahend has
+  zero low bits. OVM-enabled overflow is the explicitly documented exception:
+  it replaces all 32 accumulator bits with the signed endpoint.
+- **Independent oracle:** pinned MAME aligns the data word by 16 and applies
+  its common full-accumulator signed-subtraction overflow and saturation path
+  [mame-tms320c1x-core-030fefc, `CALCULATE_SUB_OVERFLOW()` and `subh()`,
+  lines 212–220 and 745–750].
+- **Current treatment:** model and RTL assert low-half preservation on
+  ordinary/wrapped results and complete endpoint replacement under OVM.
+- **Confidence:** VERIFIED_PRIMARY for the resolved rule; CORROBORATED by the
+  independent emulator.

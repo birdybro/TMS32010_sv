@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current fifty-two-instruction
+The checked-in projects synthesize the current fifty-three-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
@@ -15,7 +15,7 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current 37 one-cycle instructions, eleven qualified two-cycle
+for the current 38 one-cycle instructions, eleven qualified two-cycle
 control-flow paths, two native IN/OUT paths, and two three-cycle table-transfer
 paths.
 Yosys 0.67+111 from

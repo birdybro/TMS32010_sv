@@ -235,22 +235,24 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, and local
-tools support fifty-six instructions:
+tools support fifty-seven instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
 `IN`, `OUT`, `PAC`, `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
-`SUBC`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+`SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 CALA's primary-defined computed-call effects, RET's primary-defined stack
 pop/PC load, and PUSH/POP's primary-defined stack effects at their two-cycle
 model boundaries.
 RTL and seeded differential support the same set except CALA, POP, PUSH, and
-RET, for fifty-two shared instructions; their second external cycles remain
+RET, for fifty-three shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
 The shared boundary includes
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
-wrap/saturation, and sticky-OV evidence. ADDS and SUBS have directed unsigned
+wrap/saturation, and sticky-OV evidence. SUBH has directed high-half alignment,
+low-half preservation, both signed-overflow directions, full-accumulator OVM
+saturation, and common-address evidence. ADDS and SUBS have directed unsigned
 source, wrap/saturation, and sticky-OV evidence. AND, OR, and
 XOR have directed accumulator-half and status-preservation evidence. A phase
 wrapper also verifies LAR's same-address-AR update suppression and

@@ -52,6 +52,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SACH",
                 "ADD",
                 "SUB",
+                "SUBH",
                 "ADDS",
                 "SUBS",
                 "SUBC",
@@ -526,6 +527,26 @@ class IsaDatabaseTests(unittest.TestCase):
         for control in (0xC8, 0x8A, 0xB8):
             self.assertIsNone(decode_word(self.database, 0x6300 | control))
         self.assertIsNotNone(decode_word(self.database, 0x637F))
+
+    def test_subh_is_high_half_subtract_with_common_addressing(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6200 | control))
+        direct = decode_word(self.database, 0x627F)
+        indirect = decode_word(self.database, 0x62A1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "SUBH")
+        self.assertEqual(direct[0]["documented_cycle_count"], 1)
+        self.assertEqual(
+            direct[1],
+            {"indirect": 0, "addressing_field": 0x7F},
+        )
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
+        self.assertIn("OV is set", direct[0]["status_flags_affected"][0])
 
     def test_logic_rejects_reserved_indirect_controls(self) -> None:
         for base in (0x7800, 0x7900, 0x7A00):

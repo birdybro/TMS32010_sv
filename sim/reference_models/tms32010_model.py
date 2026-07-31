@@ -3,7 +3,7 @@
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
-POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR,
+POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBH, SUBS, TBLR,
 TBLW, XOR, ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O
 transactions and instruction totals are modeled; pin subphases are not
 integrated with this model. The primary-defined CALA, POP, PUSH, and RET state
@@ -412,6 +412,7 @@ class Tms32010Model:
             "SAR",
             "SUB",
             "SUBC",
+            "SUBH",
             "SUBS",
             "TBLR",
             "TBLW",
@@ -460,6 +461,7 @@ class Tms32010Model:
                 "OUT",
                 "SUB",
                 "SUBC",
+                "SUBH",
                 "SUBS",
                 "TBLW",
                 "XOR",
@@ -598,6 +600,7 @@ class Tms32010Model:
                                 "OR",
                                 "SUB",
                                 "SUBC",
+                                "SUBH",
                                 "SUBS",
                                 "XOR",
                                 "ZALH",
@@ -741,6 +744,10 @@ class Tms32010Model:
             self._subtract_accumulator(
                 (signed_word << operands["shift"]) & ACC_MASK
             )
+        elif mnemonic == "SUBH":
+            self._subtract_accumulator(
+                self.data[operands["effective_address"]] << 16
+            )
         elif mnemonic == "SUBS":
             self._subtract_accumulator(
                 self.data[operands["effective_address"]]
@@ -810,6 +817,7 @@ class Tms32010Model:
                 "SAR",
                 "SUB",
                 "SUBC",
+                "SUBH",
                 "SUBS",
                 "TBLR",
                 "TBLW",
@@ -1112,14 +1120,14 @@ class Tms32010Model:
                 "indirect": indirect,
                 "addressing_field": control,
             }
-        if opcode & 0xFF00 == 0x6300:
+        if opcode & 0xFF00 in {0x6200, 0x6300}:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F
             if indirect and (
                 (control & 0x46) != 0 or (control & 0x30) == 0x30
             ):
                 raise UnsupportedOpcode(pc, opcode)
-            return "SUBS", {
+            return ("SUBH" if opcode & 0xFF00 == 0x6200 else "SUBS"), {
                 "indirect": indirect,
                 "addressing_field": control,
             }

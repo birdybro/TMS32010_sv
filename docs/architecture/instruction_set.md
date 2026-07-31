@@ -1025,8 +1025,40 @@ and 4-66 (PDF pp. 49 and 147)]. **Confidence: VERIFIED_PRIMARY.**
 `SUB` occupies one word and one cycle. Its common direct/indirect addressing,
 old-AR read ordering, optional nine-bit counter update, ARP replacement,
 reserved-control rejection, and noncanonical alias policy match `ADD` and
-`LAC`. `SUBH` and `SUBS` are separate encodings and are not implied by this
-qualification boundary.
+`LAC`. `SUBH` and `SUBS` are separate encodings.
+
+## Qualified `SUBH` research slice
+
+`SUBH` is the common-address opcode family `0x62xx`. It subtracts the complete
+16-bit data-word pattern aligned to accumulator bits 31:16, equivalent to
+`ACC - (dma × 2^16)`. The original instruction page establishes one word,
+one cycle, direct/indirect addressing, and the unchanged low half for the
+ordinary result; its worked example changes high word `0x0017` to `0x0012`
+after subtracting data word `0x0005`
+[ti-tms32010-users-guide-spru001b, `SUBH`, printed p. 3-62 (PDF p. 112);
+ti-tms32010-assembly-guide-spru002b, `SUBH`, printed p. 3-62
+(PDF p. 83)]. **Confidence: VERIFIED_PRIMARY.**
+
+The later TI family page explicitly says SUBH affects sticky `OV` and is
+affected by `OVM`. Its common ALU section says any OVM-enabled accumulator
+overflow replaces the complete accumulator with `0x7fffffff` or
+`0x80000000`. Accordingly, a nonoverflowing or OVM-clear wrapped SUBH result
+retains `ACC[15:0]`, while an OVM-enabled overflow replaces all 32 bits with
+the documented signed endpoint
+[ti-first-generation-users-guide-1987, §3.5.2 and `SUBH`, printed
+pp. 3-19–3-20 and 4-69 (PDF pp. 48–49 and 150)]. The wording tension and
+resolution are recorded as `SC-016`. **Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests cover the TI example, both source sign-bit
+patterns, low-half preservation, sticky OV, positive and negative overflow,
+OVM-clear wrap, full-accumulator endpoint saturation, direct page 1, old-AR
+indirect reads, low-nine-bit post-update, ARP replacement, unresolved-address
+trap, one-cycle retirement, and logical/native data-read visibility. The
+512-instruction seeded model/RTL trace adds deterministic direct and indirect
+SUBH cases. Pinned MAME independently aligns the source by 16 and applies its
+common signed-subtraction overflow path
+[mame-tms320c1x-core-030fefc, `subh()`, lines 745–750].
+**Confidence: CORROBORATED for implementation behavior.**
 
 ## Qualified `SUBS` research slice
 

@@ -2,7 +2,7 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-37 supported one-cycle instructions. A focused BANZ trace adds the first
+38 supported one-cycle instructions. A focused BANZ trace adds the first
 two-cycle instruction and checks both branch outcomes; a focused B trace
 checks unconditional two-cycle control flow. A family trace checks taken and
 untaken cases for all six accumulator conditions; a BV trace checks its
@@ -14,7 +14,7 @@ post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
 registers, all four stack levels, and the ARP/DP/INTM status fields.
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBS`/
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/
 `XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
 and cover valid
 direct/indirect addresses, reads, writes, shifts, and auxiliary-register
@@ -54,6 +54,8 @@ SUBC cases are followed by NOP, compare both conditional ACC paths, logical
 reads and address updates, and include 16 seeded-random direct/indirect pairs.
 Both sides use the same provisional intermediate-overflow policy, so this is
 consistency evidence, not independent proof of `OQ-017` or `OQ-018`.
+SUBH cases compare high-half-aligned source subtraction, low-half retention,
+sticky OV/OVM outcomes, logical reads, and common indirect address updates.
 
 The focused TBLR/TBLW differential chains a table read and self-modifying
 table write. It compares opcode, discarded-prefetch, table-transfer, and
