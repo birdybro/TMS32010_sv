@@ -45,7 +45,7 @@ checked signal-by-signal against schematic sheets 5–7:
 | DSP port | Direction | Working function | Confidence |
 |---:|---|---|---|
 | 0 | read | serial sound ROM data | CORROBORATED |
-| 0 | write | 12-bit DAC latch from `TD4..TD15` | primary wiring / secondary transform |
+| 0 | write | 12-bit DAC latch from `TD15..TD4` | VERIFIED_PRIMARY for raw code; signed-audio interpretation unresolved |
 | 1 | read | host communication RAM | CORROBORATED |
 | 2 | read | compare path, incompletely emulated | PROVISIONAL |
 | 3 | write | communication-port control | CORROBORATED |
@@ -56,10 +56,40 @@ checked signal-by-signal against schematic sheets 5–7:
 Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 5–7,
 PDF pp. 9–14; mame-harddriv-audio-030fefc, `sounddsp_io_map` and handlers].
 
-Sheet 7 shows `TD4..TD15` feeding latch/DAC logic; the low four DSP data bits
-are not DAC samples. MAME models a right shift by four and an inverted sign
-bit. The exact inversion and scale will be promoted to VERIFIED_PRIMARY only
-after the analog sheet net polarities are fully transcribed.
+### DAC path
+
+Sheet 7 shows `/DACL` clocking two LS374 latches. Their outputs connect
+`TD15` through `TD4` directly to Am6012 inputs `B1` through `B12`,
+respectively. Thus a port-0 write presents the raw 12-bit DAC code
+`TD15:TD4`; `TD3:TD0` do not enter the converter. There is no inverter or
+complementary LS374 output between `TD15` and `B1`
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 7 of 10,
+PDF p. 13]. The AMD data book identifies `B1` as the MSB and `B12` as the LSB
+and describes increasing straight-binary input code as increasing `IOUT`
+[amd-analog-communications-databook-1983, Am6012 data sheet, printed
+pp. 3-17 and 3-22 (PDF pp. 95 and 100); application note, printed p. 3-27
+(PDF p. 104)]. **Confidence: VERIFIED_PRIMARY for the latch and digital code
+mapping.**
+
+The board grounds complementary output pin 19 and applies `IOUT` pin 18 to
+the inverting input of TL084B `105D`, with `R15`/`C13` in feedback. That
+establishes an inverted first-stage transimpedance voltage for the positive
+reference network, followed by the separately drawn analog filter and
+AC-coupling path [atari-driver-sound-board-schematic, drawing A044427 Rev A,
+sheet 7 of 10, PDF pp. 13-14]. Analog voltage inversion is not equivalent to
+complementing only the digital MSB.
+
+Pinned MAME instead computes `(data >> 4) XOR 0x800` before writing its
+12-bit unsigned AM6012 abstraction. Since that abstraction maps an unsigned
+code across its normalized output range, the XOR interprets the DSP word's
+high twelve bits as two's-complement audio; it is not a transcription of the
+shown pin wiring [mame-harddriv-audio-030fefc, `hdsnddsp_dac_w` and device
+configuration; mame-dac-header-030fefc, AM6012 declaration;
+mame-dac-core-030fefc, unsigned mapper and default output range]. This
+disagreement is `SC-019`/`OQ-020`. A board adapter may expose raw
+`data[15:4]`, but must not label the XOR as verified physical behavior until
+an ECO, another board revision, original firmware trace, or hardware
+measurement resolves the coding.
 
 ## Reset, BIO, and interrupt
 
@@ -126,11 +156,12 @@ synthetic program for this path. It performs raw writes to ports 0, 3, 4, 5,
 fixture fixes the assembled words, every logical program/I/O transaction,
 the skipped sentinel address, all RAM/output results, and a 22-cycle total.
 
-The fixture also records the pinned MAME adapter's derived DAC value and
-sound-ROM bank/address fields, but it does not implement them in the processor
-model or promote them to hardware facts. In particular, port 2 remains
-PROVISIONAL because the pinned handler returns zero without modeling the
-compare circuit. This is **VERIFIED_SIMULATION for the project-local
+The fixture separately records the primary-backed physical DAC input code,
+the pinned MAME adapter's different derived DAC value, and sound-ROM
+bank/address fields. It does not implement either DAC interpretation in the
+processor model or use MAME to promote hardware facts. In particular, port 2
+remains PROVISIONAL because the pinned handler returns zero without modeling
+the compare circuit. This is **VERIFIED_SIMULATION for the project-local
 model/tool workflow, CORROBORATED for the MAME-facing port roles, and not a
 physical board or game-ROM qualification.**
 
@@ -142,7 +173,8 @@ The future non-ROM qualification sequence is:
 3. host/DSP communication-memory handshake;
 4. BIO pulse/poll behavior;
 5. synthetic writes through every decoded I/O port and DAC trace (model-level
-   raw-port smoke complete; board adapter and primary DAC polarity remain);
+   raw-port smoke and primary digital-code mapping complete; signed-audio
+   interpretation remains under `OQ-020`);
 6. optional user-supplied ROM hash validation and MAME-aligned execution
    trace.
 

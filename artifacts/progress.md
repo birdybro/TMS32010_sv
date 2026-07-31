@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** ROM-free Hard Drivin' I/O smoke qualification
+- **Current milestone:** Hard Drivin' DAC primary-source qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 112 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 113 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -12,7 +12,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 19 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 22 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -396,6 +396,13 @@
   primary-unlisted words are not called reserved and receive no original-
   silicon behavior; the documentation partition is complete while reserved-
   behavior qualification remains partial.
+- **New integration evidence:** A044427 Rev-A sheet 7 and AMD's 1983 Am6012
+  data establish `/DACL` latching of raw `TD15:TD4` onto uncomplemented
+  `B1:B12`, with `TD3:TD0` absent and the complete analog current inverted by
+  the first TL084 stage. Pinned MAME separately XORs bit 11 before its
+  unsigned DAC mapper; `SC-019`/`OQ-020` preserve this as an unresolved
+  signed-audio/board-variant conflict. The ROM-free smoke now asserts physical
+  code `0xf23` separately from MAME's `0x723` for source word `0xf230`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -410,12 +417,13 @@
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
-  divider state and program-RAM arbitration, and board-revision equivalence;
+  divider state and program-RAM arbitration, Hard Drivin' signed-audio DAC
+  interpretation under `OQ-020`, and board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the A044427 program-RAM arbitration and DAC polarity
-  from the primary schematic before implementing a Hard Drivin'-specific
-  adapter; keep port 2 provisional until its compare circuit is resolved.
+- **Next task:** qualify A044427 program-RAM arbitration from schematic sheet 5
+  before implementing a Hard Drivin'-specific adapter; keep the signed-audio
+  DAC transform and port 2 provisional until their conflicts are resolved.
 - **Latest committed baseline before this cycle:**
-  `45d7abb`
+  `510329f`

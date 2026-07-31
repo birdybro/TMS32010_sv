@@ -71,6 +71,7 @@
       "6": "0x000b",
       "7": "0x3456"
     },
+    "physical_dac_code": "0x0f23",
     "mame_dac_12bit": "0x0723",
     "sound_rom_bank": "0x000b",
     "sound_rom_address": "0x3456"

@@ -57,7 +57,10 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated.
+  until permission is demonstrated. The ignored cache now verifies 22 pinned
+  sources, including the 1983 AMD manufacturer data book needed to interpret
+  the A044427 Am6012 path and the pinned MAME DAC support sources needed to
+  distinguish emulator sample mapping from board wiring.
 
 ## Milestone 3 — Architecture specification
 
@@ -1327,11 +1330,16 @@ objective passing evidence.
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
   resampled by `CLKOUT` before reaching `/BIOS`. The distinct `320IRQ` net
   feeds the 68000-side interrupt path. Exact program-RAM arbitration phases,
-  complete BIO divider state, DAC polarity, board-variant audit, and synthetic
-  wrapper tests remain. The first ROM-free model/tool smoke program now covers
+  complete BIO divider state, signed-audio DAC interpretation, board-variant
+  audit, and synthetic wrapper tests remain. A044427 sheet 7 plus the AMD
+  Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
+  uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
+  that wiring and remains isolated under `SC-019`/`OQ-020`. The first ROM-free
+  model/tool smoke program now covers
   raw accesses to every mapped port role, an asserted-BIO branch, exact
-  program/I/O transaction traces, a 22-cycle total, the pinned MAME DAC
-  transform, and explicit provisional port-2 behavior. User-supplied ROM
+  program/I/O transaction traces, a 22-cycle total, the primary raw DAC code,
+  the distinct pinned-MAME transform, and explicit provisional port-2
+  behavior. User-supplied ROM
   hashes may enable local tests; ROMs are never committed.
 
 ## Milestone 22 — Release qualification

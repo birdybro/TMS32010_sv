@@ -384,3 +384,39 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for two cycles, general `MEN` behavior,
   and the architectural state transform; UNKNOWN for the exact address and
   fetched-word ownership of each cycle.
+
+## SC-019 — Hard Drivin' DAC direct wiring versus MAME MSB complement
+
+- **Primary board evidence:** Atari A044427 Rev A sheet 7 clocks `TD15:TD4`
+  into LS374 latches on `/DACL` and directly connects their true outputs to
+  Am6012 `B1:B12`. `TD15` reaches `B1` without an inverter, and `TD3:TD0`
+  have no DAC connection [atari-driver-sound-board-schematic, sheet 7 of 10,
+  PDF p. 13].
+- **Primary component evidence:** AMD identifies `B1` as MSB and `B12` as LSB;
+  its straight-binary table gives zero `IOUT` at all-zero code and increasing
+  `IOUT` as code increases. The two's-complement rows explicitly require an
+  inverter at `B1` [amd-analog-communications-databook-1983, Am6012 data
+  sheet, printed pp. 3-17 and 3-22 (PDF pp. 95 and 100), and application
+  note, printed p. 3-27 (PDF p. 104)].
+- **Analog boundary:** the board grounds the complementary current output and
+  sends `IOUT` into an inverting TL084 transimpedance stage. This reverses the
+  complete analog signal polarity; it does not complement only digital bit
+  11 [atari-driver-sound-board-schematic, sheet 7 of 10, PDF pp. 13-14].
+- **Secondary disagreement:** pinned MAME's `hdsnddsp_dac_w` extracts bits
+  15:4 and XORs `0x800`, commenting that the schematic inverts the MSB. Its
+  AM6012 device is an unsigned-mapped 12-bit DAC with a default bipolar
+  normalized output range, so this operation interprets the raw high twelve
+  bits as two's-complement audio rather than reproducing the shown digital
+  nets [mame-harddriv-audio-030fefc; mame-dac-header-030fefc;
+  mame-dac-core-030fefc].
+- **Competing hypotheses:** the Rev-A drawing is accurate and original
+  firmware emits the required straight/offset-binary code; a shipped board
+  carried an unrecorded ECO or different latch path; or MAME's conversion is
+  an emulator-side approximation/error. The present sources do not
+  distinguish them.
+- **Current treatment:** preserve the primary-backed raw code `data[15:4]` and
+  keep MAME's XOR only as a separately named oracle expectation. Do not put
+  the XOR into the generic CPU or call it physical behavior. See `OQ-020`.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A raw digital mapping and
+  first analog-stage polarity; UNKNOWN for the intended signed PCM mapping
+  and production-board equivalence beyond that drawing.

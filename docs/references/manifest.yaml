@@ -235,6 +235,34 @@
       }
     },
     {
+      "id": "amd-analog-communications-databook-1983",
+      "title": "Analog and Communications Products Data Book",
+      "author_or_organization": "Advanced Micro Devices",
+      "publication_number": "none identified",
+      "publication_date": "1983",
+      "revision": "1983 edition",
+      "source_url": "https://www.bitsavers.org/components/amd/_dataBooks/1983_AMD_Analog_and_Communications_Products_Data_Book.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "amd/1983_AMD_Analog_and_Communications_Products_Data_Book.pdf",
+      "sha256": "fefc3658f4d46b80ff97c03e2aac205bb265e5cd9c8ba418f0dcac9842612df1",
+      "document_type": "primary manufacturer data book scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted AMD publication; redistribution permission not established",
+      "relevance": "Manufacturer authority for Am6012 input coding, pinout, transfer behavior, and output-current polarity used by Atari drawing A044427",
+      "authority_level": 2,
+      "notes": "Bitsavers scan. Use only to interpret the separately documented Atari board wiring; it is not a TMS32010 architectural source.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Am6012/6012A and Am6022/6022A data sheet, printed pp. 3-17 through 3-22 (PDF pp. 95-100): pinout, digital bit significance, current-output behavior, and code-format table",
+        "Am6012 application note, printed pp. 3-26 through 3-30 (PDF pp. 103-107): increasing-code transfer description and output/reference application circuits"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
       "id": "atari-hard-drivin-schematic-package-sp327",
       "title": "Hard Drivin' Schematic Package",
       "author_or_organization": "Atari Games Corporation",
@@ -398,6 +426,60 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "sounddsp_program_map, sounddsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "mame-dac-core-030fefc",
+      "title": "MAME generic DAC implementation",
+      "author_or_organization": "MAMEdev and contributors",
+      "publication_number": "Git commit 030fefcbd14e47c01ec9d67655be90f64a1dc8ab",
+      "publication_date": "retrieved 2026-07-31",
+      "revision": "master at 030fefcbd14e47c01ec9d67655be90f64a1dc8ab",
+      "source_url": "https://raw.githubusercontent.com/mamedev/mame/030fefcbd14e47c01ec9d67655be90f64a1dc8ab/src/devices/sound/dac.cpp",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/030fefcbd14e47c01ec9d67655be90f64a1dc8ab/dac.cpp",
+      "sha256": "5d88c34b6537ba7a7cb803e85d97547e30485112906276493d20a09008b0d43f",
+      "document_type": "independent emulator support source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "BSD-3-Clause file within GPL-2.0+ MAME project; verify file header",
+      "relevance": "Defines the unsigned DAC sample mapper used by MAME's AM6012 abstraction and separates emulator sample format from board pin wiring",
+      "authority_level": 6,
+      "notes": "Independent software-oracle implementation only; not electrical evidence.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "dac_mapper_unsigned and dac_device_base default output range, lines 20-40 and 59-72"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "mame-dac-header-030fefc",
+      "title": "MAME generic DAC declarations",
+      "author_or_organization": "MAMEdev and contributors",
+      "publication_number": "Git commit 030fefcbd14e47c01ec9d67655be90f64a1dc8ab",
+      "publication_date": "retrieved 2026-07-31",
+      "revision": "master at 030fefcbd14e47c01ec9d67655be90f64a1dc8ab",
+      "source_url": "https://raw.githubusercontent.com/mamedev/mame/030fefcbd14e47c01ec9d67655be90f64a1dc8ab/src/devices/sound/dac.h",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/030fefcbd14e47c01ec9d67655be90f64a1dc8ab/dac.h",
+      "sha256": "20efcaaa94574cb34ac22ce584a69ff364fbfd74b75cf5ec5c51ade09858d8ab",
+      "document_type": "independent emulator support source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "BSD-3-Clause file within GPL-2.0+ MAME project; verify file header",
+      "relevance": "Declares MAME's AM6012 as a 12-bit unsigned-mapped DAC and documents its default normalized output range",
+      "authority_level": 6,
+      "notes": "Independent software-oracle implementation only; not electrical evidence.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "DAC base default output range and AM6012 generator declaration, lines 94-102 and 177-190"
       ],
       "status": "acquired",
       "download": {

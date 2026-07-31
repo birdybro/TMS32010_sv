@@ -22,7 +22,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             text = path.read_text(encoding="utf-8")
             citation_ids.update(
                 re.findall(
-                    r"\[((?:ti|atari|mame)-[a-z0-9-]+)"
+                    r"\[((?:ti|atari|amd|mame)-[a-z0-9-]+)"
                     r"(?=,|\])",
                     text,
                 )
@@ -87,6 +87,28 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         )
         self.assertIn("default the DSP interrupt input high", integration)
         self.assertIn("not pin-timing proof", integration)
+
+    def test_hard_drivin_dac_mapping_remains_evidence_scoped(self) -> None:
+        integration = (
+            DOCS / "integration" / "hard_drivin_requirements.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "`TD15` through `TD4` directly",
+            "`B1` through `B12`",
+            "`TD3:TD0` do not enter the converter",
+            "There is no inverter",
+            "`data[15:4]`",
+            "`SC-019`/`OQ-020`",
+        ):
+            self.assertIn(required, integration)
+        self.assertIn(
+            "Hard Drivin' DAC direct wiring versus MAME MSB complement",
+            conflicts,
+        )
+        self.assertIn("UNKNOWN for the intended signed PCM mapping", conflicts)
 
 
 if __name__ == "__main__":

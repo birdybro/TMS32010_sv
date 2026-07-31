@@ -32,12 +32,14 @@ The harness supplies the following synthetic values:
 - provisional compare response zero from port 2; and
 - asserted active-low BIO, causing `BIOZ` to skip a sentinel `LACK 0xee`.
 
-The expected raw DAC write is preserved as `0xf230`. The pinned MAME adapter
-would ignore bits 3:0 and invert the resulting 12-bit sign bit, producing
-`(0xf230 >> 4) XOR 0x800 = 0x723`; this derived value is recorded only as a
-secondary-oracle integration expectation. The exact physical DAC polarity
-remains subject to the primary schematic audit described in
-`docs/integration/hard_drivin_requirements.md`.
+The expected raw DAC write is preserved as `0xf230`. A044427 Rev A and the
+Am6012 manufacturer data establish the physical DAC input code as
+`0xf230 >> 4 = 0xf23`: `TD15:TD4` reach `B1:B12`, while `TD3:TD0` are absent
+from the path. The pinned MAME adapter instead produces
+`(0xf230 >> 4) XOR 0x800 = 0x723`; that distinct value remains a
+secondary-oracle expectation under `SC-019`/`OQ-020`, not a physical-wiring
+claim. See `docs/integration/hard_drivin_requirements.md` for the source
+boundary.
 
 `expected.json` fixes opcodes, logical program/I/O transactions, cycle count,
 RAM results, raw outputs, and the derived oracle fields. Run it with:

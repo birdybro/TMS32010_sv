@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 19-source
+- Reference-provenance policy, safe acquisition/hash tools, a 22-source
   integrity-pinned initial catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -24,6 +24,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/INT` is held inactive-high through `PR1`/`R26`, `/320BIO` is resampled by
   `CLKOUT` into `/BIOS`, and the separate `320IRQ` net belongs to the
   68000-side interrupt path.
+- Primary manufacturer qualification of the A044427 DAC path using AMD's
+  1983 analog-products data book, with separately pinned MAME DAC support
+  sources and an explicit source-conflict record.
 - Machine-readable ISA database that represents all 60 documented mnemonics;
   reserved/unmatched-word classification remains incomplete.
 - Provenance-aware exhaustive opcode audit and generated count report. All
@@ -51,8 +54,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A project-authored, ROM-free Hard Drivin' Driver Sound Board smoke program
   covering every working mapped I/O role, active-low BIO control flow, fixed
   opcodes, raw program/I/O traces, model state, and explicitly scoped MAME
-  adapter expectations. Port 2 and physical DAC polarity remain disclosed as
-  unqualified rather than inferred from the fixture.
+  adapter expectations. Port 2 and the signed-audio DAC interpretation remain
+  disclosed as unqualified rather than inferred from the fixture.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -374,6 +377,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Split Hard Drivin' port-0 qualification into the primary-backed raw DAC code
+  `data[15:4]` and MAME's secondary `(data >> 4) XOR 0x800` transform. The
+  latter is no longer described as shown board wiring because A044427 contains
+  no bit-11 inverter.
 - Narrowed the PUSH/POP timing gap using TI's primary pin contract: `MEN` must
   be active in both non-I/O execution cycles, but the address and fetched-word
   ownership remain unknown. Native/RTL implementation stays deferred rather
@@ -455,6 +462,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- A044427 Rev-A `/DACL` latches `TD15:TD4` directly onto Am6012 `B1:B12` and
+  omits `TD3:TD0`; AMD identifies those pins as uncomplemented straight-binary
+  MSB-to-LSB inputs. The smoke fixture independently fixes raw physical code
+  `0xf23` and MAME's conflicting derived value `0x723` for input `0xf230`.
 - The synthetic Hard Drivin' source/image/tool/model workflow: twelve executed
   instructions consume 22 documented cycles, BIOZ skips the sentinel word,
   nine raw I/O transactions occur in exact order, host/sound-ROM words land in
@@ -909,8 +920,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 106 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 24
+- The complete current regression passes 113 repository/ISA/tool tests, 231
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 25
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -919,6 +930,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- A044427 Rev A directly wires the 12-bit Am6012 code, while pinned MAME
+  complements bit 11 before its unsigned DAC mapper and describes that as a
+  schematic inversion. No inverter is present in the reviewed drawing.
+  `SC-019`/`OQ-020` therefore keep the signed PCM conversion and possible
+  production ECO/variant difference unresolved; only raw `data[15:4]` is
+  primary-qualified.
 - All 60 documented instruction mnemonics have model/tool evidence; fifty-six
   also have RTL/differential evidence. CALA, RET, PUSH, and POP remain outside
   RTL/native qualification because their second external cycles are unresolved.

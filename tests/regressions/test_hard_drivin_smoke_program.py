@@ -66,6 +66,10 @@ class HardDrivinSmokeProgramTests(unittest.TestCase):
 
         raw_dac = model.io_output[0]
         self.assertEqual(
+            (raw_dac >> 4) & 0x0FFF,
+            _hex(expected["physical_dac_code"]),
+        )
+        self.assertEqual(
             ((raw_dac >> 4) ^ 0x800) & 0x0FFF,
             _hex(expected["mame_dac_12bit"]),
         )
