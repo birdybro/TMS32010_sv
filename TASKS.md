@@ -1366,6 +1366,16 @@ objective passing evidence.
   the distinct pinned-MAME transform, and explicit provisional port-2
   behavior. User-supplied ROM
   hashes may enable local tests; ROMs are never committed.
+  Sheets 3, 5, and 6 plus TI's original LS191/LS259 data sheets now establish
+  the separate 512-by-16 communication RAM: CRAMEN low grants DSP port-1
+  read-only access at `SA8:SA0`, CRAMEN high grants host read/write access at
+  `A9:A1`, and reset clears CRAMEN to DSP ownership. Port 7 loads the shared
+  16-bit sound address, every input-read trailing edge increments it, and port
+  6 holds a separate ROM-block nibble. Pinned MAME's unconditional DSP RAM
+  visibility, selective port-0/1-only increment, and byte merge remain
+  `SC-023` through `SC-025`. Rev-A `/CPORT` has no identified loaded consumer,
+  so port 3 is `OQ-023`, not established communication control. FPGA storage,
+  address-control RTL, and execution tests remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

@@ -45,6 +45,11 @@ It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
 bridge, communication RAM, sound-ROM path, BIO generator, and audio/control
 peripherals remain absent.
+The communication-RAM research now establishes a distinct 512-by-16,
+CRAMEN-selected host/DSP path and a shared 16-bit sound-address counter.
+It also corrects port 3 from presumed “communication control” to an unresolved
+decoded `/CPORT` strobe with no loaded consumer found on Rev A. No
+communication-RAM RTL is claimed yet.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

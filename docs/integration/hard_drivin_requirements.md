@@ -111,19 +111,20 @@ is an explicit timing/ownership abstraction under `SC-020`.**
 
 ## I/O map
 
-The following working map comes from the current MAME integration and must be
-checked signal-by-signal against schematic sheets 5–7:
+The following map separates functions visible in the Rev-A drawing from
+secondary adapter behavior:
 
 | DSP port | Direction | Working function | Confidence |
 |---:|---|---|---|
-| 0 | read | serial sound ROM data | CORROBORATED |
+| 0 | read | serial sound ROM data | VERIFIED_PRIMARY |
 | 0 | write | 12-bit DAC latch from `TD15..TD4` | VERIFIED_PRIMARY for raw code; signed-audio interpretation unresolved |
-| 1 | read | host communication RAM | CORROBORATED |
+| 1 | read | 512-word host communication RAM at shared `SA8:SA0` | VERIFIED_PRIMARY |
 | 2 | read | compare path, incompletely emulated | PROVISIONAL |
-| 3 | write | communication-port control | CORROBORATED |
-| 4 | write | mute control | CORROBORATED |
-| 5 | write | generate 68000 IRQ | CORROBORATED |
-| 6–7 | write | sound ROM address/select | CORROBORATED |
+| 3 | write | decoded `/CPORT`; no loaded consumer found | UNKNOWN (`OQ-023`) |
+| 4 | write | mute control | VERIFIED_PRIMARY |
+| 5 | write | generate 68000 IRQ | VERIFIED_PRIMARY |
+| 6 | write | low-nibble serial-ROM block latch | VERIFIED_PRIMARY |
+| 7 | write | 16-bit shared sound-address counter load | VERIFIED_PRIMARY |
 
 Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 5–7,
 PDF pp. 9–14; mame-harddriv-audio-030fefc, `sounddsp_io_map` and handlers].
@@ -153,6 +154,35 @@ program and I/O address spaces separate, so it does not reproduce this alias
 PDF p. 9; mame-harddriv-audio-030fefc, separate program and I/O maps]. This is
 `SC-021`. **Confidence: VERIFIED_PRIMARY for the Rev-A decode; documented
 secondary-source mismatch.**
+
+### Communication RAM and shared sound address
+
+Port 1 is a read-only DSP view of two HM6116 devices configured as 512 by 16
+words. Host latch `CRAMEN` selects ownership: low enables the `SA8:SA0`
+address path and port-1 CRD-to-TDI buffer; high enables host `A9:A1`, data,
+and read/write controls while disabling the DSP buffer. The latch clears low
+on board reset. This is complementary ownership, not the unarbitrated program-
+RAM topology
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3 and 5 of
+10, PDF pp. 5-6 and 9-10; ti-sn74ls259b-datasheet-sdls086, printed pp. 1-4].
+**Confidence: VERIFIED_PRIMARY.**
+
+Four LS191 counters provide `SA15:SA0`. Port 7 asynchronously loads all sixteen
+bits. The counter clocks on the trailing low-to-high `/PDEN` edge after every
+input-port read and counts upward; port 6 separately latches the low four data
+bits as serial-ROM block selection. Thus even a port-2 compare read increments
+the physical counter. Pinned MAME increments only its port-0 and port-1
+handlers and returns communication RAM to the DSP regardless of `CRAMEN`.
+Those abstractions are isolated as `SC-023` and `SC-024`
+[atari-driver-sound-board-schematic, sheet 6 of 10, PDF pp. 11-12;
+ti-sn74ls191-datasheet-sdls072, printed pp. 1-4;
+mame-harddriv-audio-030fefc, communication/ROM/compare handlers].
+
+Port 3 is only a decoded `/CPORT` strobe in the audited drawing. No loaded
+consumer was found, and MAME's handler only logs the write. It remains
+`OQ-023`; the synthetic smoke's port-3 write is a decode probe, not a known
+control command. Complete wiring, conflicts, and FPGA requirements are in
+`docs/integration/hard_drivin_communication_ram.md`.
 
 ### DAC path
 
@@ -270,7 +300,8 @@ The future non-ROM qualification sequence is:
 2. synthetic 4K shared-program-RAM ownership and host-load sequence (complete
    in both the standalone adapter and processor-connected RTL wrapper;
    host-bus timing remains);
-3. host/DSP communication-memory handshake;
+3. host/DSP communication-memory handshake (primary digital contract
+   transcribed; FPGA storage and execution test remain);
 4. BIO pulse/poll behavior;
 5. synthetic writes through every decoded I/O port and DAC trace (model-level
    raw-port smoke and primary digital-code mapping complete; signed-audio

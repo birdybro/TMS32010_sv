@@ -484,3 +484,57 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A whole-word wiring;
   CORROBORATED for MAME's abstraction; UNKNOWN for an out-of-contract byte
   access on hardware.
+
+## SC-023 — CRAMEN ownership versus unconditional MAME DSP reads
+
+- **Primary board evidence:** `CRAMEN=0` enables `SA8:SA0`, forces the two
+  HM6116 devices into read mode, and permits the CRD-to-TDI buffer only during
+  decoded input port 1. `CRAMEN=1` instead enables host `A9:A1`, `/RWNB`,
+  `/320COM`, and `/RWS`, while disabling that DSP data buffer
+  [atari-driver-sound-board-schematic, sheets 3 and 5 of 10, PDF pp. 5-6 and
+  9-10].
+- **Secondary abstraction:** pinned MAME gates host communication-RAM handlers
+  on `m_cramen`, but `hdsnddsp_comram_r` always returns the array word and
+  increments its software offset [mame-harddriv-audio-030fefc,
+  `cram_enable_w`, host COM handlers, and DSP COM handler].
+- **Conflict:** MAME permits simultaneous logical visibility that the physical
+  buffer selection does not provide. The value on TDI during an out-of-
+  contract DSP read in host mode is not established.
+- **Current treatment:** future FPGA storage grants one side from CRAMEN and
+  holds or reports a DSP port-1 read while the host owns the RAM. See
+  `OQ-025` for firmware discipline.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A ownership; CORROBORATED for the
+  secondary abstraction; UNKNOWN for out-of-contract TDI data.
+
+## SC-024 — Global input-read address increment versus selective MAME increment
+
+- **Primary board evidence:** all four sound-address LS191 clock inputs share
+  `/PDEN`; their up/down inputs are grounded, and their cascade enables use
+  ripple carry. `/PDEN` is the physical input-read strobe, so every completed
+  input-port read produces the low-to-high counting edge
+  [atari-driver-sound-board-schematic, sheets 4-6 of 10, PDF pp. 7-12;
+  ti-sn74ls191-datasheet-sdls072, printed pp. 1-4].
+- **Secondary abstraction:** pinned MAME increments `m_sound_rom_offs` in its
+  port-0 sound-ROM and port-1 communication-RAM handlers, but not in the port-2
+  compare handler [mame-harddriv-audio-030fefc, DSP I/O handlers and map].
+- **Current treatment:** board RTL must increment after every accepted physical
+  input read, including port 2. MAME remains a functional oracle only where
+  its handler models that side effect.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A counter clocking;
+  documented secondary-source abstraction.
+
+## SC-025 — Physical whole-word communication RAM versus byte-combined MAME writes
+
+- **Primary board evidence:** host `D15:D0` reaches two HM6116 devices through
+  LS245 transceivers, and one `/CRWE` controls both devices. Host byte enables
+  `/HEU` and `/HEL` do not enter this path
+  [atari-driver-sound-board-schematic, sheets 3 and 5 of 10, PDF pp. 5-6 and
+  9-10].
+- **Secondary abstraction:** pinned MAME accepts `mem_mask` and applies
+  `COMBINE_DATA` in `hdsnd68k_320com_w`.
+- **Conflict:** the byte-preserving merge is not shown by the physical RAM
+  controls, and the inactive host data lane during a byte access is unqualified.
+- **Current treatment:** a first FPGA adapter exposes only complete 16-bit host
+  writes. `OQ-024` tracks firmware use and physical out-of-contract behavior.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A whole-word wiring;
+  CORROBORATED for MAME's abstraction; UNKNOWN for byte accesses on hardware.

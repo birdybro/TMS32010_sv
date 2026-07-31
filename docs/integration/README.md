@@ -4,6 +4,9 @@
   ready/hold, clock-enable, debug, and clock-domain contract.
 - `hard_drivin_requirements.md`: Atari Driver Sound Board research and the
   eventual board-specific adapter requirements.
+- `hard_drivin_communication_ram.md`: primary-transcribed CRAMEN ownership,
+  512-word communication RAM, shared sound-address counter, and source
+  conflicts around ports 1–3.
 - `hard_drivin_mister_wrapper.md`: partial same-clock processor/program-RAM
   top, reset/ownership protocol, physical I/O callback, and test boundary.
 

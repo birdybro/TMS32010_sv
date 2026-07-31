@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' processor/program-RAM RTL integration
+- **Current milestone:** Hard Drivin' communication-RAM/address-path research
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 116 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 117 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -12,7 +12,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 22 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 24 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -429,6 +429,13 @@
   reproduces 12 retirements, 22 cycles, nine physical I/O transfers, the BIOZ
   path, and final ACC. A second reset/reload proves low-address TBLW readiness
   and write data route through output port 3 without changing program RAM.
+- **New communication evidence:** A044427 configures two HM6116 devices as
+  512 by 16 words. CRAMEN selects host read/write or DSP port-1 read-only
+  ownership; `SA8:SA0` supplies the DSP address. Four LS191 counters load on
+  port 7 and increment after every input read, with a separate port-6 ROM
+  block nibble. Port 3 has only an unresolved `/CPORT` decode. Official TI
+  LS191/LS259 sources are hash-pinned, and `SC-023`–`SC-025` isolate MAME's
+  unconditional DSP access, selective increment, and byte merge.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -444,13 +451,15 @@
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state, 68000-side reset-handoff timing and firmware compliance,
+  communication-RAM byte behavior and CRAMEN firmware discipline, loaded
+  `/CPORT` purpose,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** transcribe and test the A044427 communication-RAM/port-control
-  handshake around DSP ports 1 and 3, while keeping exact 68000 timing, byte
-  access, signed DAC mapping, and port 2 provisional.
+- **Next task:** implement and exhaustively test a whole-word same-clock
+  512-by-16 communication-RAM adapter plus the primary-defined sound-address
+  load/increment control; expose unresolved port 3 without assigning effects.
 - **Latest committed baseline before this cycle:**
-  `76b68ca`
+  `6b23480`

@@ -206,6 +206,60 @@
       }
     },
     {
+      "id": "ti-sn74ls191-datasheet-sdls072",
+      "title": "Synchronous Up/Down Counters With Down/Up Mode Control",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS072",
+      "publication_date": "December 1972",
+      "revision": "revised March 1988",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls191.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SN74LS191_Synchronous_Up_Down_Counters_1988.pdf",
+      "sha256": "088e774c5e2142a62f69f1d4983802be39fdfaf01f399b90221ad39c074ef0a0",
+      "document_type": "primary manufacturer logic data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; repository redistribution not assumed",
+      "relevance": "Manufacturer authority for the four cascaded LS191 sound-address counters on Atari A044427",
+      "authority_level": 2,
+      "notes": "Current TI-hosted PDF retains the December 1972/March 1988 SDLS072 device data and appends current package information.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "SN54191/SN54LS191/SN74191/SN74LS191 description, pinout, function table, and cascading behavior, printed pp. 1-4"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74ls259b-datasheet-sdls086",
+      "title": "8-Bit Addressable Latches",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS086",
+      "publication_date": "December 1983",
+      "revision": "revised March 1988",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls259b.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SN74LS259B_8_Bit_Addressable_Latches.pdf",
+      "sha256": "0cf82d7cb71827895c909a46d869ec13dec6535d98469cd02cce7cae10705c42",
+      "document_type": "primary manufacturer logic data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; repository redistribution not assumed",
+      "relevance": "Manufacturer authority for the reset-cleared LS259 CRAMEN ownership latch on Atari A044427",
+      "authority_level": 2,
+      "notes": "Current TI-hosted PDF retains the December 1983/March 1988 SDLS086 device data and appends current package information.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "SN54LS259B/SN74LS259B description, logic diagram, and mode-selection table, printed pp. 1-4"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
       "id": "atari-driver-sound-board-schematic",
       "title": "Hard Drivin'/Race Drivin' Driver Sound Board Schematics",
       "author_or_organization": "Atari Games Corporation; hosted by board engineer Jed Margolin",

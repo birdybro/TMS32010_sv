@@ -162,6 +162,30 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ):
             self.assertIn(required, wrapper)
 
+    def test_hard_drivin_communication_ram_remains_primary_scoped(self) -> None:
+        communication = (
+            DOCS / "integration" / "hard_drivin_communication_ram.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "exposes 512 words",
+            "When `CRAMEN=0`",
+            "making the DSP path read-only",
+            "after every completed input-port read",
+            "No clear or board-reset input is drawn",
+            "Port 3 is unresolved",
+            "not a claimed control command",
+        ):
+            self.assertIn(required, communication)
+        for required in (
+            "SC-023 — CRAMEN ownership",
+            "SC-024 — Global input-read address increment",
+            "SC-025 — Physical whole-word communication RAM",
+        ):
+            self.assertIn(required, conflicts)
+
 
 if __name__ == "__main__":
     unittest.main()

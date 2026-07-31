@@ -392,6 +392,14 @@ processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
 alias execution test. It ties Rev-A INT inactive and leaves BIO external. It
 is not a 68000 bridge, peripheral implementation, full MiSTer top, or board
 timing qualification.
+A044427 communication RAM is a separate 512-by-16 resource. Host latch
+`CRAMEN` selects either host read/write access or DSP port-1 read-only access;
+the DSP address comes from the low nine bits of a shared 16-bit LS191 counter.
+Every physical input read increments that counter, port 7 loads it, and port 6
+latches a separate ROM block nibble. Port 3 only produces an unconsumed
+`/CPORT` decode in the audited Rev-A drawing and must remain unresolved under
+`OQ-023`. Follow `docs/integration/hard_drivin_communication_ram.md` and
+`SC-023` through `SC-025` before changing this path.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

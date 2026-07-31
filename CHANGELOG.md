@@ -9,8 +9,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 22-source
-  integrity-pinned initial catalog, and living engineering backlog.
+- Reference-provenance policy, safe acquisition/hash tools, a 24-source
+  integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
   instruction, and timing research baselines.
@@ -67,6 +67,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A partial `hard_drivin_sound_mister` top connecting the generic processor,
   board-native decoder, and shared RAM, with physical I/O commit signaling and
   correct low-address TBLW readiness routing.
+- Primary-transcribed Driver Sound communication-RAM and shared-address
+  contract, backed by newly pinned TI LS191/LS259 component data sheets. It
+  records 512-word CRAMEN ownership, read-only DSP access, port-7 load,
+  every-input-read increment, and three explicit MAME abstraction conflicts.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -388,6 +392,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Corrected the Driver Sound port-3 description: Rev-A decodes `/CPORT` but no
+  loaded consumer was found, and pinned MAME only logs the word. The synthetic
+  smoke retains it as a decode probe rather than a communication-control claim.
 - Split deterministic FPGA initialization from an independent synchronous
   processor-reset request in `tms32010_mister`, allowing board `/320RES` to
   retain shared program contents while preserving the five-cycle reset hold.
@@ -482,6 +489,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 24 acquired reference files match their pinned SHA-256 values, including
+  the official TI-hosted SDLS072 LS191 and SDLS086 LS259 data sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
   Sound smoke: 12 retirements, 22 cycles, six writes, three reads, active-low
   BIOZ branch, final ACC `0x000055aa`, and raw DAC word `0xf230`. A second
@@ -958,7 +967,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 116 repository/ISA/tool tests, 231
+- The complete current regression passes 117 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 28
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
@@ -968,6 +977,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- Communication-RAM RTL is not implemented. Rev-A hardware disables the DSP
+  RAM data buffer while CRAMEN grants host ownership, but pinned MAME still
+  returns RAM; its port-2 handler also omits the global `/PDEN` address
+  increment. Port 3 remains an unresolved decoded strobe (`OQ-023`–`OQ-025`).
 - `hard_drivin_sound_mister` is only the processor/program-RAM/physical-I/O
   callback boundary. It lacks the 68000 bridge and every sound-board peripheral;
   its synchronous ready/commit callbacks are implementation conventions, not
