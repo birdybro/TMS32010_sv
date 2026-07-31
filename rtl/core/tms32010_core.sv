@@ -58,6 +58,7 @@ module tms32010_core (
   localparam logic [4:0] OP_SUBS = 5'd19;
   localparam logic [4:0] OP_LAR  = 5'd20;
   localparam logic [4:0] OP_SAR  = 5'd21;
+  localparam logic [4:0] OP_MAR  = 5'd22;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -359,6 +360,8 @@ module tms32010_core (
           end
           OP_LARP: auxiliary_register_pointer_o <= decoded_immediate[0];
           OP_LDPK: data_page_pointer_o          <= decoded_immediate[0];
+          OP_MAR: begin
+          end
           OP_NOP:  begin
           end
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;
@@ -383,7 +386,8 @@ module tms32010_core (
            (decoded_operation == OP_SUB) ||
            (decoded_operation == OP_SUBS) ||
            (decoded_operation == OP_LAR) ||
-           (decoded_operation == OP_SAR)) &&
+           (decoded_operation == OP_SAR) ||
+           (decoded_operation == OP_MAR)) &&
           decoded_indirect
         ) begin
           if (

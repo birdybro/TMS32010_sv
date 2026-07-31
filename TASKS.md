@@ -94,15 +94,16 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Twenty-two encodings (`ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
-  `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`,
-  `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are primary-transcribed in the
-  opcode research table. The fourteen common-address data instructions add
+- **Notes:** Twenty-three encodings (`ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
+  `LARK`, `LARP`, `LDPK`, `MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`,
+  `SOVM`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are
+  primary-transcribed in the opcode research table. The fourteen
+  common-address data instructions add
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set
-  without collisions; the remaining 38 instructions and full reserved-region
+  without collisions; the remaining 37 instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
   and fixtures until its original-part `OV` behavior is resolved under
@@ -122,8 +123,8 @@ objective passing evidence.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
 - **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `LAC`, `LACK`,
-  `LAR`, `LARK`, `LARP`, `LDPK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`,
-  `SOVM`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, and `SUBS`,
+  `LAR`, `LARK`, `LARP`, `LDPK`, `MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`,
+  `SAR`, `SOVM`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
   and deterministic replay. The fourteen common-address data instructions cover
   direct/indirect reads or writes and nine-bit AR updates; `LAC` additionally
@@ -132,7 +133,9 @@ objective passing evidence.
   loads either auxiliary register and suppresses post-modification only when
   its target is the selected address register. `SAR` stores either auxiliary
   register and, for a selected-source indirect update, writes the
-  post-modification value at the old address. ADDS
+  post-modification value at the old address. `MAR` implements direct NOP
+  forms and indirect AR/ARP modification without a data-memory transaction;
+  its two `LARP` aliases remain canonical LARP decodes. ADDS
   covers unsigned-source arithmetic, sticky OV, wrap, and positive saturation.
   ADD covers sign extension, shifts 0–15, sticky OV, wrap, and both
   positive/negative saturation endpoints. SUB covers the corresponding
@@ -159,14 +162,15 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same twenty-two instructions as the
+- **Notes:** Qualified slice supports the same twenty-three instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
   zero placeholder before a next ARP, SACH's sparse 0/1/4 shifts, and
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
-  syntax, and ADDS/AND/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand.
-  The remaining 38
+  syntax, MAR direct/indirect syntax and LARP aliases, and
+  ADDS/AND/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand.
+  The remaining 37
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -184,7 +188,7 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/datapath/`
 - **Notes:** Initial 32-bit accumulator, two 16-bit ARs, ARP, DP, OV/OVM, and
-  144-word internal RAM exist for the twenty-two-instruction slice. `LAC`
+  144-word internal RAM exist for the twenty-three-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   fourteen common-address data instructions verify direct/indirect read/write
@@ -192,6 +196,8 @@ objective passing evidence.
   indirect load into the selected address register suppresses its otherwise
   requested post-modification. `SAR` verifies the distinct same-source rule:
   it stores the post-modification value at the pre-modification address.
+  `MAR` verifies low-nine-bit AR update and ARP replacement without touching
+  the RAM datapath.
   ADDS additionally verifies sticky
   overflow, OVM-clear wrap, and OVM-set positive saturation. AND/OR/XOR verify
   low-half logic, AND upper clearing, OR/XOR upper preservation, and unchanged
@@ -223,7 +229,7 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of twenty-two supported one-cycle instructions, including all
+  retires each of twenty-three supported one-cycle instructions, including all
   fourteen internal-data operations, on its falling-edge sample and aligns
   PC/native address across stalls, traps, and reset. General overlap, branch,
   multi-cycle, and interrupt control do not exist yet.
@@ -246,7 +252,7 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all twenty-two
+  release delay. A partial wrapper integrates those phases with all twenty-three
   supported sequential instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Table cycles, branch/call/return, general pipeline overlap,
@@ -375,6 +381,10 @@ objective passing evidence.
   `SAR` now passes the same qualification path, including TI's special
   same-source ordering that stores the post-modification AR value at the old
   indirect address, normal other-source modification, and full-width stores.
+  `MAR` now passes primary-cited database/model/tool/RTL, one-cycle,
+  native-phase, and randomized differential tests for direct NOP behavior,
+  indirect AR/ARP updates, no data-memory transaction, and its exact LARP
+  aliases.
   `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
   remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family
@@ -395,7 +405,7 @@ objective passing evidence.
 - **Tests:** `sim/instruction/test_cycles_*`
 - **Notes:** Normal memory read, TBLR/TBLW, IN/OUT, reset, INT, and BIO pin
   timing is transcribed. One-cycle retirement for all fourteen qualified
-  internal-data instructions, including all three logic operations, is
+  internal-data instructions plus MAR, including all three logic operations, is
   asserted through the partial native-phase
   integration. Control-flow, interrupt-entry, and most per-instruction
   ownership remain. Electrical delays are wrapper constraints, not RTL delays.
@@ -434,7 +444,8 @@ objective passing evidence.
   state including OV/OVM, logical-cycle,
   `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads,
   `SACL`/`SACH`/`SAR` writes, and final 144-word RAM agreement over an identical
-  deterministic image. MAME
+  deterministic image. MAR direct/indirect cases compare AR/ARP changes and
+  inactive logical data strobes. MAME
   comparison and legal randomized full-ISA streams remain. MAME disagreement
   creates research work, not an automatic oracle verdict.
 
@@ -466,7 +477,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Twenty-two-instruction RTL, phase engine, and 144-word RAM are
+- **Notes:** Twenty-three-instruction RTL, phase engine, and 144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in
   `synthesis/qualification.md`. All harness exclusions are enumerated and

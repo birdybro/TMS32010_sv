@@ -3,8 +3,8 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDPK`, `NOP`,
-  `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`,
+- `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDPK`, `MAR`,
+  `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`,
   `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -27,6 +27,10 @@ an explicit next ARP is permitted only on an indirect form.
 
 `SAR` uses the same operand syntax, for example `SAR AR0,6`, `SAR AR1,*+`, or
 `SAR AR0,*-,AR1`.
+
+`MAR` accepts either its documented direct NOP form or an indirect update,
+such as `MAR 127`, `MAR *`, or `MAR *+,AR1`. `MAR *,AR0/AR1` assembles the
+documented exact aliases of `LARP 0/1`.
 
 `ADD` and `SUB` accept the same address and shift syntax as `LAC`, for example
 `ADD 6,4`, `SUB 6,4`, or `SUB *+,8,AR1`.

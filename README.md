@@ -14,16 +14,17 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support twenty-two
+The reference model, local tools, and partial RTL currently support twenty-three
 instructions: `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDPK`,
-`NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`,
-`ZALH`, and `ZALS`. The 144-word internal RAM exposes verification-visible
+`MAR`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`,
+`ZAC`, `ZALH`, and `ZALS`. The 144-word internal RAM exposes verification-visible
 logical `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `SACL`/`SACH`/`SAR` writes;
-unsupported opcodes, undocumented SACH shifts, and unresolved RAM addresses
-trap. A separate native-phase wrapper qualifies normal sequential program reads for
-this twenty-two-instruction subset only; it is not a general
-pipeline or cycle-accuracy claim.
+MAR changes only AR/ARP and produces no data transaction. Unsupported opcodes,
+undocumented SACH shifts, and unresolved RAM addresses trap. A separate
+native-phase wrapper qualifies normal sequential program reads for this
+twenty-three-instruction subset only; it is not a general pipeline or
+cycle-accuracy claim.
 
 ## Design principles
 

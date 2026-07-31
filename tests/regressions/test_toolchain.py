@@ -418,6 +418,47 @@ class ToolchainSliceTests(unittest.TestCase):
                 with self.assertRaisesRegex(AssemblyError, message):
                     self.assembler.assemble_text(invalid)
 
+    def test_mar_encodings_aliases_round_trip_and_diagnose_operands(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            MAR 127
+            MAR *
+            MAR *+,AR0
+            MAR *-,AR1
+            MAR *,AR0
+            """
+        )
+        self.assertEqual(
+            list(result.words.values()),
+            [0x687F, 0x6888, 0x68A0, 0x6891, 0x6880],
+        )
+        source = self.disassembler.disassemble_source(
+            [0x687F, 0x6888, 0x68A0, 0x6891, 0x6880, 0x6889]
+        )
+        self.assertEqual(
+            source,
+            "MAR 127\n"
+            "MAR *\n"
+            "MAR *+,0\n"
+            "MAR *-,1\n"
+            "LARP 0\n"
+            ".word 0x6889\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(
+            list(rebuilt.words.values()),
+            [0x687F, 0x6888, 0x68A0, 0x6891, 0x6880, 0x6889],
+        )
+        for invalid, message in (
+            ("MAR 128\n", "direct address"),
+            ("MAR *+,2\n", "next ARP"),
+            ("MAR 0,1\n", "only with indirect"),
+            ("MAR\n", "1 to 2 operands"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
     def test_lac_operand_diagnostics(self) -> None:
         cases = (
             ("LAC 128\n", "direct address"),

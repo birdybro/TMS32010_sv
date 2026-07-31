@@ -235,10 +235,10 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support twenty-two instructions:
-`ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDPK`, `NOP`,
-`OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`,
-`ZALH`, and `ZALS`. This includes
+tools, RTL, and seeded differential boundary support twenty-three instructions:
+`ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDPK`, `MAR`,
+`NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`,
+`ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and
 `SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
@@ -247,7 +247,9 @@ source, wrap/saturation, and sticky-OV evidence. AND, OR, and
 XOR have directed accumulator-half and status-preservation evidence. A phase
 wrapper also verifies LAR's same-address-AR update suppression and
 different-target post-modification, and SAR's post-modified same-source store
-at the old address. The phase wrapper qualifies their normal sequential program
-reads, but no general pipeline, interrupt entry, or complete pin timing exists.
+at the old address. MAR modifies only AR/ARP in indirect form, is a direct-form
+NOP, and produces no data-memory transaction. The phase wrapper qualifies
+their normal sequential program reads, but no general pipeline, interrupt
+entry, or complete pin timing exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

@@ -122,6 +122,31 @@ Reserved indirect controls remain linked to `OQ-010`
 pp. 3-2–3-3 and 3-55–3-56 (PDF pp. 52–53 and 105–106)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
 
+## Qualified `MAR` research slice
+
+`MAR` fixes bits 15:8 to `0x68`; bit 7 and bits 6:0 carry the common
+direct/indirect field. It is one word and one cycle. In direct form, all 128
+address-field values are explicitly documented as no-operations: DP and data
+RAM are not consulted. In indirect form, the instruction increments,
+decrements, or preserves the AR selected by the old ARP, then optionally
+replaces ARP. It does not read or write the memory location nominally selected
+by that AR and has no accumulator or arithmetic-status effect
+[ti-tms32010-users-guide-spru001b, `MAR`, printed p. 3-42 (PDF p. 92);
+ti-first-generation-users-guide-1987, `MAR`, printed pp. 4-47–4-48
+(PDF pp. 128–129)]. **Confidence: VERIFIED_PRIMARY.**
+
+TI identifies `MAR *,0` and `MAR *,1` as the same encodings and behavior as
+`LARP 0` and `LARP 1`. The database therefore keeps words `0x6880` and
+`0x6881` under their canonical `LARP` decode and assigns MAR the other 138
+currently qualified words. Directed tests cover both aliases, direct NOP
+behavior, absence of logical data transactions, low-nine-bit counter wrap,
+ARP replacement/preservation, and rejection of reserved controls
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `MAR`, printed
+pp. 3-2–3-3 and 3-42 (PDF pp. 52–53 and 92);
+ti-tms32010-assembly-guide-spru002b, `MAR`, printed p. 3-42
+(PDF p. 63)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
+update bits.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

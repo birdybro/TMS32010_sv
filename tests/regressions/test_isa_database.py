@@ -48,6 +48,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "ZALS",
                 "LAR",
                 "SAR",
+                "MAR",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -101,6 +102,21 @@ class IsaDatabaseTests(unittest.TestCase):
                 decode_word(self.database, 0x3000 | (reserved_register << 8))
             )
         self.assertIsNotNone(decode_word(self.database, 0x317F))
+
+    def test_mar_rejects_reserved_fields_and_keeps_larp_aliases(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6800 | control))
+        for word, constant in ((0x6880, 0), (0x6881, 1)):
+            decoded = decode_word(self.database, word)
+            self.assertIsNotNone(decoded)
+            assert decoded is not None
+            entry, operands = decoded
+            self.assertEqual(entry["mnemonic"], "LARP")
+            self.assertEqual(operands, {"constant": constant})
+        decoded = decode_word(self.database, 0x6888)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        self.assertEqual(decoded[0]["mnemonic"], "MAR")
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))

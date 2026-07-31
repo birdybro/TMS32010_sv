@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDPK,
-NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+MAR, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -179,6 +179,8 @@ class Tms32010Model:
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
         selected_arp: int | None = None
+        if mnemonic == "MAR" and operands["indirect"]:
+            selected_arp = self.state.status.arp
         if mnemonic in {
             "ADD",
             "ADDS",
@@ -343,6 +345,8 @@ class Tms32010Model:
             self.state.ar[register] = operands["constant"] & 0xFF
         elif mnemonic == "LARP":
             self.state.status.arp = operands["constant"]
+        elif mnemonic == "MAR":
+            pass
         elif mnemonic == "LDPK":
             self.state.status.dp = operands["constant"]
         elif mnemonic == "ZAC":
@@ -362,6 +366,7 @@ class Tms32010Model:
                 "AND",
                 "LAC",
                 "LAR",
+                "MAR",
                 "OR",
                 "SACL",
                 "SACH",
@@ -590,6 +595,17 @@ class Tms32010Model:
             }
         if opcode & 0xFFFE == 0x6880:
             return "LARP", {"constant": opcode & 1}
+        if opcode & 0xFF00 == 0x6800:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "MAR", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
         if opcode & 0xFFFE == 0x6E00:
             return "LDPK", {"constant": opcode & 1}
         fixed = {

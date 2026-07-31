@@ -22,7 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/LAC/LACK/LAR/LARK/LARP/LDPK/OR/SACH/SACL/SAR/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-35, 3-37, 3-46, 3-53 through 3-56, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-85, 87, 96, 103-106, 110, 113, 118, and 120-121)",
+        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/LAC/LACK/LAR/LARK/LARP/LDPK/MAR/OR/SACH/SACL/SAR/SUB/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-13, 3-31 through 3-35, 3-37, 3-42, 3-46, 3-53 through 3-56, 3-60, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-63, 81-85, 87, 92, 96, 103-106, 110, 113, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -49,7 +49,9 @@
       "authority_level": 1,
       "notes": "Use opcode examples as an independent check, not as the only encoding authority.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -77,7 +79,7 @@
       "sections_or_pages_used": [
         "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison",
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
-        "ABS, ADD, ADDH, ADDS, AND, LAR, OR, SAR, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-18, 4-38, 4-52, 4-61 through 4-62, 4-66, 4-70, and 4-73 (PDF pages 95-99, 119, 133, 142-143, 147, 151, and 154)",
+        "ABS, ADD, ADDH, ADDS, AND, LAR, MAR, OR, SAR, SUB, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-18, 4-38, 4-47 through 4-48, 4-52, 4-61 through 4-62, 4-66, 4-70, and 4-73 (PDF pages 95-99, 119, 128-129, 133, 142-143, 147, 151, and 154)",
         "ROVM instruction description, printed page 4-58 (PDF page 139)"
       ],
       "status": "acquired",
@@ -236,7 +238,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "abst() instruction handler, lines 341-347",
-        "getdata() address-update helper and lar_ar0()/lar_ar1() handlers, lines 260-274 and 547-557",
+        "getdata() address-update helper, lar_ar0()/lar_ar1() handlers, and larp_mar() handler, lines 260-274, 547-557, and 569-575",
         "putdata_sar() update/write helper and sar_ar0()/sar_ar1() handlers, lines 291-304 and 697-704"
       ],
       "status": "acquired",

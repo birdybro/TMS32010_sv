@@ -20,7 +20,7 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the twenty-two-instruction subset,
+program-read cycle for every instruction in the twenty-three-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -29,6 +29,8 @@ and negative ADD/SUB saturation, ADDS/SUBS overflow-mode outcomes, and every
 logic upper-half effect. This qualifies the documented
 one-cycle totals only inside the current sequential subset; it does not
 qualify general fetch/execute overlap or any unimplemented instruction.
+Directed MAR tests additionally assert one-cycle direct-NOP and indirect
+AR/ARP-update cases with no data-memory transaction.
 
 ## Open timing dimensions
 

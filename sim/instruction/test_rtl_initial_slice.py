@@ -117,6 +117,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_mar_counter_and_pointer_behavior_without_memory_access(self) -> None:
+        self._run_testbench(
+            "tb_mar_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_mar_rtl.sv",
+            ],
+        )
+
     def test_sacl_data_write_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_sacl_rtl",

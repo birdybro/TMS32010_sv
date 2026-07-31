@@ -41,6 +41,13 @@ instructions while their ordinary data operands remain internal,
 verification-visible logical reads/writes. No physical `DEN` or `WE` behavior
 is claimed from those internal transactions.
 
+The same phase test verifies that `MAR` performs neither a logical data read
+nor write while retaining the normal external program fetch. This follows
+TI's explicit statement that indirect MAR makes no use of the referenced
+memory and direct MAR is a NOP
+[ti-tms32010-users-guide-spru001b, `MAR`, printed p. 3-42 (PDF p. 92)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms
