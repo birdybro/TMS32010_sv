@@ -30,6 +30,19 @@ state and must flush or suppress fetched words for branches, table operations,
 and interrupts. Merely renaming the current falling-edge execution boundary
 would not implement TI's pipeline.
 
+ADR-0002 therefore requires explicit fetched-word and execute-slot validity,
+addresses, and flush ownership. The standalone synthesizable
+`tms32010_fetch_execute` register implements only that boundary: executable
+fetches may fill an empty slot or replace a completed instruction;
+operand/dummy reads carry no valid instruction; an incomplete instruction
+cannot be overwritten; and a redirect flushes the old path. Its directed test
+covers reset priming, Figure 2-2 sequential replacement, a retained
+multicycle slot, branch redirection, and the Figure 2-12 dummy/vector
+transition. It is not yet connected to the partial core, so these tests prove
+the building block rather than the integrated pipeline
+[`docs/decisions/ADR-0002-fetch-execute-separation.md`,
+`sim/unit/tb_fetch_execute.sv`].
+
 ## Required implementation model
 
 The portable RTL will use one FPGA clock and explicit phase/state enables. It

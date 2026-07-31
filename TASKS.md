@@ -390,7 +390,8 @@ objective passing evidence.
   cycle tests pass without gated clocks or combinational cycles.
 - **Documentation:** `docs/architecture/pipeline.md`
 - **Tests:** `sim/bus/tb_phase_slice_integration.sv`,
-  `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
+  `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
+  `formal/sequencer/`
 - **Notes:** Temporary clock-enable execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
   retires each of 38 supported one-cycle instructions, including all
@@ -423,6 +424,15 @@ objective passing evidence.
   primary-specified, but a two-cycle RTL state is intentionally deferred
   rather than assigning an unsupported `MEN`/program-address sequence under
   `OQ-016`.
+  ADR-0002 now fixes the integration direction: fetched word/address validity
+  must be separate from the execute slot, operand/dummy reads must be invalid,
+  and redirects must flush rather than execute a convenient placeholder. The
+  standalone synthesizable `tms32010_fetch_execute` block passes priming,
+  sequential replacement, stall, multicycle-retention, branch-flush,
+  interrupt-dummy/vector, and recognized-reset tests plus independent Yosys
+  synthesis. It is intentionally not connected to `tms32010_core` until the
+  surrounding sequencer can classify all already-qualified bus cycles without
+  regression.
 
 ## Milestone 9 — Program-memory interface
 

@@ -41,6 +41,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   including a stalled pre-sample phase, with no early pending/cycle change and
   exact falling-boundary, protected-instruction, dummy, stack, and vector
   assertions.
+- Fetch/execute-separation ADR and a standalone synthesizable pipeline register
+  with explicit word/address validity, completion, stall, and flush ownership;
+  directed tests cover Figure 2-2 priming/overlap and Figure 2-12
+  dummy/vector flow without claiming integrated pipeline completion.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table

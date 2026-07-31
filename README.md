@@ -51,6 +51,11 @@ each modeled subphase, including a stalled phase. Complete fetch/execute
 overlap, physical pin setup/synchronizer behavior, unsupported
 CALA/RET/PUSH/POP cycles, RET resumption, and the provisional
 DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
+ADR-0002 and a standalone synthesizable fetch/execute register now establish
+the required distinct fetched-word and execute-slot validity/address state.
+Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy
+suppression, vector capture, and reset; the register is not yet connected to
+the partial core.
 Bounded actual-core formal harnesses check fixed EINT entry,
 MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
 indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their

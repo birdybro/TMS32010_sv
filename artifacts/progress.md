@@ -1,9 +1,10 @@
 # Progress summary
 
-- **Current milestone:** native interrupt sampling and pipeline ownership
+- **Current milestone:** explicit fetch/execute pipeline state
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
-  directed model tests; 35 RTL instruction/decode tests; 5 interrupt RTL/phase
+  directed model tests; one standalone fetch/execute RTL unit; 35 RTL
+  instruction/decode tests; 5 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -28,7 +29,9 @@
   producing 13,514 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
-  is not installed on the host path
+  is not installed on the host path. The not-yet-integrated fetch/execute
+  register separately passes Yosys 0.67+111 with 29 flip-flops, 68 generic
+  cells including two retained checks, and no structural problems
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -218,9 +221,10 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** design distinct fetch/execute validity and address state from
-  TI Figure 2-2, then introduce it incrementally without changing the already
-  qualified branch/table/interrupt bus traces; continue `CTRL-002` by
+- **Next task:** integrate ADR-0002 fetch/execute state incrementally, starting
+  with reset priming and sequential one-cycle instructions, without changing
+  the already qualified branch/table/interrupt bus traces; continue
+  `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
   extend `FORMAL-001` only with bounded cases whose architectural ordering is
@@ -238,4 +242,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c3a224b`
+  `eea9447`

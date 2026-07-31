@@ -42,6 +42,8 @@ When sources conflict, do not choose silently. Record the exact conflict,
 citations, competing hypotheses, impact, and confidence in
 `docs/research/source_conflicts.md` or `docs/research/open_questions.md`.
 Follow `docs/decisions/ADR-0001-reference-precedence.md`.
+Pipeline changes must also follow
+`docs/decisions/ADR-0002-fetch-execute-separation.md`.
 
 MAME and other implementations are independent behavioral oracles only. Do
 not copy or transliterate their code into the model or RTL. Preserve exact
@@ -246,6 +248,11 @@ model boundaries.
 RTL and seeded differential support the same set except CALA, POP, PUSH, and
 RET, for fifty-three shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
+The synthesizable `tms32010_fetch_execute` register now separately represents
+fetched instruction validity/address and execute ownership with completion and
+flush controls. It passes directed overlap/dummy/redirect/reset tests and
+standalone Yosys synthesis, but is not connected to the partial core; no
+integrated fetch/execute claim follows from its existence.
 The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts

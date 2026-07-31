@@ -37,6 +37,19 @@ fetch/execute overlap, or pin subphases. It exists to qualify decode, state
 effects, clock enables, and reset preservation. It must not be used alone as
 evidence of cycle accuracy.
 
+`tms32010_fetch_execute` is a standalone, not-yet-integrated pipeline
+boundary required by ADR-0002. It stores explicit execute validity, word, and
+address; accepts a valid fetched instruction only when the slot is empty or
+the current instruction completes; holds an incomplete instruction; and
+invalidates the slot on reset or redirect. Assertions reject a valid fetch on
+a flush and overwriting an incomplete instruction. Directed simulation covers
+pipeline priming, sequential overlap, stalls, multicycle retention, branch
+redirect, interrupt dummy/vector flow, and recognized reset. Standalone Yosys
+synthesis finds 29 flip-flops, 68 generic cells including two retained checks,
+and no structural problems. The block does not alter current integrated-core
+behavior until the surrounding sequencer can classify every fetched,
+operand, and dummy transaction.
+
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one
 quarter-cycle after the falling boundary, samples at the next falling
@@ -66,7 +79,9 @@ sampled word to RAM; TBLW asserts the distinct `program_write_o` and drives
 `program_write_data_o` from RAM. The third sample retires, applies indirect
 updates, and duplicates old stack level 2 into the bottom before the wrapper
 repeats PC+1. The remaining branches, other multi-cycle instructions, and
-interrupt sequences remain absent.
+unresolved CALA/RET/PUSH/POP sequences remain absent. The current interrupt
+path is retirement-mapped and has directed external-order/entry tests, but it
+does not yet use the standalone fetch/execute register.
 
 SUBC retires through this same path only in legally scheduled test streams
 whose following instruction does not read ACC. Immediate internal ACC commit
