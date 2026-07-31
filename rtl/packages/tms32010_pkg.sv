@@ -56,7 +56,8 @@ package tms32010_pkg;
     OP_TBLW = 6'd51,
     OP_SUBH = 6'd52,
     OP_ABS  = 6'd53,
-    OP_SST  = 6'd54
+    OP_SST  = 6'd54,
+    OP_ADDH = 6'd55
   } tms32010_operation_t;
 endpackage
 

@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `OUT`, `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
@@ -13,7 +13,8 @@ complete TMS32010 assembler. It supports:
 - `.word`, `.org`, and nested `.include`;
 - deterministic big- or little-endian raw binary, hex, and listing output.
 
-Every other documented mnemonic produces an explicit not-implemented error.
+All sixty documented mnemonics are represented. This tool coverage does not
+make the RTL instruction-complete or classify every unmatched word as reserved.
 Immediate ranges are diagnosed rather than silently truncated like the
 historical TI assembler. `LARK` accepts `AR0`/`AR1` (or `0`/`1`) as its
 register selector, and `LARP` accepts either the register name or a one-bit
@@ -66,6 +67,9 @@ shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
 
 `ADDS` uses the same no-shift common address forms, for example `ADDS 6` or
 `ADDS *+,AR1`.
+
+`ADDH` uses the same no-shift common address forms, for example `ADDH 6` or
+`ADDH *+,AR1`; it adds the selected word to the accumulator high half.
 
 `SUBS` uses the same no-shift common address forms, for example `SUBS 6` or
 `SUBS *+,AR1`.

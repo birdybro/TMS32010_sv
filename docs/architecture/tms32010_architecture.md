@@ -110,17 +110,18 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model and local assembler/disassembler support 59 mnemonics:
-`ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
+The executable model and local assembler/disassembler support all 60
+documented mnemonics:
+`ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
 `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`,
 `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
 `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
-differential support the same set except CALA, POP, PUSH, and RET, for 55
+differential support the same set except CALA, POP, PUSH, and RET, for 56
 shared mnemonics. Their architectural effects and two-cycle totals are
 model-qualified, while their second external cycles remain unresolved under
-`OQ-007`/`OQ-016`. The 25 common-address data/table instructions plus SST's
+`OQ-007`/`OQ-016`. The 26 common-address data/table instructions plus SST's
 forced-page direct form have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
@@ -133,6 +134,12 @@ and timing are `VERIFIED_PRIMARY`; original-part OV preservation is
 `CORROBORATED` by SPRU013's instruction-format rule, the original ABS page's
 absence of status annotations, the later C14/E14 variant's explicit status
 annotation, and pinned MAME (`SC-007`/resolved `OQ-013`).
+ADDH performs a modulo-2^16 addition of the selected word into ACC[31:16]
+while preserving ACC[15:0]. The original-family instruction-format contract
+lists neither OV nor OVM, whereas the later C14/E14 variant explicitly adds
+both. Model/RTL boundary matrices therefore preserve incoming OV and ignore
+OVM at `CORROBORATED` confidence under `SC-017`/resolved `OQ-011`; original-
+silicon boundary measurement is still required to upgrade that confidence.
 The exact fixed `DINT`/`EINT` words set and clear `INTM` in one program-only
 cycle while preserving unrelated exposed state. The partial model and RTL now
 also latch active-low requests while masked, apply EINT's

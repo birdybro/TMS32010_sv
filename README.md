@@ -14,13 +14,13 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model and local tools currently support fifty-nine
-instructions: `ABS`, `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model and local tools currently support all sixty documented
+instructions: `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
 `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
 boundary support the same set except CALA, POP, PUSH, and RET,
-for fifty-five shared instructions; their second external cycles remain
+for fifty-six shared instructions; their second external cycles remain
 unresolved under `OQ-007`/`OQ-016`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
@@ -28,8 +28,14 @@ negative accumulator, and uses OVM to choose wrap or positive saturation for
 `CORROBORATED`: SPRU013 states that an instruction's Execution block lists
 affected status bits, the original ABS block lists none, the later C14/E14
 variant explicitly adds OV effects, and pinned MAME independently agrees.
+`ADDH=0x60xx` adds the complete selected word modulo 2^16 to `ACC[31:16]`
+and always preserves `ACC[15:0]`. The original-family instruction contract
+lists no OV/OVM effect while the later C14/E14 variant explicitly adds one;
+the original-part implementation therefore preserves OV and ignores OVM at
+`CORROBORATED` confidence under resolved `SC-017`/`OQ-011`. Boundary tests
+cover both wrap directions under all four incoming OV/OVM combinations.
 The 144-word internal RAM exposes verification-visible logical
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
+`ADD`/`ADDH`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
 `SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR`/`SST` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
@@ -76,7 +82,7 @@ exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
 accumulator-conditional branches, plus exact IN/OUT execution ownership. Its
 fetch address stays one word ahead of the execute PC for ordinary sequential
 execution,
-all 45 words in the existing 40-family one-cycle stream match the previously
+all 46 words in the existing 41-family one-cycle stream match the previously
 qualified architectural state at a one-retirement offset, and all eleven
 integrated branch/call instructions retain ownership through operand and
 selected-instruction fetches. BANZ selects from the old counter and decrements
@@ -175,7 +181,7 @@ mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
 stack-bottom side effect.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies the normal reads for all 40 supported one-cycle
+native-phase wrapper qualifies the normal reads for all 41 supported one-cycle
 instructions, eleven two-cycle control-flow instructions, and the two
 qualified I/O instructions, plus both three-cycle table transfers; it is not
 a general pipeline or cycle-accuracy claim.

@@ -22,7 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.10, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALA/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SST/SUB/SUBC/SUBH/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-44, 3-46 through 3-51, 3-53 through 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-94, 96-101, 103-113, 118, and 120-121)",
+        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDH/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALA/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SST/SUB/SUBC/SUBH/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-44, 3-46 through 3-51, 3-53 through 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-94, 96-101, 103-113, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -423,6 +423,88 @@
       "download": {
         "enabled": true,
         "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-tms32010-evm-users-guide-spru005a",
+      "title": "TMS32010 Evaluation Module User's Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU005A",
+      "publication_date": "1985-03",
+      "revision": "A",
+      "source_url": "https://raw.githubusercontent.com/b-wave/TMS32010-Evaluation-Module/c090b4e21153b208216ca3eba9d6de008fd0ce3b/Documents/SPRU005A_TMS32010_Evaluation_Module_Users_Guide_198503.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SPRU005A_TMS32010_Evaluation_Module_Users_Guide_1985-03.pdf",
+      "sha256": "bb67954b5484998fd5a5e22d086506f052d5cbb806b7d6a6d37476300875c4f1",
+      "document_type": "primary evaluation-module user guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Contemporary hardware, monitor, debug, and physical-device test workflow for the original TMS32010",
+      "authority_level": 1,
+      "notes": "Immutable GitHub source at b-wave/TMS32010-Evaluation-Module commit c090b4e21153b208216ca3eba9d6de008fd0ce3b; keep only in ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Section 3.3.2 register display/modify workflow, including direct ACC, OV, and OVM access, printed pages 3-4 through 3-5 and command pages 3-53 through 3-54"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ika32010-rtl-51bc1f0",
+      "title": "IKA32010 synthesizable TMS32010-compatible RTL",
+      "author_or_organization": "Sehyeon Kim (Raki)",
+      "publication_number": "Git commit 51bc1f05a2a08a61c8815a9643d08a42e99779c6",
+      "publication_date": "commit retrieved 2026-07-31",
+      "revision": "main at 51bc1f05a2a08a61c8815a9643d08a42e99779c6",
+      "source_url": "https://raw.githubusercontent.com/ika-musume/IKA32010/51bc1f05a2a08a61c8815a9643d08a42e99779c6/src/IKA32010.sv",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "fpga/IKA32010/51bc1f05a2a08a61c8815a9643d08a42e99779c6/IKA32010.sv",
+      "sha256": "8ca96f40bde9bf1e00b49e170bfd3e89e887340326ead60b9c2c655367991059",
+      "document_type": "independent FPGA implementation source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "BSD-2-Clause repository",
+      "relevance": "Independent synthesized and arcade-tested implementation used only to identify competing behavioral hypotheses",
+      "authority_level": 7,
+      "notes": "Do not copy into project RTL. README describes the core as semi-cycle-accurate and FPGA-proven; ADDH routes a shifted operand through its general 32-bit saturating ALU.",
+      "may_commit": true,
+      "sections_or_pages_used": [
+        "ADDH decode/control around lines 804-820",
+        "ALU input, saturation, and flag logic around lines 1760-1898"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-tms32010-programmers-reference-card",
+      "title": "TMS32010 Programmer's Reference Card",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "not identified on catalog copy",
+      "publication_date": "contemporary with TMS32010",
+      "revision": "scan at immutable repository commit c090b4e21153b208216ca3eba9d6de008fd0ce3b",
+      "source_url": "https://raw.githubusercontent.com/b-wave/TMS32010-Evaluation-Module/c090b4e21153b208216ca3eba9d6de008fd0ce3b/Documents/TMS32010_Programmers_Reference_Card.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/TMS32010_Programmers_Reference_Card.pdf",
+      "sha256": "440da9df3fa86aeac0c5a8dd65b34f12f96cbeb5927f6fa794994bf26d201737",
+      "document_type": "primary programmer reference card scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Compact original-part instruction, register, encoding, and cycle summary; checked for status annotations",
+      "authority_level": 1,
+      "notes": "Keep only in ignored cache; publication number and date require cover-level confirmation.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Instruction-set summary, ADDH encoding and one-cycle/one-word classification on scan page 1"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
     },
     {

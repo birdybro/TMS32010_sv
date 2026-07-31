@@ -66,11 +66,11 @@ electrical result of an out-of-range access.
 - **Secondary source:** the pinned MAME implementation applies high-half
   overflow and saturation but comments that this is an inference because the
   manual omitted it.
-- **Current treatment:** `ADDH` remains outside the implemented boundary under
-  `OQ-011`. `ADDS`, whose status behavior is explicit in SPRU013 and SPRU032A,
-  can proceed independently.
-- **Confidence:** UNKNOWN for original-TMS32010 `ADDH` overflow and saturation
-  details; VERIFIED_PRIMARY for its ordinary non-overflow transfer.
+- **Current treatment:** superseded by the expanded evidence and resolution in
+  `SC-017`/`OQ-011`. The implemented original-part behavior is modulo
+  high-half addition with low-half/OV preservation and no OVM effect.
+- **Confidence:** CORROBORATED for original-part OV/OVM behavior;
+  VERIFIED_PRIMARY for ordinary transfer and low-half preservation.
 
 ## SC-007 — ABS overflow-flag omission
 
@@ -301,3 +301,38 @@ electrical result of an out-of-range access.
   ordinary/wrapped results and complete endpoint replacement under OVM.
 - **Confidence:** VERIFIED_PRIMARY for the resolved rule; CORROBORATED by the
   independent emulator.
+
+## SC-017 — Original ADDH status omission versus later overflow behavior
+
+- **Original-family sources:** SPRU001B `ADDH`, printed p. 3-11 (PDF p. 61),
+  defines `ACC + (dma × 2^16)` in one word and one cycle but lists no status
+  effect. SPRU013 `ADDH`, printed p. 4-16 (PDF p. 97), repeats that execution
+  expression, explicitly says `ACC[15:0]` is unaffected, and likewise lists
+  neither `OV` nor `OVM`.
+- **Instruction-format rule:** SPRU013 §4.3, printed pp. 4-11–4-13 (PDF
+  pp. 92–94), says an instruction's Execution block gives conditional status-
+  mode effects and lists affected status bits. The ADDH omission is therefore
+  evidence, not merely absent prose.
+- **Variant source:** SPRU032A `ADDH`, printed p. 4-16 (PDF p. 123), adds the
+  explicit sentence “Affects OV; affected by OVM.” The C14/E14 is not the
+  original NMOS TMS32010, so this is recorded as a variant difference rather
+  than silently backported.
+- **Independent implementations:** pinned MAME explicitly comments that the
+  manual does not mention overflow for ADDH, then implements sticky OV and
+  high-half-only saturation because newer generations support it
+  [mame-tms320c1x-core-030fefc, lines 349–379]. IKA32010 commit
+  `51bc1f05a2a08a61c8815a9643d08a42e99779c6` instead sends the shifted word
+  through its common 32-bit saturating ALU, which can replace the low half.
+  Their disagreement confirms that neither is independent hardware proof.
+- **Resolution:** on the original TMS32010, add the 16-bit data pattern to
+  `ACC[31:16]` modulo 2^16, preserve `ACC[15:0]` for every input, preserve the
+  incoming sticky `OV`, and ignore `OVM`. This follows the original-family
+  per-instruction contract and treats the explicit C14/E14 status sentence as
+  an added variant behavior. Directed tests retain both competing overflow
+  directions under both OVM values and both incoming OV values.
+- **Current treatment:** ADDH may enter the database, tools, model, and RTL at
+  CORROBORATED confidence. Documentation must continue to say the signed-
+  boundary behavior has not been measured on original silicon.
+- **Confidence:** VERIFIED_PRIMARY for encoding, ordinary arithmetic,
+  low-half preservation, word count, and cycle count; CORROBORATED for
+  original-part OV preservation and OVM independence.

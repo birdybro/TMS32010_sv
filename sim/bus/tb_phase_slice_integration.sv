@@ -172,7 +172,8 @@ module tb_phase_slice_integration;
     program_memory[42] = 16'h6203;  // SUBH 3
     program_memory[43] = 16'h7f88;  // ABS
     program_memory[44] = 16'h7c0f;  // SST 15 -> forced page-one address 0x8f
-    program_memory[45] = 16'h7f83;  // unsupported and not a silent NOP
+    program_memory[45] = 16'h6003;  // ADDH 3
+    program_memory[46] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -646,15 +647,25 @@ module tb_phase_slice_integration;
             "SST preserves defined status after its internal write");
     require(pc == 12'h02d && cycle_count == 32'd45,
             "SST consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h03 && data_read_data == 16'hbeef,
+            "ADDH exposes its internal operand beside program phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0006_b997 &&
+            overflow_flag && !overflow_mode,
+            "ADDH wraps only ACC high and preserves ACC low, OV, and OVM");
+    require(pc == 12'h02e && cycle_count == 32'd46,
+            "ADDH consumes one native instruction cycle");
     require(!data_read && !data_write && !data_address_valid,
             "unsupported boundary performs no internal data transaction");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h02d, "trap holds architectural PC");
-    require(program_address == 12'h02d, "trap holds native program address");
-    require(cycle_count == 32'd45, "trap does not count as retired cycle");
+    require(pc == 12'h02e, "trap holds architectural PC");
+    require(program_address == 12'h02e, "trap holds native program address");
+    require(cycle_count == 32'd46, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

@@ -1,6 +1,6 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ABS, ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
+This partial slice supports ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
 POP, PUSH, RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SST, SUB, SUBC, SUBH, SUBS, TBLR,
@@ -393,6 +393,7 @@ class Tms32010Model:
             selected_arp = self.state.status.arp
         if mnemonic in {
             "ADD",
+            "ADDH",
             "ADDS",
             "AND",
             "DMOV",
@@ -451,6 +452,7 @@ class Tms32010Model:
                 transaction_data = self.program[operands["program_address"]]
             elif mnemonic in {
                 "ADD",
+                "ADDH",
                 "ADDS",
                 "AND",
                 "DMOV",
@@ -603,6 +605,7 @@ class Tms32010Model:
                             if mnemonic
                             in {
                                 "ADD",
+                                "ADDH",
                                 "ADDS",
                                 "AND",
                                 "LAC",
@@ -747,6 +750,14 @@ class Tms32010Model:
             self.state.acc = self.data[operands["effective_address"]]
         elif mnemonic == "ADDS":
             self._add_accumulator(self.data[operands["effective_address"]])
+        elif mnemonic == "ADDH":
+            # Original-family ADDH lists no status effect. Add only within
+            # the high half, preserving low ACC, OV, and OVM (SC-017).
+            high = (
+                (self.state.acc >> 16)
+                + self.data[operands["effective_address"]]
+            ) & WORD_MASK
+            self.state.acc = (high << 16) | (self.state.acc & WORD_MASK)
         elif mnemonic == "ADD":
             data_word = self.data[operands["effective_address"]]
             signed_word = (
@@ -822,6 +833,7 @@ class Tms32010Model:
             mnemonic
             in {
                 "ADD",
+                "ADDH",
                 "ADDS",
                 "AND",
                 "DMOV",
@@ -1143,6 +1155,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "ADDS", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6000:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "ADDH", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

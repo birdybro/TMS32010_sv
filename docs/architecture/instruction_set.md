@@ -1082,10 +1082,37 @@ data-address form. The read uses the old selected-AR address before an optional
 nine-bit counter update and ARP replacement. The current conservative
 reserved-control and alias policies remain linked to `OQ-010`.
 
-`ADDH` is intentionally not in this qualification boundary. Its ordinary
-high-half addition is documented, but original-part sources omit whether
-`OV`/`OVM` applies, while a C14/E14 variant guide and MAME apply overflow with
-unresolved saturation details. See `SC-006` and `OQ-011`.
+## Qualified `ADDH` research slice
+
+`ADDH` is the common-address opcode family `0x60xx`. It adds the complete
+selected 16-bit word to `ACC[31:16]` modulo 2^16 and always preserves
+`ACC[15:0]`. It is one word and one cycle
+[ti-tms32010-users-guide-spru001b, `ADDH`, printed p. 3-11 (PDF p. 61);
+ti-first-generation-users-guide-1987, `ADDH`, printed p. 4-16
+(PDF p. 97)]. **Confidence: VERIFIED_PRIMARY.**
+
+SPRU013 §4.3 states that an instruction's Execution block lists affected
+status bits and conditional status-mode effects. Its original-family ADDH
+block lists neither `OV` nor `OVM`; the later C14/E14 ADDH page explicitly
+adds both. Pinned MAME admits that it inferred ADDH overflow from newer
+generations, while independent IKA32010 selects a conflicting saturation
+result. The original-part implementation therefore preserves incoming `OV`,
+ignores `OVM`, and never saturates. This is a resolved clean-room hypothesis,
+not a silicon measurement
+[ti-first-generation-users-guide-1987, §4.3 and `ADDH`, printed
+pp. 4-11–4-16 (PDF pp. 92–97);
+ti-tms320c14-e14-users-guide-1988, `ADDH`, printed p. 4-16 (PDF p. 123);
+mame-tms320c1x-core-030fefc, inferred-overflow comment and handler,
+lines 349–379; ika32010-rtl-51bc1f0, ADDH/common-ALU paths,
+lines 804–820 and 1760–1898; `SC-017`/`OQ-011`]. **Confidence:
+CORROBORATED for original-part OV preservation and OVM independence.**
+
+Directed model and RTL tests cover both signed high-half wrap directions
+under all four incoming OV/OVM combinations, ordinary addition, low-half
+preservation, direct page selection, old-address indirect updates, nine-bit
+wrap, clock-enable stalls, one-cycle retirement, and trap-before-effects for
+unresolved physical addresses. Seeded and native-pipeline differentials
+compare complete exposed state and logical bus activity.
 
 ## Qualified `ADD` research slice
 
@@ -1111,8 +1138,7 @@ not a per-instruction-page inference. **Confidence: VERIFIED_PRIMARY.**
 
 ADD occupies one word and one cycle. Its common direct/indirect address,
 old-AR read, optional nine-bit update, ARP replacement, reserved-control
-rejection, and noncanonical alias policy match `LAC`. `ADDH` remains excluded
-under `SC-006`/`OQ-011`.
+rejection, and noncanonical alias policy match `LAC`.
 
 ## Qualified `SUB` research slice
 

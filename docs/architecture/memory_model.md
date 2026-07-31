@@ -59,7 +59,7 @@ with the cited primary sequence.**
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`,
+retire `ADD`, `ADDH`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`,
 `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid

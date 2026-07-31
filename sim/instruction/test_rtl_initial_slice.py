@@ -338,6 +338,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_addh_halfword_wrap_status_preservation_and_addressing(self) -> None:
+        self._run_testbench(
+            "tb_addh_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_addh_rtl.sv",
+            ],
+        )
+
     def test_add_shift_overflow_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_add_rtl",

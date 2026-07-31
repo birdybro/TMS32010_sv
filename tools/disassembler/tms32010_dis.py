@@ -83,6 +83,7 @@ class Disassembler:
                 return f"SACH {modifier}{suffix}"
             return f"SACH {modifier},{shift},{control & 1}"
         if mnemonic in {
+            "ADDH",
             "ADDS",
             "AND",
             "DMOV",

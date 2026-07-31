@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBH", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDH", "ADDS", "SUBH", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "CALA", "RET", "POP", "PUSH", "IN", "OUT", "TBLR", "TBLW",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ", "SST", "ABS"
     ],
     "complete": false,
@@ -1267,6 +1267,58 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "ADDH",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6000",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC[31:16]", "selected AR and optionally ARP for indirect post-modification"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "the complete 16-bit data-word pattern is added modulo 2^16 to ACC[31:16]; signed interpretation does not change the wrapped high-half sum",
+      "shift_behavior": "the data word is aligned to the high accumulator half, equivalent to its 16-bit pattern multiplied by 2^16",
+      "overflow_behavior": "original-part OV is preserved and OVM has no effect at CORROBORATED confidence; no saturation is applied",
+      "result_behavior": "ACC[31:16] receives (old ACC[31:16] + data_word) modulo 2^16 and ACC[15:0] is always preserved",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special interaction documented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; ADDH's data read targets internal RAM and does not drive an external data-memory cycle"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "ADDH instruction description", "printed_page": "3-11", "pdf_page": 61},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "4.3 instruction-description convention and ADDH instruction description", "printed_page": "4-11 through 4-16", "pdf_page": "92-97"},
+        {"source_id": "ti-tms320c14-e14-users-guide-1988", "section": "ADDH instruction description, variant-only status behavior", "printed_page": "4-16", "pdf_page": 123},
+        {"source_id": "mame-tms320c1x-core-030fefc", "section": "explicit inferred-overflow comment and addh handler", "printed_page": "not applicable", "pdf_page": "not applicable"},
+        {"source_id": "ika32010-rtl-51bc1f0", "section": "competing ADDH and general-ALU implementation", "printed_page": "not applicable", "pdf_page": "not applicable"}
+      ],
+      "confidence_level": "CORROBORATED",
+      "unresolved_questions": ["OQ-011"]
     },
     {
       "mnemonic": "ADDS",

@@ -41,6 +41,7 @@ module tb_decode_exhaustive;
       logic expected_zals;
       logic expected_tblr;
       logic expected_tblw;
+      logic expected_addh;
       logic expected_adds;
       logic expected_xor;
       logic expected_and;
@@ -173,6 +174,16 @@ module tb_decode_exhaustive;
         );
       expected_adds =
         (instruction[15:8] == 8'h61) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
+      expected_addh =
+        (instruction[15:8] == 8'h60) &&
         (
           !instruction[7] ||
           (
@@ -392,7 +403,7 @@ module tb_decode_exhaustive;
         expected_lac || expected_in || expected_out ||
         expected_sacl || expected_sach ||
         expected_zalh || expected_zals || expected_tblr || expected_tblw ||
-        expected_adds ||
+        expected_addh || expected_adds ||
         expected_xor || expected_and || expected_or || expected_add ||
         expected_sub || expected_subh || expected_subs || expected_subc ||
         expected_lar || expected_sar ||
@@ -479,6 +490,13 @@ module tb_decode_exhaustive;
             indirect != word[7] ||
             addressing_field != word[6:0]) begin
           $fatal(1, "ADDS decode mismatch at %04x", word);
+        end
+      end
+      if (expected_addh) begin
+        if (operation != OP_ADDH ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "ADDH decode mismatch at %04x", word);
         end
       end
       if (expected_xor || expected_and || expected_or) begin
@@ -689,8 +707,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 21751) begin
-      $fatal(1, "expected 21751 supported words, got %0d", valid_count);
+    if (valid_count != 21891) begin
+      $fatal(1, "expected 21891 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

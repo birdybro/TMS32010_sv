@@ -82,6 +82,19 @@ instruction-format rule, the C14/E14 variant difference, and independent MAME
 corroboration. **Confidence: VERIFIED_PRIMARY for the result and OVM
 selection; CORROBORATED for OV preservation.**
 
+`ADDH` adds the complete selected 16-bit word to `ACC[31:16]` modulo 2^16
+and always preserves `ACC[15:0]`. On the original part, incoming `OV` is
+preserved and `OVM` has no effect. That status conclusion follows SPRU013's
+instruction-format rule and original ADDH page omission, reinforced by the
+later C14/E14 variant explicitly adding OV/OVM behavior; it has not been
+measured on original silicon
+[ti-tms32010-users-guide-spru001b, `ADDH`, printed p. 3-11 (PDF p. 61);
+ti-first-generation-users-guide-1987, §4.3 and `ADDH`, printed pp. 4-11–4-16
+(PDF pp. 92–97); ti-tms320c14-e14-users-guide-1988, `ADDH`, printed p. 4-16
+(PDF p. 123); `SC-017`/`OQ-011`]. **Confidence: VERIFIED_PRIMARY for
+ordinary result, low-half preservation, and timing; CORROBORATED for OV
+preservation and OVM independence.**
+
 `SUBH` subtracts the selected 16-bit word aligned to `ACC[31:16]`. Ordinary
 and OVM-clear wrapped results preserve `ACC[15:0]`; signed overflow sets
 sticky `OV`, and OVM-enabled overflow replaces the complete ACC with the

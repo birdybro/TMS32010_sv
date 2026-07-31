@@ -111,6 +111,7 @@ module tms32010_core (
   localparam logic [5:0] OP_SUBH = 6'd52;
   localparam logic [5:0] OP_ABS  = 6'd53;
   localparam logic [5:0] OP_SST  = 6'd54;
+  localparam logic [5:0] OP_ADDH = 6'd55;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -172,6 +173,7 @@ module tms32010_core (
   logic [15:0] ram_read_data;
   logic [31:0] adds_wrapped_result;
   logic        adds_overflow;
+  logic [15:0] addh_high_result;
   logic [31:0] shifted_data_operand;
   logic [31:0] add_wrapped_result;
   logic        add_overflow;
@@ -251,6 +253,7 @@ module tms32010_core (
         (decoded_operation == OP_SACH) ||
         (decoded_operation == OP_ZALH) ||
         (decoded_operation == OP_ZALS) ||
+        (decoded_operation == OP_ADDH) ||
         (decoded_operation == OP_ADDS) ||
         (decoded_operation == OP_XOR) ||
         (decoded_operation == OP_AND) ||
@@ -431,6 +434,7 @@ module tms32010_core (
           (decoded_operation == OP_LAC) ||
           (decoded_operation == OP_ZALH) ||
           (decoded_operation == OP_ZALS) ||
+          (decoded_operation == OP_ADDH) ||
           (decoded_operation == OP_ADDS) ||
           (decoded_operation == OP_XOR) ||
           (decoded_operation == OP_AND) ||
@@ -595,6 +599,7 @@ module tms32010_core (
             (decoded_operation != OP_SACH) &&
             (decoded_operation != OP_ZALH) &&
             (decoded_operation != OP_ZALS) &&
+            (decoded_operation != OP_ADDH) &&
             (decoded_operation != OP_ADDS) &&
             (decoded_operation != OP_XOR) &&
             (decoded_operation != OP_AND) &&
@@ -636,6 +641,8 @@ module tms32010_core (
     accumulator_o + {16'h0000, ram_read_data};
   assign adds_overflow =
     ~accumulator_o[31] && adds_wrapped_result[31];
+  // A 16-bit destination deliberately discards the high-half carry.
+  assign addh_high_result = accumulator_o[31:16] + ram_read_data;
   assign shifted_data_operand =
     {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
   assign add_wrapped_result = accumulator_o + shifted_data_operand;
@@ -1088,6 +1095,12 @@ module tms32010_core (
           end
           OP_ZALH: accumulator_o <= {ram_read_data, 16'h0000};
           OP_ZALS: accumulator_o <= {16'h0000, ram_read_data};
+          OP_ADDH: begin
+            // The original-family instruction contract omits OV/OVM effects:
+            // addition is modulo 16 bits in ACC[31:16], with ACC[15:0]
+            // and both status bits preserved (SC-017, CORROBORATED).
+            accumulator_o <= {addh_high_result, accumulator_o[15:0]};
+          end
           OP_ADDS: begin
             if (adds_overflow) begin
               overflow_flag_o <= 1'b1;
@@ -1237,6 +1250,7 @@ module tms32010_core (
            (decoded_operation == OP_SACH) ||
            (decoded_operation == OP_ZALH) ||
            (decoded_operation == OP_ZALS) ||
+           (decoded_operation == OP_ADDH) ||
            (decoded_operation == OP_ADDS) ||
            (decoded_operation == OP_XOR) ||
            (decoded_operation == OP_AND) ||

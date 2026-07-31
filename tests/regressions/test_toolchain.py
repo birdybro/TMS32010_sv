@@ -1099,6 +1099,31 @@ class ToolchainSliceTests(unittest.TestCase):
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x6289])
 
+    def test_addh_round_trip_and_operand_diagnostics(self) -> None:
+        source = "ADDH 0\nADDH 127\nADDH *\nADDH *+,1\nADDH *-,0\n"
+        expected = [0x6000, 0x607F, 0x6088, 0x60A1, 0x6090]
+        result = self.assembler.assemble_text(source)
+        self.assertEqual(list(result.words.values()), expected)
+        disassembly = self.disassembler.disassemble_source(expected)
+        self.assertEqual(disassembly, source)
+        rebuilt = self.assembler.assemble_text(disassembly)
+        self.assertEqual(list(rebuilt.words.values()), expected)
+
+        for text, message in (
+            ("ADDH 128\n", "direct address"),
+            ("ADDH *+,2\n", "next ARP"),
+            ("ADDH 0,1\n", "only with indirect"),
+            ("ADDH\n", "1 to 2 operands"),
+        ):
+            with self.subTest(text=text):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(text)
+
+        disassembly = self.disassembler.disassemble_source([0x6089])
+        self.assertEqual(disassembly, ".word 0x6089\n")
+        rebuilt = self.assembler.assemble_text(disassembly)
+        self.assertEqual(list(rebuilt.words.values()), [0x6089])
+
     def test_subc_encodings_round_trip_and_diagnose_operands(self) -> None:
         result = self.assembler.assemble_text(
             """
@@ -1352,13 +1377,6 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x6789\n.word 0x7d89\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), original)
-
-    def test_unsupported_documented_instruction_is_explicit(self) -> None:
-        with self.assertRaisesRegex(
-            AssemblyError,
-            "documented instruction ADDH is not implemented",
-        ):
-            self.assembler.assemble_text("ADDH 0\n")
 
     def test_abs_round_trips_exact_implied_word(self) -> None:
         result = self.assembler.assemble_text("ABS\n")

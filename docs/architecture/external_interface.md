@@ -31,14 +31,15 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the 40 supported one-cycle sequential instructions and
+read relationship for the 41 supported one-cycle sequential instructions and
 both cycles of `B`, `BANZ`, `BIOZ`, `BV`, `CALL`, the six
-accumulator-conditional branches, `IN`, and `OUT`. Its `ADD`, `ADDS`, `AND`,
+accumulator-conditional branches, `IN`, and `OUT`. Its `ADD`, `ADDH`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
 `SUBC`, `SUBH`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent
 internal logical reads, while `SACL`, `SACH`, `SAR`, and `SST` expose writes,
 without changing the physical `MEN` activity from a normal program fetch.
-ABS is among the program-only one-cycle cases and asserts no internal-data or
+ADDH's logical internal read accompanies the same normal program cycle and
+has no external data-memory strobe. ABS is among the program-only one-cycle cases and asserts no internal-data or
 I/O transaction. SST retains that same physical program read while exposing
 its internal status-word write on the verification interface.
 IN/OUT instead replace the second-cycle address with the port and assert

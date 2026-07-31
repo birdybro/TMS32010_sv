@@ -341,6 +341,7 @@ class Assembler:
                 line=line,
             )
         elif operation in {
+            "ADDH",
             "ADDS",
             "AND",
             "DMOV",

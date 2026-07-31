@@ -53,6 +53,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SACL",
                 "SACH",
                 "ADD",
+                "ADDH",
                 "SUB",
                 "SUBH",
                 "ADDS",
@@ -574,6 +575,27 @@ class IsaDatabaseTests(unittest.TestCase):
             {"indirect": 1, "addressing_field": 0x21},
         )
         self.assertIn("OV is set", direct[0]["status_flags_affected"][0])
+
+    def test_addh_is_status_preserving_high_half_add(self) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6000 | control))
+        direct = decode_word(self.database, 0x607F)
+        indirect = decode_word(self.database, 0x60A1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "ADDH")
+        self.assertEqual(direct[0]["documented_cycle_count"], 1)
+        self.assertEqual(direct[0]["confidence_level"], "CORROBORATED")
+        self.assertEqual(
+            direct[0]["status_flags_affected"],
+            ["ARP only when requested by indirect addressing"],
+        )
+        self.assertIn("OV is preserved", direct[0]["overflow_behavior"])
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
 
     def test_logic_rejects_reserved_indirect_controls(self) -> None:
         for base in (0x7800, 0x7900, 0x7A00):
