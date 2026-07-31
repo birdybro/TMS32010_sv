@@ -1,14 +1,16 @@
 `default_nettype none
 
 // Integration wrapper for the qualified one-cycle sequential slice, two-cycle
-// control-flow reads, native I/O transfers, and three-cycle table transfers.
-// This is not yet the complete TMS32010 fetch pipeline.
+// control-flow reads, native I/O transfers, three-cycle table transfers, and
+// the Figure 2-12 interrupt program-read order. This is not yet the complete
+// TMS32010 fetch/execute pipeline.
 module tms32010_phase_slice (
   input  logic        clk_i,
   input  logic        initialize_i,
   input  logic        rs_i,
   input  logic        clock_enable_i,
   input  logic        bio_i,
+  input  logic        int_i,
   input  logic [15:0] program_data_i,
   input  logic [15:0] io_read_data_i,
   input  logic        debug_data_write_i,
@@ -53,6 +55,7 @@ module tms32010_phase_slice (
   output logic        overflow_flag_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
+  output logic        interrupt_pending_o,
   output logic        instruction_valid_o,
   output logic        retired_o,
   output logic        illegal_o,
@@ -112,6 +115,7 @@ module tms32010_phase_slice (
     .reset_i                       (core_reset),
     .clock_enable_i                (execute_boundary),
     .bio_i                         (bio_i),
+    .int_i                         (int_i),
     .program_address_o             (logical_program_address),
     .program_next_address_o        (logical_program_next_address),
     .program_read_o                (logical_program_read),
@@ -149,6 +153,7 @@ module tms32010_phase_slice (
     .overflow_flag_o               (overflow_flag_o),
     .overflow_mode_o               (overflow_mode_o),
     .interrupt_mask_o              (interrupt_mask_o),
+    .interrupt_pending_o           (interrupt_pending_o),
     .instruction_valid_o           (instruction_valid_o),
     .retired_o                     (retired_o),
     .illegal_o                     (illegal_o),

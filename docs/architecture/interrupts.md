@@ -20,19 +20,59 @@ an already latched request
 [ti-tms32010-users-guide-spru001b, §2.4.1, printed pp. 2-18–2-19 (PDF
 pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
 
-The qualified model/RTL slice implements the architectural `INTM` write for
-the exact one-cycle words `DINT=0x7f81` and `EINT=0x7f82`, including
-program-only bus behavior and clock-enable stalls. It deliberately has no
-`INT` input, pending latch, recognition state, stack entry, or vector fetch
-yet. Consequently its cleared `INTM` output after EINT is architectural-state
-evidence only: it does not claim the documented following-instruction service
-delay. That missing sequencer behavior remains `CTRL-002`/`OQ-004`.
+Figure 2-12 establishes the normal interrupt fetch/execute order. While
+instruction N is fetched, the active-low request becomes valid. The processor
+then fetches N+1 while executing N, dummy-fetches N+2 while executing N+1,
+fetches vector word 2 while consuming a dummy execution slot, and executes
+word 2 afterward. The N+2 word is not executed before entry; because the
+current PC is stacked, it is available to be fetched and executed after the
+handler returns
+[ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed p. 2-19
+(PDF p. 43)]. **Confidence: VERIFIED_PRIMARY.**
+
+The qualified model and partial native RTL now implement the corresponding
+retirement-mapped sequence:
+
+1. an active-low sample sets `interrupt_pending_o`, including while `INTM=1`;
+2. the current instruction and one already-pipelined following instruction
+   complete;
+3. a program read at the resulting return PC is marked invalid and cannot
+   retire or issue data/I/O traffic;
+4. that dummy-read boundary pushes the return PC, sets PC to `0x002`, sets
+   `INTM`, and clears the pending latch; and
+5. the next program transaction reads vector word 2.
+
+Directed tests cover a one-cycle pulse, a held-low level that relatches after
+acknowledge, a pulse retained while masked, entry after EINT plus its required
+following instruction, completion of a two-cycle branch before deferral,
+MPY/MPYK protection through one additional instruction, reset clearing, and
+model/RTL state comparison. The native test observes the external address
+sequence `N`, `N+1`, dummy return PC, `0x002` with ordinary `MEN` phases
+[`sim/interrupt/tb_interrupt_entry.sv`,
+`sim/interrupt/tb_interrupt_phase.sv`,
+`sim/differential/test_interrupt_model_rtl.py`].
+
+This is not yet a complete pipeline claim. The existing partial core maps a
+fetched word's effect to its program-sample boundary rather than maintaining
+TI's separate fetch and execute registers. It reproduces the cited external
+read order and architectural entry effects for the tested paths, but the
+full Figure 2-12 execute-overlap timeline, every arrival point inside every
+multicycle instruction, return through unimplemented `RET`, and analog input
+timing remain outside the qualified boundary (`CTRL-002`, `OQ-004`).
+
+The current behavior when `DINT` occupies the already-pipelined protected
+slot cancels entry, retains the request, and leaves it masked. Figure 2-11's
+mode gate and pinned MAME behavior corroborate that ordering, but the located
+original prose does not explicitly order DINT's write against an already
+active internal interrupt processor. The policy and targeted test are
+therefore PROVISIONAL under `OQ-019`, not a silicon-verified fact.
 
 The pin must be low at least 50 ns before falling `CLKOUT`, and a guaranteed
-pulse is at least one full `CLKOUT` period. The complete vector-fetch bus trace
-and entry latency are still `OQ-004`; no fixed entry cycle count is claimed
-yet. The original pin list has no separate interrupt-acknowledge output. A
-wrapper must not invent one and call it native without an explicit derivation
+pulse is at least one full `CLKOUT` period. The external fetch trace is now
+primary-transcribed, but no nanosecond pin delay is modeled in RTL. The
+original pin list has no separate interrupt-acknowledge output: the guide's
+acknowledge is an internal signal that presets INTM and clears the flag. A
+wrapper must not invent an acknowledge pin and call it native
 [ti-tms32010-users-guide-spru001b, Appendix A interrupt timing, printed
 data-sheet p. 20 (PDF p. 376)]. **Confidence: VERIFIED_PRIMARY.**
 

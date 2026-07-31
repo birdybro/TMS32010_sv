@@ -212,14 +212,14 @@
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; interrupt recognition and entry remain unimplemented"}
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; a DINT in the final protected slot provisionally cancels entry while retaining the request under OQ-019"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1 and DINT instruction description", "printed_page": "2-18 through 2-19 and 3-27", "pdf_page": "42-43 and 77"},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "DINT instruction description", "printed_page": "4-32", "pdf_page": 113}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
-      "unresolved_questions": ["CTRL-002/OQ-004: exact interrupt recognition and vector-entry phase trace"]
+      "unresolved_questions": ["OQ-004: complete overlapped execute ownership", "OQ-019: DINT at final protected boundary"]
     },
     {
       "mnemonic": "EINT",
@@ -245,14 +245,14 @@
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; following-instruction deferral and interrupt entry remain unimplemented"}
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; a previously disabled pending request permits the following instruction, then dummy-fetches the return PC and reads vector 2"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1 and EINT instruction description", "printed_page": "2-18 through 2-19 and 3-29", "pdf_page": "42-43 and 79"},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "EINT instruction description", "printed_page": "4-34", "pdf_page": 115}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
-      "unresolved_questions": ["CTRL-002/OQ-004: following-instruction interrupt-service deferral and exact vector-entry phase trace"]
+      "unresolved_questions": ["OQ-004: complete overlapped execute ownership and exhaustive multicycle arrival matrix"]
     },
     {
       "mnemonic": "LST",
@@ -655,7 +655,7 @@
       "overflow_behavior": "signed ACC-plus-P overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "T receives the selected internal data word, the next higher data-memory address receives the same word, and ACC receives ACC plus the previous P value subject to OVM; P and the source word are unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special LTD interaction documented; when LTD follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "interrupt_interaction": "no special LTD interaction documented; when LTD follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; exhaustive arrival combinations remain untested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -705,7 +705,7 @@
       "overflow_behavior": "signed ACC-plus-P overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "T receives the complete selected internal data word while ACC receives ACC plus the previous P value subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special LTA interaction documented; when LTA follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "interrupt_interaction": "no special LTA interaction documented; when LTA follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; exhaustive arrival combinations remain untested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -755,7 +755,7 @@
       "overflow_behavior": "no status overflow; the original multiplier deliberately produces 0xc0000000 for 0x8000 times 0x8000",
       "result_behavior": "P receives the signed 16-by-16 product, except for the documented 0x8000-by-0x8000 result",
       "branch_behavior": "none",
-      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPY completes; actual interrupt entry is not yet implemented",
+      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPY completes; the shared MPY/MPYK deferral and dummy vector entry are directed-tested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -793,7 +793,7 @@
       "overflow_behavior": "no status overflow; the 13-bit immediate range cannot select the MPY 0x8000-by-0x8000 hardware exception",
       "result_behavior": "P receives the signed product of T and the constant in the inclusive range -4096 through 4095",
       "branch_behavior": "none",
-      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPYK completes; actual interrupt entry is not yet implemented",
+      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPYK completes; the deferral, following-instruction retirement, dummy entry, and vector selection are directed-tested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -827,7 +827,7 @@
       "overflow_behavior": "does not affect OV or apply OVM saturation",
       "result_behavior": "ACC receives the complete 32-bit contents of P; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special PAC interaction documented; when PAC follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "interrupt_interaction": "no special PAC interaction documented; when PAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; PAC-specific arrival combinations remain untested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -861,7 +861,7 @@
       "overflow_behavior": "signed overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "ACC receives the 32-bit sum of ACC and P subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special APAC interaction documented; when APAC follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "interrupt_interaction": "no special APAC interaction documented; when APAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; APAC-specific arrival combinations remain untested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -895,7 +895,7 @@
       "overflow_behavior": "signed overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "ACC receives the 32-bit difference ACC minus P subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special SPAC interaction documented; when SPAC follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "interrupt_interaction": "no special SPAC interaction documented; when SPAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; SPAC-specific arrival combinations remain untested",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [

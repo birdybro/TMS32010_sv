@@ -1,26 +1,28 @@
 # Progress summary
 
-- **Current milestone:** native TBLR/TBLW program-space transfer qualification
+- **Current milestone:** interrupt recognition and vector-entry qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 89 repository/provenance/document/ISA/toolchain tests; 195
-  directed model tests; 34 RTL instruction/decode tests; 1 interrupt-mask RTL
-  test; 10 native bus/phase tests; one 512-instruction seeded
+- **Tests passing:** 89 repository/provenance/document/ISA/toolchain tests; 201
+  directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
+  tests; 10 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 16 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
-  TBLR/TBLW bus/state/stack/RAM/program-memory differential
+  TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
+  EINT/protected-instruction/dummy-entry/vector model/RTL differential
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-two-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table phase engine on `5CSEBA6U23I7`: 2,033 ALMs, 2,585
-  registers, 0 RAM blocks, 1 DSP block, 58.94 MHz worst slow-corner internal
-  Fmax, +3.033 ns setup slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest
+  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,080
+  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 56.44 MHz worst
+  slow-corner internal Fmax, +2.282 ns setup slack, and +0.164 ns worst hold
+  slack at 50 MHz. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,218 generic cells with 21 retained checks and lowering the
+  producing 13,396 generic cells with 26 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
@@ -89,7 +91,12 @@
   exact implied `DINT=0x7f81` and `EINT=0x7f82` each retire in one
   program-only cycle; DINT sets `INTM` immediately, EINT clears it immediately,
   neither clears a latched request, and interrupt service after EINT remains
-  inhibited until the following instruction completes; LST is opcode family
+  inhibited until the following instruction completes; Figure 2-12 establishes
+  fetch N, fetch N+1, dummy fetch N+2, and vector-2 fetch beside execute N,
+  execute N+1, dummy execution, and vector execution; the partial model/RTL
+  now retains masked active-low requests, applies EINT and MPY/MPYK deferral,
+  dummy-fetches and stacks the return PC, sets INTM, clears the pending latch,
+  and selects vector 2; no external interrupt-acknowledge pin exists; LST is opcode family
   `0x7b`, consumes one internal status-word read in one cycle, loads OV, OVM,
   ARP, and DP from bits 15, 14, 8, and 0 while preserving INTM, resolves direct
   and indirect addresses from old status, and applies counter updates to the
@@ -146,25 +153,28 @@
   the selected RAM or program word, applies indirect AR/ARP changes, duplicates
   old stack level 2 into the bottom after the documented temporary push/pop,
   and leaves PC at PC+1 so the following word is fetched again
-- **Unresolved issues:** general pipeline overlap, control-flow and
-  interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
+- **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
+  ownership and exhaustive multicycle arrival cases, RET resumption,
+  provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
+  control-flow traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
   OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
-  MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
+  DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` by qualifying interrupt recognition,
-  request latching, vector entry, acknowledge timing, EINT's following-
-  instruction deferral, and MPY/MPYK deferral from primary sources before
-  extending model or RTL;
+- **Next task:** continue `CTRL-002` with bounded interrupt FSM/bus properties,
+  an exhaustive supported-multicycle arrival matrix, and research for
+  `OQ-019` plus RET-based resumption; preserve the distinction between the
+  verified Figure 2-12 external address order and the still-collapsed
+  fetch/execute pipeline;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
-  precedence labeled PROVISIONAL under `OQ-015`; keep interrupt recognition,
-  EINT's following-instruction service deferral, and entry outside the claim
-  boundary until `CTRL-002`/`OQ-004` has cycle/phase evidence; keep
+  precedence labeled PROVISIONAL under `OQ-015`; keep complete interrupt
+  cycle-accuracy outside the claim boundary until `CTRL-002`/`OQ-004` has
+  exhaustive execute-overlap evidence; keep
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `02a59b8`
+  `d4aa604`

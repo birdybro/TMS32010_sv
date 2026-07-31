@@ -50,10 +50,12 @@ completes. This permits an interrupt handler to execute `EINT` followed by
 `RET`; TI also warns against placing EINT immediately before a branch. The
 model and RTL now qualify the exact words, `INTM` state effects, one-cycle
 retirement, state preservation, program-only transaction, clock-enable hold,
-and reset-established mask. They do not yet recognize or vector a pending
-interrupt, so the following-instruction service delay and warning remain
-unimplemented timing requirements under `CTRL-002`/`OQ-004`, not silently
-collapsed into ordinary boundary recognition.
+reset-established mask, masked pending-request persistence, EINT's
+previously-disabled following-instruction service delay, and vector entry.
+Tests also prove that an EINT executed while already enabled does not add a
+second deferral. The warning against placing EINT before branch remains a
+software restriction; the current two-cycle-branch arrival test does not
+constitute an exhaustive fetch/execute pipeline proof (`OQ-004`).
 
 ## Qualified `LST` functional slice
 
@@ -626,9 +628,10 @@ saturation, sticky OV, unchanged P, one-cycle retirement, reserved controls,
 and trap-before-either parallel effect on an unresolved address. Native-phase
 and seeded differential tests cover the internal read beside a normal program
 fetch. If LTA follows MPY or MPYK, its completion is the end of that multiply
-instruction's documented interrupt-deferral window; actual interrupt
-recognition remains unimplemented under `CTRL-002`. Simultaneous indirect
-update controls remain under `OQ-010`.
+instruction's documented interrupt-deferral window. The generic interrupt
+sequencer now recognizes that retirement boundary, although a targeted
+arrival matrix for every possible following instruction remains under
+`CTRL-002`. Simultaneous indirect update controls remain under `OQ-010`.
 
 ## Qualified `LTD` functional slice
 
@@ -661,8 +664,9 @@ destination is outside the 144-word RAM. The current partial model and RTL
 therefore trap before changing T, ACC, RAM, AR, or ARP when either the source
 or destination is unresolved. This is an explicit implementation boundary,
 not a hardware-behavior claim (`OQ-002`, `OQ-014`). Simultaneous indirect
-increment/decrement remains rejected under `OQ-010`; multiply-following
-interrupt recognition remains deferred to `CTRL-002`.
+increment/decrement remains rejected under `OQ-010`; the generic sequencer
+recognizes LTD retirement as a possible end of multiply deferral, but no
+per-instruction interrupt-arrival matrix is yet claimed.
 
 ## Qualified `MPY` functional slice
 
@@ -689,12 +693,13 @@ addressing reads through the AR selected by the old ARP before the ordinary
 nine-bit AR update and optional next-ARP replacement. Reserved controls and
 the simultaneous-update uncertainty follow `OQ-010`. TI also specifies that
 interrupt service is inhibited until the instruction following `MPY`
-completes. The functional multiply and one-cycle program/data transaction are
-verified, but actual interrupt deferral is not: the current core has no
-interrupt entry engine. That gap remains part of `CTRL-002` and prevents this
-slice from being complete interrupt evidence
+completes. Directed model and RTL interrupt tests place MPYK in an already
+protected slot, require one more instruction to retire, and then observe the
+dummy return-PC fetch and vector entry. MPY and MPYK share the same explicit
+deferral predicate in RTL; broader randomized arrival coverage remains part
+of `CTRL-002`
 [ti-tms32010-users-guide-spru001b, `MPY`, printed p. 3-43 (PDF p. 93)].
-**Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
+**Confidence: VERIFIED_PRIMARY for the rule and directed RTL boundary.**
 
 ## Qualified `MPYK` functional slice
 
@@ -720,10 +725,10 @@ architectural authority
 
 TI applies the same interrupt-protection rule to MPYK as MPY: interrupt service
 is inhibited until the following instruction executes. The functional result,
-program-only transaction, and cycle count are verified, but interrupt
-deferral remains unimplemented under `CTRL-002`
+program-only transaction, cycle count, one-following-instruction deferral,
+dummy entry, and vector selection have directed model/RTL checks
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
-**Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
+**Confidence: VERIFIED_PRIMARY.**
 
 ## Qualified `PAC` functional slice
 
@@ -744,9 +749,9 @@ assert one-cycle retirement, and reject adjacent unsupported fixed words.
 Native-phase and seeded differential tests verify the ordinary program fetch
 and inactive logical data-memory strobes. When PAC follows MPY or MPYK, its
 completion is also the end of the multiply instruction's documented interrupt
-deferral window; recognizing a pending interrupt at that boundary remains
-unimplemented under `CTRL-002`, so these PAC tests are not interrupt-timing
-evidence.
+deferral window. The generic sequencer recognizes that retirement shape, but
+the PAC instruction tests themselves are not an exhaustive interrupt-arrival
+matrix.
 
 ## Qualified `APAC` functional slice
 
@@ -772,8 +777,9 @@ unchanged P/T/address state, one-cycle retirement, exact fixed-word decode,
 and absence of a logical data-memory transaction. Native-phase and seeded
 differential tests cover the ordinary program fetch and randomized arithmetic
 states. As with PAC, an APAC immediately after MPY or MPYK reaches the
-documented interrupt-deferral boundary; interrupt recognition at that point
-remains outside current evidence under `CTRL-002`.
+documented interrupt-deferral boundary. The generic sequencer handles that
+retirement, while APAC-specific interrupt arrival combinations remain future
+`CTRL-002` coverage.
 
 ## Qualified `SPAC` functional slice
 
@@ -800,8 +806,9 @@ preservation, unchanged P/T/address state, one-cycle retirement, exact
 fixed-word decode, and absence of a logical data-memory transaction.
 Native-phase and seeded differential tests cover the ordinary program fetch
 and randomized arithmetic states. A SPAC immediately after MPY or MPYK
-reaches the documented interrupt-deferral boundary; recognition at that point
-remains outside current evidence under `CTRL-002`.
+reaches the documented interrupt-deferral boundary. The generic sequencer
+handles that retirement, while SPAC-specific interrupt arrival combinations
+remain future `CTRL-002` coverage.
 
 ## Qualified `SACL` research slice
 

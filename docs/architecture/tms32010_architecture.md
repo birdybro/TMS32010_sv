@@ -123,9 +123,14 @@ seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
 all three documented output shifts and rejects all five other field values.
 The exact fixed `DINT`/`EINT` words set and clear `INTM` in one program-only
-cycle while preserving unrelated exposed state. EINT's required
-following-instruction interrupt-service deferral remains outside this
-functional boundary until interrupt recognition and entry are implemented.
+cycle while preserving unrelated exposed state. The partial model and RTL now
+also latch active-low requests while masked, apply EINT's
+previously-disabled following-instruction deferral and MPY/MPYK's protection,
+dummy-fetch the return PC, push it, mask and clear the request, and select
+vector 2. Directed native testing verifies the Figure 2-12 external address
+order. Complete fetch/execute overlap, every multicycle request arrival, RET
+resumption, and provisional DINT-at-final-boundary ordering remain outside a
+cycle-accuracy claim under `OQ-004`/`OQ-019`.
 `LST` reads through the common address path and replaces `OV`, `OVM`, `ARP`,
 and `DP` from bits 15, 14, 8, and 0 while preserving `INTM`. The original
 manuals do not state whether a simultaneously encoded indirect next-ARP
@@ -186,8 +191,8 @@ data-memory access.
 SPAC subtracts all 32 P bits from ACC with the same P preservation,
 sticky-overflow, OVM result, and program-only transaction rules.
 TI's separate rule deferring interrupt service through the instruction after
-MPY or MPYK is documented but cannot yet be execution-tested because
-interrupt entry does not exist.
+MPY or MPYK is now tested in the model and RTL, including the case where the
+multiply itself occupies the already-pipelined protected slot.
 IN and OUT each execute as an opcode read followed by a distinct I/O cycle.
 TBLR and TBLW execute as an opcode read, a discarded PC+1 read, and an
 ACC-addressed program-space transfer; their third-cycle state, internal-RAM

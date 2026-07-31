@@ -3,8 +3,8 @@
 ## 2026-07-31 Quartus fits
 
 These results cover the fifty-two-instruction RTL, signed multiplier,
-144-word internal data RAM, program-bus phase engine, native IN/OUT phase
-paths, and native TBLR/TBLW program-space transfer paths.
+144-word internal data RAM, program-bus phase engine, native IN/OUT and
+TBLR/TBLW paths, and the partial interrupt request/entry sequencer.
 They are not complete-core resource or interface-timing results.
 
 - Tool: Quartus Prime Lite 17.0.2 Build 602, 2017-07-19.
@@ -16,17 +16,17 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 2,033 ALMs (5%).
-- Registers: 2,585.
+- Logic: 2,080 ALMs (5%).
+- Registers: 2,588.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +3.033 ns at 50 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 59.46 MHz at 100 °C, 58.94 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +2.282 ns at 50 MHz.
+- Worst internal hold slack across analyzed corners: +0.164 ns.
+- Slow-corner internal Fmax: 56.72 MHz at 100 °C, 56.44 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
-The I/O categories report zero because each of the 383 harness-only interface
+The I/O categories report zero because each of the 385 harness-only interface
 pins is explicitly excluded, not because portable-core I/O timing is closed.
 The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
@@ -94,8 +94,8 @@ Detailed hold-path diagnostics can be regenerated with:
 Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
-passes report zero problems; no latches are inferred, 21 RTL checks
-remain represented, and the generic result contains 13,218 cells. The
+passes report zero problems; no latches are inferred, 26 RTL checks
+remain represented, and the generic result contains 13,396 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone

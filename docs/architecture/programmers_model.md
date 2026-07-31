@@ -78,13 +78,17 @@ the overflow stage.**
 The qualified functional slice writes `INTM=1` for exact opcode `DINT`
 (`0x7f81`) and `INTM=0` for exact opcode `EINT` (`0x7f82`). DINT takes effect
 immediately. EINT's architectural bit write is immediate, but interrupt
-service remains inhibited until the following instruction completes. Current
-model/RTL tests verify the bit write and preservation of unrelated state; the
-service deferral awaits interrupt recognition and entry under `CTRL-002`
+service remains inhibited until the following instruction completes when it
+enables a previously disabled pending request. Current model/RTL tests verify
+the bit writes, latched active-low request, required deferral, multiply
+deferral, return-PC stack push, vector-2 selection, entry masking, and pending
+clear. The model reports the non-instruction entry boundary as mnemonic
+`INTERRUPT` with one `interrupt_dummy_fetch` transaction so single stepping
+does not pretend the discarded word executed
 [ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
 pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
-**Confidence: VERIFIED_PRIMARY for the architectural rule; service timing not
-yet implemented.**
+**Confidence: VERIFIED_PRIMARY for those architectural effects and the tested
+fetch order; full overlapped execute timing remains `OQ-004`.**
 
 ## Addressing
 

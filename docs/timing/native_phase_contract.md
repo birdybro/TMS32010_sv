@@ -271,8 +271,14 @@ asynchronous-abort guarantee.
 
 Both active-low inputs have a 50 ns setup requirement before falling
 `CLKOUT`, maximum 15 ns falling-edge time, and minimum low pulse width of one
-full `CLKOUT` cycle. BIOZ now applies the current BIO level at its target-word
-sample; the complete interrupt vector-fetch bus sequence remains unresolved.
+full `CLKOUT` cycle. BIOZ applies the current BIO level at its target-word
+sample. Figure 2-12 establishes the interrupt fetch sequence as instruction N,
+instruction N+1, dummy instruction N+2, then vector word 2, with a dummy
+execute slot during the vector fetch. The phase wrapper now verifies those
+four external program reads for a masked request released by EINT. Its input
+is sampled only at enabled falling-edge boundaries; a later integration
+wrapper must provide explicit CDC logic if `INT` originates in another FPGA
+clock domain.
 
 ## RTL mapping status
 
@@ -296,4 +302,6 @@ paths: directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary
 retirement, branch target-word fetch and second-boundary retirement, stalls,
 traps, and recognized reset. It has not been qualified for indirect call/return,
-other multi-cycle operations, table, I/O, or interrupt sequences.
+other unimplemented multi-cycle operations, or the complete fetch/execute
+pipeline. Table, I/O, and the cited interrupt program-read sequence now have
+directed native-phase tests.

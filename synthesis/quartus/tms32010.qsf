@@ -23,6 +23,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to initialize_i
 set_instance_assignment -name VIRTUAL_PIN ON -to rs_i
 set_instance_assignment -name VIRTUAL_PIN ON -to clock_enable_i
 set_instance_assignment -name VIRTUAL_PIN ON -to bio_i
+set_instance_assignment -name VIRTUAL_PIN ON -to int_i
 set_instance_assignment -name VIRTUAL_PIN ON -to "program_data_i[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "io_read_data_i[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to debug_data_write_i
@@ -43,6 +44,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "stack_bottom_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to overflow_flag_o
 set_instance_assignment -name VIRTUAL_PIN ON -to overflow_mode_o
 set_instance_assignment -name VIRTUAL_PIN ON -to interrupt_mask_o
+set_instance_assignment -name VIRTUAL_PIN ON -to interrupt_pending_o
 set_instance_assignment -name VIRTUAL_PIN ON -to instruction_valid_o
 set_instance_assignment -name VIRTUAL_PIN ON -to retired_o
 set_instance_assignment -name VIRTUAL_PIN ON -to illegal_o

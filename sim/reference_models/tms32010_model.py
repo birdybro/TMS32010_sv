@@ -131,6 +131,9 @@ class Tms32010Model:
         self.io_input = [0] * IO_PORTS
         self.io_output = [0] * IO_PORTS
         self.bio_input_high = True
+        self.interrupt_input_high = True
+        self._interrupt_delay_one = False
+        self._interrupt_entry_pending = False
         self.cycle_count = 0
 
     def reset_at_instruction_boundary(self) -> None:
@@ -142,6 +145,8 @@ class Tms32010Model:
         self.state.pc = 0
         self.state.status.intm = True
         self.state.interrupt_pending = False
+        self._interrupt_delay_one = False
+        self._interrupt_entry_pending = False
 
     def load_words(self, words: Iterable[int], origin: int = 0) -> None:
         """Load 16-bit program words without assuming a file byte order."""
@@ -185,13 +190,49 @@ class Tms32010Model:
             "stack": list(self.state.stack),
             "status": asdict(self.state.status),
             "interrupt_pending": self.state.interrupt_pending,
+            "interrupt_delay_one": self._interrupt_delay_one,
+            "interrupt_entry_pending": self._interrupt_entry_pending,
             "cycle_count": self.cycle_count,
         }
 
     def step(self) -> StepTrace:
-        """Execute one supported opcode and return an instruction trace."""
+        """Execute one supported opcode or one interrupt-entry dummy cycle."""
         pc = self.state.pc & PC_MASK
         opcode = self.program[pc] & WORD_MASK
+        if self._interrupt_entry_pending:
+            transactions = (
+                Transaction(
+                    cycle=self.cycle_count,
+                    space="program",
+                    operation="interrupt_dummy_fetch",
+                    address=pc,
+                    data=opcode,
+                ),
+            )
+            self.state.stack = [
+                pc,
+                self.state.stack[0],
+                self.state.stack[1],
+                self.state.stack[2],
+            ]
+            self.state.pc = 0x002
+            self.state.status.intm = True
+            self.state.interrupt_pending = False
+            self._interrupt_delay_one = False
+            self._interrupt_entry_pending = False
+            self.cycle_count += 1
+            return StepTrace(
+                pc=pc,
+                opcode=opcode,
+                mnemonic="INTERRUPT",
+                operands={"return_address": pc, "vector": 0x002},
+                cycles=1,
+                transactions=transactions,
+                state_after=self.architectural_state(),
+            )
+
+        if not self.interrupt_input_high:
+            self.state.interrupt_pending = True
         transactions = [
             Transaction(
                 cycle=self.cycle_count,
@@ -277,6 +318,7 @@ class Tms32010Model:
                 )
             cycles = 2
             self.cycle_count += cycles
+            self._advance_interrupt_pipeline(mnemonic)
             return StepTrace(
                 pc=pc,
                 opcode=opcode,
@@ -745,6 +787,7 @@ class Tms32010Model:
         else:
             cycles = 1
         self.cycle_count += cycles
+        self._advance_interrupt_pipeline(mnemonic)
         return StepTrace(
             pc=pc,
             opcode=opcode,
@@ -754,6 +797,30 @@ class Tms32010Model:
             transactions=tuple(transactions),
             state_after=self.architectural_state(),
         )
+
+    def _advance_interrupt_pipeline(self, retired_mnemonic: str) -> None:
+        """Advance the primary-defined instruction/entry deferral sequence."""
+        if self._interrupt_delay_one:
+            if self.state.status.intm:
+                # DINT in the protected instruction slot cancels entry while
+                # preserving the internally latched request.
+                self._interrupt_delay_one = False
+            elif retired_mnemonic in {"MPY", "MPYK"}:
+                # TI protects the instruction following a multiply. EINT's
+                # distinct protection applies only when it enables a
+                # previously masked pending request, which is scheduled by
+                # the non-delayed path below.
+                self._interrupt_delay_one = True
+            else:
+                self._interrupt_delay_one = False
+                self._interrupt_entry_pending = True
+        elif (
+            self.state.interrupt_pending
+            and not self.state.status.intm
+        ):
+            # Figure 2-12 executes one already-pipelined instruction before
+            # the dummy return-address fetch acknowledges the interrupt.
+            self._interrupt_delay_one = True
 
     @staticmethod
     def _modify_counter(value: int, delta: int) -> int:

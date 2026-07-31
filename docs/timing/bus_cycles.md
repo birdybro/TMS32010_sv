@@ -78,6 +78,24 @@ transactions, internal RAM direction, stack state, and final program-memory
 mutation. These tests validate logical phases, not analog delay or arbitrary
 physical-device clock stoppage.
 
+Figure 2-12 now establishes the interrupt program-read order. After a request
+becomes active during fetch N, program space reads N, N+1, a dummy N+2, and
+vector 2. N and N+1 execute; N+2 is not executed before entry. The internal
+acknowledge associated with service sets INTM and clears the latched request;
+there is no external acknowledge pin
+[ti-tms32010-users-guide-spru001b, §§2.10 and Figure 2-12, printed
+pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
+
+The partial native wrapper reproduces the tested address/strobe sequence with
+four normal program-read subphases per word. Its dummy-return-PC cycle asserts
+only `MEN`; `DEN`, `WE`, logical data operations, I/O operations, and
+instruction retirement remain inactive. At the dummy sample the core pushes
+the return PC and selects vector 2. `sim/interrupt/tb_interrupt_phase.sv`
+observes branch target `0x100`, EINT at `0x100`, protected word `0x101`,
+dummy address `0x102`, and vector `0x002`. This qualifies external bus order,
+not the still-collapsed general fetch/execute ownership described in
+`docs/architecture/pipeline.md`.
+
 `PUSH` and `POP` each consume two cycles despite carrying only one program
 word. No located original-part timing figure shows whether `MEN` is inactive,
 the current address is held, or the next instruction is prefetched during the
@@ -219,11 +237,13 @@ internal
 
 ## Remaining diagrams
 
-The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms
-are transcribed; normal fetch, IN, OUT, and reset now have directed phase
-tests. Remaining work must identify:
+The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, reset, and interrupt
+fetch sequences
+are transcribed and have directed native-phase tests. Remaining work must
+identify:
 
 - branch/call/return prefetch address order;
-- complete interrupt entry and vector-fetch order;
+- complete interrupt execute-overlap ownership and every multicycle arrival
+  case;
 - any internal conflict that changes an otherwise normal read;
 - safe wrapper phase pause, if one exists, despite the absence of READY.

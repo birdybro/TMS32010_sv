@@ -37,8 +37,13 @@ DMOV performs only that source-preserving next-address copy, leaving
 ACC/T/P and arithmetic status unchanged; it follows the same explicit
 unresolved-endpoint policy.
 `DINT` and `EINT` set and clear the architectural interrupt mask in one
-program-only cycle. Interrupt input recognition, EINT's following-instruction
-service delay, stack entry, and vector fetch are not implemented.
+program-only cycle. The partial core now also exposes active-low `int_i`,
+latches a request while masked, implements the tested EINT and MPY/MPYK
+deferrals, dummy-fetches and stacks the return PC, masks and clears the
+request, and selects vector 2. A native-phase test matches TI Figure 2-12's
+external read order. Complete fetch/execute overlap, every multicycle arrival
+case, RET resumption, and the provisional DINT-at-final-boundary ordering
+remain outside any cycle-accuracy claim.
 `LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
 provisional under `OQ-015`, based on later TI and independent MAME

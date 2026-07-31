@@ -43,11 +43,36 @@ resolved for:
   ACC-addressed table transfer, followed by a repeated PC+1 read;
 - `CALA` and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
-- interrupt entry and its dummy fetches (`OQ-004`);
+- complete implementation of the now-transcribed interrupt fetch/execute
+  overlap and exhaustive multicycle arrival matrix (`OQ-004`);
 - any external cycle stretching (`OQ-001`).
 
 Until these rows have cited diagrams and automated traces, the project does
 not claim cycle accuracy.
+
+## Interrupt pipeline sequence
+
+SPRU001B Figure 2-12 supplies the missing normal-entry sequence. An interrupt
+that becomes active during fetch N does not discard N or N+1. The fetch row is
+N, N+1, dummy N+2, vector 2; the aligned execute row is N, N+1, dummy, vector
+2. The current return PC is therefore N+2, and the dummy-fetched word resumes
+after the handler returns
+[ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed p. 2-19
+(PDF p. 43)]. **Confidence: VERIFIED_PRIMARY.**
+
+The partial phase wrapper now verifies the external program sequence and
+architectural entry state. Its implementation state allows one more
+instruction retirement, performs a non-retiring program read at the return
+PC, then selects vector 2. A focused model/RTL differential compares PC,
+ACC, stack top, INTM, pending flag, cycle total, and retirement for EINT,
+the protected instruction, entry, and vector word.
+
+The wrapper still executes each supported fetched word at its sample boundary;
+it does not yet contain separate general fetch and execute registers. Thus the
+address sequence is qualified, while the complete overlapped execution row is
+still an implementation requirement rather than a cycle-accuracy claim.
+`OQ-004` retains that distinction and the unexhausted multicycle-arrival
+matrix.
 
 `BANZ` now supplies the first qualified two-word control-flow sequence. Cycle
 1 reads exact opcode `0xf400` at PC. Cycle 2 reads the following target word

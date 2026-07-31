@@ -39,8 +39,9 @@ accumulator-conditional branches, `IN`, and `OUT`. Its `ADD`, `ADDS`, `AND`,
 internal logical reads, while `SACL`, `SACH`, and `SAR` expose writes,
 without changing the physical `MEN` activity from a normal program fetch.
 IN/OUT instead replace the second-cycle address with the port and assert
-`DEN` or `WE`. This is not a claim that table operations, remaining control
-flow, interrupt entry, or general pipeline overlap is complete.
+`DEN` or `WE`. Table transfers and the Figure 2-12 interrupt program-read
+order are also qualified below. Remaining instructions and general
+fetch/execute overlap are not complete.
 
 `BANZ` presents `PC` during its opcode read and `PC+1` during its target-word
 read. At the second falling-edge sample it selects the canonical target when
@@ -94,13 +95,24 @@ occurs
 (PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
 
 `DINT` and `EINT` retain the same normal external program fetch and have no
-logical data-memory transaction. The current phase wrapper verifies their
-`INTM` changes at the falling-edge retirement boundary. It has no interrupt
-pin or entry sequencer, so this does not qualify EINT's following-instruction
-service delay
+logical data-memory transaction. The phase wrapper verifies their `INTM`
+changes at the falling-edge retirement boundary. It now exposes active-low
+`int_i`, latches a request even while masked, and verifies EINT's
+previously-disabled following-instruction protection. The generic core
+diagnostic `interrupt_pending_o` is not a physical TMS32010 pin
 [ti-tms32010-users-guide-spru001b, `DINT` and `EINT`, printed pp. 3-27 and
-3-29 (PDF pp. 77 and 79)]. **Confidence: VERIFIED_PRIMARY for the one-cycle
-program transaction and state effect; entry timing unimplemented.**
+3-29 (PDF pp. 77 and 79)]. **Confidence: VERIFIED_PRIMARY.**
+
+For ordinary interrupt entry, Figure 2-12 shows normal program reads at N and
+N+1, a dummy read at return address N+2, and a read at vector `0x002`. The
+dummy word cannot decode into a logical internal-data or I/O transaction.
+At its sample the partial core pushes the return address, masks interrupts,
+clears its pending diagnostic, and makes 2 the next program address. There is
+no native interrupt-acknowledge output; TI's acknowledge is internal
+[ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed
+pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY for the
+external fetch order and entry effects; full execute overlap remains
+`OQ-004`.**
 
 `LST` retains the ordinary external program fetch while exposing one internal
 logical data read. The loaded status fields commit at the falling-edge sample;

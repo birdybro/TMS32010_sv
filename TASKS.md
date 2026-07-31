@@ -74,8 +74,8 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
 - **Tests:** `tests/regressions/test_documentation.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. Remaining acceptance
-  work includes AC waveform transcription, exact reserved status bits,
-  out-of-range RAM decode, first-fetch/interrupt phase traces, and the
+  work includes exact reserved status bits,
+  out-of-range RAM decode, complete interrupt execute-overlap ownership, and the
   second-cycle program-bus behavior of single-word PUSH/POP under `OQ-016`.
   Physical pin timing and logical transaction timing must remain distinct.
 
@@ -193,9 +193,9 @@ objective passing evidence.
   overflow, sticky OV, and OVM-controlled wrap or endpoint saturation, also
   without a data-memory transaction. `SPAC` subtracts P from ACC with the
   same signed-overflow policy, P preservation, and program-only transaction
-  boundary. Both
-  multiply instructions' interrupt deferral remains outside the model until
-  interrupt entry exists. ADDS
+  boundary. Both multiply instructions now extend a pending interrupt through
+  their following instruction, after which the model emits a non-instruction
+  `INTERRUPT` dummy-fetch step. ADDS
   covers unsigned-source arithmetic, sticky OV, wrap, and positive saturation.
   ADD covers sign extension, shifts 0–15, sticky OV, wrap, and both
   positive/negative saturation endpoints. SUB covers the corresponding
@@ -205,8 +205,11 @@ objective passing evidence.
   AND/OR/XOR cover low-half logic, their distinct upper-half behavior, and
   unchanged OV/OVM.
   DINT/EINT set and clear INTM in one program-only cycle while preserving the
-  pending-request latch; recognition, EINT's following-instruction service
-  deferral, and vector entry remain outside the model.
+  pending-request latch. The model samples active-low INT, retains masked
+  pulses, implements EINT's previously-disabled following-instruction
+  deferral, pushes the return PC on a dummy fetch, masks and clears the
+  request, and selects vector 2. Its DINT-at-final-boundary cancellation is
+  PROVISIONAL under `OQ-019`.
   `LST` reads one status word through the old DP/ARP, loads OV/OVM/ARP/DP,
   preserves INTM, and applies indirect counter updates to the old selected AR.
   Memory-sourced ARP precedence over an encoded next ARP is explicitly
@@ -241,8 +244,8 @@ objective passing evidence.
   updates at completion, and count three cycles.
   Out-of-range
   original-RAM addresses and unsupported words trap. Remaining instruction
-  families, interrupt entry, and pin phases outside the qualified wrapper
-  remain unimplemented.
+  families, complete overlapped pipeline timing, RET, and untested interrupt
+  arrival combinations remain unimplemented.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -378,8 +381,11 @@ objective passing evidence.
   the third cycle performs a MEN table read or WE table write. Retirement,
   indirect updates, and the documented final stack-bottom duplication occur
   only on the table sample; the next program cycle repeats PC+1.
-  General overlap, remaining branch/multi-cycle, and interrupt control
-  do not exist yet. SUBC tests use a
+  Interrupt control now includes active-low request latching, one-instruction
+  pipeline deferral, MPY/MPYK extension, a non-retiring return-PC dummy read,
+  stack entry, mask/flag acknowledge effects, and vector-2 selection. General
+  fetch/execute overlap and exhaustive multicycle arrival coverage do not
+  exist yet. SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
   PUSH/POP stack state is
   primary-specified, but a two-cycle RTL state is intentionally deferred
@@ -415,8 +421,10 @@ objective passing evidence.
   changing the qualified normal-program-read primitive. TBLR/TBLW verify
   opcode and discarded MEN reads, captured ACC address, third-cycle MEN/WE
   ownership, RAM and program-write data, stack-bottom transformation, stalls,
-  and the repeated PC+1 address. Remaining indirect-call/return,
-  general pipeline overlap, and interrupt sequences remain. Do not collapse Harvard spaces in the native
+  and the repeated PC+1 address. Interrupt testing adds Figure 2-12's
+  protected instruction, return-PC dummy read, and vector-2 read. Remaining
+  indirect-call/return, general pipeline overlap, interrupt execute ownership,
+  and untested arrival combinations remain. Do not collapse Harvard spaces in the native
   interface.
 
 ## Milestone 10 — Data-memory interface
@@ -507,7 +515,10 @@ objective passing evidence.
   automated cycle/bus assertion; deferred/ignored cases are verified.
 - **Documentation:** `docs/architecture/interrupts.md`
 - **Tests:** `sim/interrupt/tb_interrupt_mask.sv`,
-  `sim/interrupt/tb_interrupt.sv`, `sim/interrupt/tb_bio.sv`
+  `sim/interrupt/tb_interrupt_entry.sv`,
+  `sim/interrupt/tb_interrupt_phase.sv`,
+  `sim/differential/test_interrupt_model_rtl.py`,
+  `sim/instruction/tb_bioz_rtl.sv`
 - **Notes:** Primary sources establish an internally latched request from a
   high-to-low transition or low level, mask persistence, exact
   `DINT=0x7f81`/`EINT=0x7f82` words, one-cycle INTM effects, and EINT's
@@ -515,9 +526,13 @@ objective passing evidence.
   mask tests, native-phase tests, and seeded differential now qualify the
   mask-state subset. Exact BIOZ decode/model/tool/RTL/native/differential
   tests qualify a raw active-low BIO input, live second-falling-edge
-  predicate ownership, and both two-cycle paths. The RTL still has no INT
-  input, pending latch, interrupt-recognition boundary, stack entry, vector
-  fetch, or return behavior; `OQ-004` remains open and no interrupt-cycle
+  predicate ownership, and both two-cycle paths. INT now has directed
+  model/RTL/native/differential evidence for masked pulse retention, held-low
+  relatching, EINT and MPY/MPYK deferral, multicycle completion, dummy return
+  fetch, stack push, internal acknowledge effects, and vector-2 selection.
+  Figure 2-12 resolves external fetch order, but complete fetch/execute
+  overlap, every arrival boundary, RET behavior, and provisional DINT
+  cancellation remain under `OQ-004`/`OQ-019`; no complete interrupt-cycle
   claim is made.
 
 ## Milestone 14 — Every instruction family
@@ -623,8 +638,9 @@ objective passing evidence.
   native-phase, and randomized differential tests for simultaneous full-word
   T loading and previous-P accumulation, both overflow directions, OVM
   wrap/saturation, sticky OV, unchanged P, old-address/post-update ordering,
-  and trap-before-effects behavior. Its multiply-following interrupt boundary
-  remains unverified under `CTRL-002`.
+  and trap-before-effects behavior. The generic sequencer now recognizes its
+  retirement as a possible multiply-following interrupt boundary; exhaustive
+  arrival combinations remain under `CTRL-002`.
   `LTD` now passes the same qualification path for its simultaneous source
   load to T, previous-P accumulation, and unchanged source copy to the next
   internal-RAM address. Directed and differential tests compare distinct
@@ -639,30 +655,30 @@ objective passing evidence.
   `MPY` now passes functional database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for signed P results,
   including TI's most-negative multiplier exception. Its documented
-  one-following-instruction interrupt deferral remains unverified under
-  `CTRL-002`.
+  one-following-instruction interrupt deferral shares the now-directed-tested
+  MPY/MPYK sequencer path.
   `MPYK` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for complete signed 13-bit
   immediate decoding, signed P results, state preservation, and no
-  data-memory transaction. Its matching interrupt deferral remains unverified
-  under `CTRL-002`.
+  data-memory transaction. Directed interrupt tests place MPYK in a protected
+  slot, execute one further instruction, then verify dummy entry and vector 2.
   `PAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for full-width P-to-ACC
   transfer, P/T/status preservation, and no data-memory transaction. A PAC
-  following MPY/MPYK does not yet verify interrupt recognition at the end of
-  the documented deferral window under `CTRL-002`.
+  following MPY/MPYK uses the generic recognized retirement boundary, though
+  PAC-specific interrupt arrival combinations remain under `CTRL-002`.
   `APAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f8f` decode,
   full-width P-plus-ACC results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
-  no data-memory transaction. Its equivalent multiply-following interrupt
-  boundary remains unverified under `CTRL-002`.
+  no data-memory transaction. Its retirement can end generic multiply
+  deferral; APAC-specific interrupt arrivals remain future coverage.
   `SPAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f90` decode,
   full-width ACC-minus-P results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
-  no data-memory transaction. Its equivalent multiply-following interrupt
-  boundary remains unverified under `CTRL-002`.
+  no data-memory transaction. Its retirement can end generic multiply
+  deferral; SPAC-specific interrupt arrivals remain future coverage.
   `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
   remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family
@@ -685,8 +701,10 @@ objective passing evidence.
   timing is transcribed. One-cycle retirement for all twenty-two qualified
   internal-data instructions plus MAR, including all three logic operations, is
   asserted through the partial native-phase
-  integration. Control-flow, interrupt-entry, and most per-instruction
-  ownership remain. BANZ's two-word/two-cycle opcode and following-target
+  integration. Figure 2-12 interrupt program reads, entry effects, EINT
+  deferral, and multiply deferral are directed-tested, while complete
+  execute-overlap ownership and the exhaustive arrival matrix remain.
+  BANZ's two-word/two-cycle opcode and following-target
   normal reads, taken/untaken selection, second-cycle stall, and retirement
   are asserted. B's unconditional two-word/two-cycle target load and the same
   second-cycle stall/retirement boundary are asserted. The six accumulator

@@ -69,11 +69,16 @@ arithmetic, both overflow directions and OVM result modes, sticky OV, P
 preservation, and no data-memory transaction.
 Directed `DINT`/`EINT` tests assert exact fixed decode, one-cycle retirement,
 program-only transactions, immediate `INTM` state effects, reset masking, and
-stable state during clock-enable stalls. The native-phase integration also
-retires a following NOP with `INTM` clear before DINT restores it. Because no
-pending-interrupt recognition or vector entry exists, this is not evidence
-for EINT's documented following-instruction service delay or interrupt entry
-latency; both remain under `CTRL-002`/`OQ-004`.
+stable state during clock-enable stalls. Interrupt tests additionally assert
+that a pending request made eligible by EINT allows exactly its following
+instruction to retire before the dummy return-PC read. A redundant EINT while
+already enabled does not add another protection interval, matching TI's
+“previously disabled” qualification. MPY and MPYK in the protected slot each
+extend service until one further instruction retires. The model and RTL agree
+on EINT, protected instruction, one non-retiring entry cycle, and vector word
+state; the native program addresses agree with Figure 2-12. These assertions
+qualify the retirement-mapped partial core, not a complete overlapped
+fetch/execute pipeline (`OQ-004`).
 Directed `LST` tests assert one-cycle direct/indirect reads, old-DP and
 old-ARP address selection, post-read nine-bit counter updates, `INTM`
 preservation, all four loaded status fields, clock-enable hold, and
@@ -177,8 +182,9 @@ IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
 - table-operation discarded fetch order;
-- interrupt entry latency, recognition boundary, and MPY/MPYK's documented
-  one-following-instruction deferral;
+- complete interrupt fetch/execute overlap, every request arrival point in
+  every multicycle instruction, RET-based resumption, and the provisional
+  DINT-at-final-boundary ordering (`OQ-004`, `OQ-019`);
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is

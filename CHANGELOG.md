@@ -216,6 +216,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   program-space transfer; directed tests cover RAM/program effects,
   self-modification, stack-bottom duplication, indirect updates, exact
   three-cycle retirement, stalls, strobe exclusion, and repeated PC+1 fetch.
+- Active-low `int_i`, observable pending-latch diagnostics, and an interrupt
+  entry sequencer shared by the portable core, native phase wrapper, and
+  synthesis harness. It retains masked requests, honors EINT and MPY/MPYK
+  deferral, dummy-fetches and stacks the return PC, applies the internal
+  acknowledge effects, and selects vector 2.
+- Directed model, architectural RTL, native-phase, and focused differential
+  interrupt tests covering one-cycle pulses, held-low relatching, reset,
+  DINT cancellation, EINT's previously-disabled qualification, multiply
+  extension, two-cycle-branch completion, dummy-bus exclusion, and vector
+  entry.
 
 ### Changed
 
@@ -226,9 +236,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
 - Quartus 17.0.2 fits the integrated fifty-two-instruction
-  phase/RAM/multiplier/I/O/table slice in 2,033 ALMs/2,585 registers and one
-  DSP block, with +3.033 ns worst setup and +0.165 ns worst hold slack at
-  50 MHz and 58.94 MHz worst slow-corner internal Fmax; 383
+  phase/RAM/multiplier/I/O/table/interrupt-entry slice in 2,080 ALMs/2,588
+  registers and one DSP block, with +2.282 ns worst setup and +0.164 ns worst
+  hold slack at 50 MHz and 56.44 MHz worst slow-corner internal Fmax; 385
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -246,6 +256,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The qualified model/tool/RTL boundary now covers fifty-two of 60 documented
   mnemonics: twenty-two common-address internal-data families, two
   common-address I/O families, and two table-transfer families.
+- The instruction-boundary model represents interrupt acknowledge as a
+  non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
+  transaction. This preserves deterministic single stepping without claiming
+  that the discarded return-PC word executed.
 
 ### Fixed
 
@@ -365,8 +379,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.67+111 synthesizes the fifty-two-instruction hierarchy to 13,218
-  generic cells with 21 retained checks, zero latches, and clean pre/post checks;
+- Yosys 0.67+111 synthesizes the fifty-two-instruction hierarchy and partial
+  interrupt-entry sequencer to 13,396 generic cells with 26 retained checks,
+  zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
 - Hand fixtures and directed model/RTL tests verify both `SAR` sources,
@@ -531,11 +546,17 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthesis-harness exclusions. The corrected full rerun explicitly excludes
   those harness-only ports and reports zero unconstrained categories; this is
   still not wrapper I/O timing closure.
-- The complete current regression passes 89 repository/ISA/tool tests, 195
+- Figure 2-12's program-read sequence is transcribed and asserted as current
+  instruction, following instruction, dummy return PC, and vector 2. State
+  tests independently assert masked-pulse persistence, one protected
+  instruction, MPY/MPYK extension, stack push, INTM set, pending clear, and
+  no retirement or data/I/O traffic during the dummy fetch.
+- The complete current regression passes 89 repository/ISA/tool tests, 201
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
-  native bus/phase tests, one interrupt-mask RTL test, one 512-step seeded
+  native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
-  one focused IN/OUT differential, and one focused TBLR/TBLW differential.
+  one focused IN/OUT differential, one focused TBLR/TBLW differential, and
+  one focused interrupt-entry differential.
 
 ### Known Issues
 
@@ -563,22 +584,24 @@ Changelog, and the project follows semantic versioning once releases begin.
   an implementation convenience under `OQ-017`. TI also says SUBC affects OV
   without identifying the producing arithmetic stage; intermediate-subtraction
   sticky OV is PROVISIONAL under `OQ-018`.
-- DINT/EINT architectural mask changes are verified, but the core has no
-  interrupt input, pending latch, EINT following-instruction service deferral,
-  stack entry, or vector fetch; those remain under `CTRL-002`/`OQ-004`.
-- MPY/MPYK functional results and one-cycle transactions are verified, but
-  their documented suppression of interrupt service through the following
-  instruction remains unimplemented until `CTRL-002`.
+- Interrupt external fetch order and directed entry state are verified, but
+  the partial core still collapses fetch and execution at sample boundaries.
+  Complete Figure 2-12 execute overlap, every multicycle arrival point, and
+  RET-based resumption remain under `CTRL-002`/`OQ-004`.
+- DINT in the already-pipelined final slot currently cancels entry while
+  retaining the request. That ordering is targeted-tested but PROVISIONAL
+  under `OQ-019`.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.
 - Original-part DMOV/LTD behavior when source `0x8f` implies destination
   `0x90` remains unresolved under `OQ-014`; the partial implementation traps
   before all effects and labels that policy provisional.
-- Control-flow bus traces, interrupt entry phases, reserved status bits, and
-  out-of-range RAM behavior remain open.
+- Remaining indirect control-flow/return traces, interrupt execute ownership,
+  reserved status bits, and out-of-range RAM behavior remain open.
 - The execution core still has an instruction-step test interface; the
-  native-phase wrapper covers only normal sequential program reads.
+  native-phase wrapper covers the qualified normal, branch, I/O, table, and
+  interrupt program-read sequences but not the complete overlapped pipeline.
 - The asynchronous RAM read is intentionally correctness-first and maps to
   2,304 registers plus mux logic, not an FPGA block RAM.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the

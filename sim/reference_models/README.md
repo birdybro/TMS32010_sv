@@ -76,8 +76,9 @@ Current supported boundary:
 - `SPAC` full-width ACC-minus-P arithmetic with the same sticky-OV and
   OVM-controlled result policy, unchanged P, and no logical data transaction;
 - `DINT`/`EINT` exact fixed decode and one-cycle `INTM` set/clear behavior,
-  preserving the model's pending-request latch and exposing only a program
-  fetch; interrupt recognition, EINT deferral, and vector entry remain absent;
+  active-low request sampling, masked request persistence, EINT and MPY/MPYK
+  deferral, a non-instruction return-PC dummy-fetch step, stack entry,
+  internal acknowledge effects, and vector-2 selection;
 - `LST` direct/indirect reads, exhaustive `OV`/`OVM`/`ARP`/`DP` source-bit
   combinations, `INTM` preservation, old-address ordering, and indirect
   counter updates; memory-sourced ARP precedence is provisional under
@@ -104,6 +105,11 @@ test-harness convenience, not a physical power-up claim.
 `bio_input_high` defaults to the inactive high level and may be assigned by a
 test environment before stepping BIOZ; it is external input state, not part
 of the architectural-state snapshot.
+`interrupt_input_high` likewise defaults inactive. A low level sampled by
+`step()` latches `interrupt_pending`; `interrupt_delay_one` and
+`interrupt_entry_pending` are included in deterministic snapshots so replay
+does not hide the entry microstate. The model is instruction-boundary based
+and does not claim the complete Figure 2-12 fetch/execute overlap.
 Stack snapshots use `[top, level_1, level_2, bottom]` ordering.
 
 Run the slice with:

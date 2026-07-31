@@ -6,6 +6,7 @@ module tms32010_core (
   input  logic        reset_i,
   input  logic        clock_enable_i,
   input  logic        bio_i,
+  input  logic        int_i,
 
   output logic [11:0] program_address_o,
   output logic [11:0] program_next_address_o,
@@ -47,6 +48,7 @@ module tms32010_core (
   output logic        overflow_flag_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
+  output logic        interrupt_pending_o,
   output logic        instruction_valid_o,
   output logic        retired_o,
   output logic        illegal_o,
@@ -143,6 +145,16 @@ module tms32010_core (
     endcase
   endfunction
 
+  function automatic logic extends_interrupt_deferral(
+    input logic [5:0] operation
+  );
+    case (operation)
+      OP_MPY,
+      OP_MPYK: extends_interrupt_deferral = 1'b1;
+      default: extends_interrupt_deferral = 1'b0;
+    endcase
+  endfunction
+
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
   logic [12:0] decoded_immediate_13;
@@ -197,6 +209,11 @@ module tms32010_core (
   logic        pending_table_decrement;
   logic        pending_table_preserve_arp;
   logic        pending_table_next_arp;
+  logic        interrupt_delay_one;
+  logic        interrupt_entry_pending;
+  logic        retirement_boundary;
+  logic [5:0]  retiring_operation;
+  logic        retiring_interrupt_mask;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -213,7 +230,9 @@ module tms32010_core (
 
   always_comb begin
     data_address_o = 8'h00;
-    if (table_pending) begin
+    if (interrupt_entry_pending) begin
+      data_address_o = 8'h00;
+    end else if (table_pending) begin
       data_address_o = pending_table_data_address;
     end else if (io_pending) begin
       data_address_o = pending_io_data_address;
@@ -288,12 +307,14 @@ module tms32010_core (
       : ram_read_data;
 
   assign program_address_o =
-    table_pending && table_transfer_phase
+    table_pending && table_transfer_phase && !interrupt_entry_pending
       ? pending_table_program_address
       : pc_o;
   always_comb begin
     program_next_address_o = pc_o;
-    if (control_operand_pending) begin
+    if (interrupt_entry_pending) begin
+      program_next_address_o = 12'h002;
+    end else if (control_operand_pending) begin
       if (program_data_i[15:12] == 4'h0) begin
         case (pending_control_operation)
           OP_B: program_next_address_o = program_data_i[11:0];
@@ -358,6 +379,7 @@ module tms32010_core (
   assign program_write_o =
     ~reset_i &&
     ~initialize_i &&
+    ~interrupt_entry_pending &&
     table_pending &&
     table_transfer_phase &&
     (pending_table_operation == OP_TBLW);
@@ -366,17 +388,20 @@ module tms32010_core (
   assign io_read_o =
     ~reset_i &&
     ~initialize_i &&
+    ~interrupt_entry_pending &&
     io_pending &&
     (pending_io_operation == OP_IN);
   assign io_write_o =
     ~reset_i &&
     ~initialize_i &&
+    ~interrupt_entry_pending &&
     io_pending &&
     (pending_io_operation == OP_OUT);
   assign io_write_data_o = ram_read_data;
   assign data_read_o =
     ~reset_i &&
     ~initialize_i &&
+    ~interrupt_entry_pending &&
     (
       (
         io_pending &&
@@ -418,6 +443,7 @@ module tms32010_core (
   assign data_write_o =
     ~reset_i &&
     ~initialize_i &&
+    ~interrupt_entry_pending &&
     (
       (
         io_pending &&
@@ -511,7 +537,9 @@ module tms32010_core (
     end
   end
   always_comb begin
-    if (control_operand_pending) begin
+    if (interrupt_entry_pending) begin
+      instruction_valid_o = 1'b0;
+    end else if (control_operand_pending) begin
       instruction_valid_o =
         (program_data_i[15:12] == 4'h0) &&
         is_two_word_control_flow(pending_control_operation);
@@ -614,6 +642,43 @@ module tms32010_core (
     (accumulator_o[31] ^ product_register_o[31]) &&
     (accumulator_o[31] ^ spac_wrapped_result[31]);
 
+  always_comb begin
+    retirement_boundary = 1'b0;
+    retiring_operation = decoded_operation;
+    if (!interrupt_entry_pending) begin
+      if (control_operand_pending) begin
+        retiring_operation = pending_control_operation;
+        retirement_boundary = instruction_valid_o;
+      end else if (table_pending) begin
+        retiring_operation = pending_table_operation;
+        retirement_boundary =
+          table_transfer_phase && instruction_valid_o;
+      end else if (io_pending) begin
+        retiring_operation = pending_io_operation;
+        retirement_boundary = instruction_valid_o;
+      end else if (
+        instruction_valid_o &&
+        !is_two_word_control_flow(decoded_operation) &&
+        (decoded_operation != OP_IN) &&
+        (decoded_operation != OP_OUT) &&
+        (decoded_operation != OP_TBLR) &&
+        (decoded_operation != OP_TBLW)
+      ) begin
+        retirement_boundary = 1'b1;
+      end
+    end
+
+    retiring_interrupt_mask = interrupt_mask_o;
+    if (retirement_boundary) begin
+      case (retiring_operation)
+        OP_DINT: retiring_interrupt_mask = 1'b1;
+        OP_EINT: retiring_interrupt_mask = 1'b0;
+        default: begin
+        end
+      endcase
+    end
+  end
+
   always_ff @(posedge clk_i) begin
     retired_o <= 1'b0;
 
@@ -633,6 +698,9 @@ module tms32010_core (
       overflow_flag_o              <= 1'b0;
       overflow_mode_o              <= 1'b0;
       interrupt_mask_o             <= 1'b1;
+      interrupt_pending_o          <= 1'b0;
+      interrupt_delay_one          <= 1'b0;
+      interrupt_entry_pending      <= 1'b0;
       illegal_o                    <= 1'b0;
       cycle_count_o                <= 32'h0000_0000;
       control_operand_pending       <= 1'b0;
@@ -661,6 +729,9 @@ module tms32010_core (
     end else if (reset_i) begin
       pc_o             <= 12'h000;
       interrupt_mask_o <= 1'b1;
+      interrupt_pending_o     <= 1'b0;
+      interrupt_delay_one     <= 1'b0;
+      interrupt_entry_pending <= 1'b0;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
       control_operand_pending   <= 1'b0;
@@ -691,7 +762,19 @@ module tms32010_core (
       // TI explicitly documents that reset leaves OVM unchanged. Retention of
       // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
-      if (control_operand_pending) begin
+      if (interrupt_entry_pending) begin
+        stack_top_o              <= pc_o;
+        stack_level_1_o          <= stack_top_o;
+        stack_level_2_o          <= stack_level_1_o;
+        stack_bottom_o           <= stack_level_2_o;
+        pc_o                     <= 12'h002;
+        interrupt_mask_o         <= 1'b1;
+        interrupt_pending_o      <= 1'b0;
+        interrupt_delay_one      <= 1'b0;
+        interrupt_entry_pending  <= 1'b0;
+        illegal_o                <= 1'b0;
+        cycle_count_o            <= cycle_count_o + 32'h0000_0001;
+      end else if (control_operand_pending) begin
         if (instruction_valid_o) begin
           case (pending_control_operation)
             OP_B: pc_o <= program_data_i[11:0];
@@ -1165,6 +1248,33 @@ module tms32010_core (
       end else begin
         illegal_o <= 1'b1;
       end
+
+      if (!interrupt_entry_pending) begin
+        if (!int_i) begin
+          interrupt_pending_o <= 1'b1;
+        end
+        if (retirement_boundary) begin
+          if (interrupt_delay_one) begin
+            if (retiring_interrupt_mask) begin
+              // DINT in the protected slot cancels entry without clearing
+              // the internally latched request.
+              interrupt_delay_one <= 1'b0;
+            end else if (extends_interrupt_deferral(retiring_operation)) begin
+              interrupt_delay_one <= 1'b1;
+            end else begin
+              interrupt_delay_one     <= 1'b0;
+              interrupt_entry_pending <= 1'b1;
+            end
+          end else if (
+            (interrupt_pending_o || !int_i) &&
+            !retiring_interrupt_mask
+          ) begin
+            // The already-pipelined instruction following the detected
+            // request must retire before the dummy return-address fetch.
+            interrupt_delay_one <= 1'b1;
+          end
+        end
+      end
     end
   end
 
@@ -1192,6 +1302,13 @@ module tms32010_core (
         if (!table_transfer_phase) begin
           assert (program_read_o && !program_write_o);
         end
+      end
+      if (interrupt_entry_pending) begin
+        assert (program_read_o && !program_write_o);
+        assert (!instruction_valid_o);
+        assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
+        assert (program_address_o == pc_o);
+        assert (program_next_address_o == 12'h002);
       end
       assert (!(io_read_o && io_write_o));
       assert (!(program_read_o && program_write_o));
