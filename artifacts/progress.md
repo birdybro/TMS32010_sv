@@ -1,20 +1,20 @@
 # Progress summary
 
-- **Current milestone:** MAR auxiliary-register modification qualification
+- **Current milestone:** LDP data-page load qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 56 repository/provenance/document/ISA/toolchain tests; 87
-  directed model tests; 14 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded twenty-three-instruction model/RTL
+- **Tests passing:** 58 repository/provenance/document/ISA/toolchain tests; 92
+  directed model tests; 15 RTL instruction/decode tests; 2 native bus/phase
+  tests; one 512-instruction seeded twenty-four-instruction model/RTL
   differential including OV/OVM, logical reads/writes, and all 144 final RAM
   words; 15 reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the twenty-three-instruction partial core, 144-word RAM, and phase engine on
-  `5CSEBA6U23I7`: 1,605 ALMs, 2,435 registers, 0 RAM/DSP, 57.78 MHz worst
-  slow-corner internal Fmax, +2.693 ns setup and +0.167 ns worst hold slack at
+  the twenty-four-instruction partial core, 144-word RAM, and phase engine on
+  `5CSEBA6U23I7`: 1,616 ALMs, 2,435 registers, 0 RAM/DSP, 61.35 MHz worst
+  slow-corner internal Fmax, +3.699 ns setup and +0.165 ns worst hold slack at
   50 MHz. TimeQuest reports zero unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  8,227 generic cells and lowering the asynchronous RAM to registers/muxes; it
+  8,250 generic cells and lowering the asynchronous RAM to registers/muxes; it
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -52,15 +52,18 @@
   the old address; an other-AR source is stored unchanged while the selected
   address AR updates normally; direct MAR is a documented NOP, while indirect
   MAR changes only the selected AR/ARP and never accesses the nominal data-RAM
-  location; `MAR *,0/1` are exact canonical LARP aliases
+  location; `MAR *,0/1` are exact canonical LARP aliases; LDP reads through
+  the old direct DP or indirect selected AR, ignores source bits 15:1,
+  transfers source bit 0 to DP, and only then applies ordinary indirect
+  AR/ARP updates
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state, Hard
   Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify the primary-defined `LDP` data-page
-  load instruction; keep
+- **Next task:** research and qualify the primary-defined `LT` T-register load
+  instruction; keep
   `ADDH` and `ABS` outside the supported boundary pending `OQ-011` and
   `OQ-013`
 - **Latest committed baseline before this cycle:**
-  `25a089d4179caa823a7e04f7d9d420bbec9261bf`
+  `ee07fc9ac9e35e8a7fc0c3e1100a4393031ef055`

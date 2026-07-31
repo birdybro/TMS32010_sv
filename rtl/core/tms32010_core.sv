@@ -59,6 +59,7 @@ module tms32010_core (
   localparam logic [4:0] OP_LAR  = 5'd20;
   localparam logic [4:0] OP_SAR  = 5'd21;
   localparam logic [4:0] OP_MAR  = 5'd22;
+  localparam logic [4:0] OP_LDP  = 5'd23;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -108,7 +109,8 @@ module tms32010_core (
         (decoded_operation == OP_SUB) ||
         (decoded_operation == OP_SUBS) ||
         (decoded_operation == OP_LAR) ||
-        (decoded_operation == OP_SAR)
+        (decoded_operation == OP_SAR) ||
+        (decoded_operation == OP_LDP)
       )
     ) begin
       if (decoded_indirect) begin
@@ -153,7 +155,8 @@ module tms32010_core (
       (decoded_operation == OP_ADD) ||
       (decoded_operation == OP_SUB) ||
       (decoded_operation == OP_SUBS) ||
-      (decoded_operation == OP_LAR)
+      (decoded_operation == OP_LAR) ||
+      (decoded_operation == OP_LDP)
     );
   assign data_write_o =
     ~reset_i &&
@@ -221,7 +224,8 @@ module tms32010_core (
         (decoded_operation != OP_SUB) &&
         (decoded_operation != OP_SUBS) &&
         (decoded_operation != OP_LAR) &&
-        (decoded_operation != OP_SAR)
+        (decoded_operation != OP_SAR) &&
+        (decoded_operation != OP_LDP)
       ) ||
       ram_address_valid
     );
@@ -287,6 +291,7 @@ module tms32010_core (
               auxiliary_register_0_o <= ram_read_data;
             end
           end
+          OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_SAR: begin
           end
           OP_SACL: begin
@@ -387,7 +392,8 @@ module tms32010_core (
            (decoded_operation == OP_SUBS) ||
            (decoded_operation == OP_LAR) ||
            (decoded_operation == OP_SAR) ||
-           (decoded_operation == OP_MAR)) &&
+           (decoded_operation == OP_MAR) ||
+           (decoded_operation == OP_LDP)) &&
           decoded_indirect
         ) begin
           if (

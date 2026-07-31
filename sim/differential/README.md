@@ -2,18 +2,20 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-twenty-three supported instructions. It checks pre-execution PC/opcode,
+twenty-four supported instructions. It checks pre-execution PC/opcode,
 post-execution PC, accumulator, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
 registers and the ARP/DP status fields.
-`ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/`XOR`/`ZALH`/`ZALS`
-streams use identical deterministic 144-word RAM images and cover valid
+`ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
+`XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
+and cover valid
 direct/indirect addresses, reads, writes, shifts, and auxiliary-register
 post-modification. The test compares every final RAM word after 512
 instructions.
 Direct and indirect `MAR` cases additionally verify AR/ARP modification while
 both logical data-transaction strobes remain inactive.
+LDP cases compare its logical reads, DP result, and indirect post-modification.
 
 This is model/RTL functional evidence only. Both sides currently use a logical
 instruction-boundary program interface, so the test supplies no pin-phase or

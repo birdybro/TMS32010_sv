@@ -20,6 +20,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LARP AR1
             LDPK 0
             LDPK 1
+            LDP 0
+            LDP 127
+            LDP *
+            LDP *+,AR1
+            LDP *-,0
             LARK AR0,0
             LARK AR0,255
             LARK AR1,0
@@ -107,6 +112,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6881,
                 0x6E00,
                 0x6E01,
+                0x6F00,
+                0x6F7F,
+                0x6F88,
+                0x6FA1,
+                0x6F90,
                 0x7000,
                 0x70FF,
                 0x7100,
@@ -194,6 +204,11 @@ class ToolchainSliceTests(unittest.TestCase):
             0x71FE,
             0x6881,
             0x6E00,
+            0x6F00,
+            0x6F7F,
+            0x6F88,
+            0x6FA1,
+            0x6F90,
             0x7E2A,
             0x7F80,
             0x3ABC,
@@ -337,6 +352,20 @@ class ToolchainSliceTests(unittest.TestCase):
                     self.assembler.assemble_text(source)
         with self.assertRaisesRegex(AssemblyError, "AR0 or AR1"):
             self.assembler.assemble_text("LARK AR2,1\n")
+
+    def test_ldp_operand_diagnostics_and_noncanonical_alias(self) -> None:
+        for source, message in (
+            ("LDP 128\n", "direct address"),
+            ("LDP *+,2\n", "next ARP"),
+            ("LDP 0,1\n", "only with indirect"),
+        ):
+            with self.subTest(source=source):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(source)
+        source = self.disassembler.disassemble_source([0x6F89])
+        self.assertEqual(source, ".word 0x6f89\n")
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), [0x6F89])
 
     def test_lar_encodings_round_trip_and_diagnose_operands(self) -> None:
         result = self.assembler.assemble_text(

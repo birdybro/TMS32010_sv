@@ -147,6 +147,30 @@ ti-tms32010-assembly-guide-spru002b, `MAR`, printed p. 3-42
 (PDF p. 63)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
 update bits.**
 
+## Qualified `LDP` research slice
+
+`LDP` fixes bits 15:8 to `0x6f`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. It reads the selected 16-bit internal RAM
+word and copies only bit 0 into the one-bit data-page pointer. Source bits
+15:1 are ignored. The instruction is one word and one cycle and does not
+modify the accumulator, `OV`, or `OVM`
+[ti-tms32010-users-guide-spru001b, `LDP`, printed p. 3-36 (PDF p. 86);
+ti-first-generation-users-guide-1987, `LDP`, printed p. 4-41
+(PDF p. 122)]. **Confidence: VERIFIED_PRIMARY.**
+
+Direct addressing uses the old DP value to select page 0 or page 1 for the
+read; the source LSB then becomes the new DP value. Indirect addressing reads
+through the AR selected by the old ARP before applying the ordinary optional
+nine-bit AR increment/decrement and next-ARP replacement. Directed model and
+RTL tests cover both source-bit values, old-DP address ordering, indirect
+update ordering, and unresolved address trapping. Reserved indirect controls
+and the noncanonical preserve-bit policy remain linked to `OQ-010`
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LDP`, printed
+pp. 3-2–3-3 and 3-36 (PDF pp. 52–53 and 86);
+ti-tms32010-assembly-guide-spru002b, `LDP`, printed p. 3-36
+(PDF p. 57)]. **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous
+update bits.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

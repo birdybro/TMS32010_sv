@@ -128,7 +128,8 @@ module tb_phase_slice_integration;
     program_memory[22] = 16'h3803;  // LAR AR0,3
     program_memory[23] = 16'h3004;  // SAR AR0,4
     program_memory[24] = 16'h6890;  // MAR *-,AR0
-    program_memory[25] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[25] = 16'h6f03;  // LDP 3
+    program_memory[26] = 16'h7f81;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -367,13 +368,24 @@ module tb_phase_slice_integration;
             "MAR preserves arithmetic status");
     require(pc == 12'h019 && cycle_count == 32'd25,
             "MAR consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h83 && data_read_data == 16'hff80,
+            "LDP presents an internal read beside normal program phases");
+
+    advance_to_sample();
+    require(retired && !data_page_pointer,
+            "LDP loads the selected data-word LSB into DP");
+    require(!overflow_flag && overflow_mode,
+            "LDP preserves arithmetic status");
+    require(pc == 12'h01a && cycle_count == 32'd26,
+            "LDP consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h019, "trap holds architectural PC");
-    require(program_address == 12'h019, "trap holds native program address");
-    require(cycle_count == 32'd25, "trap does not count as retired cycle");
+    require(pc == 12'h01a, "trap holds architectural PC");
+    require(program_address == 12'h01a, "trap holds native program address");
+    require(cycle_count == 32'd26, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.
