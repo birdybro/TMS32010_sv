@@ -169,6 +169,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_mpyk_signed_immediate_product_and_no_data_access(self) -> None:
+        self._run_testbench(
+            "tb_mpyk_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_mpyk_rtl.sv",
+            ],
+        )
+
     def test_sacl_data_write_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_sacl_rtl",

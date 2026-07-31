@@ -64,9 +64,11 @@ module tms32010_core (
   localparam logic [4:0] OP_LDP  = 5'd23;
   localparam logic [4:0] OP_LT   = 5'd24;
   localparam logic [4:0] OP_MPY  = 5'd25;
+  localparam logic [4:0] OP_MPYK = 5'd26;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
+  logic [12:0] decoded_immediate_13;
   logic       decoded_auxiliary_register;
   logic [3:0] decoded_shift;
   logic       decoded_indirect;
@@ -84,12 +86,14 @@ module tms32010_core (
   logic [31:0] subs_wrapped_result;
   logic        subs_overflow;
   logic [31:0] multiplier_product;
+  logic [15:0] multiplier_operand;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
     .valid_o       (decoded_valid),
     .operation_o   (decoded_operation),
     .immediate_o   (decoded_immediate),
+    .immediate_13_o (decoded_immediate_13),
     .auxiliary_register_o (decoded_auxiliary_register),
     .shift_o       (decoded_shift),
     .indirect_o    (decoded_indirect),
@@ -147,9 +151,14 @@ module tms32010_core (
 
   tms32010_multiplier multiplier (
     .multiplicand_i (t_register_o),
-    .multiplier_i   (ram_read_data),
+    .multiplier_i   (multiplier_operand),
     .product_o      (multiplier_product)
   );
+
+  assign multiplier_operand =
+    (decoded_operation == OP_MPYK)
+      ? {{3{decoded_immediate_13[12]}}, decoded_immediate_13}
+      : ram_read_data;
 
   assign program_address_o = pc_o;
   assign program_read_o    = ~reset_i && ~initialize_i;
@@ -313,6 +322,7 @@ module tms32010_core (
           OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_LT: t_register_o <= ram_read_data;
           OP_MPY: product_register_o <= multiplier_product;
+          OP_MPYK: product_register_o <= multiplier_product;
           OP_SAR: begin
           end
           OP_SACL: begin

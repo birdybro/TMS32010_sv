@@ -20,7 +20,7 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the twenty-six-instruction subset,
+program-read cycle for every instruction in the twenty-seven-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -36,6 +36,8 @@ Directed LT tests assert one-cycle full-word reads into T and the same
 pre-modification address and post-modification AR/ARP ordering.
 Directed MPY tests assert one-cycle signed products, including the documented
 most-negative exception, with the same old-address/post-update ordering.
+Directed MPYK tests assert one-cycle signed products across both 13-bit
+immediate endpoints and no data-memory transaction.
 
 ## Open timing dimensions
 
@@ -45,7 +47,7 @@ most-negative exception, with the same old-address/post-update ordering.
   one-cycle `ADD`/`ADDS`/`AND`/`LAC`/`LAR`/`LDP`/`LT`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
 - table-operation discarded fetch order;
-- interrupt entry latency, recognition boundary, and MPY's documented
+- interrupt entry latency, recognition boundary, and MPY/MPYK's documented
   one-following-instruction deferral;
 - board-level phase stretching in the absence of a READY pin.
 

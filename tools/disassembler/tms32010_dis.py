@@ -23,6 +23,8 @@ class Disassembler:
         mnemonic = entry["mnemonic"]
         if mnemonic == "LACK":
             return f"LACK {operands['constant']}"
+        if mnemonic == "MPYK":
+            return f"MPYK {operands['constant']}"
         if mnemonic in {"ADD", "LAC", "SUB"}:
             shift = operands["shift"]
             if not operands["indirect"]:

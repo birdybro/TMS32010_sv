@@ -226,6 +226,35 @@ slice from being complete interrupt evidence
 [ti-tms32010-users-guide-spru001b, `MPY`, printed p. 3-43 (PDF p. 93)].
 **Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
 
+## Qualified `MPYK` functional slice
+
+`MPYK` fixes bits 15:13 to `100`; bits 12:0 hold a signed immediate in the
+inclusive range -4096 through 4095. The immediate is sign-extended, multiplied
+by signed 16-bit T, and the 32-bit product replaces P. The instruction is one
+word and one cycle, preserves T, ACC, `OV`, and `OVM`, and performs no
+data-memory transaction
+[ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94);
+ti-tms32010-assembly-guide-spru002b, `MPYK`, printed p. 3-44 (PDF p. 65);
+ti-first-generation-users-guide-1987, §3.5.3 and `MPYK`, printed pp. 3-21 and
+4-50 (PDF pp. 50 and 131)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed model and RTL tests reproduce TI's `7 * -9 = -63` example and cover
+both immediate endpoints, zero, both T sign extremes, state preservation, one
+cycle, and absence of a logical data access. Because a 13-bit immediate cannot
+equal signed 16-bit `0x8000`, MPYK cannot invoke MPY's documented
+`0x8000`-by-`0x8000` hardware exception. The pinned MAME implementation
+independently corroborates sign extension of bits 12:0, but is not the
+architectural authority
+[mame-tms320c1x-core-030fefc, `tms320c1x_device_base::mpyk`, lines 638-641].
+**Confidence: VERIFIED_PRIMARY; CORROBORATED by the secondary oracle.**
+
+TI applies the same interrupt-protection rule to MPYK as MPY: interrupt service
+is inhibited until the following instruction executes. The functional result,
+program-only transaction, and cycle count are verified, but interrupt
+deferral remains unimplemented under `INT-001`
+[ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
+**Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
+
 ## Qualified `SACL` research slice
 
 `SACL` stores `ACC[15:0]` unchanged into the selected internal data-memory

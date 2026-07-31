@@ -4,7 +4,7 @@ This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
-  `LT`, `MAR`, `MPY`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`,
+  `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`,
   `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -34,6 +34,9 @@ documented exact aliases of `LARP 0/1`.
 
 `LDP`, `LT`, and `MPY` accept the no-shift common address forms, such as
 `LDP 6`, `LT *`, or `MPY *+,AR1`.
+
+`MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
+example `MPYK -9`. Values outside that primary-defined range are diagnosed.
 
 `ADD` and `SUB` accept the same address and shift syntax as `LAC`, for example
 `ADD 6,4`, `SUB 6,4`, or `SUB *+,8,AR1`.

@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first twenty-six model/tool encodings.
+  mnemonics and fully describes the first twenty-seven model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the twenty-six-instruction slice.
+  clock-enable execution core for the twenty-seven-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the twenty-six supported
+- Sequential native-phase wrapper that retires the twenty-seven supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -108,6 +108,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Primary-cited `MPY` database, model, assembler/disassembler, portable
   multiplier RTL, native-phase, and differential support for signed
   16-by-16 products in P through the common address/update path.
+- Primary-cited `MPYK` database, model, assembler/disassembler, RTL,
+  native-phase, and differential support for signed T times a sign-extended
+  13-bit immediate in P without a data-memory transaction.
 
 ### Changed
 
@@ -117,10 +120,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated twenty-six-instruction
-  phase/RAM/multiplier slice in 1,708 ALMs/2,483 registers and one DSP block,
-  with +3.894 ns worst setup and +0.164 ns worst hold slack at 50 MHz and
-  62.09 MHz worst slow-corner internal Fmax; 269
+- Quartus 17.0.2 fits the integrated twenty-seven-instruction
+  phase/RAM/multiplier slice in 1,735 ALMs/2,483 registers and one DSP block,
+  with +3.711 ns worst setup and +0.164 ns worst hold slack at 50 MHz and
+  61.39 MHz worst slow-corner internal Fmax; 269
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -133,7 +136,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers twenty-six of 60 documented
+- The qualified model/tool/RTL boundary now covers twenty-seven of 60 documented
   mnemonics and seventeen common-address data-operation families.
 
 ### Fixed
@@ -251,7 +254,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.33 synthesizes the twenty-six-instruction hierarchy to 10,179 generic
+- Yosys 0.33 synthesizes the twenty-seven-instruction hierarchy to 10,215 generic
   cells with eight assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   five scoped harness warnings.
@@ -298,13 +301,20 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The seeded 512-step differential compares P on every boundary and includes
   deterministic/randomized MPY reads; native-phase integration verifies that
   MPY retains the normal external program-read sequence.
+- Hand fixtures and directed model/RTL tests verify every MPYK encoding bit,
+  the signed immediate range -4096 through 4095, TI's `7 * -9` example, zero,
+  T sign extremes, P replacement, architectural-state preservation, one-cycle
+  retirement, and absence of logical data-memory activity.
+- The seeded 512-step differential includes deterministic endpoint and
+  randomized MPYK cases; native-phase integration verifies its ordinary
+  external program fetch with no concurrent logical data transaction.
 
 ### Known Issues
 
-- Only twenty-six of 60 documented instruction mnemonics have model, tool, and
+- Only twenty-seven of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
-- MPY's functional result and one-cycle transaction are verified, but its
-  documented suppression of interrupt service through the following
+- MPY/MPYK functional results and one-cycle transactions are verified, but
+  their documented suppression of interrupt service through the following
   instruction remains unimplemented until `INT-001`.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through

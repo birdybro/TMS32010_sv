@@ -58,6 +58,12 @@ ordering.
 **Implementation evidence; unresolved-address policy: PROVISIONAL under
 OQ-002.**
 
+`MPYK` uses a signed immediate carried in the program word and therefore
+performs no logical or physical data-memory access. Directed and native-phase
+tests require both data strobes to remain inactive
+[ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
+**Confidence: VERIFIED_PRIMARY.**
+
 The current array has an asynchronous read because the temporary execution
 slice samples program data and commits a one-cycle instruction at one
 boundary. This is an implementation convenience, not evidence about the

@@ -351,6 +351,13 @@ class Assembler:
             if not 0 <= value <= 1:
                 raise line.error(f"{operation} constant out of range 0..1: {value}")
             word |= value
+        elif operation == "MPYK":
+            value = self._evaluate(operand_text, symbols, location, line)
+            if not -4096 <= value <= 4095:
+                raise line.error(
+                    f"MPYK constant out of range -4096..4095: {value}"
+                )
+            word |= value & 0x1FFF
         return word
 
     def _encode_data_address(

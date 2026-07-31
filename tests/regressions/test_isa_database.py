@@ -37,6 +37,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LDPK",
                 "LT",
                 "MPY",
+                "MPYK",
                 "LAC",
                 "SACL",
                 "SACH",
@@ -138,6 +139,21 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertIsNone(decode_word(self.database, 0x6D00 | control))
         self.assertIsNotNone(decode_word(self.database, 0x6D7F))
         self.assertIsNotNone(decode_word(self.database, 0x6DA1))
+
+    def test_mpyk_covers_the_complete_signed_thirteen_bit_field(self) -> None:
+        cases = (
+            (0x9000, -4096),
+            (0x9FFF, -1),
+            (0x8000, 0),
+            (0x8FFF, 4095),
+        )
+        for word, expected in cases:
+            with self.subTest(word=word):
+                decoded = decode_word(self.database, word)
+                self.assertIsNotNone(decoded)
+                assert decoded is not None
+                self.assertEqual(decoded[0]["mnemonic"], "MPYK")
+                self.assertEqual(decoded[1], {"constant": expected})
 
     def test_sacl_rejects_reserved_indirect_controls(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x50C8))

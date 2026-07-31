@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial twenty-six-instruction model/tool boundary is intentionally partial
+Its initial twenty-seven-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -18,6 +18,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `LDPK K` | `0x6e00` | `0xfffe` | 1 | 1 | individual `LDPK` page, printed p. 3-37 |
 | `LT dma` | `0x6a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `LT` page, printed p. 3-39 |
 | `MPY dma` | `0x6d00` | `0xff00` plus addressing constraints | 1 | 1 | individual `MPY` page, printed p. 3-43 |
+| `MPYK K` | `0x8000` | `0xe000` | 1 | 1 | individual `MPYK` page, printed p. 3-44 |
 | `NOP` | `0x7f80` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
 | `ZAC` | `0x7f89` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-5 |
 | `ROVM` | `0x7f8a` | `0xffff` | 1 | 1 | Table 3-2, printed p. 3-7 |
@@ -38,9 +39,9 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-13, 3-31–3-39, 3-42,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-13, 3-31–3-39, 3-42–3-44,
 3-46, 3-53–3-56, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF pp. 55–57, 60, 62–63,
-81–89, 92, 96, 103–106, 110, 113, 118, and 120–121)].
+81–89, 92–94, 96, 103–106, 110, 113, 118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 TI states that `LACK` loads the unsigned eight-bit operand right-justified and

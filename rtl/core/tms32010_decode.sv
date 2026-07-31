@@ -5,6 +5,7 @@ module tms32010_decode (
   output logic        valid_o,
   output logic [4:0]  operation_o,
   output logic [7:0]  immediate_o,
+  output logic [12:0] immediate_13_o,
   output logic        auxiliary_register_o,
   output logic [3:0]  shift_o,
   output logic        indirect_o,
@@ -39,11 +40,13 @@ module tms32010_decode (
   localparam logic [4:0] OP_LDP  = 5'd23;
   localparam logic [4:0] OP_LT   = 5'd24;
   localparam logic [4:0] OP_MPY  = 5'd25;
+  localparam logic [4:0] OP_MPYK = 5'd26;
 
   always_comb begin
     valid_o              = 1'b0;
     operation_o          = OP_NOP;
     immediate_o          = instruction_i[7:0];
+    immediate_13_o       = instruction_i[12:0];
     auxiliary_register_o = instruction_i[8];
     shift_o              = instruction_i[11:8];
     indirect_o           = instruction_i[7];
@@ -225,6 +228,9 @@ module tms32010_decode (
       ) begin
         valid_o = 1'b1;
       end
+    end else if (instruction_i[15:13] == 3'b100) begin
+      valid_o     = 1'b1;
+      operation_o = OP_MPYK;
     end else begin
       casez (instruction_i)
         16'b0110_1110_0000_000?: begin

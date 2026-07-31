@@ -2,7 +2,7 @@
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
 `tms32010_core` supports only `ADD`, `ADDS`, `AND`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `NOP`, `OR`, `ROVM`,
+`LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
 `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
@@ -25,7 +25,8 @@ original package pins.
 It explicitly reproduces the original part's documented
 `0x8000 * 0x8000 -> 0xc0000000` exception. Quartus may infer a native DSP
 resource; that mapping is a synthesis choice and the RTL contains no
-vendor-specific primitive.
+vendor-specific primitive. MPYK feeds the same datapath with its sign-extended
+13-bit instruction constant and performs no data-memory access.
 
 This temporary core interface does not itself reproduce `MEN`, `CLKOUT`,
 fetch/execute overlap, or pin subphases. It exists to qualify decode, state
@@ -39,7 +40,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the twenty-six currently qualified one-cycle sequential instructions it
+For the twenty-seven currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general

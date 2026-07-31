@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "MPY", "MPYK",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -500,6 +500,44 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "MPYK",
+      "aliases": [],
+      "opcode": {
+        "match": "0x8000",
+        "mask": "0xe000",
+        "variable_fields": [
+          {"name": "constant", "lsb": 0, "width": 13, "signed": true}
+        ]
+      },
+      "operands": [
+        {"name": "constant", "kind": "signed_immediate", "width": 13}
+      ],
+      "addressing_modes": ["immediate"],
+      "registers_read": ["T"],
+      "registers_written": ["P"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "the signed 13-bit instruction constant is sign-extended before multiplication by signed 16-bit T",
+      "shift_behavior": "none",
+      "overflow_behavior": "no status overflow; the 13-bit immediate range cannot select the MPY 0x8000-by-0x8000 hardware exception",
+      "result_behavior": "P receives the signed product of T and the constant in the inclusive range -4096 through 4095",
+      "branch_behavior": "none",
+      "interrupt_interaction": "interrupt service is inhibited until the instruction following MPYK completes; actual interrupt entry is not yet implemented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; MPYK has no data-memory transaction"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "MPYK instruction description", "printed_page": "3-44", "pdf_page": 94},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "MPYK instruction description", "printed_page": "3-44", "pdf_page": 65},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.5.3 and MPYK instruction description", "printed_page": "3-21 and 4-50", "pdf_page": "50 and 131"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": []
     },
     {
       "mnemonic": "LAR",

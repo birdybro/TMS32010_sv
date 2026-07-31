@@ -1,7 +1,7 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LT, MAR, MPY, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR,
+LDPK, LT, MAR, MPY, MPYK, NOP, OR, ROVM, SACH, SACL, SAR, SOVM, SUB, SUBS, XOR,
 ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
@@ -311,6 +311,13 @@ class Tms32010Model:
                     data_word if data_word < 0x8000 else data_word - 0x10000
                 )
                 self.state.p = (signed_t * signed_data) & ACC_MASK
+        elif mnemonic == "MPYK":
+            signed_t = (
+                self.state.t
+                if self.state.t < 0x8000
+                else self.state.t - 0x10000
+            )
+            self.state.p = (signed_t * operands["constant"]) & ACC_MASK
         elif mnemonic == "SACL":
             self.data[operands["effective_address"]] = (
                 self.state.acc & WORD_MASK
@@ -672,6 +679,11 @@ class Tms32010Model:
                 "indirect": indirect,
                 "addressing_field": control,
             }
+        if opcode & 0xE000 == 0x8000:
+            constant = opcode & 0x1FFF
+            if constant & 0x1000:
+                constant -= 0x2000
+            return "MPYK", {"constant": constant}
         if opcode & 0xFFFE == 0x6E00:
             return "LDPK", {"constant": opcode & 1}
         fixed = {

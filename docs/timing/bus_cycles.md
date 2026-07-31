@@ -49,6 +49,12 @@ memory and direct MAR is a NOP
 [ti-tms32010-users-guide-spru001b, `MAR`, printed p. 3-42 (PDF p. 92)].
 **Confidence: VERIFIED_PRIMARY.**
 
+The phase test also verifies that `MPYK` performs no logical data read or
+write while retaining the ordinary external program fetch. Its signed 13-bit
+operand is part of the fetched instruction word
+[ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Remaining diagrams
 
 The primary normal fetch, `IN`, `OUT`, `TBLR`, `TBLW`, and reset pin waveforms
