@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial forty-six-instruction model/tool boundary is intentionally partial
+Its initial forty-seven-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -49,6 +49,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
 | `BANZ pma` | `0xf400` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BANZ` page, printed p. 3-16 |
 | `BV pma` | `0xf500` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BV` page, printed p. 3-23 |
+| `BIOZ pma` | `0xf600` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BIOZ` page, printed p. 3-19 |
 | `B pma` | `0xf900` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `B` page, printed p. 3-15 |
 | `BLZ pma` | `0xfa00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BLZ` page, printed p. 3-21 |
 | `BLEZ pma` | `0xfb00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BLEZ` page, printed p. 3-20 |
@@ -287,6 +288,14 @@ nonzero upper target-word bits.**
 `0xf501` through `0xf5ff` remain unsupported
 [ti-tms32010-users-guide-spru001b, `BV`, printed p. 3-23 (PDF p. 73);
 ti-tms32010-assembly-guide-spru002b, `BV`, printed p. 3-23 (PDF p. 44)].
+**Confidence: VERIFIED_PRIMARY for the canonical two-word encoding; UNKNOWN
+for nonzero upper target-word bits.**
+
+`BIOZ` is exact first word `0xf600`, with the same canonical following-word
+12-bit absolute target. The opcode contains no low-byte field, so `0xf601`
+through `0xf6ff` remain unsupported
+[ti-tms32010-users-guide-spru001b, `BIOZ`, printed p. 3-19 (PDF p. 69);
+ti-tms32010-assembly-guide-spru002b, `BIOZ`, printed p. 3-19 (PDF p. 40)].
 **Confidence: VERIFIED_PRIMARY for the canonical two-word encoding; UNKNOWN
 for nonzero upper target-word bits.**
 

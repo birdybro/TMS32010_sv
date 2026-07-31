@@ -233,3 +233,21 @@ electrical result of an out-of-range access.
   oracle.
 - **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
   documented secondary-source timing disagreement.
+
+## SC-015 — MAME BIOZ untaken cycle abstraction
+
+- **Primary sources:** SPRU001B Table 3-2 and the `BIOZ` page define two words
+  and two cycles without a pin-level exception. Section 2.9 says BIO is
+  sampled every cycle and is not latched; Appendix A places setup before
+  falling `CLKOUT`.
+- **Independent oracle:** pinned MAME invokes a BIO callback and branches when
+  that abstract line is asserted, but reads the target and charges the
+  additional branch cycle only on the taken path
+  [mame-tms320c1x-core-030fefc, `bioz()`, lines 440–448; opcode table and
+  `add_branch_cycle()`, lines 841 and 855–857].
+- **Current treatment:** expose the physical active-low level, sample it at
+  the second falling-edge target-word boundary, and perform that normal read
+  in both outcomes. MAME corroborates the functional branch condition only;
+  its callback assertion convention is not physical pin polarity evidence.
+- **Confidence:** VERIFIED_PRIMARY for project behavior and timing;
+  documented secondary-source timing disagreement.

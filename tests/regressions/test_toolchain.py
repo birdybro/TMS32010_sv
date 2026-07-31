@@ -412,6 +412,8 @@ class ToolchainSliceTests(unittest.TestCase):
             0x035A,
             0xF500,
             0x0100,
+            0xF600,
+            0x0101,
             0xF900,
             0x0123,
             0xFA00,
@@ -579,6 +581,51 @@ class ToolchainSliceTests(unittest.TestCase):
             ("BV 4096\n", "program address"),
             ("BV\n", "1 operand"),
             ("BV 1,2\n", "1 operand"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
+    def test_bioz_round_trips_target_and_diagnostics(self) -> None:
+        result = self.assembler.assemble_text(
+            "BIOZ TARGET\nZAC\nTARGET: NOP\n"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0: 0xF600,
+                1: 0x0003,
+                2: 0x7F89,
+                3: 0x7F80,
+            },
+        )
+        self.assertEqual(result.symbols["TARGET"], 3)
+        source = self.disassembler.disassemble_source(
+            [0xF600, 0x035A, 0x7F80]
+        )
+        self.assertEqual(source, "BIOZ 0x35a\nNOP\n")
+        self.assertEqual(
+            self.disassembler.disassemble_listing(
+                [0xF600, 0x035A],
+                origin=0x100,
+            ),
+            "100 f600  BIOZ 0x35a\n"
+            "101 035a  .word 0x035a ; BIOZ target\n",
+        )
+        self.assertEqual(
+            list(self.assembler.assemble_text(source).words.values()),
+            [0xF600, 0x035A, 0x7F80],
+        )
+        self.assertEqual(
+            self.disassembler.disassemble_word(0xF600),
+            ".word 0xf600",
+        )
+
+        for invalid, message in (
+            ("BIOZ -1\n", "program address"),
+            ("BIOZ 4096\n", "program address"),
+            ("BIOZ\n", "1 operand"),
+            ("BIOZ 1,2\n", "1 operand"),
         ):
             with self.subTest(source=invalid):
                 with self.assertRaisesRegex(AssemblyError, message):

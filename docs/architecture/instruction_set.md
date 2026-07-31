@@ -241,6 +241,27 @@ Native-phase and differential tests place the clear at the taken target-word
 retirement boundary. Pinned MAME agrees on status behavior but shortens the
 untaken path; `SC-014` preserves that timing disagreement.
 
+## Qualified branch-on-I/O-status slice
+
+`BIOZ` is exact opcode `0xf600` followed by a canonical 12-bit absolute
+target. The physical BIO pin is active low: a low sampled input loads the
+target, while a high input advances to opcode PC+2. Both outcomes consume two
+words and two cycles, and no programmer-visible state other than PC changes
+[ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, and `BIOZ`, printed
+pp. 2-18, 3-6, and 3-19 (PDF pp. 42, 56, and 69);
+ti-tms32010-assembly-guide-spru002b, `BIOZ`, printed p. 3-19 (PDF p. 40);
+ti-first-generation-users-guide-1987, `BIOZ`, printed p. 4-24
+(PDF p. 105)]. **Confidence: VERIFIED_PRIMARY.**
+
+TI states that BIO is sampled every machine cycle and is not latched; its AC
+table requires setup before falling `CLKOUT`. Consequently the live level at
+the target-word retirement sample owns the branch, not the level observed
+when the opcode was recognized. Directed RTL and native-phase tests reverse
+BIO in both directions between those samples and verify this ownership.
+Malformed target words trap before the pin predicate is applied. Pinned MAME
+corroborates the active condition through its abstract callback, but shortens
+the untaken path; `SC-015` records that disagreement.
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

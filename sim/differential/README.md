@@ -6,7 +6,8 @@ the partial SystemVerilog core over a deterministic mixed stream of the
 two-cycle instruction and checks both branch outcomes; a focused B trace
 checks unconditional two-cycle control flow. A family trace checks taken and
 untaken cases for all six accumulator conditions; a BV trace checks its
-taken-path OV clear and untaken path. The tests check
+taken-path OV clear and untaken path. A BIOZ differential checks both raw
+active-low input levels. The tests check
 pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
@@ -73,8 +74,13 @@ The focused BV trace loads OV from an internal status word, executes a taken
 BV that clears OV, then an untaken BV. It compares both program transactions
 per branch, per-cycle OV, retirement, PC, and cumulative cycles.
 
+The focused BIOZ differential runs once with BIO low and once with BIO high.
+It compares both mandatory program reads, second-cycle retirement, target or
+fallthrough PC, and cumulative cycles. Separate native tests change the pin
+between its two samples to verify non-latched ownership.
+
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/BV/family differentials supply logical per-cycle evidence; their separate native
+B/BANZ/BIOZ/BV/family differentials supply logical per-cycle evidence; their separate native
 phase test supplies the physical subphase relationship. Neither result
 qualifies the remaining pipeline. MAME comparison is not yet implemented.
 

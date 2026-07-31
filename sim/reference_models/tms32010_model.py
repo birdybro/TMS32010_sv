@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BLEZ,
-BLZ, BNZ, BV, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP, LDPK,
-LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR,
-SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
+This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
+BLEZ, BLZ, BNZ, BV, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP,
+LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL,
+SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -22,7 +22,7 @@ PROGRAM_WORDS = 4096
 DATA_WORDS = 144
 IO_PORTS = 8
 ACCUMULATOR_BRANCHES = frozenset({"BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"})
-TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ", "BV"}
+TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ", "BIOZ", "BV"}
 
 
 class UnsupportedOpcode(RuntimeError):
@@ -123,6 +123,7 @@ class Tms32010Model:
         self.data = [0] * DATA_WORDS
         self.io_input = [0] * IO_PORTS
         self.io_output = [0] * IO_PORTS
+        self.bio_input_high = True
         self.cycle_count = 0
 
     def reset_at_instruction_boundary(self) -> None:
@@ -243,6 +244,12 @@ class Tms32010Model:
                 )
                 if branch_taken:
                     self.state.status.ov = False
+            elif mnemonic == "BIOZ":
+                branch_taken = not self.bio_input_high
+                operands["branch_taken"] = int(branch_taken)
+                self.state.pc = (
+                    target if branch_taken else (pc + 2) & PC_MASK
+                )
             else:
                 branch_taken = self._accumulator_branch_taken(
                     mnemonic,
@@ -700,6 +707,8 @@ class Tms32010Model:
             return "BANZ", {}
         if opcode == 0xF500:
             return "BV", {}
+        if opcode == 0xF600:
+            return "BIOZ", {}
         if opcode & 0xF000 == 0x0000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

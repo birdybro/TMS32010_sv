@@ -35,8 +35,8 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
 resolved for:
 
-- `BIOZ`; B, BANZ, BV, and the six accumulator-tested conditions are now
-  qualified (`OQ-007`);
+- B, BANZ, BIOZ, BV, and the six accumulator-tested conditions are now
+  qualified; CALL and call/return sequences remain (`OQ-007`);
 - `CALL`, `CALA`, and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -82,6 +82,18 @@ a clock-enable stall holds PC, OV, and the target phase. MAME's shorter
 untaken abstraction is disclosed in `SC-014`
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
 3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
+
+`BIOZ` also uses the same two-read shape, but its predicate is the raw
+external active-low BIO level. TI says BIO is sampled every machine cycle and
+is not latched, and the AC table places its setup boundary before falling
+`CLKOUT`. The level at the second, target-word sample therefore selects the
+target or PC+2. Directed tests change BIO between the opcode and target
+samples in both directions, require two cycles in both outcomes, and preserve
+the active target phase across a clock-enable stall. MAME's shorter untaken
+abstraction is disclosed in `SC-015`
+[ti-tms32010-users-guide-spru001b, §§2.9 and 2.6.1, Table 3-2, `BIOZ`, and
+Appendix A BIO timing, printed pp. 2-13, 2-18, 3-6, 3-19, and data-sheet 20
+(PDF pp. 37, 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

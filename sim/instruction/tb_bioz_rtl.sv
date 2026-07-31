@@ -1,22 +1,19 @@
 `default_nettype none
 
-module tb_bv_rtl;
+module tb_bioz_rtl;
   logic        clk;
   logic        initialize;
   logic        reset;
   logic        clock_enable;
+  logic        bio;
   logic [11:0] program_address;
   logic [11:0] program_next_address;
   logic [15:0] program_data;
   logic        data_read;
   logic        data_write;
   logic        data_address_valid;
-  logic        debug_data_write;
-  logic [15:0] debug_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
-  logic        overflow_flag;
-  logic        overflow_mode;
   logic        instruction_valid;
   logic        retired;
   logic        illegal;
@@ -28,7 +25,7 @@ module tb_bv_rtl;
     .initialize_i                   (initialize),
     .reset_i                        (reset),
     .clock_enable_i                 (clock_enable),
-    .bio_i                          (1'b1),
+    .bio_i                          (bio),
     .program_address_o              (program_address),
     .program_next_address_o         (program_next_address),
     .program_read_o                 (),
@@ -41,9 +38,9 @@ module tb_bv_rtl;
     .data_write_address_valid_o     (),
     .data_read_data_o               (),
     .data_write_data_o              (),
-    .debug_data_write_i             (debug_data_write),
+    .debug_data_write_i             (1'b0),
     .debug_data_address_i           (8'h00),
-    .debug_data_i                   (debug_data),
+    .debug_data_i                   (16'h0000),
     .pc_o                           (pc),
     .accumulator_o                  (accumulator),
     .t_register_o                   (),
@@ -52,8 +49,8 @@ module tb_bv_rtl;
     .auxiliary_register_1_o         (),
     .auxiliary_register_pointer_o   (),
     .data_page_pointer_o            (),
-    .overflow_flag_o                (overflow_flag),
-    .overflow_mode_o                (overflow_mode),
+    .overflow_flag_o                (),
+    .overflow_mode_o                (),
     .interrupt_mask_o               (),
     .instruction_valid_o            (instruction_valid),
     .retired_o                      (retired),
@@ -77,108 +74,103 @@ module tb_bv_rtl;
     end
   endtask
 
-  task automatic start_case(input logic status_overflow);
-    initialize       = 1'b1;
-    reset            = 1'b1;
-    clock_enable     = 1'b1;
-    debug_data       = status_overflow ? 16'h8000 : 16'h0000;
-    debug_data_write = 1'b1;
+  task automatic start_case;
+    initialize   = 1'b1;
+    reset        = 1'b1;
+    clock_enable = 1'b1;
+    bio          = 1'b1;
     tick();
-    debug_data_write = 1'b0;
-    initialize       = 1'b0;
-    reset            = 1'b0;
+    initialize = 1'b0;
+    reset      = 1'b0;
     #1;
   endtask
 
-  task automatic run_outcome(
-    input logic  status_overflow,
+  task automatic run_transition(
+    input logic  opcode_bio_high,
+    input logic  target_bio_high,
+    input logic  expect_taken,
     input string name
   );
-    program_memory[0] = 16'h7b00;  // LST 0 establishes OV.
-    program_memory[1] = 16'hf500;  // BV
-    program_memory[2] = 16'h0004;  // Target.
+    program_memory[0] = 16'h7ea5;  // LACK 0xa5.
+    program_memory[1] = 16'hf600;  // BIOZ.
+    program_memory[2] = 16'h0005;  // Target.
     program_memory[3] = 16'h7f80;  // Fallthrough NOP.
-    program_memory[4] = 16'h7f80;  // Target NOP.
-    start_case(status_overflow);
+    program_memory[5] = 16'h7f80;  // Target NOP.
+    start_case();
 
     tick();
     require(retired && !illegal && pc == 12'h001 &&
-            cycle_count == 32'd1 &&
-            overflow_flag == status_overflow,
-            {name, " LST setup"});
+            accumulator == 32'h0000_00a5 && cycle_count == 32'd1,
+            {name, " setup"});
 
+    bio = opcode_bio_high;
     tick();
     require(instruction_valid && !retired && !illegal &&
-            pc == 12'h002 && cycle_count == 32'd2 &&
-            overflow_flag == status_overflow,
-            {name, " opcode cycle preserves OV"});
-    require(
-      program_next_address == (status_overflow ? 12'h004 : 12'h003),
-      {name, " predicts target or fallthrough"}
-    );
+            pc == 12'h002 && cycle_count == 32'd2,
+            {name, " opcode cycle"});
     require(!data_read && !data_write && !data_address_valid,
             {name, " target cycle has no data transaction"});
+
+    // TI says BIO is sampled every cycle and is not latched. The level meeting
+    // setup at the target-word retirement sample therefore owns the branch.
+    bio = target_bio_high;
+    #1;
+    require(
+      program_next_address == (expect_taken ? 12'h005 : 12'h003),
+      {name, " live target-sample prediction"}
+    );
 
     clock_enable = 1'b0;
     tick();
     require(pc == 12'h002 && cycle_count == 32'd2 &&
-            !retired && !illegal &&
-            overflow_flag == status_overflow &&
-            program_next_address ==
-              (status_overflow ? 12'h004 : 12'h003),
+            !retired && !illegal && accumulator == 32'h0000_00a5,
             {name, " target-cycle stall"});
     clock_enable = 1'b1;
 
     tick();
     require(retired && !illegal && cycle_count == 32'd3 &&
-            pc == (status_overflow ? 12'h004 : 12'h003),
+            pc == (expect_taken ? 12'h005 : 12'h003),
             {name, " second-cycle retirement"});
-    require(!overflow_flag, {name, " leaves OV clear"});
-    require(accumulator == 32'h0000_0000 && !overflow_mode,
-            {name, " preserves unrelated datapath and OVM"});
+    require(accumulator == 32'h0000_00a5,
+            {name, " preserves unrelated architectural state"});
   endtask
 
   task automatic reject_noncanonical_target;
-    program_memory[0] = 16'h7b00;
-    program_memory[1] = 16'hf500;
-    program_memory[2] = 16'hf123;
-    start_case(1'b1);
+    program_memory[0] = 16'hf600;
+    program_memory[1] = 16'hf123;
+    start_case();
+    bio = 1'b0;
 
     tick();
-    require(retired && overflow_flag && pc == 12'h001,
-            "malformed setup loads OV");
-    tick();
-    require(!retired && !illegal && overflow_flag &&
-            pc == 12'h002 && cycle_count == 32'd2,
-            "malformed opcode cycle has no effects");
+    require(!retired && !illegal && pc == 12'h001 &&
+            cycle_count == 32'd1,
+            "malformed opcode cycle has no branch effect");
     tick();
     require(!instruction_valid && !retired && illegal &&
-            overflow_flag && pc == 12'h002 &&
-            cycle_count == 32'd2,
-            "malformed target traps before OV clear");
+            pc == 12'h001 && cycle_count == 32'd1,
+            "malformed target traps before testing BIO");
 
-    program_memory[2] = 16'h0004;
+    program_memory[1] = 16'h0005;
     tick();
-    require(retired && !illegal && !overflow_flag &&
-            pc == 12'h004 && cycle_count == 32'd3,
-            "canonical replacement branches and clears OV");
+    require(retired && !illegal && pc == 12'h005 &&
+            cycle_count == 32'd2,
+            "canonical replacement samples low BIO and branches");
   endtask
 
   initial begin
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end
-    initialize       = 1'b1;
-    reset            = 1'b1;
-    clock_enable     = 1'b1;
-    debug_data_write = 1'b0;
-    debug_data       = 16'h0000;
+    initialize   = 1'b1;
+    reset        = 1'b1;
+    clock_enable = 1'b1;
+    bio          = 1'b1;
 
-    run_outcome(1'b1, "taken");
-    run_outcome(1'b0, "untaken");
+    run_transition(1'b1, 1'b0, 1'b1, "high-to-low taken");
+    run_transition(1'b0, 1'b1, 1'b0, "low-to-high untaken");
     reject_noncanonical_target();
 
-    $display("PASS tb_bv_rtl");
+    $display("PASS tb_bioz_rtl");
     $finish;
   end
 endmodule

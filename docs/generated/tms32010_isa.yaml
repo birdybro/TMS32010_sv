@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1772,6 +1772,44 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and BV instruction description", "printed_page": "3-6 and 3-23", "pdf_page": "56 and 73"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BV instruction description", "printed_page": "3-23", "pdf_page": 44},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BV instruction description", "printed_page": "4-10 and 4-28", "pdf_page": "89 and 109"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "BIOZ",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xf600",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["BIO pin at the second falling-CLKOUT sample"],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "does not inspect or change OV or OVM",
+      "result_behavior": "all non-PC architectural state is unchanged",
+      "branch_behavior": "PC receives the canonical following-word target when the externally sampled BIO pin is low; otherwise PC advances past both words",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC; BIO is sampled but not latched"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; live BIO meeting setup to this falling CLKOUT sample selects target or opcode PC plus two"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.9 BIO Pin, Table 3-2, BIOZ instruction description, and Appendix A BIO timing", "printed_page": "2-18, 3-6, 3-19, and data-sheet 20", "pdf_page": "42, 56, 69, and 376"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BIOZ instruction description and 4.3 BIOZ Instruction", "printed_page": "3-19 and 4-2", "pdf_page": "40 and 84"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BIOZ instruction description", "printed_page": "4-10 and 4-24", "pdf_page": "89 and 105"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]

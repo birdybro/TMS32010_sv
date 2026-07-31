@@ -1,23 +1,23 @@
 # Progress summary
 
-- **Current milestone:** branch-on-overflow qualification
+- **Current milestone:** branch-on-I/O-status qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 79 repository/provenance/document/ISA/toolchain tests; 176
-  directed model tests; 30 RTL instruction/decode tests; 1 interrupt-mask RTL
-  test; 6 native bus/phase tests; one 512-instruction seeded
+- **Tests passing:** 81 repository/provenance/document/ISA/toolchain tests; 180
+  directed model tests; 31 RTL instruction/decode tests; 1 interrupt-mask RTL
+  test; 7 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   distinct logical source/write addresses, and all 144 final RAM words; 16
-  reference hashes; focused two-cycle B, BANZ, BV, and all six
+  reference hashes; focused two-cycle B, BANZ, BV, BIOZ, and all six
   accumulator-conditional-branch model/RTL traces
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the forty-six-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,925 ALMs, 2,491 registers, 0 RAM blocks,
-  1 DSP block, 59.33 MHz worst slow-corner internal Fmax, +3.144 ns setup
-  slack, and +0.165 ns worst hold slack at 50 MHz. TimeQuest reports zero
+  the forty-seven-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,942 ALMs, 2,491 registers, 0 RAM blocks,
+  1 DSP block, 62.12 MHz worst slow-corner internal Fmax, +3.903 ns setup
+  slack, and +0.167 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 12,590 generic cells with 11 assertions and lowering the
+  producing 12,655 generic cells with 11 assertions and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
@@ -121,7 +121,11 @@
   opcode `0xf500`, tests sticky OV, always reads its canonical target word,
   selects target and clears OV when set, or selects PC+2 with OV clear when
   not set; both outcomes take two cycles, and MAME's shorter untaken
-  abstraction is recorded as `SC-014`
+  abstraction is recorded as `SC-014`; BIOZ is exact opcode `0xf600`,
+  exposes the physical active-low input without an opcode-time latch, samples
+  its live value at the target-word falling edge, and consumes the mandatory
+  target read/two cycles in both pin states; MAME's abstract asserted callback
+  and shorter untaken path are recorded as `SC-015`
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -130,9 +134,10 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify `BIOZ`, including an explicit portable
-  BIO input, falling-CLKOUT sample ownership, mandatory target-word read, and
-  both input states without weakening the existing native interface;
+- **Next task:** research and qualify `CALL`, including its exact stack push,
+  target-word program read, PC update boundary, both program cycles, and
+  interaction with the unresolved single-word PUSH/POP extra-cycle bus
+  question;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
@@ -142,4 +147,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `80212c1`
+  `3e3ea5c`

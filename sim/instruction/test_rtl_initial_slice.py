@@ -398,6 +398,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_bioz_live_pin_sample_and_two_cycle_timing(self) -> None:
+        self._run_testbench(
+            "tb_bioz_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_bioz_rtl.sv",
+            ],
+        )
+
     def test_accumulator_branch_predicates_and_two_cycle_timing(self) -> None:
         self._run_testbench(
             "tb_accumulator_branches_rtl",

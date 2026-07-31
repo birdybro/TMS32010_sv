@@ -1,10 +1,11 @@
 `default_nettype none
 
-module tb_b_phase;
+module tb_bioz_phase;
   logic        clk;
   logic        initialize;
   logic        rs;
   logic        clock_enable;
+  logic        bio;
   logic [15:0] program_data;
   logic [1:0]  phase;
   logic        clkout;
@@ -27,7 +28,7 @@ module tb_b_phase;
     .initialize_i                  (initialize),
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
-    .bio_i                          (1'b1),
+    .bio_i                         (bio),
     .program_data_i                (program_data),
     .debug_data_write_i            (1'b0),
     .debug_data_address_i          (8'h00),
@@ -90,63 +91,71 @@ module tb_b_phase;
     $fatal(1, "sample event did not arrive");
   endtask
 
-  initial begin
-    for (int unsigned index = 0; index < 4096; index++) begin
-      program_memory[index] = 16'h7f80;
-    end
-    program_memory[0] = 16'hf900;  // B
-    program_memory[1] = 16'h0004;  // target
-    program_memory[2] = 16'h7f89;  // skipped ZAC
-    program_memory[3] = 16'h7f8b;  // skipped SOVM
-    program_memory[4] = 16'h7f80;  // target NOP
+  task automatic run_transition(
+    input logic  opcode_bio_high,
+    input logic  target_bio_high,
+    input logic  expect_taken,
+    input string name
+  );
+    program_memory[0] = 16'hf600;
+    program_memory[1] = 16'h0004;
+    program_memory[2] = 16'h7f80;
+    program_memory[4] = 16'h7f80;
 
     initialize   = 1'b1;
     rs           = 1'b1;
     clock_enable = 1'b1;
+    bio          = opcode_bio_high;
     tick();
     initialize = 1'b0;
-
     for (int unsigned index = 0; index < 20; index++) begin
       tick();
-      require(!bus_active && men_n, "reset keeps native bus inactive");
+      require(!bus_active && men_n, {name, " reset bus"});
     end
-
     rs = 1'b0;
-    advance_to_sample();
-    require(sample && instruction_valid && !retired && !illegal,
-            "B opcode sample starts but does not retire the instruction");
-    require(pc == 12'h001 && program_address == 12'h001 &&
-            cycle_count == 32'd1,
-            "first B cycle advances to the following target word");
 
+    advance_to_sample();
+    require(sample && instruction_valid && !retired && !illegal &&
+            pc == 12'h001 && program_address == 12'h001 &&
+            cycle_count == 32'd1,
+            {name, " opcode sample"});
+
+    bio = target_bio_high;
     tick();
     require(phase == 2'd1 && bus_active && !men_n &&
             program_address == 12'h001,
-            "target word receives an ordinary active MEN phase");
+            {name, " target has ordinary active MEN phase"});
     require(!data_read && !data_write && !data_address_valid,
-            "B target read has no logical data-memory transaction");
+            {name, " target read has no data transaction"});
 
     clock_enable = 1'b0;
-    for (int unsigned index = 0; index < 3; index++) begin
-      tick();
-      require(phase == 2'd1 && program_address == 12'h001 &&
-              !men_n && !sample && !retired &&
-              pc == 12'h001 && cycle_count == 32'd1,
-              "clock-enable stall holds the unconditional target read");
-    end
+    tick();
+    require(phase == 2'd1 && bus_active && !men_n &&
+            program_address == 12'h001 && pc == 12'h001 &&
+            cycle_count == 32'd1 && !retired,
+            {name, " active target phase stalls"});
     clock_enable = 1'b1;
 
     advance_to_sample();
-    require(sample && retired && !illegal && pc == 12'h004 &&
-            program_address == 12'h004 && cycle_count == 32'd2,
-            "B selects its target and retires at the second sample");
+    require(sample && retired && !illegal && cycle_count == 32'd2 &&
+            pc == (expect_taken ? 12'h004 : 12'h002) &&
+            program_address == (expect_taken ? 12'h004 : 12'h002),
+            {name, " target sample owns predicate and retires"});
+  endtask
 
-    advance_to_sample();
-    require(retired && pc == 12'h005 &&
-            program_address == 12'h005 && cycle_count == 32'd3,
-            "target NOP executes while sequential words stay skipped");
+  initial begin
+    for (int unsigned index = 0; index < 4096; index++) begin
+      program_memory[index] = 16'h7f80;
+    end
+    initialize   = 1'b1;
+    rs           = 1'b1;
+    clock_enable = 1'b1;
+    bio          = 1'b1;
 
-    $display("PASS tb_b_phase");
+    run_transition(1'b1, 1'b0, 1'b1, "high-to-low taken");
+    run_transition(1'b0, 1'b1, 1'b0, "low-to-high untaken");
+
+    $display("PASS tb_bioz_phase");
     $finish;
   end
 endmodule

@@ -161,6 +161,27 @@ both outcomes and verify no data transaction
 printed pp. 2-2, 2-13, 3-6, and 3-23
 (PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
 
+## Branch on I/O status
+
+`BIOZ` uses two normal program reads and samples the raw active-low pin:
+
+| Cycle | Address role | Result at falling-edge sample |
+|---:|---|---|
+| 1 | opcode PC | recognize exact `0xf600`; advance PC/address to the following word; do not latch BIO |
+| 2 | opcode PC + 1 | sample canonical target and live BIO; low selects target, high selects opcode PC + 2; retire |
+| following | selected target/fallthrough | normal next instruction read |
+
+Both outcomes consume cycle 2. TI explicitly says BIO is sampled every
+machine cycle and is not latched. The electrical input must meet 50 ns setup
+before falling `CLKOUT`; the RTL exposes the raw level and applies it only at
+the enabled target-word sample. Directed tests change the level between
+cycles in both directions and hold the active target phase with clock enable
+low before retirement
+[ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
+`BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
+and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
+**Confidence: VERIFIED_PRIMARY.**
+
 ## Reset assertion and release
 
 `RS` may change at any point in a processor cycle. To guarantee synchronous
@@ -184,8 +205,8 @@ asynchronous-abort guarantee.
 
 Both active-low inputs have a 50 ns setup requirement before falling
 `CLKOUT`, maximum 15 ns falling-edge time, and minimum low pulse width of one
-full `CLKOUT` cycle. This establishes the physical sampling boundary but not
-the complete interrupt vector-fetch bus sequence.
+full `CLKOUT` cycle. BIOZ now applies the current BIO level at its target-word
+sample; the complete interrupt vector-fetch bus sequence remains unresolved.
 
 ## RTL mapping status
 
@@ -208,5 +229,5 @@ one-cycle sequential execution subset and the qualified two-cycle branch
 paths: directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary
 retirement, branch target-word fetch and second-boundary retirement, stalls,
-traps, and recognized reset. It has not been qualified for the remaining
-branches, other multi-cycle operations, table, I/O, or interrupt sequences.
+traps, and recognized reset. It has not been qualified for CALL/return,
+other multi-cycle operations, table, I/O, or interrupt sequences.

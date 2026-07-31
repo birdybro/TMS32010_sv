@@ -79,6 +79,16 @@ at the taken second-cycle retirement boundary; neither cycle emits `DEN` or
 printed pp. 2-2, 2-13, 3-6, and 3-23
 (PDF pp. 26, 37, 56, and 73)]. **Confidence: VERIFIED_PRIMARY.**
 
+`BIOZ` likewise reads exact opcode `0xf600` at PC and its following target at
+PC+1 on both pin levels. Both are normal `MEN` reads; neither emits `DEN` or
+`WE`. BIO is not latched and must meet setup before the second falling
+`CLKOUT` sample, where low selects the target and high selects PC+2. Pinned
+MAME shortens the untaken path; `SC-015` records that emulator abstraction
+[ti-tms32010-users-guide-spru001b, §§2.1.1, 2.6.1, and 2.9, Table 3-2,
+`BIOZ`, and Appendix A BIO timing, printed pp. 2-2, 2-13, 2-18, 3-6, 3-19,
+and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
+**Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

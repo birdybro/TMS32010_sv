@@ -66,6 +66,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_bv_uses_two_stallable_native_program_reads(self) -> None:
         self._run_testbench("tb_bv_phase")
 
+    def test_bioz_samples_live_pin_on_second_native_read(self) -> None:
+        self._run_testbench("tb_bioz_phase")
+
     def test_accumulator_branches_use_two_stallable_native_reads(self) -> None:
         self._run_testbench("tb_accumulator_branches_phase")
 

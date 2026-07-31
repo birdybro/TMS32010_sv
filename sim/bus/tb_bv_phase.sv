@@ -30,6 +30,7 @@ module tb_bv_phase;
     .initialize_i                  (initialize),
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
+    .bio_i                          (1'b1),
     .program_data_i                (program_data),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (8'h00),

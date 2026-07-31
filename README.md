@@ -14,8 +14,8 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support forty-six
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support forty-seven
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
@@ -63,10 +63,14 @@ MAME's shorter untaken abstraction is disclosed as `SC-013`.
 `BV` is exact opcode `0xf500`; it uses the same mandatory second read, tests
 sticky OV, and clears OV only when the target path retires. MAME's untaken
 timing disagreement is `SC-014`.
+`BIOZ` is exact opcode `0xf600` and exposes the raw active-low input through
+the portable core. The live level at the second falling-edge target sample
+selects target or `PC+2`; both paths take two cycles. MAME's shorter untaken
+path is disclosed as `SC-015`.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
-instructions and the nine qualified two-cycle branches; it is not a general pipeline or
+instructions and the ten qualified two-cycle branches; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

@@ -5,6 +5,7 @@ module tb_model_rtl_slice;
   logic        initialize;
   logic        reset;
   logic        clock_enable;
+  logic        bio;
   logic [11:0] program_address;
   logic        program_read;
   logic [15:0] program_data;
@@ -40,12 +41,14 @@ module tb_model_rtl_slice;
   string image_path;
   string data_path;
   int unsigned instruction_count;
+  int unsigned bio_value;
 
   tms32010_core dut (
     .clk_i             (clk),
     .initialize_i      (initialize),
     .reset_i           (reset),
     .clock_enable_i    (clock_enable),
+    .bio_i             (bio),
     .program_address_o (program_address),
     .program_next_address_o (),
     .program_read_o    (program_read),
@@ -93,6 +96,9 @@ module tb_model_rtl_slice;
     if (!$value$plusargs("DATA=%s", data_path)) begin
       $fatal(1, "missing +DATA");
     end
+    bio_value = 1;
+    void'($value$plusargs("BIO=%d", bio_value));
+    bio = bio_value != 0;
     for (int unsigned index = 0; index < 4096; index++) begin
       program_memory[index] = 16'h7f80;
     end

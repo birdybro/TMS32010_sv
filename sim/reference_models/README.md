@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -34,6 +34,8 @@ Current supported boundary:
   unchanged non-PC state;
 - `BV` sticky-OV predicate, taken-path clear, untaken clear preservation, two
   mandatory program transactions, and unchanged unrelated state;
+- `BIOZ` active-low external input predicate, target/fallthrough selection,
+  two mandatory program transactions, and unchanged architectural state;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `LAR` direct/indirect loads to either auxiliary register, including
@@ -90,6 +92,9 @@ word 143 raises `UnsupportedDataAddress`. No reserved or unimplemented word is
 treated as a no-op. The model currently reports logical transactions, not
 qualified TMS32010 pin phases. Constructor-zeroed storage and registers are a
 test-harness convenience, not a physical power-up claim.
+`bio_input_high` defaults to the inactive high level and may be assigned by a
+test environment before stepping BIOZ; it is external input state, not part
+of the architectural-state snapshot.
 
 Run the slice with:
 

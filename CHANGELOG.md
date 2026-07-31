@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first forty-six model/tool encodings.
+  mnemonics and fully describes the first forty-seven model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the forty-six-instruction slice.
+  clock-enable execution core for the forty-seven-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -186,6 +186,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   focused differential. Both OV states read the target word; taken BV clears
   OV only at second-cycle retirement.
 - Explicit `SC-014` record for MAME's one-cycle untaken BV abstraction.
+- Primary-cited exact `BIOZ=0xf600` support across the database, fixtures,
+  local tools, independent model, shared two-cycle RTL state, native phases,
+  and a focused differential. The raw active-low BIO input is sampled live at
+  the target-word falling-edge boundary, not latched with the opcode, and both
+  pin states consume the mandatory target read.
+- Explicit `SC-015` record for MAME's shorter untaken BIOZ abstraction and its
+  abstract asserted callback polarity; project behavior follows the original
+  TI pin-level and two-cycle definitions.
 
 ### Changed
 
@@ -195,10 +203,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated forty-six-instruction
-  phase/RAM/multiplier slice in 1,925 ALMs/2,491 registers and one DSP block,
-  with +3.144 ns worst setup and +0.165 ns worst hold slack at 50 MHz and
-  59.33 MHz worst slow-corner internal Fmax; 278
+- Quartus 17.0.2 fits the integrated forty-seven-instruction
+  phase/RAM/multiplier slice in 1,942 ALMs/2,491 registers and one DSP block,
+  with +3.903 ns worst setup and +0.167 ns worst hold slack at 50 MHz and
+  62.12 MHz worst slow-corner internal Fmax; 279
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -213,7 +221,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers forty-six of 60 documented
+- The qualified model/tool/RTL boundary now covers forty-seven of 60 documented
   mnemonics and twenty-two common-address data-operation families.
 
 ### Fixed
@@ -331,7 +339,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.67+111 synthesizes the forty-six-instruction hierarchy to 12,590
+- Yosys 0.67+111 synthesizes the forty-seven-instruction hierarchy to 12,655
   generic cells with 11 assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
@@ -473,20 +481,29 @@ Changelog, and the project follows semantic versioning once releases begin.
   target-phase stall, unrelated-state preservation, and malformed-target
   trap-before-clear. A focused differential compares per-cycle OV and every
   program transaction.
-- The complete current regression passes 79 repository/ISA/tool tests, 176
-  directed model tests, 30 exhaustive/directed instruction RTL tests, six
+- Directed BIOZ tests reverse the raw pin in both directions between opcode
+  and target samples, proving second-sample ownership and absence of an
+  opcode-time latch. They also cover active-low target/fallthrough selection,
+  the mandatory target read, target-phase stalls, malformed-target
+  trap-before-effects, native control phases, and focused model/RTL traces.
+- The complete current regression passes 81 repository/ISA/tool tests, 180
+  directed model tests, 31 exhaustive/directed instruction RTL tests, seven
   native bus/phase tests, one interrupt-mask RTL test, one 512-step seeded
-  model/RTL differential, and four focused two-cycle branch differentials.
+  model/RTL differential, and five focused two-cycle branch differentials.
 
 ### Known Issues
 
-- Only forty-six of 60 documented instruction mnemonics have model, tool, and
+- Only forty-seven of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).
 - MAME also shortens untaken BV to one cycle and omits its target read;
   project behavior follows TI's unconditional two-cycle entry (`SC-014`).
+- MAME also shortens untaken BIOZ to one cycle and does not read the target;
+  it exposes an abstract asserted callback rather than documenting physical
+  pin polarity. Project behavior follows TI's active-low pin and unconditional
+  two-cycle entry (`SC-015`).
 - Original TMS32010 manuals do not define LST's memory-sourced ARP versus
   encoded next-ARP precedence. The implemented memory-word precedence is
   PROVISIONAL under `OQ-015`; later TI and MAME evidence corroborates but does

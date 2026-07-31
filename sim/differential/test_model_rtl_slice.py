@@ -1046,6 +1046,104 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             )
             self.assertEqual(int(rtl[13], 16), model_state["cycle_count"])
 
+    def test_bioz_active_low_paths_match_model(self) -> None:
+        words = [
+            0xF600,  # BIOZ
+            0x0004,
+            0x7F80,  # Fallthrough.
+            0x7F89,
+            0x7F80,  # Target.
+        ]
+        data_words = [0] * 144
+
+        for bio_high, expected_pc in ((False, 4), (True, 2)):
+            with self.subTest(bio_high=bio_high):
+                model = Tms32010Model()
+                model.reset_at_instruction_boundary()
+                model.load_words(words)
+                model.bio_input_high = bio_high
+                expected = model.step()
+
+                self.assertEqual(expected.mnemonic, "BIOZ")
+                self.assertEqual(expected.cycles, 2)
+                self.assertEqual(
+                    expected.operands["branch_taken"],
+                    int(not bio_high),
+                )
+                self.assertEqual(expected.state_after["pc"], expected_pc)
+
+                with tempfile.TemporaryDirectory() as directory:
+                    image = Path(directory) / "program.hex"
+                    data_image = Path(directory) / "data.hex"
+                    image.write_text(
+                        "".join(f"{word:04x}\n" for word in words),
+                        encoding="ascii",
+                    )
+                    data_image.write_text(
+                        "".join(f"{word:04x}\n" for word in data_words),
+                        encoding="ascii",
+                    )
+                    result = subprocess.run(
+                        [
+                            str(self.build / "Vtb_model_rtl_slice"),
+                            f"+IMAGE={image}",
+                            f"+DATA={data_image}",
+                            f"+BIO={int(bio_high)}",
+                            "+COUNT=2",
+                        ],
+                        cwd=ROOT,
+                        text=True,
+                        capture_output=True,
+                        check=False,
+                    )
+
+                self.assertEqual(
+                    result.returncode,
+                    0,
+                    result.stdout + result.stderr,
+                )
+                lines = [
+                    line
+                    for line in result.stdout.splitlines()
+                    if line.startswith("TRACE ")
+                ]
+                self.assertEqual(len(lines), 2)
+                fields = [line.split() for line in lines]
+                self.assertEqual(
+                    [int(field[1], 16) for field in fields],
+                    [0, 1],
+                )
+                self.assertEqual(
+                    [int(field[2], 16) for field in fields],
+                    [0xF600, 0x0004],
+                )
+                self.assertEqual(
+                    [int(field[11], 16) for field in fields],
+                    [0, 1],
+                )
+                self.assertEqual(
+                    [int(field[13], 16) for field in fields],
+                    [1, 2],
+                )
+                self.assertTrue(
+                    all(int(field[10], 16) for field in fields)
+                )
+                self.assertTrue(
+                    all(not int(field[12], 16) for field in fields)
+                )
+                self.assertEqual(
+                    int(fields[-1][3], 16),
+                    expected.state_after["pc"],
+                )
+                self.assertEqual(
+                    int(fields[-1][4], 16),
+                    expected.state_after["acc"],
+                )
+                self.assertEqual(
+                    int(fields[-1][13], 16),
+                    expected.state_after["cycle_count"],
+                )
+
     def test_accumulator_branch_family_trace_matches_model(self) -> None:
         cases = [
             ("BLZ", 0xFA00, 0x2000, True),

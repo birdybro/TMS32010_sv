@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -76,6 +76,8 @@ participates in label and `.org` location accounting.
 two-word location accounting with exact opcode `0xf900`.
 
 `BV` uses that target workflow with exact opcode `0xf500`.
+
+`BIOZ` uses that target workflow with exact opcode `0xf600`.
 
 `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use that identical target
 workflow with exact opcodes `0xfd00`, `0xfc00`, `0xfb00`, `0xfa00`,

@@ -7,7 +7,7 @@ derive_clock_uncertainty
 # board delays. The integrated wrapper must replace these false paths with
 # real I/O or register-to-register constraints.
 set_false_path -from \
-  [get_ports {initialize_i rs_i clock_enable_i program_data_i[*] \
+  [get_ports {initialize_i rs_i clock_enable_i bio_i program_data_i[*] \
               debug_data_write_i debug_data_address_i[*] debug_data_i[*]}]
 set_false_path -to \
   [get_ports {pc_o[*] accumulator_o[*] t_register_o[*] product_register_o[*] \

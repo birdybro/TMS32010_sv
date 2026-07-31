@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-forty-six-instruction subset, then check retirement on the falling-edge
+forty-seven-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -123,10 +123,20 @@ and still consumes that sample. Malformed target words trap before the clear
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BV`, printed pp. 3-6 and
 3-23 (PDF pp. 56 and 73)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed `BIOZ` tests assert two complete program reads for BIO low and high.
+The opcode cycle never retires. The target-word sample uses the live,
+active-low BIO level, selects target or PC+2, and retires after exactly two
+cycles. Tests reverse BIO between opcode and target samples in both directions
+and stall the active target phase, guarding TI's every-cycle, not-latched
+sampling rule. Malformed target words trap before applying the pin predicate
+[ti-tms32010-users-guide-spru001b, §2.9, Table 3-2, `BIOZ`, and Appendix A
+BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
+(PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
-  other than the now-qualified B, BANZ, BV, and accumulator-condition
+  other than the now-qualified B, BANZ, BIOZ, BV, and accumulator-condition
   sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/

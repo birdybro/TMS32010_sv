@@ -25,6 +25,7 @@ module tb_accumulator_branches_rtl;
     .initialize_i                   (initialize),
     .reset_i                        (reset),
     .clock_enable_i                 (clock_enable),
+    .bio_i                          (1'b1),
     .program_address_o              (program_address),
     .program_next_address_o         (program_next_address),
     .program_read_o                 (),
