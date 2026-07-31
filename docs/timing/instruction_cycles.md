@@ -28,9 +28,10 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 ## Qualified timing tests
 
-The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the thirty-seven-instruction subset,
-then checks retirement on the falling-edge sample boundary. Directed `ADD`,
+The current native-phase integration tests observe one complete four-subphase
+program-read cycle for every one-cycle instruction in the
+thirty-eight-instruction subset, then check retirement on the falling-edge
+sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
 direct and indirect cases, including every documented SACH shift, positive
@@ -87,10 +88,19 @@ the next instruction cannot use ACC. Exact result availability for a
 violating schedule and the arithmetic stage responsible for OV remain
 `OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
 
+Directed `BANZ` tests assert two complete program-read cycles on both taken
+and untaken paths. Cycle 1 samples `0xf400`; cycle 2 samples the target word
+at PC+1; retirement occurs only at the second sample, with cycle count
+increased by two and the next bus address equal to target or PC+2. Tests also
+hold the clock enable during cycle 2 and require every pending state and
+native pin to remain stable
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `BANZ`, printed pp. 3-6 and
+3-16 (PDF pp. 56 and 66)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
-- whether taken and untaken conditions have identical two-cycle totals;
-- exact immediate-word fetch ordering for branch and call;
+- taken/untaken timing and immediate-word ordering for branch/call families
+  other than the now-qualified BANZ sequence;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;

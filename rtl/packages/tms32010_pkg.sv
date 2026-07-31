@@ -38,7 +38,8 @@ package tms32010_pkg;
     OP_DINT = 6'd33,
     OP_EINT = 6'd34,
     OP_LST  = 6'd35,
-    OP_SUBC = 6'd36
+    OP_SUBC = 6'd36,
+    OP_BANZ = 6'd37
   } tms32010_operation_t;
 endpackage
 

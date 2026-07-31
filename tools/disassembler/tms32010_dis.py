@@ -21,6 +21,10 @@ class Disassembler:
             return f".word 0x{word:04x}"
         entry, operands = decoded
         mnemonic = entry["mnemonic"]
+        if mnemonic == "BANZ":
+            # A lone opcode cannot be reconstructed as valid assembly without
+            # its following target word. Stream methods consume the pair.
+            return f".word 0x{word:04x}"
         if mnemonic == "LACK":
             return f"LACK {operands['constant']}"
         if mnemonic == "MPYK":
@@ -111,19 +115,61 @@ class Disassembler:
         return mnemonic
 
     def disassemble_source(self, words: Iterable[int]) -> str:
-        return "".join(f"{self.disassemble_word(word)}\n" for word in words)
+        materialized = list(words)
+        rows: list[str] = []
+        index = 0
+        while index < len(materialized):
+            word = materialized[index]
+            decoded = decode_word(self.database, word)
+            if (
+                decoded is not None
+                and decoded[0]["mnemonic"] == "BANZ"
+                and index + 1 < len(materialized)
+                and materialized[index + 1] & 0xF000 == 0
+            ):
+                rows.append(f"BANZ 0x{materialized[index + 1]:03x}\n")
+                index += 2
+            else:
+                rows.append(f"{self.disassemble_word(word)}\n")
+                index += 1
+        return "".join(rows)
 
     def disassemble_listing(self, words: Iterable[int], origin: int = 0) -> str:
         if not 0 <= origin <= 0xFFF:
             raise ValueError(f"origin out of range: {origin}")
+        materialized = list(words)
         rows = []
-        for offset, word in enumerate(words):
+        offset = 0
+        while offset < len(materialized):
             address = origin + offset
             if address > 0xFFF:
                 raise ValueError("image exceeds 4096-word program space")
-            rows.append(
-                f"{address:03x} {word:04x}  {self.disassemble_word(word)}\n"
-            )
+            word = materialized[offset]
+            decoded = decode_word(self.database, word)
+            if (
+                decoded is not None
+                and decoded[0]["mnemonic"] == "BANZ"
+                and offset + 1 < len(materialized)
+                and materialized[offset + 1] & 0xF000 == 0
+            ):
+                if address == 0xFFF:
+                    raise ValueError("BANZ operand exceeds program image")
+                target_word = materialized[offset + 1]
+                rows.append(
+                    f"{address:03x} {word:04x}  "
+                    f"BANZ 0x{target_word:03x}\n"
+                )
+                rows.append(
+                    f"{address + 1:03x} {target_word:04x}  "
+                    f".word 0x{target_word:04x} ; BANZ target\n"
+                )
+                offset += 2
+            else:
+                rows.append(
+                    f"{address:03x} {word:04x}  "
+                    f"{self.disassemble_word(word)}\n"
+                )
+                offset += 1
         return "".join(rows)
 
 

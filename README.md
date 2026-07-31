@@ -14,8 +14,8 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-seven
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support thirty-eight
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
@@ -47,10 +47,17 @@ common data-address path. Tests use the documented requirement that its next
 instruction not consume ACC; the exact illegal-scheduling result availability
 and the precise arithmetic stage that sets sticky `OV` remain explicitly
 provisional under `OQ-017` and `OQ-018`.
+`BANZ` is the first qualified control-flow instruction. It always performs two
+normal program reads: exact opcode `0xf400`, then a canonical 12-bit target
+word. It tests the old selected auxiliary-register counter, decrements only
+its low nine bits, and selects the target or `PC+2` at the second sample.
+Taken and untaken paths both take two cycles. A later first-generation guide's
+contradictory full-register wrap example and MAME's shortened untaken timing
+are recorded as `SC-011` and `SC-012`.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies normal sequential program reads for this
-thirty-seven-instruction subset only; it is not a general pipeline or
+native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
+instructions and both BANZ cycles; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

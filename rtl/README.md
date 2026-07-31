@@ -43,13 +43,13 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the thirty-seven currently qualified one-cycle sequential instructions it
-samples and retires on the same falling boundary, keeps PC and native address
-aligned, holds both on an unsupported opcode, and preserves
-phase/address/control state during a clock-enable stall. It is not a general
-sequencer: branch,
-multi-cycle, other data-memory operations, I/O, table, and interrupt sequences
-remain absent.
+For the 37 currently qualified one-cycle sequential instructions it samples
+and retires on the same falling boundary. BANZ instead fetches its following
+target word through a second complete, independently stallable normal read
+and retires only at that second falling boundary. Both paths keep PC and native
+address aligned and hold state on traps or clock-enable stalls. It is not a
+general sequencer: the remaining branches, other multi-cycle instructions,
+external data/I/O, table, and interrupt sequences remain absent.
 
 SUBC retires through this same path only in legally scheduled test streams
 whose following instruction does not read ACC. Immediate internal ACC commit

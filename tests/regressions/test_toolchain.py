@@ -408,10 +408,66 @@ class ToolchainSliceTests(unittest.TestCase):
             0x6698,
             0x6680,
             0x6689,
+            0xF400,
+            0x035A,
         ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), original)
+
+    def test_banz_emits_and_consumes_the_following_target_word(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            START: NOP
+            LOOP:  BANZ LOOP
+            AFTER: NOP
+            """
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0: 0x7F80,
+                1: 0xF400,
+                2: 0x0001,
+                3: 0x7F80,
+            },
+        )
+        self.assertEqual(result.symbols["LOOP"], 1)
+        self.assertEqual(result.symbols["AFTER"], 3)
+        self.assertEqual(len(result.listing), 4)
+
+        source = self.disassembler.disassemble_source(
+            [0xF400, 0x035A, 0x7F80]
+        )
+        self.assertEqual(source, "BANZ 0x35a\nNOP\n")
+        self.assertEqual(
+            self.disassembler.disassemble_listing(
+                [0xF400, 0x035A, 0x7F80],
+                origin=0x100,
+            ),
+            "100 f400  BANZ 0x35a\n"
+            "101 035a  .word 0x035a ; BANZ target\n"
+            "102 7f80  NOP\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(
+            list(rebuilt.words.values()),
+            [0xF400, 0x035A, 0x7F80],
+        )
+        self.assertEqual(
+            self.disassembler.disassemble_word(0xF400),
+            ".word 0xf400",
+        )
+
+        for invalid, message in (
+            ("BANZ -1\n", "program address"),
+            ("BANZ 4096\n", "program address"),
+            ("BANZ\n", "1 operand"),
+            ("BANZ 1,2\n", "1 operand"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
 
     def test_labels_origin_words_expressions_and_listing(self) -> None:
         result = self.assembler.assemble_text(

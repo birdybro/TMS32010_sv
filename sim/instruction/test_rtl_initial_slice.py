@@ -31,6 +31,7 @@ class RtlInitialSliceTests(unittest.TestCase):
             "--binary",
             "--timing",
             "--Wall",
+            "--Wno-PINCONNECTEMPTY",
             "--top-module",
             name,
             "--Mdir",
@@ -358,6 +359,18 @@ class RtlInitialSliceTests(unittest.TestCase):
                 INTERNAL_RAM,
                 CORE,
                 ROOT / "sim" / "instruction" / "tb_subc_rtl.sv",
+            ],
+        )
+
+    def test_banz_two_cycle_branch_counter_and_operand_behavior(self) -> None:
+        self._run_testbench(
+            "tb_banz_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_banz_rtl.sv",
             ],
         )
 

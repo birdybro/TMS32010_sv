@@ -134,6 +134,38 @@ overflow, which provisionally leaves OV clear
 printed p. 4-67 (PDF p. 148)]. **Confidence: CORROBORATED that SUBC affects
 OV and ignores OVM; PROVISIONAL for the exact overflow-producing stage.**
 
+## Qualified `BANZ` control-flow slice
+
+`BANZ` is exact opcode word `0xf400`, followed by a second word whose low
+12 bits are the absolute program-memory target. Both taken and untaken paths
+consume two words and two machine cycles. The old low nine bits of the
+auxiliary register selected by `ARP` are tested before modification. When
+nonzero, PC receives the target; when zero, PC advances past both words. In
+both cases `AR[8:0]` is decremented modulo 512 and `AR[15:9]` is unchanged.
+No accumulator, product, T, data RAM, or status bit changes
+[ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1, Table 3-2, and `BANZ`,
+printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
+(PDF pp. 33–34, 37, 56, and 66);
+ti-tms32010-assembly-guide-spru002b, `BANZ` and §4.4, printed pp. 3-16 and
+4-3 (PDF pp. 37 and 85)]. **Confidence: VERIFIED_PRIMARY.**
+
+The qualified program sequence reads the opcode at PC in cycle 1 and the
+following target word at PC+1 in cycle 2. The next normal read is the target
+when the old counter was nonzero or PC+2 when it was zero. This follows TI's
+mandatory two-word/two-cycle definition, its statement that program memory is
+always addressed by PC, and its explicit final-PC cases. Directed model, RTL,
+and native-phase tests cover both outcomes, test-before-decrement, upper-bit
+preservation, low-nine-bit wrap, clock-enable hold in the operand cycle, and
+both program addresses. **Confidence: VERIFIED_PRIMARY for logical address
+order and normal-read phases.**
+
+The later SPRU013 `BANZ` example prints zero becoming `0xffff`, contrary to
+both the original guide and SPRU013's own §3.4.5 statement that only the low
+nine counter bits change. The implementation follows the original-part
+`0x01ff` result; see `SC-011`. Pinned MAME agrees functionally on the counter
+but charges the second cycle only when taken, contrary to TI's unconditional
+two-cycle listing; see `SC-012`. MAME timing is not used as proof.
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

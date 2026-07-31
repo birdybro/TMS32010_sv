@@ -42,6 +42,17 @@ behavior because those instructions use their extra cycle for an external
 data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
+`BANZ` is different from those one-word stack operations: its second cycle
+is the documented second program word. The native sequence is therefore two
+ordinary `MEN` reads at opcode PC and PC+1, followed by a normal read at the
+taken target or sequential PC+2. The condition cannot remove the operand
+cycle because TI lists BANZ as two words/two cycles without a conditional
+exception. Pinned MAME's one-cycle untaken shortcut is recorded as a
+functional-emulator abstraction in `SC-012`, not copied into the RTL
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `BANZ`,
+printed pp. 2-2, 2-13, 3-6, and 3-16
+(PDF pp. 26, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

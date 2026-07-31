@@ -91,6 +91,24 @@ and upper address pins are zero.
 The same physical `WE` pin is used for `OUT` and `TBLW`; address context
 distinguishes I/O from program-space writes.
 
+## BANZ
+
+`BANZ` uses two consecutive normal program reads:
+
+| Cycle | Address role | Result at falling-edge sample |
+|---:|---|---|
+| 1 | opcode PC | recognize `0xf400`; advance PC/address to the following word |
+| 2 | opcode PC + 1 | sample the 12-bit target, test old selected `AR[8:0]`, decrement that field modulo 512, and select the next address |
+| following | target if old counter was nonzero; otherwise opcode PC + 2 | normal next instruction read |
+
+Both condition outcomes consume the second read and retire after two cycles.
+The second word's documented upper nibble is zero. Each of the two reads uses
+the normal address/`MEN`/falling-edge relationship above; BANZ adds no
+`DEN` or `WE` phase
+[ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1, Table 3-2, and `BANZ`,
+printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
+(PDF pp. 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Reset assertion and release
 
 `RS` may change at any point in a processor cycle. To guarantee synchronous
@@ -134,7 +152,8 @@ startup, quarter-cycle `MEN` assertion, address stability, the falling-edge
 sample event, and clock-enable stalls. This four-phase mapping is an
 implementation choice, not an assertion about the original internal gate
 topology. `tms32010_phase_slice` now integrates these phases with the current
-one-cycle sequential execution subset: a directed test verifies synchronized
-PC/native-address advancement, same-boundary retirement, stalls, traps, and
-recognized reset. It has not been qualified for branch, multi-cycle, table,
-I/O, or interrupt sequences.
+one-cycle sequential execution subset and two-cycle BANZ: directed tests
+verify synchronized PC/native-address advancement, ordinary same-boundary
+retirement, BANZ target-word fetch and second-boundary retirement, stalls,
+traps, and recognized reset. It has not been qualified for the remaining
+branches, other multi-cycle operations, table, I/O, or interrupt sequences.

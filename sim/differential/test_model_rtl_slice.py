@@ -35,6 +35,7 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 "--binary",
                 "--timing",
                 "--Wall",
+                "--Wno-PINCONNECTEMPTY",
                 "--top-module",
                 "tb_model_rtl_slice",
                 "--Mdir",
@@ -761,6 +762,98 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             fields = line.split()
             self.assertEqual(int(fields[1], 16), index)
             self.assertEqual(int(fields[2], 16), model.data[index], (SEED, index))
+
+    def test_banz_two_cycle_taken_and_untaken_trace_matches_model(self) -> None:
+        words = [
+            0x7000,  # LARK AR0,0
+            0xF400,  # untaken BANZ
+            0x0003,  # fallthrough target
+            0x7001,  # LARK AR0,1
+            0xF400,  # taken BANZ
+            0x0007,  # skips address 6
+            0x7F89,  # skipped ZAC
+            0x7F80,  # target NOP
+        ]
+        data_words = [0] * 144
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        expected = [model.step() for _ in range(5)]
+
+        self.assertEqual(
+            [trace.mnemonic for trace in expected],
+            ["LARK", "BANZ", "LARK", "BANZ", "NOP"],
+        )
+        self.assertEqual([trace.cycles for trace in expected], [1, 2, 1, 2, 1])
+        self.assertEqual(
+            [
+                transaction.address
+                for trace in expected
+                for transaction in trace.transactions
+                if transaction.space == "program"
+            ],
+            [0, 1, 2, 3, 4, 5, 7],
+        )
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    "+COUNT=7",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line for line in result.stdout.splitlines() if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), 7)
+        fields = [line.split() for line in lines]
+        self.assertEqual(
+            [int(field[1], 16) for field in fields],
+            [0, 1, 2, 3, 4, 5, 7],
+        )
+        self.assertEqual(
+            [int(field[2], 16) for field in fields],
+            [0x7000, 0xF400, 0x0003, 0x7001, 0xF400, 0x0007, 0x7F80],
+        )
+        self.assertEqual(
+            [int(field[11], 16) for field in fields],
+            [1, 0, 1, 1, 0, 1, 1],
+            "BANZ retires only after its following-word fetch",
+        )
+        self.assertEqual(
+            [int(field[13], 16) for field in fields],
+            list(range(1, 8)),
+            "each of the two BANZ program reads counts one machine cycle",
+        )
+        self.assertTrue(all(int(field[10], 16) for field in fields))
+        self.assertTrue(all(not int(field[12], 16) for field in fields))
+
+        for rtl_index, model_index in ((2, 1), (5, 3), (6, 4)):
+            rtl = fields[rtl_index]
+            model_state = expected[model_index].state_after
+            self.assertEqual(int(rtl[3], 16), model_state["pc"])
+            self.assertEqual(int(rtl[4], 16), model_state["acc"])
+            self.assertEqual(int(rtl[6], 16), model_state["ar"][0])
+            self.assertEqual(int(rtl[7], 16), model_state["ar"][1])
+            self.assertEqual(int(rtl[13], 16), model_state["cycle_count"])
 
 
 if __name__ == "__main__":

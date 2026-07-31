@@ -159,3 +159,42 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for encoding, conditional ACC transform,
   scheduling prohibition, word count, and cycle count; PROVISIONAL for the
   overflow-producing stage; UNKNOWN for a prohibited dependent sequence.
+
+## SC-011 — BANZ zero-counter example
+
+- **Original-part source:** SPRU001B §2.4.1 says auxiliary-register automatic
+  modification affects only bits 8:0 as a circular counter. Its `BANZ` page
+  likewise says the test and decrement use the low nine bits and illustrates
+  `0x0000` becoming `0x01ff`.
+- **Later family source:** SPRU013 §3.4.5 independently says bits 15:9 are
+  unaffected and decrementing a zero low-nine-bit field produces `0x01ff`.
+  However, that guide's `BANZ` example prints full-register zero becoming
+  `0xffff`, contradicting its own architecture section.
+- **Independent oracle:** pinned MAME commit
+  `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` preserves `AR[15:9]` and
+  decrements only `AR[8:0]`
+  [mame-tms320c1x-core-030fefc, `banz()`, lines 407–417].
+- **Current treatment:** follow the original TMS32010 guide and the consistent
+  architecture descriptions: BANZ decrements modulo 512 and preserves the
+  upper seven bits. Treat the later `0xffff` example as a documentation error,
+  not as evidence of a variant-wide decrement.
+- **Confidence:** VERIFIED_PRIMARY for original-TMS32010 nine-bit behavior;
+  CORROBORATED by the later architecture section and independent emulator.
+
+## SC-012 — MAME BANZ untaken cycle abstraction
+
+- **Primary sources:** SPRU001B Table 3-2 and the individual `BANZ` page list
+  two words and two cycles without a taken/untaken exception. The following
+  word contains the 12-bit target, and the PC either loads it or advances past
+  it.
+- **Independent oracle:** pinned MAME gives BANZ a one-cycle base cost, reads
+  the following target and charges one additional cycle only on the taken
+  path, and merely increments PC on the untaken path
+  [mame-tms320c1x-core-030fefc, `banz()`, lines 407–417; opcode table and
+  `add_branch_cycle()`, lines 841–857].
+- **Current treatment:** the project follows TI's unconditional two-cycle
+  total and performs the second program read on both paths. MAME remains a
+  functional oracle for the condition and modulo-512 decrement, but its BANZ
+  timing is not a cycle or pin oracle.
+- **Confidence:** VERIFIED_PRIMARY for the project timing; documented
+  secondary-source disagreement.

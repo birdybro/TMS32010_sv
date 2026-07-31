@@ -7,6 +7,7 @@ module tms32010_core (
   input  logic        clock_enable_i,
 
   output logic [11:0] program_address_o,
+  output logic [11:0] program_next_address_o,
   output logic        program_read_o,
   input  logic [15:0] program_data_i,
 
@@ -77,6 +78,7 @@ module tms32010_core (
   localparam logic [5:0] OP_EINT = 6'd34;
   localparam logic [5:0] OP_LST  = 6'd35;
   localparam logic [5:0] OP_SUBC = 6'd36;
+  localparam logic [5:0] OP_BANZ = 6'd37;
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -108,6 +110,7 @@ module tms32010_core (
   logic        apac_overflow;
   logic [31:0] spac_wrapped_result;
   logic        spac_overflow;
+  logic        banz_operand_pending;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -124,6 +127,7 @@ module tms32010_core (
   always_comb begin
     data_address_o = 8'h00;
     if (
+      !banz_operand_pending &&
       decoded_valid &&
       (
         (decoded_operation == OP_LAC) ||
@@ -189,10 +193,29 @@ module tms32010_core (
       : ram_read_data;
 
   assign program_address_o = pc_o;
+  always_comb begin
+    program_next_address_o = pc_o;
+    if (banz_operand_pending) begin
+      if (program_data_i[15:12] == 4'h0) begin
+        if (
+          auxiliary_register_pointer_o
+            ? (auxiliary_register_1_o[8:0] != 9'h000)
+            : (auxiliary_register_0_o[8:0] != 9'h000)
+        ) begin
+          program_next_address_o = program_data_i[11:0];
+        end else begin
+          program_next_address_o = pc_o + 12'h001;
+        end
+      end
+    end else if (instruction_valid_o) begin
+      program_next_address_o = pc_o + 12'h001;
+    end
+  end
   assign program_read_o    = ~reset_i && ~initialize_i;
   assign data_read_o =
     ~reset_i &&
     ~initialize_i &&
+    ~banz_operand_pending &&
     decoded_valid &&
     (
       (decoded_operation == OP_LAC) ||
@@ -218,6 +241,7 @@ module tms32010_core (
   assign data_write_o =
     ~reset_i &&
     ~initialize_i &&
+    ~banz_operand_pending &&
     decoded_valid &&
     (
       (decoded_operation == OP_SACL) ||
@@ -282,44 +306,50 @@ module tms32010_core (
       endcase
     end
   end
-  assign instruction_valid_o =
-    decoded_valid &&
-    (
-      (
-        (decoded_operation != OP_LAC) &&
-        (decoded_operation != OP_SACL) &&
-        (decoded_operation != OP_SACH) &&
-        (decoded_operation != OP_ZALH) &&
-        (decoded_operation != OP_ZALS) &&
-        (decoded_operation != OP_ADDS) &&
-        (decoded_operation != OP_XOR) &&
-        (decoded_operation != OP_AND) &&
-        (decoded_operation != OP_OR) &&
-        (decoded_operation != OP_ADD) &&
-        (decoded_operation != OP_SUB) &&
-        (decoded_operation != OP_SUBS) &&
-        (decoded_operation != OP_SUBC) &&
-        (decoded_operation != OP_LAR) &&
-        (decoded_operation != OP_SAR) &&
-        (decoded_operation != OP_LDP) &&
-        (decoded_operation != OP_DMOV) &&
-        (decoded_operation != OP_LT) &&
-        (decoded_operation != OP_LTD) &&
-        (decoded_operation != OP_LTA) &&
-        (decoded_operation != OP_MPY) &&
-        (decoded_operation != OP_LST)
-      ) ||
-      (
-        ram_address_valid &&
+  always_comb begin
+    if (banz_operand_pending) begin
+      instruction_valid_o = program_data_i[15:12] == 4'h0;
+    end else begin
+      instruction_valid_o =
+        decoded_valid &&
         (
           (
+            (decoded_operation != OP_LAC) &&
+            (decoded_operation != OP_SACL) &&
+            (decoded_operation != OP_SACH) &&
+            (decoded_operation != OP_ZALH) &&
+            (decoded_operation != OP_ZALS) &&
+            (decoded_operation != OP_ADDS) &&
+            (decoded_operation != OP_XOR) &&
+            (decoded_operation != OP_AND) &&
+            (decoded_operation != OP_OR) &&
+            (decoded_operation != OP_ADD) &&
+            (decoded_operation != OP_SUB) &&
+            (decoded_operation != OP_SUBS) &&
+            (decoded_operation != OP_SUBC) &&
+            (decoded_operation != OP_LAR) &&
+            (decoded_operation != OP_SAR) &&
+            (decoded_operation != OP_LDP) &&
             (decoded_operation != OP_DMOV) &&
-            (decoded_operation != OP_LTD)
+            (decoded_operation != OP_LT) &&
+            (decoded_operation != OP_LTD) &&
+            (decoded_operation != OP_LTA) &&
+            (decoded_operation != OP_MPY) &&
+            (decoded_operation != OP_LST)
           ) ||
-          ram_write_address_valid
-        )
-      )
-    );
+          (
+            ram_address_valid &&
+            (
+              (
+                (decoded_operation != OP_DMOV) &&
+                (decoded_operation != OP_LTD)
+              ) ||
+              ram_write_address_valid
+            )
+          )
+        );
+    end
+  end
   assign adds_wrapped_result =
     accumulator_o + {16'h0000, ram_read_data};
   assign adds_overflow =
@@ -374,20 +404,54 @@ module tms32010_core (
       interrupt_mask_o             <= 1'b1;
       illegal_o                    <= 1'b0;
       cycle_count_o                <= 32'h0000_0000;
+      banz_operand_pending         <= 1'b0;
     end else if (reset_i) begin
       pc_o             <= 12'h000;
       interrupt_mask_o <= 1'b1;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
+      banz_operand_pending <= 1'b0;
       // ACC, T, P, AR0, AR1, ARP, DP, and OV receive no arbitrary reset value.
       // TI explicitly documents that reset leaves OVM unchanged. Retention of
       // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
-      if (instruction_valid_o) begin
+      if (banz_operand_pending) begin
+        if (instruction_valid_o) begin
+          if (auxiliary_register_pointer_o) begin
+            auxiliary_register_1_o <= {
+              auxiliary_register_1_o[15:9],
+              auxiliary_register_1_o[8:0] - 9'd1
+            };
+            pc_o <=
+              (auxiliary_register_1_o[8:0] != 9'h000)
+                ? program_data_i[11:0]
+                : pc_o + 12'h001;
+          end else begin
+            auxiliary_register_0_o <= {
+              auxiliary_register_0_o[15:9],
+              auxiliary_register_0_o[8:0] - 9'd1
+            };
+            pc_o <=
+              (auxiliary_register_0_o[8:0] != 9'h000)
+                ? program_data_i[11:0]
+                : pc_o + 12'h001;
+          end
+          banz_operand_pending <= 1'b0;
+          retired_o            <= 1'b1;
+          illegal_o            <= 1'b0;
+          cycle_count_o        <= cycle_count_o + 32'h0000_0001;
+        end else begin
+          illegal_o <= 1'b1;
+        end
+      end else if (instruction_valid_o) begin
         pc_o          <= pc_o + 12'h001;
-        retired_o     <= 1'b1;
         illegal_o     <= 1'b0;
         cycle_count_o <= cycle_count_o + 32'h0000_0001;
+        if (decoded_operation == OP_BANZ) begin
+          banz_operand_pending <= 1'b1;
+        end else begin
+          retired_o <= 1'b1;
+        end
 
         case (decoded_operation)
           OP_LACK: accumulator_o   <= {24'h000000, decoded_immediate};
@@ -557,6 +621,8 @@ module tms32010_core (
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;
           OP_ROVM: overflow_mode_o <= 1'b0;
           OP_SOVM: overflow_mode_o <= 1'b1;
+          OP_BANZ: begin
+          end
           default: begin
             // All enum values are covered above.
           end
@@ -642,6 +708,9 @@ module tms32010_core (
     assert (!(retired_o && illegal_o));
     if (!reset_i && !initialize_i) begin
       assert (!(debug_data_write_i && clock_enable_i));
+      if (banz_operand_pending) begin
+        assert (!(data_read_o || data_write_o || data_address_valid_o));
+      end
       if ((data_read_o || data_write_o) && !data_address_valid_o) begin
         assert (!instruction_valid_o);
       end

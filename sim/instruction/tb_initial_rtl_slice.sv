@@ -43,6 +43,7 @@ module tb_initial_rtl_slice;
     .reset_i           (reset),
     .clock_enable_i    (clock_enable),
     .program_address_o (program_address),
+    .program_next_address_o (),
     .program_read_o    (program_read),
     .program_data_i    (program_data),
     .data_address_o    (data_address),

@@ -1,8 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, DINT, DMOV, EINT, LAC, LACK,
-LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC,
-ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
+This partial slice supports ADD, ADDS, AND, APAC, BANZ, DINT, DMOV, EINT, LAC,
+LACK, LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR,
+PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and
+ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -42,6 +43,20 @@ class UnsupportedDataAddress(RuntimeError):
         self.pc = pc
         self.opcode = opcode
         self.address = address
+
+
+class UnsupportedProgramOperand(RuntimeError):
+    """Raised when a multiword instruction has an unqualified operand word."""
+
+    def __init__(self, pc: int, opcode: int, address: int, word: int) -> None:
+        super().__init__(
+            f"unsupported program operand 0x{word:04x} at 0x{address:03x} "
+            f"for opcode 0x{opcode:04x} at PC 0x{pc:03x}"
+        )
+        self.pc = pc
+        self.opcode = opcode
+        self.address = address
+        self.word = word
 
 
 @dataclass
@@ -179,6 +194,52 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
+        if mnemonic == "BANZ":
+            operand_address = (pc + 1) & PC_MASK
+            operand_word = self.program[operand_address] & WORD_MASK
+            if operand_word & 0xF000:
+                raise UnsupportedProgramOperand(
+                    pc,
+                    opcode,
+                    operand_address,
+                    operand_word,
+                )
+            target = operand_word & PC_MASK
+            selected_arp = self.state.status.arp
+            branch_taken = bool(self.state.ar[selected_arp] & 0x01FF)
+            operands.update(
+                {
+                    "program_address": target,
+                    "auxiliary_register": selected_arp,
+                    "branch_taken": int(branch_taken),
+                }
+            )
+            transactions.append(
+                Transaction(
+                    cycle=self.cycle_count + 1,
+                    space="program",
+                    operation="following_word_fetch",
+                    address=operand_address,
+                    data=operand_word,
+                )
+            )
+            self.state.ar[selected_arp] = self._modify_counter(
+                self.state.ar[selected_arp],
+                -1,
+            )
+            self.state.pc = target if branch_taken else (pc + 2) & PC_MASK
+            cycles = 2
+            self.cycle_count += cycles
+            return StepTrace(
+                pc=pc,
+                opcode=opcode,
+                mnemonic=mnemonic,
+                operands=operands,
+                cycles=cycles,
+                transactions=tuple(transactions),
+                state_after=self.architectural_state(),
+            )
+
         selected_arp: int | None = None
         if mnemonic == "MAR" and operands["indirect"]:
             selected_arp = self.state.status.arp
@@ -579,6 +640,8 @@ class Tms32010Model:
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
+        if opcode == 0xF400:
+            return "BANZ", {}
         if opcode & 0xF000 == 0x0000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

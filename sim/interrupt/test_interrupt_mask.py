@@ -32,6 +32,7 @@ class InterruptMaskRtlTests(unittest.TestCase):
                 "--binary",
                 "--timing",
                 "--Wall",
+                "--Wno-PINCONNECTEMPTY",
                 "--top-module",
                 name,
                 "--Mdir",

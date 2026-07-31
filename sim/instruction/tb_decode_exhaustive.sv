@@ -59,6 +59,7 @@ module tb_decode_exhaustive;
       logic expected_dint;
       logic expected_eint;
       logic expected_lst;
+      logic expected_banz;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -303,6 +304,7 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_banz = instruction == 16'hf400;
       expected_valid =
         expected_lac || expected_sacl || expected_sach ||
         expected_zalh || expected_zals || expected_adds ||
@@ -314,7 +316,7 @@ module tb_decode_exhaustive;
         expected_lta ||
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
-        expected_dint || expected_eint || expected_lst ||
+        expected_dint || expected_eint || expected_lst || expected_banz ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
         ((instruction & 16'hfe00) == 16'h7000) ||
@@ -503,6 +505,9 @@ module tb_decode_exhaustive;
           $fatal(1, "LST decode mismatch at %04x", word);
         end
       end
+      if (expected_banz && operation != OP_BANZ) begin
+        $fatal(1, "BANZ decode mismatch at %04x", word);
+      end
       if ((instruction & 16'hff00) == 16'h7e00) begin
         if (operation != OP_LACK || immediate != word[7:0]) begin
           $fatal(1, "LACK decode mismatch at %04x", word);
@@ -526,8 +531,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 19051) begin
-      $fatal(1, "expected 19051 supported words, got %0d", valid_count);
+    if (valid_count != 19052) begin
+      $fatal(1, "expected 19052 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

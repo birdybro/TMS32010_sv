@@ -6,7 +6,7 @@ RTL.
 
 Current supported boundary:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -22,6 +22,10 @@ Current supported boundary:
   65-divided-by-7 example, common address updates, and a provisional sticky-OV
   stage; tests obey the required ACC-free following instruction
   (`OQ-017`/`OQ-018`);
+- `BANZ` two-word program sequencing, old-counter branch selection,
+  low-nine-bit modulo decrement with upper-bit preservation, target versus
+  `PC+2` selection, two logical program transactions, and a two-cycle total;
+  noncanonical following words trap before architectural effects;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `LAR` direct/indirect loads to either auxiliary register, including

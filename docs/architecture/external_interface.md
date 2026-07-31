@@ -31,13 +31,23 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the thirty-seven supported one-cycle sequential
-instructions. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
+read relationship for the 37 supported one-cycle sequential instructions and
+both cycles of `BANZ`. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
 `SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
-cited normal-read mapping, not a claim that control flow, external data/I/O
-access, or general pipeline overlap is complete.
+cited normal-read mapping, not a claim that remaining control flow, external
+data/I/O access, or general pipeline overlap is complete.
+
+`BANZ` presents `PC` during its opcode read and `PC+1` during its target-word
+read. At the second falling-edge sample it selects the canonical target when
+the old selected low-nine AR counter is nonzero, or `PC+2` otherwise. Directed
+tests verify identical two-cycle read topology for taken and untaken paths,
+including an active-phase clock-enable stall. This logical sequence is
+primary-backed; it does not infer analog pin delays
+[ti-tms32010-users-guide-spru001b, §§2.4.1 and 2.6.1 and `BANZ`, printed
+pp. 2-9–2-10, 2-13, and 3-16 (PDF pp. 33–34, 37, and 66)].
+**Confidence: VERIFIED_PRIMARY.**
 
 `DINT` and `EINT` retain the same normal external program fetch and have no
 logical data-memory transaction. The current phase wrapper verifies their

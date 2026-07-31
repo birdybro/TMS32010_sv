@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial thirty-seven-instruction model/tool boundary is intentionally partial
+Its initial thirty-eight-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -47,11 +47,12 @@ documented mnemonics so missing coverage remains machine-visible.
 | `OR dma` | `0x7a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `OR` page, printed p. 3-46 |
 | `ZALH dma` | `0x6500` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALH` page, printed p. 3-70 |
 | `ZALS dma` | `0x6600` | `0xff00` plus addressing constraints | 1 | 1 | individual `ZALS` page, printed p. 3-71 |
+| `BANZ pma` | `0xf400` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BANZ` page, printed p. 3-16 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-27–3-29, 3-31–3-44,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-16, 3-27–3-29, 3-31–3-44,
 3-46, 3-48, 3-53–3-56, 3-58, 3-60–3-61, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 77–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
+pp. 55–57, 60, 62–64, 66, 77–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
 and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
@@ -248,6 +249,17 @@ violation and the exact overflow-producing arithmetic stage remain
 ti-tms32010-assembly-guide-spru002b, `SUBC`, printed p. 3-61 (PDF p. 82)].
 **Confidence: VERIFIED_PRIMARY for decode, operands, and timing; PROVISIONAL
 for the two execution details named above.**
+
+`BANZ` is the exact first word `0xf400`. The following word contains four
+documented zero bits above the 12-bit absolute program address. It is an
+operand word, not a separately decoded opcode. The assembler always emits the
+canonical zero upper nibble; model and RTL deliberately trap noncanonical
+operand words because silicon behavior for those undocumented bits is not
+claimed
+[ti-tms32010-users-guide-spru001b, `BANZ`, printed p. 3-16 (PDF p. 66);
+ti-tms32010-assembly-guide-spru002b, `BANZ`, printed p. 3-16 (PDF p. 37)].
+**Confidence: VERIFIED_PRIMARY for the canonical two-word encoding; UNKNOWN
+for nonzero upper target-word bits.**
 
 `ADD` fixes bits 15:12 to zero; bits 11:8 encode every shift from 0 through
 15, and bit 7 plus bits 6:0 use the common direct/indirect address form. Its

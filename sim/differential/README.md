@@ -2,7 +2,9 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-thirty-seven supported instructions. It checks pre-execution PC/opcode,
+37 supported one-cycle instructions. A focused BANZ trace adds the first
+two-cycle instruction and checks both branch outcomes. The tests check
+pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
@@ -48,9 +50,16 @@ reads and address updates, and include 16 seeded-random direct/indirect pairs.
 Both sides use the same provisional intermediate-overflow policy, so this is
 consistency evidence, not independent proof of `OQ-017` or `OQ-018`.
 
-This is model/RTL functional evidence only. Both sides currently use a logical
-instruction-boundary program interface, so the test supplies no pin-phase or
-cycle-accuracy evidence. MAME comparison is not yet implemented.
+The focused BANZ trace compares logical program transaction addresses
+`PC,PC+1`, per-cycle retirement, cumulative cycle count, branch/fallthrough
+PC, and low-nine-bit counter results for taken and untaken cases. The model
+steps at instruction boundaries while the RTL exposes both machine cycles, so
+the comparison deliberately aligns state only at the second-cycle commit.
+
+The 512-instruction stream is model/RTL functional evidence only. BANZ's
+focused differential supplies logical per-cycle evidence; its separate native
+phase test supplies the physical subphase relationship. Neither result
+qualifies the remaining pipeline. MAME comparison is not yet implemented.
 
 Failing seeds must be preserved as regression fixtures when randomized
 coverage expands.

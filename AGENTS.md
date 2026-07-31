@@ -235,8 +235,8 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support thirty-seven instructions:
-`ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+tools, RTL, and seeded differential boundary support thirty-eight instructions:
+`ADD`, `ADDS`, `AND`, `APAC`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
@@ -280,6 +280,11 @@ one cycle and is tested only with the required ACC-free following
 instruction. Its exact result availability after a scheduling violation and
 the exact intermediate that sets sticky `OV` remain provisional under
 `OQ-017`/`OQ-018`.
+`BANZ` is an exact two-word, two-cycle control-flow instruction. The second
+normal program read obtains a canonical 12-bit target; the old selected
+low-nine AR counter selects target versus fallthrough before a modulo-512
+decrement. Its upper-seven-bit preservation is primary-backed; contradictory
+later-guide and MAME timing evidence remains visible as `SC-011`/`SC-012`.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

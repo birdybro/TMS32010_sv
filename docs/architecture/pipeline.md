@@ -35,7 +35,8 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
 resolved for:
 
-- a taken versus untaken conditional branch (`OQ-007`);
+- conditional branches other than the now-qualified `BANZ` sequence
+  (`OQ-007`);
 - `CALL`, `CALA`, and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -43,6 +44,18 @@ resolved for:
 
 Until these rows have cited diagrams and automated traces, the project does
 not claim cycle accuracy.
+
+`BANZ` now supplies the first qualified two-word control-flow sequence. Cycle
+1 reads exact opcode `0xf400` at PC. Cycle 2 reads the following target word
+at PC+1 regardless of the condition. At the second falling-edge sample, the
+old selected `AR[8:0]` chooses the next address (target when nonzero, PC+2
+when zero), then that nine-bit counter decrements modulo 512. Each read uses
+the normal four-subphase `MEN` sequence; clock-enable stalls hold the active
+phase, address, pending operand state, PC, and AR
+[ti-tms32010-users-guide-spru001b, §§2.1.1, 2.4.1, and 2.6.1, Table 3-2,
+and `BANZ`, printed pp. 2-2, 2-9–2-10, 2-13, 3-6, and 3-16
+(PDF pp. 26, 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for
+logical ordering and normal-read pin phases.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

@@ -1,22 +1,22 @@
 # Progress summary
 
-- **Current milestone:** SUBC conditional-subtract qualification
+- **Current milestone:** BANZ two-cycle control-flow qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 71 repository/provenance/document/ISA/toolchain tests; 160
-  directed model tests; 26 RTL instruction/decode tests; 1 interrupt-mask RTL
-  test; 2 native bus/phase tests; one 512-instruction seeded
-  thirty-seven-instruction model/RTL differential including T, P, OV/OVM/INTM,
+- **Tests passing:** 73 repository/provenance/document/ISA/toolchain tests; 165
+  directed model tests; 27 RTL instruction/decode tests; 1 interrupt-mask RTL
+  test; 3 native bus/phase tests; one 512-instruction seeded
+  37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   distinct logical source/write addresses, and all 144 final RAM words; 16
-  reference hashes
+  reference hashes; one focused two-cycle BANZ model/RTL trace
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-seven-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,850 ALMs, 2,484 registers, 0 RAM blocks,
-  1 DSP block, 59.32 MHz worst slow-corner internal Fmax, +3.142 ns setup
+  the thirty-eight-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,883 ALMs, 2,485 registers, 0 RAM blocks,
+  1 DSP block, 59.66 MHz worst slow-corner internal Fmax, +3.239 ns setup
   slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 12,213 generic cells with nine assertions and lowering the
+  producing 12,344 generic cells with 11 assertions and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,756 generic cells; Yosys
   is not installed on the host path
@@ -101,7 +101,13 @@
   cycle; 16 legally spaced steps transform the documented 65/7 inputs into
   `0x00020009`; TI requires the following instruction not to use ACC, says
   SUBC affects OV but ignores OVM, and does not specify either violation
-  behavior or the exact overflow-producing stage
+  behavior or the exact overflow-producing stage; BANZ is exact opcode
+  `0xf400` followed by a canonical 12-bit target word and always consumes two
+  normal program-read cycles; it tests the old selected AR[8:0], decrements
+  that counter modulo 512 while preserving AR[15:9], and selects the target
+  or `PC+2` at the second sample; original SPRU001B and later architectural
+  prose support the low-nine-bit wrap, while a later-guide example and MAME's
+  one-cycle untaken abstraction remain disclosed as `SC-011`/`SC-012`
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -110,9 +116,9 @@
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research the highest-priority unblocked control-flow family,
-  beginning with BANZ encoding, state effects, and the exact two-cycle
-  immediate/prefetch sequence; keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
+- **Next task:** qualify the unconditional `B` instruction using the established
+  two-word control-flow sequencer, then expand to conditional branch families;
+  keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
   precedence labeled PROVISIONAL under `OQ-015`; keep interrupt recognition,
@@ -121,4 +127,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `98dbbd0`
+  `dd588c6`

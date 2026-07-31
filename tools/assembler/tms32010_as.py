@@ -163,7 +163,11 @@ class Assembler:
                 )
             else:
                 self._validate_instruction_shape(operation, operand_text, line)
-                location = self._checked_location(location + 1, line)
+                entry = self.entries[operation]
+                location = self._checked_location(
+                    location + int(entry.get("word_count", 1)),
+                    line,
+                )
 
         words: dict[int, int] = {}
         listing: list[ListingRow] = []
@@ -193,9 +197,25 @@ class Assembler:
                     location += 1
                 continue
 
-            word = self._encode(operation, operand_text, symbols, location, line)
+            instruction_location = location
+            word = self._encode(
+                operation,
+                operand_text,
+                symbols,
+                instruction_location,
+                line,
+            )
             self._emit(words, listing, location, word, line)
             location += 1
+            if operation == "BANZ":
+                target = self._evaluate(
+                    operand_text,
+                    symbols,
+                    instruction_location,
+                    line,
+                )
+                self._emit(words, listing, location, target, line)
+                location += 1
         return AssemblyResult(words=words, listing=listing, symbols=symbols)
 
     def _validate_instruction_shape(
@@ -245,6 +265,12 @@ class Assembler:
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
+        elif operation == "BANZ":
+            value = self._evaluate(operand_text, symbols, location, line)
+            if not 0 <= value < PROGRAM_WORDS:
+                raise line.error(
+                    f"BANZ program address out of range 0..4095: {value}"
+                )
         elif operation in {"ADD", "LAC", "SUB"}:
             shift = (
                 self._evaluate(operands[1], symbols, location, line)

@@ -9,11 +9,11 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class PhaseSliceIntegrationTests(unittest.TestCase):
-    def test_native_samples_drive_sequential_execution_slice(self) -> None:
+    def _run_testbench(self, name: str) -> None:
         verilator = shutil.which("verilator")
         if verilator is None:
             raise RuntimeError("Verilator is required once architectural RTL exists")
-        build = ROOT / "build" / "verilator" / "tb_phase_slice_integration"
+        build = ROOT / "build" / "verilator" / name
         build.mkdir(parents=True, exist_ok=True)
         sources = [
             ROOT / "rtl" / "packages" / "tms32010_pkg.sv",
@@ -23,7 +23,7 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",
-            ROOT / "sim" / "bus" / "tb_phase_slice_integration.sv",
+            ROOT / "sim" / "bus" / f"{name}.sv",
         ]
         result = subprocess.run(
             [
@@ -31,8 +31,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
                 "--binary",
                 "--timing",
                 "--Wall",
+                "--Wno-PINCONNECTEMPTY",
                 "--top-module",
-                "tb_phase_slice_integration",
+                name,
                 "--Mdir",
                 str(build),
                 *map(str, sources),
@@ -44,14 +45,20 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
         run = subprocess.run(
-            [str(build / "Vtb_phase_slice_integration")],
+            [str(build / f"V{name}")],
             cwd=ROOT,
             text=True,
             capture_output=True,
             check=False,
         )
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
-        self.assertIn("PASS tb_phase_slice_integration", run.stdout)
+        self.assertIn(f"PASS {name}", run.stdout)
+
+    def test_native_samples_drive_sequential_execution_slice(self) -> None:
+        self._run_testbench("tb_phase_slice_integration")
+
+    def test_banz_uses_two_stallable_native_program_reads(self) -> None:
+        self._run_testbench("tb_banz_phase")
 
 
 if __name__ == "__main__":

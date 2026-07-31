@@ -1,7 +1,7 @@
 `default_nettype none
 
-// Integration wrapper for the currently qualified one-cycle, sequential
-// instruction slice. This is not yet the complete TMS32010 fetch pipeline.
+// Integration wrapper for the qualified one-cycle sequential slice and
+// two-cycle BANZ reads. This is not yet the complete TMS32010 fetch pipeline.
 module tms32010_phase_slice (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -44,6 +44,7 @@ module tms32010_phase_slice (
   output logic [31:0] cycle_count_o
 );
   logic [11:0] logical_program_address;
+  logic [11:0] logical_program_next_address;
   logic        logical_program_read;
   logic        core_reset;
   logic        execute_boundary;
@@ -54,17 +55,14 @@ module tms32010_phase_slice (
   assign core_reset =
     clock_enable_i & (phase_o == 2'd3) & rs_i;
 
-  // Each currently supported instruction retires on its single program-read
-  // sampling boundary. Future branch/multicycle families require a sequencer,
-  // not an extension of this sequential-address expression.
+  // The core supplies the next address because BANZ can select its target on
+  // the second program-read sampling boundary.
   assign execute_boundary =
     clock_enable_i & bus_active_o & (phase_o == 2'd3) &
     logical_program_read & ~rs_i;
   assign next_program_address =
     bus_active_o
-      ? (instruction_valid_o
-          ? logical_program_address + 12'h001
-          : logical_program_address)
+      ? logical_program_next_address
       : 12'h000;
 
   tms32010_core core (
@@ -73,6 +71,7 @@ module tms32010_phase_slice (
     .reset_i                       (core_reset),
     .clock_enable_i                (execute_boundary),
     .program_address_o             (logical_program_address),
+    .program_next_address_o        (logical_program_next_address),
     .program_read_o                (logical_program_read),
     .program_data_i                (program_data_i),
     .data_address_o                (data_address_o),
@@ -120,6 +119,7 @@ module tms32010_phase_slice (
   always_ff @(posedge clk_i) begin
     if (!initialize_i) begin
       assert (!(retired_o && !sample_o));
+      assert (logical_program_address == pc_o);
     end
   end
 endmodule
