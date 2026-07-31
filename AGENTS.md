@@ -378,6 +378,14 @@ simultaneous host/running-DSP ownership is invalid (`SC-020`/`OQ-021`). The
 board's physical WE decode also routes addresses `0x000`–`0x007` to output
 ports, so low-address TBLW aliases OUT on Rev A (`SC-021`). Keep all of this
 outside the generic core.
+The board-specific `hard_drivin_sound_program_ram` now implements a
+same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
+access only while `/320RES` is asserted, permits TMS access only after host
+selection is released, grants neither side during overlap, and never clears
+program contents on reset. Its whole-word host port follows the shown
+A12:A1/D15:D0 path; byte-access compatibility is unresolved under
+`SC-022`/`OQ-022`. This is an integration convention, not a claim that the
+physical asynchronous SRAM has ready signaling or registered reads.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

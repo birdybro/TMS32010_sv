@@ -141,6 +141,14 @@ register or memory cells. This is a portability check for the verified
 A044427 Rev-A ownership/port/program decode only; it is not a shared-memory
 implementation, arbitration policy, Quartus fit, or timing result.
 
+The fifth checked-in script stops before memory mapping for
+`hard_drivin_sound_program_ram`. Yosys 0.67+111 retains one 4,096-by-16
+`$mem_v2` with one registered read port and consolidates the mutually
+exclusive host/TMS writes into one clocked write port. The complete hierarchy
+contains 85 cells, including five retained checks and the 12-cell decoder;
+both structural checks report zero problems. This establishes an inferable
+synchronous memory shape, not a Quartus M10K mapping or fitted timing result.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite

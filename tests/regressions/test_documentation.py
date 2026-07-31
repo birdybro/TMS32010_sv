@@ -129,6 +129,24 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("Physical reset-qualified RAM ownership", conflicts)
         self.assertIn("Low-address TBLW board alias", conflicts)
 
+    def test_hard_drivin_shared_ram_adapter_remains_evidence_scoped(self) -> None:
+        integration = (
+            DOCS / "integration" / "hard_drivin_requirements.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "do not enter this program-RAM control path",
+            "Same-clock FPGA storage adaptation",
+            "does not initialize or erase program words",
+            "acknowledges neither side in the invalid overlap",
+            "Quartus block-RAM mapping",
+        ):
+            self.assertIn(required, integration)
+        self.assertIn("Physical whole-word program RAM", conflicts)
+        self.assertIn("`OQ-022`", conflicts)
+
 
 if __name__ == "__main__":
     unittest.main()

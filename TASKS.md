@@ -1281,7 +1281,9 @@ objective passing evidence.
   pipeline slice (15,733 cells/103 checks), each with zero structural
   problems. A fourth standalone script exhaustively tests and synthesizes the
   A044427 storage-free bus decoder to 15 generic combinational cells with no
-  structural problems. Full-core
+  structural problems. A fifth script retains the 4K-by-16 board adapter as
+  one synchronous-read, single-write-port abstract memory with 85 total cells
+  and zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
@@ -1327,7 +1329,8 @@ objective passing evidence.
   DAC traces without copyrighted ROMs.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
-  `sim/bus/tb_hard_drivin_sound_bus_decode.sv`
+  `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
+  `sim/bus/tb_hard_drivin_sound_program_ram.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1337,9 +1340,14 @@ objective passing evidence.
   access, and overlap is invalid contention. Its native write decode also
   diverts TBLW addresses `0x000`–`0x007` to output ports. The storage-free
   board decoder exhaustively verifies all 4,096 addresses and all ownership
-  states; firmware compliance/release timing remains `OQ-021`. Complete BIO
-  divider state, signed-audio DAC interpretation, board-variant audit, shared
-  storage/reset-handoff implementation, and synthetic wrapper tests remain.
+  states. A same-clock FPGA storage adapter now host-loads and TMS-reads all
+  4,096 16-bit words, preserves contents across adapter reset, commits safe
+  high-address TMS writes, diverts low writes to I/O, and grants neither side
+  during invalid overlap. Firmware compliance/release timing remains
+  `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
+  Complete BIO divider state, signed-audio DAC interpretation, board-variant
+  audit, processor/RAM top-level integration, 68000 bus adaptation, and
+  synthetic wrapper execution tests remain.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with

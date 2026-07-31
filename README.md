@@ -34,8 +34,11 @@ Driver Sound Board port roles and BIO branch in the assembler/model workflow;
 it does not contain game code or claim physical board qualification.
 A board-specific combinational decoder now reproduces the Rev-A low-eight
 port/program-RAM split and reports invalid simultaneous 68000/DSP RAM
-ownership. It is exhaustive-tested and synthesizable, but it is not yet the
-shared RAM, reset-handoff controller, or complete sound-board wrapper.
+ownership. A separate synchronous-read FPGA adapter retains the complete
+4K-by-16 shared RAM as an abstract Yosys memory, supports safe whole-word host
+loading while the DSP is reset, and refuses conflicting writes. These pieces
+are exhaustive-tested and synthesizable, but they are not yet a complete
+processor/RAM top level, 68000 bus bridge, or sound-board wrapper.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

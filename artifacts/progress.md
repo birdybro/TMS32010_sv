@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' program-RAM ownership/decode qualification
+- **Current milestone:** Hard Drivin' shared program-RAM FPGA adaptation
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 114 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 115 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 26 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 27 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -45,7 +45,9 @@
   with 110 retained checks and zero structural problems, including 46 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
-  with zero structural problems.
+  with zero structural problems. A fifth target retains the board's 4K-by-16
+  adapter as one registered-read, single-write-port abstract memory in an
+  85-cell hierarchy with five checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -412,6 +414,13 @@
   decoder routes every low-address WE, including TBLW at `0x000`–`0x007`, to
   output ports instead of program RAM (`SC-021`). A synthesizable decoder now
   exhaustively checks all addresses and ownership combinations.
+- **New storage evidence:** the same-clock board adapter loads all 4,096 words
+  through the reset-qualified host path and reads each back through the TMS
+  path. It preserves memory across adapter initialization, commits safe
+  high-address TMS writes, diverts low-eight writes to I/O, and disables both
+  writers during invalid overlap. Yosys retains the array as one `$mem_v2`;
+  Quartus block-RAM mapping remains unclaimed. A044427's whole-word host path
+  conflicts with MAME byte merging under `SC-022`/`OQ-022`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -426,15 +435,15 @@
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
-  divider state, program-RAM storage/reset handoff and firmware compliance,
+  divider state, processor/RAM top-level reset handoff and firmware compliance,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement and verify the reset-qualified 4K shared program-RAM
-  host-load path around the qualified decoder, without assigning priority to
-  invalid overlap; keep exact handoff timing, signed DAC mapping, and port 2
-  provisional.
+- **Next task:** connect the generic MiSTer callback wrapper to the qualified
+  board decoder/RAM and execute a synthetic host-loaded program through a safe
+  reset handoff; keep exact 68000 timing, byte access, signed DAC mapping, and
+  port 2 provisional.
 - **Latest committed baseline before this cycle:**
-  `9c485c7`
+  `ab58521`

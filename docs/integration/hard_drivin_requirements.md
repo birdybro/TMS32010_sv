@@ -60,6 +60,37 @@ not assign it undocumented read/write priority. The project-local
 `hard_drivin_sound_bus_decode` exposes exactly that ownership conflict and an
 exhaustive test covers all four combinations.
 
+The host program path uses `A12:A1` as the 4K word address and connects all
+sixteen `D15:D0` bits through two LS245 devices. The host-side LS244 drives the
+single `/RAMCE` and `/RAMWR` controls. The 68000 `/UDS` and `/LDS` signals are
+used elsewhere on the drawing but do not enter this program-RAM control path
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3–4 of 10,
+PDF pp. 5–8]. **Confidence: VERIFIED_PRIMARY for the shown whole-word path.**
+The electrical result of an attempted byte write and whether production
+firmware ever performs one remain `SC-022`/`OQ-022`; a wrapper must not silently
+call byte-preserving merge behavior verified hardware.
+
+### Same-clock FPGA storage adaptation
+
+`hard_drivin_sound_program_ram` implements the 4,096-by-16 storage without
+vendor primitives. It instantiates the qualified decoder, grants the host only
+for `/320RES=0,/320RAM=0`, grants the TMS only for
+`/320RES=1,/320RAM=1`, and acknowledges neither side in the invalid overlap.
+Host and TMS write inputs commit only on explicit caller-supplied pulses. A
+single selected-address synchronous read port supplies registered data and a
+ready indication. Adapter initialization clears only response-valid state;
+it deliberately does not initialize or erase program words.
+
+Synchronous read latency, ready, and commit signals are FPGA integration
+conventions around the physical asynchronous SRAM, not reconstructed board
+pins. All 4,096 words are loaded through the host port and read back through
+the TMS port in `tb_hard_drivin_sound_program_ram`; the same test covers
+reset retention, safe handoff, high-address TBLW storage, low-eight I/O alias,
+and rejected conflicting writes. Yosys 0.67+111 retains one 4,096-by-16
+`$mem_v2` with one registered read port and one merged write port. This is
+**VERIFIED_SIMULATION** and a portable-synthesis structural result, not a
+Quartus block-RAM mapping, 68000 bridge, or complete board timing claim.
+
 MAME maps DSP program words `0x000`–`0xfff` to shared sound DSP RAM and
 allows host reads/writes of the same storage at `0xff4000`–`0xff5fff` without
 checking DSP reset. Its latch bit drives an inverted HALT input rather than
@@ -227,8 +258,9 @@ The future non-ROM qualification sequence is:
 
 1. synthetic reset and address-0 fetch with schematic clock/reset ratios
    (generic wrapper evidence exists; board-specific reset/halt control remains);
-2. synthetic 4K shared-program-RAM ownership and host-load sequence (decode
-   truth table complete; storage/reset-release wrapper remains);
+2. synthetic 4K shared-program-RAM ownership and host-load sequence (complete
+   in the standalone storage adapter; processor/top-level reset release and
+   host-bus timing remain);
 3. host/DSP communication-memory handshake;
 4. BIO pulse/poll behavior;
 5. synthetic writes through every decoded I/O port and DAC trace (model-level

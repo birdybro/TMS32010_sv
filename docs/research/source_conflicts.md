@@ -464,3 +464,23 @@ electrical result of an out-of-range access.
   address test protects this board-specific rule.
 - **Confidence:** VERIFIED_PRIMARY for A044427 Rev A; documented
   secondary-source mismatch.
+
+## SC-022 — Physical whole-word program RAM versus byte-combined MAME writes
+
+- **Primary board evidence:** A044427 connects host `A12:A1` to RAM
+  `RA11:RA0`, connects all `D15:D0` through two LS245 devices, and supplies a
+  single `/RAMWR` to all four 4-bit SRAM slices. The drawing's `/UDS` and
+  `/LDS` logic serves other memory, not the DSP program-RAM controls
+  [atari-driver-sound-board-schematic, sheets 3–4 of 10, PDF pp. 5–8].
+- **Secondary abstraction:** pinned MAME's host handler accepts `mem_mask` and
+  uses `COMBINE_DATA`, retaining whichever byte lane was not selected
+  [mame-harddriv-audio-030fefc, `hdsnd68k_320ram_w` and host address map].
+- **Conflict:** byte-preserving merge is useful emulator behavior but is not
+  shown by the physical SRAM wiring. The actual value of the nominally
+  inactive 68000 data lane during a byte transaction has not been qualified.
+- **Current treatment:** `hard_drivin_sound_program_ram` exposes only a
+  complete 16-bit host write. A future 68000 adapter must not add a byte merge
+  and label it physical behavior without resolving `OQ-022`.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A whole-word wiring;
+  CORROBORATED for MAME's abstraction; UNKNOWN for an out-of-contract byte
+  access on hardware.

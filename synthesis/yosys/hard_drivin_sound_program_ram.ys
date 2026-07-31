@@ -1,0 +1,11 @@
+read_verilog -sv rtl/wrappers/hard_drivin_sound_bus_decode.sv
+read_verilog -sv rtl/wrappers/hard_drivin_sound_program_ram.sv
+
+hierarchy -check -top hard_drivin_sound_program_ram
+proc
+opt
+check -assert
+memory -nomap
+check -assert
+stat
+write_json build/yosys/hard_drivin_sound_program_ram.json

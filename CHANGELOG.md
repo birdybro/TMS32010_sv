@@ -60,6 +60,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   program-RAM ownership, invalid host/running-DSP overlap, low-eight I/O
   selection, and the board's low-address TBLW/OUT alias, plus an exhaustive
   address/ownership test and standalone Yosys target.
+- A synthesizable A044427 4K-by-16 same-clock program-RAM adapter with
+  synchronous host/TMS reads, explicit write commits, reset-preserved
+  contents, no-priority conflict rejection, complete 4,096-word host-load/TMS
+  readback coverage, and a memory-retaining Yosys target.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -381,6 +385,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Defined the board adapter's host program path as whole-word only. A044427
+  does not route UDS/LDS into this SRAM bank; byte-preserving MAME writes are
+  now isolated as `SC-022`/`OQ-022` rather than promoted to hardware behavior.
 - Clarified that the generic program/I/O qualifiers preserve architectural
   ownership while the Hard Drivin' board deliberately decodes native address
   and strobes, causing WE at addresses 0–7 to select output ports.
@@ -469,6 +476,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Complete host loading, synchronous TMS readback, and address identity across
+  all 4,096 shared program words; contents survive adapter initialization,
+  legal high-address TMS writes commit, low-eight writes remain I/O, and
+  simultaneous host/running-DSP write attempts grant neither side. Yosys
+  retains one 4,096-by-16 memory with a registered read port and merged write
+  port in an 85-cell hierarchy with zero structural problems.
 - A044427's complete 4,096-address combinational target decode and four-state
   host/DSP ownership truth table. Every MEN read selects 4K-by-16 program RAM;
   DEN reaches only input ports 0–7; WE reaches output ports 0–7 or program RAM
@@ -942,6 +955,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- The FPGA storage adapter is not yet connected to the generic processor as a
+  complete Hard Drivin' top level. Its synchronous ready/commit callbacks are
+  implementation conventions, not physical SRAM pins, and the future 68000
+  bridge must resolve or reject byte accesses under `SC-022`/`OQ-022`.
 - A044427 has no program-RAM arbiter. Simultaneously selecting the host window
   while `/320RES` is released enables conflicting buffer paths; pinned MAME's
   always-accessible shared array and HALT mapping do not reproduce that
