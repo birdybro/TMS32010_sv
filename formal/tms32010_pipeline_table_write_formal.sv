@@ -1,0 +1,361 @@
+`default_nettype none
+
+// FORMAL-001 bounded harness for explicit TBLW self-modification.
+//
+// The verification-only debug port preloads RAM[0] with LACK 0x44. The fixed
+// program sets ACC to the address of TBLW's following word, writes that RAM
+// word over the discarded fetch, repeats the fetch, and executes only the
+// replacement. See formal/README.md for bounds and excluded claims.
+module tms32010_pipeline_table_write_formal (
+  input logic clk_i,
+  input logic clock_enable_i
+);
+  logic [1:0]  initialize_count = 2'd0;
+  logic        past_valid = 1'b0;
+  logic        initialize;
+  logic        initialized;
+  logic [15:0] mutable_program_word = 16'h7f89;
+  logic        write_seen = 1'b0;
+  logic [1:0]  write_count = 2'd0;
+  logic [15:0] program_data;
+  logic [1:0]  phase;
+  logic [11:0] program_address;
+  logic        men_n;
+  logic        den_n;
+  logic        we_n;
+  logic        program_write;
+  logic [15:0] program_write_data;
+  logic        sample;
+  logic        bus_active;
+  logic        execute_valid;
+  logic [11:0] execute_address;
+  logic [15:0] execute_word;
+  logic        pipeline_blocked;
+  logic [7:0]  data_address;
+  logic        data_read;
+  logic        data_write;
+  logic        data_address_valid;
+  logic [7:0]  data_write_address;
+  logic        data_write_address_valid;
+  logic [15:0] data_read_data;
+  logic [15:0] data_write_data;
+  logic        io_read;
+  logic        io_write;
+  logic [11:0] pc;
+  logic [31:0] accumulator;
+  logic [11:0] stack_top;
+  logic [11:0] stack_level_1;
+  logic [11:0] stack_level_2;
+  logic [11:0] stack_bottom;
+  logic        interrupt_mask;
+  logic        interrupt_pending;
+  logic        retired;
+  logic        illegal;
+  logic [31:0] cycle_count;
+
+  assign initialize = initialize_count != 2'd2;
+  assign initialized = !initialize;
+
+  always_comb begin
+    case (program_address)
+      12'h000: program_data = 16'h7e02;  // LACK 2
+      12'h001: program_data = 16'h7d00;  // TBLW 0
+      12'h002: program_data = mutable_program_word;
+      12'h003: program_data = 16'h7f80;  // NOP
+      default: program_data = 16'h7f80;
+    endcase
+  end
+
+  tms32010_sequential_pipeline_slice dut (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize),
+    .rs_i                          (1'b0),
+    .clock_enable_i                (clock_enable_i),
+    .bio_i                         (1'b1),
+    .int_i                         (1'b1),
+    .program_data_i                (program_data),
+    .io_read_data_i                (16'h0000),
+    .debug_data_write_i            (initialize),
+    .debug_data_address_i          (8'h00),
+    .debug_data_i                  (16'h7e44),
+    .phase_o                       (phase),
+    .clkout_o                      (),
+    .program_address_o             (program_address),
+    .men_n_o                       (men_n),
+    .den_n_o                       (den_n),
+    .we_n_o                        (we_n),
+    .program_write_o               (program_write),
+    .program_write_data_o          (program_write_data),
+    .sample_o                      (sample),
+    .bus_active_o                  (bus_active),
+    .execute_valid_o               (execute_valid),
+    .execute_address_o             (execute_address),
+    .execute_word_o                (execute_word),
+    .pipeline_blocked_o            (pipeline_blocked),
+    .data_address_o                (data_address),
+    .data_read_o                   (data_read),
+    .data_write_o                  (data_write),
+    .data_address_valid_o          (data_address_valid),
+    .data_write_address_o          (data_write_address),
+    .data_write_address_valid_o    (data_write_address_valid),
+    .data_read_data_o              (data_read_data),
+    .data_write_data_o             (data_write_data),
+    .io_port_o                     (),
+    .io_read_o                     (io_read),
+    .io_write_o                    (io_write),
+    .io_write_data_o               (),
+    .pc_o                          (pc),
+    .accumulator_o                 (accumulator),
+    .t_register_o                  (),
+    .product_register_o            (),
+    .auxiliary_register_0_o        (),
+    .auxiliary_register_1_o        (),
+    .auxiliary_register_pointer_o  (),
+    .data_page_pointer_o           (),
+    .stack_top_o                    (stack_top),
+    .stack_level_1_o                (stack_level_1),
+    .stack_level_2_o                (stack_level_2),
+    .stack_bottom_o                 (stack_bottom),
+    .overflow_flag_o               (),
+    .overflow_mode_o               (),
+    .interrupt_mask_o              (interrupt_mask),
+    .interrupt_pending_o           (interrupt_pending),
+    .instruction_valid_o           (),
+    .retired_o                     (retired),
+    .illegal_o                     (illegal),
+    .cycle_count_o                 (cycle_count)
+  );
+
+  always_ff @(posedge clk_i) begin
+    if (initialize_count != 2'd2) begin
+      initialize_count <= initialize_count + 2'd1;
+    end
+    past_valid <= 1'b1;
+
+    if (initialize) begin
+      mutable_program_word <= 16'h7f89;
+      write_seen <= 1'b0;
+      write_count <= 2'd0;
+    end else if (
+      clock_enable_i &&
+      bus_active &&
+      (phase == 2'd3) &&
+      program_write
+    ) begin
+      assert (program_address == 12'h002);
+      assert (program_write_data == 16'h7e44);
+      mutable_program_word <= program_write_data;
+      write_seen <= 1'b1;
+      write_count <= write_count + 2'd1;
+    end
+
+    if (initialized) begin
+      assert (!illegal);
+      assert (!pipeline_blocked);
+      assert (!io_read);
+      assert (!io_write);
+      assert (!(data_read && data_write));
+      assert (!(data_write && !data_write_address_valid));
+      assert (interrupt_mask);
+      assert (!interrupt_pending);
+      assert (write_count <= 2'd1);
+      assert (den_n);
+      assert (!(
+        (!men_n && !we_n) ||
+        (!men_n && !den_n) ||
+        (!den_n && !we_n)
+      ));
+
+      if (program_write) begin
+        assert (bus_active);
+        assert (program_address == 12'h002);
+        assert (program_write_data == 16'h7e44);
+        assert (men_n);
+        assert (we_n == (phase == 2'd0));
+      end else if (bus_active) begin
+        assert (we_n);
+        assert (men_n == (phase == 2'd0));
+      end else begin
+        assert (men_n);
+        assert (we_n);
+      end
+
+      if (write_seen) begin
+        assert (mutable_program_word == 16'h7e44);
+        assert (write_count == 2'd1);
+      end else begin
+        assert (mutable_program_word == 16'h7f89);
+        assert (write_count == 2'd0);
+      end
+
+      case (cycle_count)
+        32'd0: begin
+          assert (pc == 12'h000);
+          assert (accumulator == 32'h0000_0000);
+          assert (stack_top == 12'h000);
+          assert (stack_level_1 == 12'h000);
+          assert (stack_level_2 == 12'h000);
+          assert (stack_bottom == 12'h000);
+        end
+        32'd1: begin
+          assert (pc == 12'h001);
+          assert (accumulator == 32'h0000_0002);
+          assert (execute_valid);
+          assert (execute_address == 12'h001);
+          assert (execute_word == 16'h7d00);
+          assert (program_address == 12'h002);
+          assert (!data_read);
+          assert (!data_write);
+          assert (!write_seen);
+        end
+        32'd2: begin
+          assert (pc == 12'h002);
+          assert (accumulator == 32'h0000_0002);
+          assert (execute_valid);
+          assert (execute_address == 12'h001);
+          assert (execute_word == 16'h7d00);
+          assert (program_address == 12'h002);
+          assert (program_write);
+          assert (program_write_data == 16'h7e44);
+          assert (data_read);
+          assert (!data_write);
+          assert (data_address_valid);
+          assert (data_address == 8'h00);
+          assert (data_read_data == 16'h7e44);
+          assert (!write_seen);
+        end
+        32'd3: begin
+          assert (pc == 12'h002);
+          assert (accumulator == 32'h0000_0002);
+          assert (execute_valid);
+          assert (execute_address == 12'h001);
+          assert (execute_word == 16'h7d00);
+          assert (program_address == 12'h002);
+          assert (!program_write);
+          assert (!data_read);
+          assert (!data_write);
+          assert (write_seen);
+          assert (mutable_program_word == 16'h7e44);
+        end
+        32'd4: begin
+          assert (pc == 12'h002);
+          assert (accumulator == 32'h0000_0002);
+          assert (execute_valid);
+          assert (execute_address == 12'h002);
+          assert (execute_word == 16'h7e44);
+          assert (program_address == 12'h003);
+          assert (!program_write);
+          assert (!data_read);
+          assert (!data_write);
+          assert (write_seen);
+        end
+        32'd5: begin
+          assert (pc == 12'h003);
+          assert (accumulator == 32'h0000_0044);
+          assert (execute_valid);
+          assert (execute_address == 12'h003);
+          assert (execute_word == 16'h7f80);
+          assert (program_address == 12'h004);
+          assert (!program_write);
+          assert (!data_read);
+          assert (!data_write);
+          assert (write_seen);
+        end
+        default: begin
+        end
+      endcase
+    end
+
+    if (
+      past_valid &&
+      $past(initialized) &&
+      !$past(clock_enable_i)
+    ) begin
+      assert ({
+        phase,
+        program_address,
+        men_n,
+        den_n,
+        we_n,
+        program_write,
+        program_write_data,
+        bus_active,
+        execute_valid,
+        execute_address,
+        execute_word,
+        pipeline_blocked,
+        data_address,
+        data_read,
+        data_write,
+        data_address_valid,
+        data_write_address,
+        data_write_address_valid,
+        data_read_data,
+        data_write_data,
+        io_read,
+        io_write,
+        pc,
+        accumulator,
+        stack_top,
+        stack_level_1,
+        stack_level_2,
+        stack_bottom,
+        interrupt_mask,
+        interrupt_pending,
+        illegal,
+        cycle_count,
+        mutable_program_word,
+        write_seen,
+        write_count
+      } == $past({
+        phase,
+        program_address,
+        men_n,
+        den_n,
+        we_n,
+        program_write,
+        program_write_data,
+        bus_active,
+        execute_valid,
+        execute_address,
+        execute_word,
+        pipeline_blocked,
+        data_address,
+        data_read,
+        data_write,
+        data_address_valid,
+        data_write_address,
+        data_write_address_valid,
+        data_read_data,
+        data_write_data,
+        io_read,
+        io_write,
+        pc,
+        accumulator,
+        stack_top,
+        stack_level_1,
+        stack_level_2,
+        stack_bottom,
+        interrupt_mask,
+        interrupt_pending,
+        illegal,
+        cycle_count,
+        mutable_program_word,
+        write_seen,
+        write_count
+      }));
+    end
+
+    cover (
+      initialized &&
+      (cycle_count == 32'd5) &&
+      (pc == 12'h003) &&
+      (accumulator == 32'h0000_0044) &&
+      (mutable_program_word == 16'h7e44) &&
+      write_seen &&
+      (write_count == 2'd1)
+    );
+  end
+endmodule
+
+`default_nettype wire

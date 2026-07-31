@@ -61,7 +61,11 @@
   arbitrary clock-enable stalls, including discarded PC+1, ACC-addressed MEN
   transfer of `0x1234`, RAM commit, repeated PC+1, and following ACC
   consumption. Its complete cover reaches step 34; this is not a general
-  table or pipeline proof.
+  table or pipeline proof. A seventh 40-step BMC checks one direct TBLW under
+  an explicit enabled phase-3 synchronous program-memory contract. It proves
+  the old PC+1 word persists until the exact write boundary, address 2 receives
+  `0x7e44` exactly once, and only the repeated replacement fetch executes as
+  `LACK 0x44`; its complete cover reaches step 35.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -274,7 +278,9 @@
   self-modifying TBLW test proves the old PC+1 word is discarded and only the
   rewritten word executes; a bounded integrated-pipeline proof independently
   checks one direct TBLR program through subsequent LAC consumption across
-  arbitrary clock-enable stalls; matching core and explicit-pipeline 32-case
+  arbitrary clock-enable stalls; a complementary proof checks one direct TBLW
+  write/refetch/execution sequence under an explicit synchronous
+  program-memory model; matching core and explicit-pipeline 32-case
   matrices now cover every
   represented execution interval of the 11 supported two-word control-flow
   families, IN/OUT, and TBLR/TBLW, including native strobe ownership,
@@ -296,8 +302,8 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend `FORMAL-001` only with a bounded TBLW or indirect-table
-  case whose architectural ordering is already documented, or return to
+- **Next task:** extend `FORMAL-001` only with a bounded indirect-table case
+  whose architectural ordering is already documented, or return to
   primary-source research for unresolved CALA/RET/PUSH/POP timing; preserve the
   distinction between model-qualified CALA/RET/PUSH/POP
   state/cycle behavior and absent native/RTL timing;
@@ -310,4 +316,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `d58d0dd`
+  `f63a70a`

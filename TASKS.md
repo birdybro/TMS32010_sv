@@ -1047,8 +1047,17 @@ objective passing evidence.
   ACC-addressed MEN transfer of `0x1234`, exact logical RAM commit, repeated
   PC+1 fetch, following LAC consumption, bus exclusion, stack/interrupt
   preservation, and stall stability. The complete path reaches cover step 34.
-  This is one direct TBLR scenario, not a TBLW, indirect-table,
-  interrupt-arrival, arbitrary-program, or general integrated-pipeline proof.
+  This configuration itself proves only one direct TBLR scenario, not TBLW,
+  indirect-table, interrupt-arrival, arbitrary-program, or general
+  integrated-pipeline behavior.
+  A seventh 40-step configuration preloads RAM word 0 through the explicit
+  verification-only debug port, executes `LACK 2; TBLW 0`, and models program
+  memory as committing only at an enabled active phase-3 write boundary. It
+  proves the old PC+1 ZAC remains through discard and stalls, exact address-2
+  WE/data ownership, one write, repeated replacement fetch, and subsequent
+  execution of rewritten `LACK 0x44`; cover reaches step 35. This is one
+  direct synchronous-memory scenario, not an indirect, arbitrary-data,
+  interrupt-arrival, or electrical-memory proof.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general

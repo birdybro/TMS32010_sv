@@ -338,16 +338,26 @@ independently asserts one direct TBLR path: `LACK 4` supplies the table
 address, program word `0x1234` is transferred to RAM, PC+1 is repeated, and
 the following `LAC 0` consumes that committed word. Arbitrary clock-enable
 stalls preserve all checked bus and architectural state, and the complete
-path reaches cover step 34. This is one fixed direct scenario, not a proof of
-indirect TBLR, TBLW, arbitrary programs, or the general pipeline
+path reaches cover step 34.
+
+A complementary 40-step harness checks one direct self-modifying TBLW path.
+Its verification-only preload places `LACK 0x44` in RAM word 0, and its
+explicit program-memory fixture commits writes only at an enabled active
+phase-3 boundary. The old PC+1 ZAC remains visible through discard and stalls;
+TBLW then drives address 2 and `0x7e44` under WE exactly once, repeats address
+2 under MEN, and captures and executes the replacement word. The complete
+path reaches cover step 35. These are two fixed direct scenarios, not proofs
+of indirect table addressing, arbitrary programs or memory systems, or the
+general pipeline
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
 (PDF pp. 41 and 114–117);
 `sim/bus/tb_sequential_pipeline_table.sv`;
-`formal/tms32010_pipeline_table.sby`; `formal/README.md`].
+`formal/tms32010_pipeline_table.sby`;
+`formal/tms32010_pipeline_table_write.sby`; `formal/README.md`].
 **Confidence: VERIFIED_PRIMARY for source ordering and native pin ownership;
 VERIFIED_SIMULATION for explicit execute ownership; bounded formal evidence
-for the stated direct scenario.**
+for the two stated direct scenarios.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

@@ -406,8 +406,13 @@ A separate 40-step bounded harness checks one integrated direct-TBLR sequence
 through discarded PC+1, ACC-addressed program read, repeated PC+1 capture,
 RAM commit, and following LAC consumption across arbitrary clock-enable
 stalls; its complete path is reachable at step 34.
+A complementary 40-step direct-TBLW harness uses a verification-only RAM
+preload and a phase-3 synchronous program-memory model to prove one exact
+write, repeated-fetch replacement, and execution of the rewritten LACK word;
+its complete self-modifying path is reachable at step 35.
 This is not a complete formal proof; no general pipeline, formally exhaustive
-interrupt entry matrix, indirect/TBLW table proof, or complete pin timing
+interrupt entry matrix, indirect table proof, general external-memory proof,
+or complete pin timing
 exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

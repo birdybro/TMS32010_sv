@@ -88,6 +88,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   `LACK 4; TBLR 0; LAC 0; NOP`, checking discarded and repeated PC+1 fetches,
   ACC-addressed program transfer, RAM commit/consumption, bus exclusion, and
   arbitrary clock-enable stalls.
+- A complementary bounded direct-TBLW formal harness with an explicit
+  synchronous phase-3 program-memory model, checking old-word discard, exact
+  WE address/data, one memory mutation, replacement refetch, and execution of
+  the rewritten instruction across arbitrary clock-enable stalls.
 - Explicit Figure 2-12 interrupt ownership for the qualified EINT path:
   protected execution discards N+2, entry uses an empty execute slot while
   fetching vector 2, and vector execution waits for the following interval.
@@ -688,6 +692,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   arbitrary clock-enable choices; its cover reaches the complete
   LACK/TBLR/LAC/NOP path at step 34 after checking `0x1234` program-to-RAM
   transfer and following ACC consumption.
+- A second 40-step actual-pipeline BMC proves one direct TBLW
+  self-modification sequence across arbitrary clock-enable choices; its cover
+  reaches step 35 after the old ZAC is discarded, `0x7e44` is written exactly
+  once at program address 2, refetched, and executed as `LACK 0x44`.
 - Yosys 0.67+111 synthesizes the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
   sequential pipeline wrapper to 15,365 generic cells with 103 retained
@@ -802,10 +810,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   under `OQ-019`.
 - Formal evidence currently covers only four fixed interrupt-entry programs
   at 12-, 14-, and two 20-step bounds, one standalone ownership register, and
-  one fixed direct-TBLR integrated-pipeline program at 40 steps. It excludes
-  DINT, the other indirect MPY control/update cases, arbitrary multiply-chain
-  placement/length, formal coverage of the represented multicycle-arrival
-  matrix, RET, the general pipeline, and broad decode/datapath properties.
+  fixed direct-TBLR and direct-TBLW integrated-pipeline programs at 40 steps.
+  It excludes DINT, the other indirect MPY control/update cases, arbitrary
+  multiply-chain placement/length, formal coverage of the represented
+  multicycle-arrival matrix, indirect table addressing, RET, the general
+  pipeline, general external-memory behavior, and broad decode/datapath
+  properties.
 - Original-part ADDH overflow/saturation, physical-reset retention of unlisted
   state, and ABS sticky-OV behavior remain unresolved as OQ-011 through
   OQ-013.

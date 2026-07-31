@@ -100,7 +100,15 @@ A 40-step formal harness checks one fixed direct-TBLR use of this complete
 hierarchy across arbitrary clock-enable stalls. It covers discarded PC+1,
 ACC-addressed program read, RAM commit, repeated PC+1, and consumption by the
 following LAC; the complete path is reachable at step 34. It is not a general
-pipeline, TBLW, indirect-table, or interrupt proof.
+pipeline, TBLW, indirect-table, or interrupt proof by itself.
+
+A complementary 40-step harness checks one direct TBLW self-modification
+under the same enabled phase-3 synchronous program-memory contract used by
+the directed testbench. The old following ZAC survives until the write
+boundary, replacement `LACK 0x44` is written exactly once, and only its
+repeated fetch is captured and executed; cover reaches step 35. The
+verification-only RAM preload and external-memory model are harness
+conveniences, not architectural reset or electrical timing claims.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one

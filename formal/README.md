@@ -158,12 +158,41 @@ Assertions check:
 
 All assertions pass through 40 solver steps. The separate cover reaches the
 complete LACK/TBLR/LAC/NOP path at step 34. This is bounded evidence for one
-direct TBLR sequence. It does not prove TBLW, indirect table addressing,
-self-modification, arbitrary surrounding instructions, interrupts during the
-table operation, the complete integrated pipeline, or electrical timing.
-Those behaviors remain simulation/research or future-formal work.
+direct TBLR sequence. It does not prove indirect table addressing, arbitrary
+surrounding instructions, interrupts during the table operation, the complete
+integrated pipeline, or electrical timing.
 
-The six harnesses leave DINT ordering, formal coverage of the represented
+## Integrated direct-TBLW self-modification harness
+
+`tms32010_pipeline_table_write.sby` checks the same complete hierarchy with a
+second 40-step BMC and cover. The explicitly nonarchitectural debug port
+preloads RAM word 0 with `LACK 0x44` (`0x7e44`). The fixed program executes
+`LACK 2`, direct `TBLW 0`, an old ZAC at program address 2, and NOP.
+The formal program-memory fixture commits a write only on an enabled, active
+phase-3 boundary, matching the synchronous contract in
+`sim/bus/tb_sequential_pipeline_table.sv`.
+
+Assertions check:
+
+- the old ZAC word remains unchanged through the discarded PC+1 read and any
+  clock-enable stalls;
+- cycle 2 reads RAM word 0 and drives only WE at program address 2 with exact
+  data `0x7e44`;
+- the program-memory fixture commits exactly one write at the enabled
+  phase-3 boundary;
+- cycle 3 reads the replacement word at repeated PC+1 under MEN;
+- TBLW retains ownership until that repeated fetch and the replacement
+  `LACK 0x44`, rather than old ZAC, subsequently sets ACC; and
+- bus exclusion, stack/interrupt preservation, and complete checked-state
+  stability across arbitrary clock-enable stalls.
+
+All assertions pass through 40 solver steps. The cover reaches the complete
+self-modifying path at step 35. This is one fixed direct TBLW scenario under
+the stated program-memory model. It does not prove indirect addressing,
+arbitrary write targets/data, interrupt arrival, asynchronous or electrical
+memory timing, or the general integrated pipeline.
+
+The seven harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

@@ -167,9 +167,18 @@ The same direct TBLR ordering has bounded integrated-pipeline evidence through
 40 formal steps with arbitrary clock-enable stalls. Assertions cover the
 discarded PC+1 MEN read, ACC-addressed MEN transfer, logical RAM commit,
 repeated PC+1 MEN read, and subsequent LAC consumption; the complete fixed
-path reaches cover step 34. The bound does not generalize to TBLW, indirect
-addressing, interrupt arrival, or arbitrary instruction context
+path reaches cover step 34. This first bound does not itself generalize to
+TBLW, indirect addressing, interrupt arrival, or arbitrary instruction context
 [`formal/tms32010_pipeline_table.sby`, `formal/README.md`].
+
+A second 40-step harness covers one direct self-modifying TBLW sequence at
+step 35. Under an explicitly modeled enabled phase-3 program-memory commit,
+it asserts that the discarded old PC+1 word survives until the exact WE
+boundary, the replacement word is written once, and the repeated PC+1 MEN
+read captures and later executes only that replacement. This complements but
+does not widen the direct TBLR bound to indirect addressing, arbitrary memory
+timing, or arbitrary instruction contexts
+[`formal/tms32010_pipeline_table_write.sby`, `formal/README.md`].
 
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,
