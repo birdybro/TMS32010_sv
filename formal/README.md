@@ -11,6 +11,24 @@ the 2026-07-29 OSS CAD Suite, and Bitwuzla 0.9.1:
 PATH=/path/to/oss-cad-suite/bin:$PATH make formal
 ```
 
+## Exhaustive multiplier harness
+
+`tms32010_multiplier.sby` checks the standalone combinational multiplier with
+a one-step BMC over two unconstrained 16-bit inputs. Thus the solver checks
+all 2^32 operand pairs. The reference product uses explicit 32-bit sign
+extension before multiplication.
+
+Assertions prove the ordinary signed product, commutativity, zero and unity
+identities, and that equal `0x8000` operands are the only permitted departure
+from the mathematical result. That pair must produce TI's documented
+`0xc0000000`. Four independent step-0 covers reach the exceptional pair,
+maximum-positive square, most-negative times positive one, and negative one
+times most-negative boundaries.
+
+This proves the RTL's combinational bit-vector relation. It does not prove
+physical multiplier timing, a technology-mapped DSP implementation, MPY/MPYK
+instruction sequencing, operand-address selection, or interrupt interaction.
+
 ## Architectural reset-boundary harness
 
 `tms32010_reset.sby` checks the actual portable core with a 10-step BMC and
@@ -237,7 +255,7 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The nine harnesses leave DINT ordering, formal coverage of the represented
+The ten harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

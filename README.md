@@ -116,7 +116,10 @@ Bounded actual-core formal harnesses check fixed EINT entry,
 MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
 indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
 12/14/20/20-step bounds and reachable covers are documented in
-`formal/README.md`. A 10-step actual-core reset harness separately proves the
+`formal/README.md`. A one-step standalone proof exhaustively checks all 2^32
+signed multiplier operand pairs, including TI's unique most-negative-square
+exception; this is a combinational RTL result, not physical-timing evidence.
+A 10-step actual-core reset harness separately proves the
 documented reset controls and explicitly provisional unlisted-state retention,
 with a nonzero-ACC/OVM cover at step 5. A separate 40-step native-program-bus
 harness proves the digital reset/release transition relation for arbitrary

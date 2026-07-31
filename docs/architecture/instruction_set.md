@@ -858,6 +858,14 @@ independently corroborates the exception, but is not its authority
 [mame-tms320c1x-core-030fefc, `tms320c1x_device_base::mpy`, lines 631-635].
 **Confidence: VERIFIED_PRIMARY; CORROBORATED by the secondary oracle.**
 
+A one-step formal harness leaves both 16-bit operands arbitrary and checks all
+2^32 pairs against an explicitly sign-extended signed product. It proves that
+equal `0x8000` operands are the only mathematical-product departure, and also
+checks commutativity and zero/unity identities. Four covers reach the
+exception and signed extrema independently. This qualifies only the
+standalone combinational RTL relation, not MPY address selection, retirement,
+or physical timing [`formal/tms32010_multiplier.sby`].
+
 Direct addressing resolves the data operand through the old DP. Indirect
 addressing reads through the AR selected by the old ARP before the ordinary
 nine-bit AR update and optional next-ARP replacement. Reserved controls and

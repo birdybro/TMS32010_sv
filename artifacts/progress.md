@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** reset and initialization behavior
+- **Current milestone:** RTL datapath arithmetic proof
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 230
   directed model/unit tests, including standalone fetch/execute and
@@ -77,7 +77,12 @@
   abort, inactive address zero, the full release wait, first-read activation,
   `CLKOUT`/`MEN`/sample relationships, and stall behavior. Its five-cycle
   reset/address-0/address-1 cover reaches step 34; physical electrical timing
-  remains outside the proof.
+  remains outside the proof. A tenth one-step standalone multiplier BMC checks
+  all 2^32 arbitrary 16-bit operand pairs against an explicitly sign-extended
+  signed product. It proves the unique `0x8000`-square exception,
+  commutativity, and zero/unity identities; all four exception/extrema covers
+  reach step 0. Instruction sequencing, physical timing, and technology
+  mapping remain outside that proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -363,4 +368,4 @@
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `23f6a6f`
+  `1e0f492`

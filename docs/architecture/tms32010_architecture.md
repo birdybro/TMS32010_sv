@@ -231,6 +231,11 @@ The same provisional `0x8f`-to-`0x90` endpoint policy applies under OQ-014.
 MPY signed-multiplies T by the selected 16-bit data word into P through that
 same address/update path. Its documented `0x8000`-by-`0x8000` result is
 `0xc0000000`, and directed tests preserve that physical multiplier exception.
+A one-step symbolic proof additionally checks all 2^32 operand pairs against
+an explicitly sign-extended mathematical product, proving that this pair is
+the only departure, and checks commutativity plus zero/unity identities
+[`formal/tms32010_multiplier.sby`]. This is exhaustive combinational RTL
+evidence, not physical multiplier or technology-mapped timing evidence.
 MPYK instead sign-extends its signed 13-bit program-word constant, multiplies
 it by T into P, and performs no data-memory access.
 PAC copies all 32 P bits into ACC without changing P or arithmetic status and

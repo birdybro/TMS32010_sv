@@ -365,7 +365,7 @@ objective passing evidence.
 - **Acceptance criteria:** exhaustive feasible arithmetic and boundary-focused
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
-- **Tests:** `sim/unit/tb_*`, `formal/datapath/`
+- **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
@@ -398,7 +398,10 @@ objective passing evidence.
   `MPY` verifies signed products, the original most-negative exception, and
   P replacement through the same old-address/post-update order. Its
   combinational portable multiplier infers one Cyclone V DSP block in the
-  current Quartus harness. `MPYK` reuses that portable datapath with a
+  current Quartus harness. A one-step symbolic proof checks all 2^32 operand
+  pairs against an explicitly sign-extended product, proves the original
+  `0x8000`-square exception is the only departure, and checks commutativity
+  plus zero/unity identities. `MPYK` reuses that portable datapath with a
   sign-extended 13-bit immediate and no RAM transaction. `PAC` transfers all
   32 P bits into ACC without changing P or arithmetic status. `APAC` adds P
   to ACC with signed overflow, sticky OV, and OVM-controlled saturation.
@@ -1164,10 +1167,17 @@ objective passing evidence.
   and stall behavior. Its five asserted cycles followed by address-0 and
   address-1 reads reach cover step 34. It does not prove electrical timing or
   that an external environment satisfies physical reset duration.
+  A tenth one-step combinational configuration leaves both 16-bit multiplier
+  operands arbitrary. It exhaustively proves the ordinary signed product,
+  unique original-hardware exception, commutativity, and zero/unity
+  identities; four independent covers reach the exception and signed
+  boundaries at step 0. It does not prove instruction sequencing, address
+  selection, physical timing, or technology mapping.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general
-  decode/FSM/RAM/arithmetic properties, and liveness assumptions remain.
+  decode/FSM/RAM and remaining arithmetic properties, and liveness
+  assumptions remain.
   Never describe bounded checks as complete proof.
 
 ## Milestone 19 — FPGA synthesis and timing

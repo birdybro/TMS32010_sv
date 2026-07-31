@@ -435,6 +435,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 2^32 standalone multiplier input pairs in a one-step symbolic proof.
+  Ordinary pairs equal the explicitly sign-extended signed product; equal
+  `0x8000` operands uniquely select the documented `0xc0000000` exception.
+  Commutativity and zero/unity identities also hold, with four independent
+  boundary covers reached at step 0. Instruction sequencing, physical timing,
+  and technology mapping remain outside this proof.
 - A 40-step bounded proof over the standalone native program bus leaves
   logical reset, clock enable, read qualification, and next address arbitrary.
   It proves boundary-only reset recognition without premature read abort,
