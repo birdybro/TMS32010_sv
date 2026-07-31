@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, DMOV, LAC, LACK, LAR, LARK,
-LARP, LDP, LDPK, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL,
-SAR, SOVM, SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+This partial slice supports ADD, ADDS, AND, APAC, DINT, DMOV, EINT, LAC, LACK,
+LAR, LARK, LARP, LDP, LDPK, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM,
+SACH, SACL, SAR, SOVM, SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -436,6 +436,10 @@ class Tms32010Model:
             self.state.status.ovm = False
         elif mnemonic == "SOVM":
             self.state.status.ovm = True
+        elif mnemonic == "DINT":
+            self.state.status.intm = True
+        elif mnemonic == "EINT":
+            self.state.status.intm = False
         elif mnemonic != "NOP":
             raise AssertionError(f"decoder returned unhandled mnemonic {mnemonic}")
 
@@ -768,6 +772,8 @@ class Tms32010Model:
             return "LDPK", {"constant": opcode & 1}
         fixed = {
             0x7F80: "NOP",
+            0x7F81: "DINT",
+            0x7F82: "EINT",
             0x7F89: "ZAC",
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",

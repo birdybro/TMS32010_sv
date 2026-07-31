@@ -1,7 +1,7 @@
 # RTL qualification boundary
 
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
-`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`,
+`tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
 `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
@@ -43,7 +43,7 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the thirty-three currently qualified one-cycle sequential instructions it
+For the thirty-five currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general
@@ -66,6 +66,8 @@ The synthesizable code:
 - has no generated or gated clocks;
 - leaves physical-reset-unspecified data state unspecified;
 - resets the PC to zero and masks interrupts;
+- sets and clears `INTM` for exact `DINT`/`EINT` words without claiming
+  interrupt recognition or EINT's following-instruction service delay;
 - preserves `OVM` through physical reset as TI documents;
 - exposes sticky `OV` for ADD/ADDS/APAC/LTA/LTD/SPAC/SUB/SUBS
   wrap/saturation verification;

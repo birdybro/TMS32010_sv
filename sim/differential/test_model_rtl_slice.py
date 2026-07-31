@@ -56,6 +56,7 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
         words: list[int] = []
         expected = []
         model = Tms32010Model()
+        model.reset_at_instruction_boundary()
         model.data[:] = data_words
 
         def append_and_step(word: int) -> None:
@@ -69,6 +70,8 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             0x7100,
             0x6880,
             0x6E00,
+            0x7F82,
+            0x7F81,
             0x6900,
             0x6901,
             0x697F,
@@ -135,8 +138,8 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
         ):
             append_and_step(word)
 
-        choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(445):
+        choices = [0x7F80, 0x7F81, 0x7F82, 0x7F89, 0x7F8A, 0x7F8B]
+        for _ in range(443):
             family = randomizer.randrange(31)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
@@ -612,6 +615,11 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             self.assertEqual(
                 int(fields[9], 16),
                 model_trace.state_after["status"]["dp"],
+                (SEED, index),
+            )
+            self.assertEqual(
+                bool(int(fields[25], 16)),
+                model_trace.state_after["status"]["intm"],
                 (SEED, index),
             )
             self.assertEqual(int(fields[10], 16), 1, (SEED, index))

@@ -31,13 +31,22 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the thirty-three supported one-cycle sequential
+read relationship for the thirty-five supported one-cycle sequential
 instructions. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
 `XOR`, `ZALH`, `ZALS`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
 cited normal-read mapping, not a claim that control flow, external data/I/O
 access, or general pipeline overlap is complete.
+
+`DINT` and `EINT` retain the same normal external program fetch and have no
+logical data-memory transaction. The current phase wrapper verifies their
+`INTM` changes at the falling-edge retirement boundary. It has no interrupt
+pin or entry sequencer, so this does not qualify EINT's following-instruction
+service delay
+[ti-tms32010-users-guide-spru001b, `DINT` and `EINT`, printed pp. 3-27 and
+3-29 (PDF pp. 77 and 79)]. **Confidence: VERIFIED_PRIMARY for the one-cycle
+program transaction and state effect; entry timing unimplemented.**
 
 `LTA` presents its internal data-word read beside the same normal external
 program fetch while also accumulating the previous P value into ACC

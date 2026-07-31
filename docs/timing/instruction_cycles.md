@@ -20,7 +20,7 @@ trace still needs an automated assertion before `TIMING-001` can complete.
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the thirty-three-instruction subset,
+program-read cycle for every instruction in the thirty-five-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -57,6 +57,13 @@ preservation, and no data-memory transaction.
 Directed SPAC tests assert the corresponding one-cycle full-width ACC-minus-P
 arithmetic, both overflow directions and OVM result modes, sticky OV, P
 preservation, and no data-memory transaction.
+Directed `DINT`/`EINT` tests assert exact fixed decode, one-cycle retirement,
+program-only transactions, immediate `INTM` state effects, reset masking, and
+stable state during clock-enable stalls. The native-phase integration also
+retires a following NOP with `INTM` clear before DINT restores it. Because no
+pending-interrupt recognition or vector entry exists, this is not evidence
+for EINT's documented following-instruction service delay or interrupt entry
+latency; both remain under `CTRL-002`/`OQ-004`.
 
 ## Open timing dimensions
 

@@ -31,6 +31,8 @@ class IsaDatabaseTests(unittest.TestCase):
                 "ZAC",
                 "ROVM",
                 "SOVM",
+                "DINT",
+                "EINT",
                 "LARK",
                 "LARP",
                 "LDP",
@@ -83,7 +85,7 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertEqual(operands, fixture["operands"])
 
     def test_adjacent_unimplemented_control_opcode_does_not_decode(self) -> None:
-        self.assertIsNone(decode_word(self.database, 0x7F81))
+        self.assertIsNone(decode_word(self.database, 0x7F83))
         self.assertIsNone(decode_word(self.database, 0x6882))
         self.assertIsNone(decode_word(self.database, 0x6E02))
 

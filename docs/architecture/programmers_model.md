@@ -39,6 +39,17 @@ pp. 2-14–2-15 (PDF pp. 38–39)]. **Confidence: VERIFIED_PRIMARY.**
 The exact values of reserved bits in an `SST` result are still being
 transcribed from Figure 2-9 (`OQ-003`) and will not be guessed.
 
+The qualified functional slice writes `INTM=1` for exact opcode `DINT`
+(`0x7f81`) and `INTM=0` for exact opcode `EINT` (`0x7f82`). DINT takes effect
+immediately. EINT's architectural bit write is immediate, but interrupt
+service remains inhibited until the following instruction completes. Current
+model/RTL tests verify the bit write and preservation of unrelated state; the
+service deferral awaits interrupt recognition and entry under `CTRL-002`
+[ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
+pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
+**Confidence: VERIFIED_PRIMARY for the architectural rule; service timing not
+yet implemented.**
+
 ## Addressing
 
 Direct operands concatenate `DP` with the instruction's seven-bit `D` field.

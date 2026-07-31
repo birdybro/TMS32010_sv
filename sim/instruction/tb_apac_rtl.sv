@@ -114,7 +114,7 @@ module tb_apac_rtl;
     program_memory[18] = 16'h6503;  // ZALH 3
     program_memory[19] = 16'h6102;  // ADDS 2
     program_memory[20] = 16'h7f8f;  // APAC negative saturation
-    program_memory[21] = 16'h7f81;  // unsupported control word
+    program_memory[21] = 16'h7f83;  // unsupported control word
 
     initialize         = 1'b1;
     reset              = 1'b1;

@@ -103,7 +103,7 @@ module tb_mpyk_rtl;
     program_memory[7]  = 16'h6a01;  // LT 1
     program_memory[8]  = 16'h8fff;  // MPYK 4095
     program_memory[9]  = 16'h9000;  // MPYK -4096
-    program_memory[10] = 16'h7f81;  // unsupported control word
+    program_memory[10] = 16'h7f83;  // unsupported control word
 
     initialize         = 1'b1;
     reset              = 1'b1;

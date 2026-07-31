@@ -1,21 +1,22 @@
 # Progress summary
 
-- **Current milestone:** DMOV data-move qualification
+- **Current milestone:** DINT/EINT interrupt-mask control qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 68 repository/provenance/document/ISA/toolchain tests; 141
-  directed model tests; 24 RTL instruction/decode tests; 2 native bus/phase
-  tests; one 512-instruction seeded thirty-three-instruction model/RTL
-  differential including T, P, OV/OVM, distinct logical source/write
-  addresses, and all 144 final RAM words; 15 reference hashes
+- **Tests passing:** 68 repository/provenance/document/ISA/toolchain tests; 145
+  directed model tests; 24 RTL instruction/decode tests; 1 interrupt-mask RTL
+  test; 2 native bus/phase tests; one 512-instruction seeded
+  thirty-five-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  distinct logical source/write addresses, and all 144 final RAM words; 15
+  reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-three-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,824 ALMs, 2,483 registers, 0 RAM blocks,
-  1 DSP block, 58.40 MHz worst slow-corner internal Fmax, +2.877 ns setup
+  the thirty-five-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,842 ALMs, 2,484 registers, 0 RAM blocks,
+  1 DSP block, 59.23 MHz worst slow-corner internal Fmax, +3.116 ns setup
   slack, and +0.168 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
   structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  11,184 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
+  11,212 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
   its technology-neutral multiplier contributes 1,841 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
@@ -79,17 +80,23 @@
   internal-RAM address in that same cycle, so source and destination must be
   observable independently; DMOV is opcode family `0x69`, performs only that
   unchanged-word next-address copy in one cycle, and preserves ACC, T, P,
-  OV, OVM, and DP while retaining common indirect AR/ARP post-update behavior
+  OV, OVM, and DP while retaining common indirect AR/ARP post-update behavior;
+  exact implied `DINT=0x7f81` and `EINT=0x7f82` each retire in one
+  program-only cycle; DINT sets `INTM` immediately, EINT clears it immediately,
+  neither clears a latched request, and interrupt service after EINT remains
+  inhibited until the following instruction completes
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, reserved SST bits, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify the primary-defined `DINT`/`EINT`
-  interrupt-mask controls while keeping interrupt recognition and entry
-  outside the claim boundary until `INT-001` has cycle/phase evidence; keep
+- **Next task:** research `LST` as the next one-cycle status operation while
+  keeping `SST` outside the qualified boundary until its reserved output bits
+  are resolved under `OQ-003`; keep interrupt recognition, EINT's
+  following-instruction service deferral, and entry outside the claim boundary
+  until `CTRL-002`/`OQ-004` has cycle/phase evidence; keep
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `51ece6b855436906e9542e7a2fbe7a7a55ed425a`
+  `18ea631`

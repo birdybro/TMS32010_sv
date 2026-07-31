@@ -111,7 +111,7 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 ## Current qualification boundary
 
 The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`,
+differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
 `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
 `ZALS`. The twenty common-address data instructions have independent
@@ -119,6 +119,10 @@ fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
 all three documented output shifts and rejects all five other field values.
+The exact fixed `DINT`/`EINT` words set and clear `INTM` in one program-only
+cycle while preserving unrelated exposed state. EINT's required
+following-instruction interrupt-service deferral remains outside this
+functional boundary until interrupt recognition and entry are implemented.
 ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
 `OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the

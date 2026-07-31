@@ -103,7 +103,7 @@ module tb_pac_rtl;
     program_memory[7]  = 16'h6a01;  // LT 1
     program_memory[8]  = 16'h6d01;  // MPY 1
     program_memory[9]  = 16'h7f8e;  // PAC
-    program_memory[10] = 16'h7f81;  // unsupported control word
+    program_memory[10] = 16'h7f83;  // unsupported control word
 
     initialize         = 1'b1;
     reset              = 1'b1;

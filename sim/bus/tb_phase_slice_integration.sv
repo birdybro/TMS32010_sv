@@ -146,7 +146,10 @@ module tb_phase_slice_integration;
     program_memory[32] = 16'h6c03;  // LTA 3
     program_memory[33] = 16'h6b03;  // LTD 3
     program_memory[34] = 16'h6904;  // DMOV 4
-    program_memory[35] = 16'h7f81;  // unsupported and not a silent NOP
+    program_memory[35] = 16'h7f82;  // EINT
+    program_memory[36] = 16'h7f80;  // instruction following EINT
+    program_memory[37] = 16'h7f81;  // DINT
+    program_memory[38] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -522,13 +525,37 @@ module tb_phase_slice_integration;
             "DMOV preserves arithmetic status");
     require(pc == 12'h023 && cycle_count == 32'd35,
             "DMOV consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "EINT has only its normal program-memory transaction");
+
+    advance_to_sample();
+    require(retired && !interrupt_mask,
+            "EINT clears INTM at its native retirement boundary");
+    require(pc == 12'h024 && cycle_count == 32'd36,
+            "EINT consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "the instruction following EINT is program-only");
+
+    advance_to_sample();
+    require(retired && !interrupt_mask,
+            "the instruction following EINT preserves cleared INTM");
+    require(pc == 12'h025 && cycle_count == 32'd37,
+            "the following NOP consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "DINT has only its normal program-memory transaction");
+
+    advance_to_sample();
+    require(retired && interrupt_mask,
+            "DINT sets INTM at its native retirement boundary");
+    require(pc == 12'h026 && cycle_count == 32'd38,
+            "DINT consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h023, "trap holds architectural PC");
-    require(program_address == 12'h023, "trap holds native program address");
-    require(cycle_count == 32'd35, "trap does not count as retired cycle");
+    require(pc == 12'h026, "trap holds architectural PC");
+    require(program_address == 12'h026, "trap holds native program address");
+    require(cycle_count == 32'd38, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

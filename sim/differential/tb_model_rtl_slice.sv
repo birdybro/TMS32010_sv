@@ -148,7 +148,7 @@ module tb_model_rtl_slice;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x",
         pc_before,
         opcode_before,
         pc,
@@ -172,7 +172,8 @@ module tb_model_rtl_slice;
         data_write_data_before,
         overflow_flag,
         t_register,
-        product_register
+        product_register,
+        interrupt_mask
       );
     end
     for (int unsigned index = 0; index < 144; index++) begin

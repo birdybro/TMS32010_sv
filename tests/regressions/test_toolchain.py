@@ -69,6 +69,8 @@ class ToolchainSliceTests(unittest.TestCase):
             ZAC
             ROVM
             SOVM
+            DINT
+            EINT
             LAC 0
             LAC 127,15
             LAC *
@@ -195,6 +197,8 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x7F89,
                 0x7F8A,
                 0x7F8B,
+                0x7F81,
+                0x7F82,
                 0x2000,
                 0x2F7F,
                 0x2088,
@@ -305,6 +309,9 @@ class ToolchainSliceTests(unittest.TestCase):
             0x7F89,
             0x7F8A,
             0x7F8B,
+            0x7F81,
+            0x7F82,
+            0x7F83,
             0x2000,
             0x2F7F,
             0x2088,

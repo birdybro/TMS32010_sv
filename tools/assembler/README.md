@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -39,7 +39,8 @@ address forms, such as `DMOV 8`, `LDP 6`, `LT *`, `LTA 24`,
 
 `MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.
-`PAC`, `APAC`, and `SPAC` are implied instructions with no operands.
+`PAC`, `APAC`, `SPAC`, `DINT`, and `EINT` are implied instructions with no
+operands.
 
 `ADD` and `SUB` accept the same address and shift syntax as `LAC`, for example
 `ADD 6,4`, `SUB 6,4`, or `SUB *+,8,AR1`.

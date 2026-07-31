@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -186,6 +186,72 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": []
+    },
+    {
+      "mnemonic": "DINT",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f81",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": ["INTM"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["INTM"],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "INTM receives 1",
+      "branch_behavior": "none",
+      "interrupt_interaction": "disables maskable interrupt service immediately after execution; does not clear a latched interrupt request",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; interrupt recognition and entry remain unimplemented"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1 and DINT instruction description", "printed_page": "2-18 through 2-19 and 3-27", "pdf_page": "42-43 and 77"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "DINT instruction description", "printed_page": "4-32", "pdf_page": 113}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["CTRL-002/OQ-004: exact interrupt recognition and vector-entry phase trace"]
+    },
+    {
+      "mnemonic": "EINT",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7f82",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [],
+      "addressing_modes": ["implied"],
+      "registers_read": [],
+      "registers_written": ["INTM"],
+      "memory_accesses": ["instruction_fetch"],
+      "status_flags_affected": ["INTM"],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "INTM receives 0",
+      "branch_behavior": "none; TI warns not to place EINT immediately before a branch",
+      "interrupt_interaction": "clears INTM on execution, but maskable interrupt service remains inhibited until the instruction following EINT completes; does not clear a latched request",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; following-instruction deferral and interrupt entry remain unimplemented"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1 and EINT instruction description", "printed_page": "2-18 through 2-19 and 3-29", "pdf_page": "42-43 and 79"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "EINT instruction description", "printed_page": "4-34", "pdf_page": 115}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["CTRL-002/OQ-004: following-instruction interrupt-service deferral and exact vector-entry phase trace"]
     },
     {
       "mnemonic": "LARK",

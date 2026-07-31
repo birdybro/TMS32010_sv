@@ -73,6 +73,8 @@ module tms32010_core (
   localparam logic [5:0] OP_LTA  = 6'd30;
   localparam logic [5:0] OP_LTD  = 6'd31;
   localparam logic [5:0] OP_DMOV = 6'd32;
+  localparam logic [5:0] OP_DINT = 6'd33;
+  localparam logic [5:0] OP_EINT = 6'd34;
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -516,6 +518,8 @@ module tms32010_core (
           end
           OP_NOP:  begin
           end
+          OP_DINT: interrupt_mask_o <= 1'b1;
+          OP_EINT: interrupt_mask_o <= 1'b0;
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;
           OP_ROVM: overflow_mode_o <= 1'b0;
           OP_SOVM: overflow_mode_o <= 1'b1;

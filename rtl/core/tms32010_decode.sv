@@ -47,6 +47,8 @@ module tms32010_decode (
   localparam logic [5:0] OP_LTA  = 6'd30;
   localparam logic [5:0] OP_LTD  = 6'd31;
   localparam logic [5:0] OP_DMOV = 6'd32;
+  localparam logic [5:0] OP_DINT = 6'd33;
+  localparam logic [5:0] OP_EINT = 6'd34;
 
   always_comb begin
     valid_o              = 1'b0;
@@ -287,6 +289,14 @@ module tms32010_decode (
         16'h7f80: begin
           valid_o     = 1'b1;
           operation_o = OP_NOP;
+        end
+        16'h7f81: begin
+          valid_o     = 1'b1;
+          operation_o = OP_DINT;
+        end
+        16'h7f82: begin
+          valid_o     = 1'b1;
+          operation_o = OP_EINT;
         end
         16'h7f89: begin
           valid_o     = 1'b1;

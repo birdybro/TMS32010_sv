@@ -14,8 +14,8 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-three
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support thirty-five
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
@@ -35,10 +35,13 @@ transaction. An LTD whose source or destination is outside the verified
 DMOV performs only that source-preserving next-address copy, leaving
 ACC/T/P and arithmetic status unchanged; it follows the same explicit
 unresolved-endpoint policy.
+`DINT` and `EINT` set and clear the architectural interrupt mask in one
+program-only cycle. Interrupt input recognition, EINT's following-instruction
+service delay, stack entry, and vector fetch are not implemented.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies normal sequential program reads for this
-thirty-three-instruction subset only; it is not a general pipeline or
+thirty-five-instruction subset only; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

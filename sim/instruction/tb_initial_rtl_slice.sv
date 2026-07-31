@@ -102,7 +102,7 @@ module tb_initial_rtl_slice;
     program_memory[5] = 16'h7f89;
     program_memory[6] = 16'h7f8b;
     program_memory[7] = 16'h7f80;
-    program_memory[8] = 16'h7f81;
+    program_memory[8] = 16'h7f83;
 
     initialize   = 1'b1;
     reset        = 1'b1;

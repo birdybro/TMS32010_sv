@@ -20,6 +20,14 @@ an already latched request
 [ti-tms32010-users-guide-spru001b, §2.4.1, printed pp. 2-18–2-19 (PDF
 pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
 
+The qualified model/RTL slice implements the architectural `INTM` write for
+the exact one-cycle words `DINT=0x7f81` and `EINT=0x7f82`, including
+program-only bus behavior and clock-enable stalls. It deliberately has no
+`INT` input, pending latch, recognition state, stack entry, or vector fetch
+yet. Consequently its cleared `INTM` output after EINT is architectural-state
+evidence only: it does not claim the documented following-instruction service
+delay. That missing sequencer behavior remains `CTRL-002`/`OQ-004`.
+
 The pin must be low at least 50 ns before falling `CLKOUT`, and a guaranteed
 pulse is at least one full `CLKOUT` period. The complete vector-fetch bus trace
 and entry latency are still `OQ-004`; no fixed entry cycle count is claimed

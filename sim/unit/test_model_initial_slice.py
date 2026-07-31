@@ -86,12 +86,12 @@ class InitialModelSliceTests(unittest.TestCase):
 
     def test_unknown_opcode_traps_without_advancing_state(self) -> None:
         model = Tms32010Model()
-        model.load_words([0x7F81])
+        model.load_words([0x7F83])
         before = model.architectural_state()
         with self.assertRaises(UnsupportedOpcode) as caught:
             model.step()
         self.assertEqual(caught.exception.pc, 0)
-        self.assertEqual(caught.exception.opcode, 0x7F81)
+        self.assertEqual(caught.exception.opcode, 0x7F83)
         self.assertEqual(model.architectural_state(), before)
 
     def test_pc_wraps_at_12_bits(self) -> None:

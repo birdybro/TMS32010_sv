@@ -94,7 +94,7 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Thirty-three encodings (`ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Thirty-five encodings (`ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBS`) are
@@ -104,7 +104,7 @@ objective passing evidence.
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 18,769 supported words without collisions; the remaining 27
+  accepting 18,771 supported words without collisions; the remaining 25
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -124,7 +124,7 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `DMOV`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
@@ -170,8 +170,11 @@ objective passing evidence.
   negative saturation.
   AND/OR/XOR cover low-half logic, their distinct upper-half behavior, and
   unchanged OV/OVM.
-  Out-of-range original-RAM addresses and unsupported words trap. Interrupts,
-  remaining memory/I/O instructions, and pin phases remain unimplemented.
+  DINT/EINT set and clear INTM in one program-only cycle while preserving the
+  pending-request latch; recognition, EINT's following-instruction service
+  deferral, and vector entry remain outside the model. Out-of-range
+  original-RAM addresses and unsupported words trap. Remaining memory/I/O
+  instructions and pin phases remain unimplemented.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -188,7 +191,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same thirty-three instructions as the
+- **Notes:** Qualified slice supports the same thirty-five instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -197,7 +200,7 @@ objective passing evidence.
   syntax, MAR direct/indirect syntax and LARP aliases, and
   ADDS/AND/DMOV/LDP/LT/LTA/LTD/MPY/OR/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC. The remaining 27
+  PAC/APAC/SPAC/DINT/EINT. The remaining 25
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -217,7 +220,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  thirty-three-instruction slice. `LAC`
+  thirty-five-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty common-address data instructions verify direct/indirect read/write
@@ -278,7 +281,7 @@ objective passing evidence.
   `sim/instruction/tb_sequencer.sv`, `formal/sequencer/`
 - **Notes:** Temporary one-enable instruction execution and
   trap-without-PC-advance are verified. The sequential phase wrapper now
-  retires each of thirty-three supported one-cycle instructions, including all
+  retires each of thirty-five supported one-cycle instructions, including all
   twenty internal-data operations, on its falling-edge sample and aligns
   PC/native address across stalls, traps, and reset. General overlap, branch,
   multi-cycle, and interrupt control do not exist yet.
@@ -301,7 +304,7 @@ objective passing evidence.
 - **Notes:** Appendix A normal read and table-transfer pin waveforms are
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
-  release delay. A partial wrapper integrates those phases with all thirty-three
+  release delay. A partial wrapper integrates those phases with all thirty-five
   supported sequential instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
   traps and stalls. Table cycles, branch/call/return, general pipeline overlap,
@@ -340,7 +343,7 @@ objective passing evidence.
 
 ### BUS-003 — Native I/O-space transactions
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** RTL-002, ARCH-001
 - **Description:** Implement documented I/O address, data, strobes, ready, and
@@ -384,8 +387,16 @@ objective passing evidence.
 - **Acceptance criteria:** every recognition boundary and latency case has an
   automated cycle/bus assertion; deferred/ignored cases are verified.
 - **Documentation:** `docs/architecture/interrupts.md`
-- **Tests:** `sim/interrupt/tb_interrupt.sv`, `sim/interrupt/tb_bio.sv`
-- **Notes:** Edge versus level behavior remains unknown until cited.
+- **Tests:** `sim/interrupt/tb_interrupt_mask.sv`,
+  `sim/interrupt/tb_interrupt.sv`, `sim/interrupt/tb_bio.sv`
+- **Notes:** Primary sources establish an internally latched request from a
+  high-to-low transition or low level, mask persistence, exact
+  `DINT=0x7f81`/`EINT=0x7f82` words, one-cycle INTM effects, and EINT's
+  following-instruction service deferral. Database/model/tool/RTL, directed
+  mask tests, native-phase tests, and seeded differential now qualify the
+  mask-state subset. The RTL still has no INT/BIO input, pending latch,
+  recognition boundary, stack entry, vector fetch, or return behavior;
+  `OQ-004` remains open and no interrupt-cycle claim is made.
 
 ## Milestone 14 — Every instruction family
 
@@ -402,7 +413,12 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/instruction_set.md`
 - **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`
 - **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
-  `SOVM`) passes model, RTL, toolchain, and differential tests. Cycle evidence
+  `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
+  `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,
+  one-cycle/program-only/clock-enable checks, native-phase retirement, and
+  seeded INTM differential comparison. Interrupt recognition and EINT's
+  following-instruction service deferral remain unimplemented under
+  `CTRL-002`/`OQ-004`. Cycle evidence
   is qualified only for the current sequential native-phase boundary. `LAC`
   now passes primary-cited database/model/tool tests, directed RTL cycle and
   addressing tests, native phase integration, and seeded logical-data
@@ -449,7 +465,7 @@ objective passing evidence.
   T loading and previous-P accumulation, both overflow directions, OVM
   wrap/saturation, sticky OV, unchanged P, old-address/post-update ordering,
   and trap-before-effects behavior. Its multiply-following interrupt boundary
-  remains unverified under `INT-001`.
+  remains unverified under `CTRL-002`.
   `LTD` now passes the same qualification path for its simultaneous source
   load to T, previous-P accumulation, and unchanged source copy to the next
   internal-RAM address. Directed and differential tests compare distinct
@@ -465,29 +481,29 @@ objective passing evidence.
   native-phase, and randomized differential tests for signed P results,
   including TI's most-negative multiplier exception. Its documented
   one-following-instruction interrupt deferral remains unverified under
-  `INT-001`.
+  `CTRL-002`.
   `MPYK` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for complete signed 13-bit
   immediate decoding, signed P results, state preservation, and no
   data-memory transaction. Its matching interrupt deferral remains unverified
-  under `INT-001`.
+  under `CTRL-002`.
   `PAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for full-width P-to-ACC
   transfer, P/T/status preservation, and no data-memory transaction. A PAC
   following MPY/MPYK does not yet verify interrupt recognition at the end of
-  the documented deferral window under `INT-001`.
+  the documented deferral window under `CTRL-002`.
   `APAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f8f` decode,
   full-width P-plus-ACC results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
   no data-memory transaction. Its equivalent multiply-following interrupt
-  boundary remains unverified under `INT-001`.
+  boundary remains unverified under `CTRL-002`.
   `SPAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f90` decode,
   full-width ACC-minus-P results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
   no data-memory transaction. Its equivalent multiply-following interrupt
-  boundary remains unverified under `INT-001`.
+  boundary remains unverified under `CTRL-002`.
   `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
   remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family
@@ -599,7 +615,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Thirty-two-instruction RTL, phase engine, multiplier, and
+- **Notes:** Thirty-five-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in

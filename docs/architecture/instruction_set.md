@@ -32,6 +32,29 @@ Each family enters the qualification boundary only after:
 
 Reserved encodings will trap until authoritative behavior is established.
 
+## Qualified `DINT`/`EINT` functional slice
+
+`DINT` and `EINT` are implied, one-word, one-cycle instructions with exact
+fixed encodings `0x7f81` and `0x7f82`. `DINT` writes one to `INTM`, disabling
+maskable interrupt service immediately after DINT executes. `EINT` writes zero
+to `INTM`, enabling maskable interrupts subject to the service deferral below.
+Neither instruction changes an already latched interrupt request
+[ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
+pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79);
+ti-first-generation-users-guide-1987, `DINT`/`EINT`, printed pp. 4-32 and
+4-34 (PDF pp. 113 and 115)]. **Confidence: VERIFIED_PRIMARY.**
+
+Although `EINT` clears the architectural `INTM` bit when it executes, TI says
+interrupt service remains inhibited until the following instruction
+completes. This permits an interrupt handler to execute `EINT` followed by
+`RET`; TI also warns against placing EINT immediately before a branch. The
+model and RTL now qualify the exact words, `INTM` state effects, one-cycle
+retirement, state preservation, program-only transaction, clock-enable hold,
+and reset-established mask. They do not yet recognize or vector a pending
+interrupt, so the following-instruction service delay and warning remain
+unimplemented timing requirements under `CTRL-002`/`OQ-004`, not silently
+collapsed into ordinary boundary recognition.
+
 ## Deferred `ABS` research
 
 `ABS` is an implied one-word, one-cycle instruction encoded as `0x7f88`. If
@@ -253,7 +276,7 @@ and trap-before-either parallel effect on an unresolved address. Native-phase
 and seeded differential tests cover the internal read beside a normal program
 fetch. If LTA follows MPY or MPYK, its completion is the end of that multiply
 instruction's documented interrupt-deferral window; actual interrupt
-recognition remains unimplemented under `INT-001`. Simultaneous indirect
+recognition remains unimplemented under `CTRL-002`. Simultaneous indirect
 update controls remain under `OQ-010`.
 
 ## Qualified `LTD` functional slice
@@ -288,7 +311,7 @@ therefore trap before changing T, ACC, RAM, AR, or ARP when either the source
 or destination is unresolved. This is an explicit implementation boundary,
 not a hardware-behavior claim (`OQ-002`, `OQ-014`). Simultaneous indirect
 increment/decrement remains rejected under `OQ-010`; multiply-following
-interrupt recognition remains deferred to `INT-001`.
+interrupt recognition remains deferred to `CTRL-002`.
 
 ## Qualified `MPY` functional slice
 
@@ -317,7 +340,7 @@ the simultaneous-update uncertainty follow `OQ-010`. TI also specifies that
 interrupt service is inhibited until the instruction following `MPY`
 completes. The functional multiply and one-cycle program/data transaction are
 verified, but actual interrupt deferral is not: the current core has no
-interrupt entry engine. That gap remains part of `INT-001` and prevents this
+interrupt entry engine. That gap remains part of `CTRL-002` and prevents this
 slice from being complete interrupt evidence
 [ti-tms32010-users-guide-spru001b, `MPY`, printed p. 3-43 (PDF p. 93)].
 **Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
@@ -347,7 +370,7 @@ architectural authority
 TI applies the same interrupt-protection rule to MPYK as MPY: interrupt service
 is inhibited until the following instruction executes. The functional result,
 program-only transaction, and cycle count are verified, but interrupt
-deferral remains unimplemented under `INT-001`
+deferral remains unimplemented under `CTRL-002`
 [ti-tms32010-users-guide-spru001b, `MPYK`, printed p. 3-44 (PDF p. 94)].
 **Confidence: VERIFIED_PRIMARY for the rule; not yet verified in RTL.**
 
@@ -371,7 +394,7 @@ Native-phase and seeded differential tests verify the ordinary program fetch
 and inactive logical data-memory strobes. When PAC follows MPY or MPYK, its
 completion is also the end of the multiply instruction's documented interrupt
 deferral window; recognizing a pending interrupt at that boundary remains
-unimplemented under `INT-001`, so these PAC tests are not interrupt-timing
+unimplemented under `CTRL-002`, so these PAC tests are not interrupt-timing
 evidence.
 
 ## Qualified `APAC` functional slice
@@ -399,7 +422,7 @@ and absence of a logical data-memory transaction. Native-phase and seeded
 differential tests cover the ordinary program fetch and randomized arithmetic
 states. As with PAC, an APAC immediately after MPY or MPYK reaches the
 documented interrupt-deferral boundary; interrupt recognition at that point
-remains outside current evidence under `INT-001`.
+remains outside current evidence under `CTRL-002`.
 
 ## Qualified `SPAC` functional slice
 
@@ -427,7 +450,7 @@ fixed-word decode, and absence of a logical data-memory transaction.
 Native-phase and seeded differential tests cover the ordinary program fetch
 and randomized arithmetic states. A SPAC immediately after MPY or MPYK
 reaches the documented interrupt-deferral boundary; recognition at that point
-remains outside current evidence under `INT-001`.
+remains outside current evidence under `CTRL-002`.
 
 ## Qualified `SACL` research slice
 
