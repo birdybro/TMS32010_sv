@@ -33,14 +33,22 @@ printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for source cycle labels; VERIFIED_SIMULATION
 for the stated implementation scope.**
 
-The individual `PUSH` and `POP` pages independently confirm two cycles and one
-word. Directed model tests assert the two-cycle totals and exact stack results
-transcribed in `docs/architecture/instruction_set.md`. Those tests deliberately
-report only the known opcode fetch; no native program-bus sequence is claimed
-for the unresolved extra internal cycle under `OQ-016`
+The individual `PUSH` and `POP` pages independently confirm two cycles, one
+word, and `(PC)+1 -> PC`. TI's general pin table says `MEN` is active on every
+machine cycle unless `WE` or `DEN` is active; neither exception belongs to
+PUSH/POP. This rules out labeling their extra interval an ordinary inactive
+bus cycle, but it does not identify its address or whether its word is
+discarded, repeated, or consumed. Directed model tests assert the two-cycle
+totals and exact stack results transcribed in
+`docs/architecture/instruction_set.md`. Those tests deliberately report only
+the known opcode fetch; no native program-bus sequence is claimed under
+`OQ-016`/`SC-018`
 [ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
-(PDF pp. 99–100)]. **Confidence: VERIFIED_PRIMARY for the numeric cycle
-count; UNKNOWN for the second-cycle external subphases.**
+(PDF pp. 99–100), and Table 2-4, printed p. 2-21 (PDF p. 45);
+ti-first-generation-users-guide-1987, §3.6.1 and `POP`/`PUSH`, printed
+pp. 3-22–3-23 and 4-55–4-56 (PDF pp. 51–52 and 136–137)]. **Confidence:
+VERIFIED_PRIMARY for the numeric cycle count and every-cycle `MEN`
+constraint; UNKNOWN for address and fetched-word ownership.**
 
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
 opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model tests assert

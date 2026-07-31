@@ -16,6 +16,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   instruction, and timing research baselines.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
+- A reproducible original-NMOS PUSH/POP pin-trace experiment, including a
+  deterministic synthetic assembly image, stable opcode regression, competing
+  bus hypotheses, required analyzer signals, artifact provenance, and explicit
+  acceptance criteria for resolving `OQ-016`.
 - Primary schematic qualification of the A044427 Rev-A TMS32010 pin paths:
   `/INT` is held inactive-high through `PR1`/`R26`, `/320BIO` is resampled by
   `CLKOUT` into `/BIOS`, and the separate `320IRQ` net belongs to the
@@ -337,6 +341,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Narrowed the PUSH/POP timing gap using TI's primary pin contract: `MEN` must
+  be active in both non-I/O execution cycles, but the address and fetched-word
+  ownership remain unknown. Native/RTL implementation stays deferred rather
+  than inventing a repeated or speculative prefetch.
+
 - Replaced the initial placeholder README with an evidence-oriented project
   overview.
 - Reframed the external-wait milestone after confirming that the original
@@ -401,6 +410,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- Cross-checked SPRU001B's every-machine-cycle `MEN` rule with SPRU013's
+  program-counter/stack description and PUSH/POP Execution blocks. Pinned
+  IKA32010 instead suppresses its first PUSH/POP bus microcycle, now preserved
+  as secondary-source conflict `SC-018`, not used as silicon proof.
 
 - Original-part `ADDH=0x60xx` encoding, one-cycle/common-address behavior,
   modulo high-half result, and unconditional low-half preservation through
@@ -775,7 +789,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 103 repository/ISA/tool tests, 229
+- The complete current regression passes 104 repository/ISA/tool tests, 229
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 23
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
@@ -801,11 +815,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   encoded next-ARP precedence. The implemented memory-word precedence is
   PROVISIONAL under `OQ-015`; later TI and MAME evidence corroborates but does
   not prove original silicon behavior.
-- The located original PUSH/POP pages do not show the program-address and
-  `MEN` sequence during their extra internal cycle. Their state effects and
-  numeric two-cycle totals are model/tool-qualified, but native/RTL sequencing
-  remains deferred under `OQ-016`; no repeated or speculative prefetch has
-  been assigned.
+- The located original PUSH/POP pages do not show per-cycle program-address or
+  fetched-word ownership. TI's general pin table establishes active `MEN` in
+  both non-I/O cycles, while pinned IKA32010 models an idle first microcycle;
+  this is `SC-018`. State effects and numeric totals are model/tool-qualified,
+  but native/RTL sequencing remains deferred under `OQ-016`; no repeated or
+  speculative prefetch has been assigned. A physical experiment now defines
+  the smallest resolving evidence.
 - TI requires the instruction after SUBC not to use ACC but does not establish
   observable behavior for a violation; current same-boundary result commit is
   an implementation convenience under `OQ-017`. TI also says SUBC affects OV

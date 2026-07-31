@@ -336,3 +336,36 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for encoding, ordinary arithmetic,
   low-half preservation, word count, and cycle count; CORROBORATED for
   original-part OV preservation and OVM independence.
+
+## SC-018 — PUSH/POP every-cycle MEN versus secondary idle interval
+
+- **Original-part pin contract:** SPRU001B Table 2-4, printed p. 2-21 (PDF
+  p. 45), says active-low `MEN` occurs on every machine cycle except when
+  `WE` or `DEN` is active. The individual PUSH/POP definitions contain no
+  I/O transfer, and each is one word/two cycles
+  [ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
+  (PDF pp. 99–100)].
+- **Later primary architecture description:** SPRU013 says program memory is
+  always addressed by PC and that PC contains the address of the next
+  instruction to execute. Its PUSH/POP Execution blocks each state
+  `(PC)+1 -> PC`, but neither supplies a per-cycle waveform
+  [ti-first-generation-users-guide-1987, §3.6.1, Figure 3-12, and
+  `POP`/`PUSH`, printed pp. 3-22–3-23 and 4-55–4-56 (PDF pp. 51–52 and
+  136–137)].
+- **Independent FPGA implementation:** pinned IKA32010 commit
+  `51bc1f05a2a08a61c8815a9643d08a42e99779c6` requests `BUSCTRL_STOP` and
+  holds PC during PUSH/POP microcycle zero, then requests `OPCODE_READ` from
+  PC during microcycle one [ika32010-rtl-51bc1f0, lines 690–731].
+- **Conflict:** the secondary implementation supplies a useful PC-hold
+  hypothesis but suppresses the first program transaction that the primary
+  every-cycle `MEN` wording requires. Replacing that idle with an active
+  discarded read is plausible, but would still invent the address/validity
+  relationship without a waveform.
+- **Current treatment:** do not copy either external sequence into the RTL.
+  Preserve H1 inactive, H2 repeated/discarded `N+1`, and H3 advancing
+  prefetch as separately measurable hypotheses. The synthetic fixture and
+  original-device capture criteria are in
+  `docs/research/push_pop_bus_experiment.md`; see `OQ-016`.
+- **Confidence:** VERIFIED_PRIMARY for two cycles, general `MEN` behavior,
+  and the architectural state transform; UNKNOWN for the exact address and
+  fetched-word ownership of each cycle.

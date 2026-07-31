@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** instruction-family qualification
+- **Current milestone:** pipeline and timing research
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 103 repository/provenance/document/ISA/toolchain tests; 229
+- **Tests passing:** 104 repository/provenance/document/ISA/toolchain tests; 229
   directed model tests; one standalone fetch/execute RTL unit; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
   tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
@@ -265,8 +265,14 @@
   qualification; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
   one word/two cycles, with low-12-bit push/old-bottom discard and
   zero-extending pop/old-bottom duplication respectively; model/tool tests
-  cover repeated overflow/underflow and PC wrap, while their second external
-  program cycles remain unknown under `OQ-016`; SUBH is opcode family
+  cover repeated overflow/underflow and PC wrap; TI's original pin table
+  requires active MEN in both non-I/O execution cycles, while its pipeline
+  prose says program memory is always addressed by PC, but no located primary
+  waveform establishes the address or fetched-word ownership of each
+  interval. Pinned IKA32010 instead idles and holds PC in the first
+  microcycle, producing source conflict `SC-018`; `OQ-016` remains open and a
+  checked eight-word synthetic program plus original-NMOS logic-analyzer
+  procedure now defines the resolving evidence; SUBH is opcode family
   `0x62xx`, subtracts the complete selected 16-bit pattern aligned at bit 16,
   preserves ACC[15:0] for ordinary and OVM-clear wrapped results, sets sticky
   OV on signed overflow, and replaces the full accumulator with the signed
@@ -314,24 +320,20 @@
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, LST next-ARP precedence,
-  PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
+  PUSH/POP per-cycle program-address/fetched-word ownership, SUBC result availability and
   OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** research the single-word/two-cycle PUSH/POP program-bus
-  sequence under `OQ-016`; preserve the distinction between model-qualified
-  CALA/RET/PUSH/POP
-  state/cycle behavior and absent native/RTL timing;
-  keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
-  second-cycle program-bus sequence; keep LST's loaded-ARP
-  precedence labeled PROVISIONAL under `OQ-015`; keep complete interrupt
-  cycle-accuracy outside the claim boundary until `CTRL-002`/`OQ-004` has
-  exhaustive execute-overlap evidence; keep
-  DMOV/LTD source-`0x8f` behavior provisional under `OQ-014`, and retain ADDH
-  and ABS status behavior at `CORROBORATED` until physical evidence justifies
-  an upgrade
+- **Next task:** resume `ISA-001` with a primary-cited audit of unmatched
+  opcode regions and reserved encodings; preserve the distinction between
+  documented reserved words, illegal common-address controls, and words not
+  yet classified. Keep PUSH/POP outside RTL until `OQ-016` gains the measured
+  address/word-ownership trace; keep LST's loaded-ARP precedence PROVISIONAL
+  under `OQ-015`; keep DMOV/LTD source-`0x8f` behavior provisional under
+  `OQ-014`; retain ADDH and ABS status behavior at CORROBORATED until physical
+  evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `a35a10e`
+  `4d01c16`

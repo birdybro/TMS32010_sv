@@ -23,6 +23,18 @@ activity including the table-read phase
 [ti-tms32010-users-guide-spru001b, §§2.3–2.5 and Figures 2-10–2-12,
 printed pp. 2-15–2-19 (PDF pp. 39–43)]. **Confidence: VERIFIED_PRIMARY.**
 
+Table 2-4 is stronger than a transaction-family summary: it says `MEN` is
+active low on every machine cycle except while `WE` or `DEN` is active
+[ti-tms32010-users-guide-spru001b, Table 2-4, printed p. 2-21
+(PDF p. 45)]. This constrains both execution intervals of the one-word,
+two-cycle PUSH/POP instructions because neither has an I/O or program-write
+transfer. It does not identify the address or fetched-word validity of each
+interval. `SC-018`/`OQ-016` therefore prohibit both an invented idle cycle and
+an invented repeated/speculative prefetch; the physical experiment is defined
+in `docs/research/push_pop_bus_experiment.md`. **Confidence:
+VERIFIED_PRIMARY for strobe activity; UNKNOWN for PUSH/POP address and word
+ownership.**
+
 The data sheet establishes falling `CLKOUT` as the input sampling boundary.
 Address transition begins after a falling edge, a read strobe asserts about
 one quarter-cycle later, and address/strobe remain stable through the next

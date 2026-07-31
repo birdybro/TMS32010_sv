@@ -7,11 +7,32 @@ from pathlib import Path
 from tools.assembler.tms32010_as import Assembler, AssemblyError
 from tools.disassembler.tms32010_dis import Disassembler
 
+ROOT = Path(__file__).resolve().parents[2]
+
 
 class ToolchainSliceTests(unittest.TestCase):
     def setUp(self) -> None:
         self.assembler = Assembler()
         self.disassembler = Disassembler()
+
+    def test_push_pop_physical_bus_probe_image_is_stable(self) -> None:
+        result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "push_pop_bus_probe.asm"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0x000: 0x7E55,
+                0x001: 0x7F9C,
+                0x002: 0x7F80,
+                0x003: 0x7EAA,
+                0x004: 0x7F9D,
+                0x005: 0x7F80,
+                0x006: 0xF900,
+                0x007: 0x0006,
+            },
+        )
+        self.assertEqual(result.symbols["HOLD"], 0x006)
 
     def test_supported_instruction_encodings_match_hand_fixtures(self) -> None:
         result = self.assembler.assemble_text(

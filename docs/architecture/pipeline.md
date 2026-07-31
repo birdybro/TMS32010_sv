@@ -150,8 +150,12 @@ one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
 accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 
 - CALA and RET have model-qualified state/cycle behavior but externally
-  unresolved second cycles, as do the second cycles of model-qualified
-  `PUSH`/`POP` (`OQ-007`, `OQ-016`);
+  unresolved second cycles. For model-qualified `PUSH`/`POP`, TI's general
+  pin rule requires `MEN` on both non-I/O execution cycles and its
+  architecture prose says PC always addresses program memory, but no located
+  waveform identifies address progression or fetched-word validity. The
+  conflict with an independent implementation's idle first microcycle and a
+  reproducible pin-capture plan are recorded under `SC-018`/`OQ-016`;
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
   vector path, MPY/MPYK protected-slot extension, and matching 32-case
   core/explicit arrival matrices for the 15 supported multicycle families
