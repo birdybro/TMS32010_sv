@@ -24,8 +24,9 @@ one intervening port transfer, while a three-cycle `TBLR` spans the
 corresponding boundary via dummy, table-transfer, and repeated-prefetch
 intervals. The legacy phase wrapper preserves those external transactions and
 numeric totals but attaches retirement to fetch samples without a distinct
-execute slot. Only the sequential one-cycle subset, exact `B`/`BANZ`, and the
-six accumulator branches currently have explicit fetch/execute ownership
+execute slot. Only the sequential one-cycle subset, exact
+`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six accumulator branches currently
+have explicit fetch/execute ownership
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for source cycle labels; VERIFIED_SIMULATION
@@ -222,17 +223,21 @@ BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
 facts and the pin sample; INFERRED for the combined interval mapping;
 VERIFIED_SIMULATION for the implementation and legacy ordering.**
 
-Directed `CALL` tests assert the opcode and canonical target as two complete
-program reads, no stack mutation at the opcode sample, and one
-opcode-PC+2 push at target-word retirement. Native tests hold an active target
-phase under clock enable; directed state tests cover five nested calls,
-old-bottom discard, return-address wrap, state preservation, and malformed
-target trap-before-push
+Legacy `CALL` tests assert opcode and canonical target as two complete program
+reads, no stack mutation at opcode sample, and one opcode-PC+2 push at
+target-word retirement. The explicit-pipeline test retains CALL through the
+nonexecutable operand fetch in execution cycle 1 and selected-target fetch in
+execution cycle 2. Operand and target stalls preserve the complete stack and
+non-stack state; selected-target capture alone retires CALL, pushes the return
+address, and captures without executing that target word. A nested CALL checks
+stack shifting, and malformed operands park before mutation. Legacy state
+tests additionally cover five nested calls, old-bottom discard, and
+return-address wrap
 [ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
 printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
-facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline ownership
-unqualified.**
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for explicit and legacy implementations.**
 
 Directed model tests assert RET's two-cycle total, old-TOS PC load, complete
 four-level pop with old-bottom duplication, and EINT protection through RET
@@ -266,8 +271,8 @@ pipeline ownership unqualified.**
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
-  other than the now-qualified B, BANZ, BIOZ, BV, CALL, and accumulator-condition
-  sequences;
+  other than the now-qualified B, BANZ, BIOZ, BV, CALL, and
+  accumulator-condition sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle

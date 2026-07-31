@@ -109,8 +109,8 @@ module tb_sequential_pipeline_slice;
     program_memory[1] = 16'h7134;  // LARK AR1,0x34
     program_memory[2] = 16'h7ea5;  // LACK 0xa5
     program_memory[3] = 16'h7f80;  // NOP
-    program_memory[4] = 16'hf800;  // CALL: valid, but outside this slice
-    program_memory[5] = 16'h0123;  // branch operand must not execute
+    program_memory[4] = 16'h4000;  // IN: valid, but outside this slice
+    program_memory[5] = 16'h0123;  // following word must not execute
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -203,9 +203,9 @@ module tb_sequential_pipeline_slice;
       pc == 12'h004 &&
       cycle_count == 32'd4 &&
       execute_address == 12'h004 &&
-      execute_word == 16'hf800 &&
+      execute_word == 16'h4000 &&
       program_address == 12'h005,
-      "NOP retires while unsupported CALL enters execute ownership"
+      "NOP retires while unsupported IN enters execute ownership"
     );
     require(
       pipeline_blocked && !illegal,
@@ -224,10 +224,10 @@ module tb_sequential_pipeline_slice;
       );
       require(
         pipeline_blocked && men_n && !sample && !retired && !illegal,
-        "blocked slice cannot access or retire the CALL operand"
+        "blocked slice cannot access or retire the word after IN"
       );
       require(accumulator == 32'h0000_00a5,
-              "parked CALL operand cannot affect the accumulator");
+              "word after parked IN cannot affect the accumulator");
     end
 
     rs = 1'b1;

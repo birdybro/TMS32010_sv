@@ -254,8 +254,8 @@ flush controls. It passes directed overlap/dummy/redirect/reset tests,
 standalone Yosys synthesis, and a bounded transition proof.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 38 already-qualified one-cycle operation families, and
-exact B, BANZ, BV, BIOZ, and the six accumulator-conditional branches. All
-retain execute ownership through a nonexecutable operand fetch and the
+exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional branches.
+All retain execute ownership through a nonexecutable operand fetch and the
 selected target/fallthrough instruction fetch, retiring only as that
 instruction enters the execute slot. BANZ tests the old selected nine-bit
 counter and defers its modulo-512 decrement until retirement. The
@@ -263,11 +263,13 @@ accumulator-branch matrix covers both outcomes for every predicate and
 zero/positive/negative ACC. BV selects from unchanged OV and clears it only
 at taken retirement. BIOZ samples the raw active-low input at operand
 completion, not opcode recognition, and retains the resulting decision
-through the selected fetch. Selected-fetch stalls cover both outcomes for the
-conditional families. These combined interval mappings are INFERRED from
-primary component facts because no dedicated branch pin waveform has been
-located. The full-state offset differential covers the 43-word directed
-one-cycle stream and parks before unsupported CALL. Other multicycle,
+through the selected fetch. CALL pushes opcode-PC+2 only at selected-target
+capture; nested calls prove stack shifting. Selected-fetch stalls cover both
+outcomes for the conditional families and the direct call. These combined
+interval mappings are INFERRED from primary component facts because no
+dedicated branch/call pin waveform has been located. The full-state offset
+differential covers the 43-word directed one-cycle stream and parks before
+unsupported IN. Other multicycle,
 interrupt, I/O, and table pipeline integration remains absent; do not
 generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary

@@ -119,8 +119,8 @@ invented here.
 
 No dedicated original-part pin waveform has been located for the two-word
 branch family. Except for the newly integrated exact `B`, `BANZ`, `BV`,
-`BIOZ`, and six accumulator-conditional branches, the ordered reads below are
-derived from the primary word/cycle totals, following-word operand
+`BIOZ`, `CALL`, and six accumulator-conditional branches, the ordered reads
+below are derived from the primary word/cycle totals, following-word operand
 definitions, normal program-read rules, and legacy directed traces. They
 remain INFERRED as combined pipeline mappings even though the component facts
 are VERIFIED_PRIMARY.
@@ -202,14 +202,16 @@ and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
 INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
 implementation.**
 
-`CALL` reads exact opcode `0xf800` at PC and its canonical target at PC+1 as
-two ordinary `MEN` program reads. The following normal read is at the target.
-The target-word retirement pushes opcode-PC+2 onto the internal return stack;
-neither CALL cycle emits `DEN` or `WE`
+Exact `CALL` has explicit ownership. Opcode `0xf800` prefetches at PC. Its
+canonical PC+1 operand is a nonexecutable execution-cycle-1 `MEN` read and
+selects the target. Execution cycle 2 is the normal target-instruction `MEN`
+read. CALL retires and pushes opcode-PC+2 only as that selected word is
+captured; neither execution interval emits `DEN` or `WE`
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13, 3-6, and 3-26
 (PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for combined pipeline mapping.**
+facts; INFERRED for combined pipeline mapping; VERIFIED_SIMULATION for the
+implementation.**
 
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,

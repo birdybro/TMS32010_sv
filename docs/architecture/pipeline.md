@@ -80,18 +80,19 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_accumulator_branches.sv`,
 `sim/bus/tb_sequential_pipeline_bv.sv`,
 `sim/bus/tb_sequential_pipeline_bioz.sv`,
+`sim/bus/tb_sequential_pipeline_call.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
 when the execute slot contains any other multicycle, reserved, or
 invalid-address word; it does not claim that parking is TMS32010 hardware
 behavior. The legacy phase wrapper retains the separately verified bus order
-for the remaining branch, I/O, table, and interrupt sequences until those
-states are reworked around explicit pipeline ownership. **Confidence:
+for the remaining I/O, table, and interrupt sequences until those states are
+reworked around explicit pipeline ownership. **Confidence:
 VERIFIED_PRIMARY for the required overlap; INFERRED for exact
-B/BANZ/BV/BIOZ/accumulator-branch interval ownership because no dedicated
-branch waveform has been located; implementation behavior VERIFIED_SIMULATION
-only within this stated slice.**
+B/BANZ/BV/BIOZ/CALL/accumulator-branch interval ownership because no
+dedicated branch/call waveform has been located; implementation behavior
+VERIFIED_SIMULATION only within this stated slice.**
 
 ## Required implementation model
 
@@ -112,11 +113,9 @@ gate topology.
 Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Their legacy bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
-one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`, and the six
+one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
 accumulator branches:
 
-- CALL retains legacy two-read evidence but not yet explicit execute-slot
-  ownership;
 - IN and OUT retain the primary opcode-prefetch, mutually exclusive DEN/WE
   transfer, and next-prefetch bus order but not yet explicit execute-slot
   ownership through the next-prefetch boundary;
@@ -253,17 +252,23 @@ Appendix A BIO timing, printed pp. 2-13, 2-18, 3-6, 3-19, and data-sheet 20
 sampling and component facts; INFERRED for the combined execute-interval
 mapping; VERIFIED_SIMULATION for the implementation.**
 
-The legacy wrapper gives `CALL` the same opcode/operand transaction order,
-then commits two architectural effects at its operand sample: opcode-PC+2 is
-pushed onto the four-level stack and the canonical target becomes PC.
-Directed tests prove no earlier push, preserve stack/PC during an active
-target phase, and check old-bottom discard and 12-bit return-address wrap.
-Explicit execute ownership remains unintegrated
+Exact `CALL` now follows explicit execute ownership. Opcode `0xf800`
+prefetches at opcode PC and enters the execute slot. The nonexecutable
+canonical PC+1 operand fetch is execution cycle 1 and selects the target
+instruction fetch for execution cycle 2. CALL remains the execute owner until
+that selected word is captured; only then does it retire, push opcode-PC+2
+onto the four-level stack, and transfer PC to the target. The target word
+enters the execute slot but cannot execute until the following fetch
+interval. Directed tests hold both operand and target phases, prove no early
+push, chain a nested CALL to verify return-address ordering, preserve all
+exposed non-stack state, defer the selected target's effect, and park a
+malformed operand before a push. Legacy tests retain old-bottom discard and
+12-bit return-address-wrap coverage
 [ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
 printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for instruction
-effects and component facts; INFERRED for the legacy combined
-transaction/commit mapping.**
+effects and component facts; INFERRED for the combined execute-interval
+mapping; VERIFIED_SIMULATION for the stated implementation.**
 
 `IN` and `OUT` are one-word instructions whose two documented execution
 intervals follow the opcode-prefetch boundary. Execution cycle 1 suppresses

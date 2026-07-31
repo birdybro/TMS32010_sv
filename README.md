@@ -57,20 +57,21 @@ Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy
 suppression, vector capture, and reset.
 The separate `tms32010_sequential_pipeline_slice` connects that register to
 the core for reset priming, sequential one-cycle instructions, exact B,
-exact BANZ, exact BV, exact BIOZ, and the six accumulator-conditional
-branches. Its fetch address stays one word ahead of the execute PC,
+exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
+accumulator-conditional branches. Its fetch address stays one word ahead of
+the execute PC,
 all 43 words in the existing 38-family one-cycle stream match the previously
-qualified architectural state at a one-retirement offset, and all ten
-integrated branch instructions retain ownership through operand and
+qualified architectural state at a one-retirement offset, and all eleven
+integrated branch/call instructions retain ownership through operand and
 selected-instruction fetches. BANZ selects from the old counter and decrements
 only at branch retirement; the accumulator branches select from the unchanged
 full 32-bit ACC; BV selects from unchanged OV and clears it only at taken
 retirement; BIOZ samples raw active-low BIO at operand completion and holds
-the resulting decision through the selected fetch. The combined interval
-mappings are source-derived INFERRED behavior because no dedicated
-original-part branch pin waveform has been located. The wrapper parks on
-unsupported CALL and does not yet integrate CALL, I/O, table, or interrupt
-pipeline sequencing.
+the resulting decision through the selected fetch; CALL pushes opcode-PC+2
+only when its selected target fetch completes. The combined interval mappings
+are source-derived INFERRED behavior because no dedicated original-part
+branch/call pin waveform has been located. The wrapper parks on unsupported
+IN and does not yet integrate I/O, table, or interrupt pipeline sequencing.
 Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.

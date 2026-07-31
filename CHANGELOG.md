@@ -67,6 +67,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Explicit BIOZ pipeline ownership for both active-low pin outcomes: the raw
   input is sampled at operand completion, the selected fetch is cycle 2, and
   the resulting decision remains stable through later pin changes or stalls.
+- Explicit CALL pipeline ownership: the nonexecutable operand selects the
+  target fetch, CALL retires only when that word is captured, and opcode-PC+2
+  is pushed at that retirement boundary.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -658,15 +661,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   explicit sequencer assumptions; its cover reaches the complete
   prime/stall/replace/flush/target path at step 7.
 - Yosys 0.67+111 synthesizes the
-  exact-B/BANZ/BV/BIOZ/accumulator-branch sequential pipeline wrapper to
-  14,715 generic cells with 47 retained checks and zero
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch sequential pipeline wrapper to
+  14,778 generic cells with 49 retained checks and zero
   structural errors;
   `make synth-yosys` now reproducibly runs this top as well as the unchanged
   13,514-cell/26-check legacy harness.
 - Directed pipeline tests prove that fetch 0 does not retire, fetch and execute
   addresses remain one word apart across stalls, every word in the qualified
   one-cycle stream matches legacy architectural state at one-retirement
-  offset, unsupported CALL cannot enter the qualified execution path, and
+  offset, unsupported IN cannot enter the qualified execution path, and
   reset recovers the parked pipeline.
 - A directed B pipeline test proves operand nonexecution, retained B ownership,
   redirected target fetch, two execution intervals, target-fetch stall
@@ -691,9 +694,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   completion, later pin changes cannot redirect the selected fetch, both
   paths retain ownership through stalls, selected-instruction effects are
   deferred, and malformed operands park before speculative selection.
+- A directed CALL pipeline test proves operand nonexecution, no push through
+  operand or selected-target stalls, opcode-PC+2 push only at retirement,
+  nested stack shifting, full non-stack state preservation, deferred target
+  effects, and malformed-operand parking before a push.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 17
-  native bus/phase tests including seven pipeline tests, five interrupt
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 18
+  native bus/phase tests including eight pipeline tests, five interrupt
   RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
@@ -737,11 +744,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   qualified, but TI's located instruction pages do not identify its second
   cycle's external address or `MEN` behavior.
 - No dedicated original-part branch pin waveform has been located. Exact B,
-  BANZ, BV, BIOZ, and the six accumulator-branch explicit execute-interval
-  mappings are INFERRED from Figure 2-2, the two-word/two-cycle table entries,
-  and their operand/condition definitions, with directed simulation evidence.
-  CALL retains legacy bus-order tests but not explicit execute-slot ownership
-  under `OQ-007`.
+  BANZ, BV, BIOZ, CALL, and the six accumulator-branch explicit
+  execute-interval mappings are INFERRED from Figure 2-2, the
+  two-word/two-cycle table entries, and their operand/condition definitions,
+  with directed simulation evidence under `OQ-007`.
 - CALA's state effects and numeric two-cycle total are model/tool-qualified,
   but its located pages likewise do not identify the second cycle's external
   address or `MEN` behavior; RTL/native qualification remains `OQ-007`.

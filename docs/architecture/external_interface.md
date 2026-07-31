@@ -107,14 +107,16 @@ BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
 facts and BIO sampling; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for the implementation.**
 
-`CALL` presents exact opcode `0xf800` at PC and its canonical target at PC+1
-through two ordinary `MEN` reads. At the second sample it pushes opcode-PC+2
-onto the internal stack and selects the target; no `DEN` or `WE` transaction
-occurs
+Exact `CALL` prefetches opcode `0xf800` at PC, reads its canonical target at
+PC+1 as nonexecutable execution cycle 1, and fetches the selected target
+instruction in execution cycle 2. All are ordinary `MEN` reads with no `DEN`
+or `WE` transaction. At selected-target capture CALL pushes opcode-PC+2 onto
+the internal stack, transfers PC, and retires
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13, 3-6, and 3-26
 (PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for component
-facts; INFERRED for the legacy combined transaction/commit mapping.**
+facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 `DINT` and `EINT` retain the same normal external program fetch and have no
 logical data-memory transaction. The phase wrapper verifies their `INTM`

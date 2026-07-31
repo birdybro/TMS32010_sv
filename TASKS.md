@@ -396,6 +396,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_accumulator_branches.sv`,
   `sim/bus/tb_sequential_pipeline_bv.sv`,
   `sim/bus/tb_sequential_pipeline_bioz.sv`,
+  `sim/bus/tb_sequential_pipeline_call.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -440,11 +441,11 @@ objective passing evidence.
   interrupt-dummy/vector, and recognized-reset tests plus independent Yosys
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
   it to the core for reset priming, decoded one-cycle operation families, and
-  exact B, BANZ, BV, BIOZ, and the six accumulator-conditional branches. All
-  retain execute ownership across a nonexecutable PC+1 operand fetch and the
-  selected target/fallthrough-instruction fetch, retire only as that
-  instruction enters the execute slot, and cannot apply its effects until the
-  following fetch interval. BANZ selects from the old selected `AR[8:0]` and
+  exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional
+  branches. All retain execute ownership across a nonexecutable PC+1 operand
+  fetch and the selected target/fallthrough-instruction fetch, retire only as
+  that instruction enters the execute slot, and cannot apply its effects until
+  the following fetch interval. BANZ selects from the old selected `AR[8:0]` and
   defers its modulo-512 decrement until branch retirement. The accumulator
   family tests every predicate in both directions with zero, positive, or
   negative ACC,
@@ -456,15 +457,17 @@ objective passing evidence.
   set. BIOZ tests both raw pin levels, changes BIO from its opcode-prefetch
   level while the operand is stalled, samples the final active-low level at
   operand completion, then reverses the pin while proving the chosen cycle-2
-  fetch and retained decision stay stable. These combined interval mappings
-  are INFERRED from Figure 2-2, Table 3-2, and the instruction pages because
-  no dedicated branch pin waveform has been located.
+  fetch and retained decision stay stable. CALL preserves all non-stack state,
+  defers opcode-PC+2 push until selected-target capture, and shifts nested
+  return addresses correctly. These combined interval mappings are INFERRED
+  from Figure 2-2, Table 3-2, and the instruction pages because no dedicated
+  branch/call pin waveform has been located.
   The sequential directed test proves first-fetch nonretirement, distinct
   fetch/execute addresses, phase stalls, sequential replacement, visible
-  parking on unsupported `CALL`, and reset recovery. An offset differential
+  parking on unsupported `IN`, and reset recovery. An offset differential
   runs the full existing 43-word/38-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
-  and illegal state after every pipelined retirement. CALL, I/O, table, and
+  and illegal state after every pipelined retirement. I/O, table, and
   interrupt pipeline integration remain absent.
 
 ## Milestone 9 — Program-memory interface
@@ -492,13 +495,13 @@ objective passing evidence.
   traps and stalls. Every legacy-qualified control-flow path verifies
   opcode/target addresses and target-read stalls; conditional branches cover
   both outcomes, but those tests do not establish separate execute ownership.
-  The explicit pipeline now covers exact B/BANZ/BV/BIOZ and all six
+  The explicit pipeline now covers exact B/BANZ/BV/BIOZ/CALL and all six
   accumulator-branch operand and selected target/fallthrough fetches,
   including stalls, both BANZ conditions, every ACC predicate outcome,
   retirement-only BV clear, live active-low BIOZ sampling, retained BIOZ
   decision after operand completion, deferred counter mutation, and no early
-  fetched-instruction execution.
-  CALL also verifies no early push and its target-sample stack commit. IN/OUT
+  fetched-instruction execution. CALL also verifies no early push, selected-
+  target retirement, nested stack shifting, and non-stack state preservation. IN/OUT
   verify an ordinary opcode read before the distinct I/O cycle without
   changing the qualified normal-program-read primitive. TBLR/TBLW verify
   opcode and discarded MEN reads, captured ACC address, third-cycle MEN/WE
@@ -509,7 +512,7 @@ objective passing evidence.
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
-  indirect-call/return, pipeline ownership for CALL/I/O/table,
+  indirect-call/return, pipeline ownership for I/O/table,
   interrupt execute ownership, and unsupported CALA/RET/PUSH/POP cycles
   remain. Do not collapse Harvard
   spaces in the native interface.
@@ -684,9 +687,11 @@ objective passing evidence.
   `CALL` passes exact decode/tool/model/RTL/native/differential checks for
   canonical target fetch, opcode-PC+2 push, five nested calls against the
   four-level stack, old-bottom discard, target stall, 12-bit return-address
-  wrap, state preservation, and malformed-target trap-before-push.
-  Cycle evidence
-  is qualified only for the current sequential native-phase boundary. `LAC`
+  wrap, state preservation, and malformed-target trap-before-push. The
+  explicit-pipeline test additionally proves nonexecutable operand ownership,
+  selected-target capture before retirement, no push through either stall,
+  nested stack shifting, and deferred target effects. The combined
+  execute-interval mapping remains INFERRED. `LAC`
   now passes primary-cited database/model/tool tests, directed RTL cycle and
   addressing tests, native phase integration, and seeded logical-data
   differential traces. `SACL` now passes the equivalent primary-cited
@@ -850,17 +855,18 @@ objective passing evidence.
   Primary Figures 2-9/2-10 label opcode prefetch separately from the numbered
   execution intervals; the legacy wrapper preserves the bus sequence and
   totals but does not yet retain IN/OUT or TBL execute ownership through the
-  following/repeated prefetch. Exact B, BANZ, BV, BIOZ, and the six
+  following/repeated prefetch. Exact B, BANZ, BV, BIOZ, CALL, and the six
   accumulator branches are the first multicycle cases mapped into explicit
   ownership: operand fetch is execution cycle 1 and the selected instruction
   fetch is execution cycle 2. BANZ selects from its old counter and decrements
   only at retirement; the accumulator family selects from the unchanged full
-  32-bit ACC; BV selects from unchanged OV and clears it only at taken retirement;
-  BIOZ samples raw active-low BIO at operand completion and retains only the
-  resulting decision through the selected fetch.
+  32-bit ACC; BV selects from unchanged OV and clears it only at taken
+  retirement; BIOZ samples raw active-low BIO at operand completion and
+  retains only the resulting decision through the selected fetch; CALL pushes
+  opcode-PC+2 only at selected-target retirement.
   The mappings are INFERRED from primary component facts and directed-tested,
   not presented as dedicated primary pin waveforms.
-  CALL and other control flow remain. CALA is model-asserted as a
+  Other control flow remains. CALA is model-asserted as a
   primary-confirmed one-word/two-cycle computed call, but its second-cycle
   external sequence remains open under `OQ-007`. PUSH/POP are model-asserted as
   primary-confirmed one-word/two-cycle instructions with exact state effects,
@@ -1016,9 +1022,9 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,514 generic cells/26 checks) and the exact-B/BANZ/BV/BIOZ/
-  accumulator-branch pipeline slice (14,715 cells/47 checks), each with zero
-  structural problems. Full-core
+  harness (13,514 generic cells/26 checks) and the
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch pipeline slice
+  (14,778 cells/49 checks), each with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 

@@ -318,14 +318,19 @@ ti-tms32010-assembly-guide-spru002b, `CALL`, printed p. 3-26 (PDF p. 47);
 ti-first-generation-users-guide-1987, `CALL`, printed p. 4-31
 (PDF p. 112)]. **Confidence: VERIFIED_PRIMARY.**
 
-The qualified native sequence reads the opcode at PC and the target at PC+1
-as two normal program reads. The implementation pushes at the second
-falling-edge retirement boundary; this is an architectural commit boundary,
-not a claim about an undocumented internal write subphase. Directed tests
-cover five nested calls, old-bottom discard, target-phase stall, target and
-return-address wrap, state preservation, and malformed-target
-trap-before-push. Pinned MAME independently agrees on the push, target, and
-fixed two-cycle total.
+The legacy native sequence reads the opcode at PC and target at PC+1 as two
+normal program reads. The explicit pipeline separately maps opcode prefetch
+into ownership, PC+1 operand fetch into execution cycle 1, and the selected
+target-instruction fetch into execution cycle 2. CALL pushes only when that
+selected word is captured and CALL retires; this is an architectural commit
+boundary, not a claim about an undocumented internal write subphase. Directed
+tests cover nested calls, stack shifting, operand and target stalls, deferred
+target effects, state preservation, and malformed-target trap-before-push.
+Legacy tests additionally cover five nested calls, old-bottom discard, and
+target/return-address wrap. Pinned MAME independently agrees on the push,
+target, and fixed two-cycle total. **Confidence: VERIFIED_PRIMARY for
+instruction effects and component facts; INFERRED for the combined
+execute-interval mapping; VERIFIED_SIMULATION for both implementations.**
 
 ## Qualified `CALA` architectural/model slice
 

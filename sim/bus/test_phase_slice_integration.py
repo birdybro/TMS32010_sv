@@ -77,6 +77,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_bioz_samples_live_pin_before_selected_fetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_bioz")
 
+    def test_call_pushes_only_when_selected_fetch_completes(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_call")
+
     def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
         self._run_testbench("tb_sequential_pipeline_differential")
 

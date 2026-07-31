@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 17 native bus/phase tests, including seven explicit pipeline tests; one
+  tests; 18 native bus/phase tests, including eight explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -34,8 +34,8 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 14,715 generic cells with 47 retained checks and
-  no structural problems after exact B/BANZ/BV/BIOZ/accumulator-branch
+  independently passes at 14,778 generic cells with 49 retained checks and
+  no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch
   integration;
   this is not a
   Quartus fit or complete-pipeline result
@@ -199,13 +199,17 @@
   only the resulting decision through later pin changes or fetch stalls;
   directed tests cover both levels, changes before and after the decision,
   effect deferral, and malformed-operand parking; MAME's abstract asserted
-  callback and shorter untaken path are recorded as `SC-015`; CALL is exact opcode
-  `0xf800`, reads a canonical absolute 12-bit target as its second normal
-  program cycle, pushes wrapped opcode-PC+2 onto the top of the four-level
-  12-bit stack at target-word retirement, shifts older entries toward the
-  bottom, discards the old bottom, and then selects the target; original TI
-  sources and pinned MAME agree on the architectural behavior and two-cycle
-  total; IN and OUT are one-word/two-cycle opcode families with three-bit
+  callback and shorter untaken path are recorded as `SC-015`; CALL is exact
+  opcode `0xf800`, reads a canonical absolute 12-bit target, pushes wrapped
+  opcode-PC+2 onto the top of the four-level 12-bit stack, shifts older
+  entries toward the bottom, and discards the old bottom; its INFERRED
+  explicit-pipeline mapping retains CALL through nonexecutable operand and
+  target-instruction fetches, then pushes and transfers PC only when that
+  selected word is captured; directed evidence covers both stalls, nested
+  stack shifting, non-stack preservation, effect deferral, and malformed
+  operands; original TI sources and pinned MAME agree on the architectural
+  behavior and two-cycle total; IN and OUT are one-word/two-cycle opcode
+  families with three-bit
   ports and the common direct/indirect internal-data address; both first read
   the opcode under MEN, then drive A11–A3 low and the port on A2–A0; IN
   asserts DEN and samples all 16 live input bits into the old resolved RAM
@@ -248,7 +252,7 @@
   completion before service, one protected retirement, the resolved-PC dummy
   fetch, stack/acknowledge effects, and vector selection
 - **Unresolved issues:** pipeline ownership beyond sequential one-cycle
-  instructions, exact B/BANZ/BV/BIOZ, and the six accumulator branches; interrupt
+  instructions, exact B/BANZ/BV/BIOZ/CALL, and the six accumulator branches; interrupt
   execute-overlap
   ownership and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
@@ -262,10 +266,9 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** extend explicit pipeline ownership to exact CALL under its
-  opcode-PC+2 stack-push and target-fetch contract, prove no early stack
-  mutation and retirement-only push, retain its interval mapping as INFERRED,
-  and move the unsupported-scope sentinel forward; then continue
+- **Next task:** extend explicit pipeline ownership through the primary-defined
+  IN/OUT transfer and following-prefetch intervals, preserving distinct
+  `MEN`/`DEN`/`WE` activity and old-address indirect updates; then continue
   `CTRL-002` by
   separating Figure 2-12 fetch/execute ownership from the now-qualified core
   machine-cycle and digital-subphase arrival matrices, and
@@ -284,4 +287,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `3e8a9b4`
+  `c185092`

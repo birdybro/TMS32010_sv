@@ -31,7 +31,7 @@ execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
 only for sequential one-cycle instructions, exact
-`B`/`BANZ`/`BV`/`BIOZ`, and the six accumulator branches
+`B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six accumulator branches
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -172,12 +172,13 @@ VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
-Except for exact `B`, `BANZ`, `BV`, `BIOZ`, and the six accumulator branches,
-the branch-family tables below describe transaction order in the legacy
-wrapper. Their numbered read slots are not TI's post-prefetch execution-cycle
-labels. TI establishes two words, two cycles, the following target word, and
-ordinary program-memory fetch behavior, but no located original-part document
-supplies a dedicated branch pin waveform. Consequently, the combined
+Except for exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`, and the six accumulator
+branches, the branch-family tables below describe transaction order in the
+legacy wrapper. Their numbered read slots are not TI's post-prefetch
+execution-cycle labels. TI establishes two words, two cycles, the following
+target word, and ordinary program-memory fetch behavior, but no located
+original-part document supplies a dedicated branch/call pin waveform.
+Consequently, the combined
 read/execute/commit mapping for these still unintegrated families is INFERRED
 even where each component fact is VERIFIED_PRIMARY.
 
@@ -295,23 +296,26 @@ the stated implementation.**
 
 ## Direct subroutine call
 
-The legacy wrapper gives `CALL` the same two normal program reads as an
-unconditional branch and adds a return-stack push:
+The explicit pipeline drives `CALL` through these source-derived intervals:
 
-| Legacy read slot | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize exact `0xf800`; advance PC/address to the following target word; do not push |
-| 2 | opcode PC + 1 | sample canonical target; push opcode PC + 2, select target, and retire |
-| following | target | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize exact `0xf800`; CALL enters execute ownership without pushing |
+| execution cycle 1 | opcode PC + 1 | sample canonical target; retain CALL; do not push |
+| execution cycle 2 | selected target | fetch target instruction; push opcode PC + 2, retire CALL, and capture target word |
 
-A clock-enable stall during the active target phase holds PC, address, pending
-operation, and all stack levels. Directed phase tests require an ordinary
-`MEN` target read, no data/I/O transaction, and the push only at the enabled
-falling-edge sample
+Every interval uses an ordinary program `MEN` read and no data/I/O
+transaction. Clock-enable stalls during operand or selected-target phases
+hold PC, address, execute ownership, and all stack levels. Directed tests
+prove the push occurs only at selected-target capture, nested return
+addresses shift correctly, the target instruction executes in the following
+interval, non-stack state is preserved, and malformed operands park before a
+push
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1–2.6.2, Table 3-2, and
 `CALL`, printed pp. 2-2, 2-13–2-14, 3-6, and 3-26
 (PDF pp. 26, 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for
-component facts; INFERRED for combined transaction/commit mapping.**
+component facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 ## Reset assertion and release
 

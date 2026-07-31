@@ -36,8 +36,8 @@ The final sequencer will represent fetch and execute ownership explicitly:
 The first implementation was the standalone synthesizable
 `tms32010_fetch_execute` register. The
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
-the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, and the
-six accumulator-conditional branches. Other
+the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`,
+and the six accumulator-conditional branches. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
 their execution intervals to the explicit pipeline.
@@ -87,6 +87,7 @@ their execution intervals to the explicit pipeline.
 These claims use
 [ti-tms32010-users-guide-spru001b]. **Confidence: VERIFIED_PRIMARY for
 separate fetch/execute ownership and the table/interrupt dummy-fetch rules;
-INFERRED for the exact B/BANZ/BV/BIOZ/accumulator-branch execute-interval
+INFERRED for the exact B/BANZ/BV/BIOZ/CALL/accumulator-branch execute-interval
 mappings synthesized from Figure 2-2, Table 3-2, and the individual
-instruction pages because TI supplies no dedicated branch pin waveform.**
+instruction pages because TI supplies no dedicated branch/call pin
+waveform.**

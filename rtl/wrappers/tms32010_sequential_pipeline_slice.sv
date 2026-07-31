@@ -1,7 +1,7 @@
 `default_nettype none
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
-// instructions, exact B/BANZ/BV/BIOZ, and the exact
+// instructions, exact B/BANZ/BV/BIOZ/CALL, and the exact
 // accumulator-conditional branch family. Program fetch owns a separate
 // address from the core PC. Other multicycle, reserved, and
 // invalid-data-address instructions park the wrapper before execution; the
@@ -70,6 +70,7 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_BZ   = 6'd44;
   localparam logic [5:0] OP_BV   = 6'd45;
   localparam logic [5:0] OP_BIOZ = 6'd46;
+  localparam logic [5:0] OP_CALL = 6'd47;
   localparam logic [5:0] OP_SUBH = 6'd52;
 
   function automatic logic is_accumulator_branch(
@@ -129,6 +130,7 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_is_accumulator_branch;
   logic        execute_is_bv;
   logic        execute_is_bioz;
+  logic        execute_is_call;
   logic        execute_control_supported;
   logic        control_operand_step;
   logic        control_target_step;
@@ -196,6 +198,8 @@ module tms32010_sequential_pipeline_slice (
             !bio_i
               ? program_data_i[11:0]
               : program_bus_address + 12'h001;
+        end else if (execute_is_call) begin
+          next_fetch_address = program_data_i[11:0];
         end
       end
     end
@@ -227,12 +231,17 @@ module tms32010_sequential_pipeline_slice (
     execute_valid_o &&
     execute_decoded_valid &&
     (execute_decoded_operation == OP_BIOZ);
+  assign execute_is_call =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_CALL);
   assign execute_control_supported =
     execute_is_banz ||
     execute_is_b ||
     execute_is_accumulator_branch ||
     execute_is_bv ||
-    execute_is_bioz;
+    execute_is_bioz ||
+    execute_is_call;
   assign control_operand_step =
     execute_control_supported &&
     (pipeline_state == PIPELINE_SEQUENTIAL);
@@ -473,6 +482,8 @@ module tms32010_sequential_pipeline_slice (
               )
             );
             assert (core_bio == !bioz_taken);
+          end else if (execute_is_call) begin
+            assert (program_bus_address == branch_operand_word[11:0]);
           end
         end else begin
           assert (execute_address_o == pc_o);
@@ -496,6 +507,12 @@ module tms32010_sequential_pipeline_slice (
                 : program_bus_address + 12'h001
             )
           );
+        end
+        if (
+          execute_is_call &&
+          (program_data_i[15:12] == 4'h0)
+        ) begin
+          assert (next_fetch_address == program_data_i[11:0]);
         end
       end
       if (control_target_step && fetch_boundary) begin
