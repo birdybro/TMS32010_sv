@@ -434,6 +434,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_table_transfers_use_three_cycles_and_program_space_write(self) -> None:
+        self._run_testbench(
+            "tb_table_transfers_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_table_transfers_rtl.sv",
+            ],
+        )
+
     def test_accumulator_branch_predicates_and_two_cycle_timing(self) -> None:
         self._run_testbench(
             "tb_accumulator_branches_rtl",

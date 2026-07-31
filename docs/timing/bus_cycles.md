@@ -55,6 +55,29 @@ completion phases. This validates the synchronous emulation contract but does
 not assert that an NMOS TMS32010 may be stopped arbitrarily or that a
 READY/wait pin exists.
 
+`TBLR` and `TBLW` now have the corresponding qualified three-cycle native
+sequence. Both begin with an opcode `MEN` read at PC and a second `MEN` read
+at PC+1 whose word is discarded. Cycle 3 replaces the external address with
+captured `ACC[11:0]`: TBLR keeps `MEN` active and writes the sampled 16-bit
+program word into the pre-resolved internal-RAM address; TBLW suppresses
+`MEN`, reads that RAM word, and asserts `WE` while driving it. At the table
+sample the instruction applies indirect AR/ARP updates, duplicates old stack
+level 2 into the bottom after the documented temporary push/pop, and retires.
+The following normal cycle returns to PC+1, so even a TBLW that overwrites
+that address changes the word subsequently executed
+[ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10,
+`TBLR`/`TBLW`, and Appendix A table timing, printed pp. 2-17 and
+3-64–3-67 plus data-sheet pp. 15–16
+(PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY.**
+
+Directed native testing holds both the discarded `MEN` phase and active table
+`MEN`/`WE` phases under a low FPGA clock enable and requires phase, address,
+strobe, write data, PC, cycle count, and pending state to remain stable. The
+focused differential independently compares all three external program
+transactions, internal RAM direction, stack state, and final program-memory
+mutation. These tests validate logical phases, not analog delay or arbitrary
+physical-device clock stoppage.
+
 `PUSH` and `POP` each consume two cycles despite carrying only one program
 word. No located original-part timing figure shows whether `MEN` is inactive,
 the current address is held, or the next instruction is prefetched during the

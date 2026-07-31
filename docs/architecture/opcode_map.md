@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its current fifty-instruction model/tool boundary is intentionally partial
+Its current fifty-two-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -36,6 +36,8 @@ documented mnemonics so missing coverage remains machine-visible.
 | `LAR AR,dma` | `0x3800` | `0xfe00` plus addressing constraints | 1 | 1 | individual `LAR` page, printed p. 3-33 |
 | `IN dma,PA` | `0x4000` | `0xf800` plus addressing constraints | 1 | 2 | individual `IN` page, printed p. 3-30 |
 | `OUT dma,PA` | `0x4800` | `0xf800` plus addressing constraints | 1 | 2 | individual `OUT` page, printed p. 3-47 |
+| `TBLR dma` | `0x6700` | `0xff00` plus addressing constraints | 1 | 3 | individual `TBLR` pages, printed pp. 3-64–3-65 |
+| `TBLW dma` | `0x7d00` | `0xff00` plus addressing constraints | 1 | 3 | individual `TBLW` pages, printed pp. 3-66–3-67 |
 | `SAR AR,dma` | `0x3000` | `0xfe00` plus addressing constraints | 1 | 1 | individual `SAR` pages, printed pp. 3-55–3-56 |
 | `SACL dma` | `0x5000` | `0xff00` plus addressing constraints | 1 | 1 | individual `SACL` page, printed p. 3-54 |
 | `SACH dma,s` | `0x5800` | `0xf800` plus legal-shift/addressing constraints | 1 | 1 | individual `SACH` page, printed p. 3-53 |
@@ -62,10 +64,10 @@ documented mnemonics so missing coverage remains machine-visible.
 | `BZ pma` | `0xff00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BZ` page, printed p. 3-24 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29, 3-31–3-44,
-3-46, 3-48, 3-53–3-56, 3-58, 3-60–3-61, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 66, 76–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
-and 120–121)].
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29,
+3-31–3-44, 3-46, 3-48, 3-53–3-56, 3-58, 3-60–3-61, 3-63–3-68, and
+3-70–3-71 (PDF pp. 55–57, 60, 62–68, 70–74, 76–79, 81–94, 96, 98,
+103–106, 108, 110–118, and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
 `IN` and `OUT` fix bits 15:11 to `01000` and `01001`, respectively. Bits
@@ -78,6 +80,17 @@ memory to the selected port. Both are one word and two cycles
 pp. 3-6, 3-30, and 3-47 (PDF pp. 56, 80, and 97);
 ti-tms32010-assembly-guide-spru002b, `IN`/`OUT`, printed pp. 3-30 and 3-47
 (PDF pp. 51 and 68)]. **Confidence: VERIFIED_PRIMARY except the rejected
+simultaneous-update case, which is UNKNOWN under `OQ-010`.**
+
+`TBLR` and `TBLW` fix bits 15:8 to `0x67` and `0x7d`. Their low byte is the
+same qualified common direct/indirect data-address field, so each contributes
+140 legal encodings and rejects the same reserved indirect controls. Both
+instructions are one word and three cycles; the program-space address comes
+from `ACC[11:0]` during execution rather than from an opcode field
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `TBLR`/`TBLW`, printed
+pp. 3-7 and 3-64–3-67 (PDF pp. 57 and 114–117);
+ti-tms32010-assembly-guide-spru002b, `TBLR`/`TBLW`, printed pp. 3-64–3-67
+(PDF pp. 85–88)]. **Confidence: VERIFIED_PRIMARY except the rejected
 simultaneous-update case, which is UNKNOWN under `OQ-010`.**
 
 `LST` fixes bits 15:8 to `0x7b`; its low byte uses the common qualified

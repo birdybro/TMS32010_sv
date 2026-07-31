@@ -894,6 +894,135 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
         self.assertEqual(model.io_output[5], 0xCAFE)
         self.assertEqual(model.io_output[7], 0x1003)
 
+    def test_table_transfer_cycles_buses_stack_and_memory_match_model(
+        self,
+    ) -> None:
+        words = [
+            0xF800,
+            0x0002,
+            0xF800,
+            0x0004,
+            0xF800,
+            0x0006,
+            0xF800,
+            0x0008,
+            0x7E20,
+            0x6703,
+            0x7E21,
+            0x7D03,
+            0x7F80,
+        ]
+        data_words = [0] * 144
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        model.program[0x20] = 0xBEEF
+        model.program[0x21] = 0xAAAA
+        model.data[:] = data_words
+        expected = [model.step() for _ in range(9)]
+        machine_cycles = sum(trace.cycles for trace in expected)
+
+        self.assertEqual(
+            [trace.mnemonic for trace in expected],
+            [
+                "CALL",
+                "CALL",
+                "CALL",
+                "CALL",
+                "LACK",
+                "TBLR",
+                "LACK",
+                "TBLW",
+                "NOP",
+            ],
+        )
+        self.assertEqual(machine_cycles, 17)
+        self.assertEqual(model.data[3], 0xBEEF)
+        self.assertEqual(model.program[0x21], 0xBEEF)
+        self.assertEqual(model.state.stack, [8, 6, 4, 4])
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image_words = words + [0x7F80] * (0x22 - len(words))
+            image_words[0x20] = 0xBEEF
+            image_words[0x21] = 0xAAAA
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in image_words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    f"+COUNT={machine_cycles}",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line.split()
+            for line in result.stdout.splitlines()
+            if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), machine_cycles)
+        self.assertEqual(
+            [int(line[1], 16) for line in lines],
+            [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 0x20, 10, 11, 12, 0x21, 12],
+        )
+        self.assertEqual(
+            [int(line[11], 16) for line in lines],
+            [0, 1, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 1, 0, 0, 1, 1],
+            "table transfers retire only on their third cycles",
+        )
+        self.assertEqual(
+            [(int(line[34], 16), int(line[35], 16)) for line in lines[9:12]],
+            [(1, 0), (1, 0), (1, 0)],
+            "TBLR uses MEN for opcode, discarded prefetch, and table read",
+        )
+        self.assertEqual(
+            [(int(line[34], 16), int(line[35], 16)) for line in lines[13:16]],
+            [(1, 0), (1, 0), (0, 1)],
+            "TBLW changes from MEN prefetches to program-space write",
+        )
+        self.assertEqual(int(lines[15][36], 16), 0xBEEF)
+
+        cumulative_cycles = 0
+        for trace in expected:
+            cumulative_cycles += trace.cycles
+            rtl = lines[cumulative_cycles - 1]
+            state = trace.state_after
+            self.assertEqual(int(rtl[3], 16), state["pc"])
+            self.assertEqual(int(rtl[4], 16), state["acc"])
+            self.assertEqual(
+                [int(field, 16) for field in rtl[26:30]],
+                state["stack"],
+            )
+            self.assertEqual(int(rtl[13], 16), state["cycle_count"])
+
+        ram_lines = [
+            line.split()
+            for line in result.stdout.splitlines()
+            if line.startswith("RAM ")
+        ]
+        self.assertEqual(int(ram_lines[3][2], 16), model.data[3])
+        program_lines = {
+            int(line.split()[1], 16): int(line.split()[2], 16)
+            for line in result.stdout.splitlines()
+            if line.startswith("PROGRAM ")
+        }
+        self.assertEqual(program_lines[0x20], model.program[0x20])
+        self.assertEqual(program_lines[0x21], model.program[0x21])
+
     def test_banz_two_cycle_taken_and_untaken_trace_matches_model(self) -> None:
         words = [
             0x7000,  # LARK AR0,0

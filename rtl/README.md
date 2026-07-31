@@ -3,7 +3,8 @@
 The current RTL is an execution slice, not a cycle-accurate TMS32010 core.
 `tms32010_core` supports only `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`,
-`OUT`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`,
+`OUT`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`,
+`TBLR`, `TBLW`, `XOR`, `ZAC`,
 `ZALH`, and `ZALS` at an
 instruction-boundary program interface. One asserted `clock_enable_i` retires
 one supported one-cycle instruction. Unsupported words, undocumented SACH
@@ -58,9 +59,14 @@ one mutually exclusive native I/O transaction: `io_port_o` drives A2–A0,
 `io_read_o`/DEN samples the live `io_read_data_i` word into RAM for IN, and
 `io_write_o`/WE drives `io_write_data_o` from RAM for OUT. Address, controls,
 write data, PC, and pending indirect updates hold across clock-enable stalls;
-the old internal address is used before AR/ARP commit at retirement. The
-remaining branches, other multi-cycle instructions, table, and interrupt
-sequences remain absent.
+the old internal address is used before AR/ARP commit at retirement.
+TBLR/TBLW instead enter a discarded-prefetch cycle at PC+1 and then an
+ACC-addressed table cycle. TBLR keeps `program_read_o` active and writes the
+sampled word to RAM; TBLW asserts the distinct `program_write_o` and drives
+`program_write_data_o` from RAM. The third sample retires, applies indirect
+updates, and duplicates old stack level 2 into the bottom before the wrapper
+repeats PC+1. The remaining branches, other multi-cycle instructions, and
+interrupt sequences remain absent.
 
 SUBC retires through this same path only in legally scheduled test streams
 whose following instruction does not read ACC. Immediate internal ACC commit

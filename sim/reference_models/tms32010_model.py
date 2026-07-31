@@ -3,9 +3,10 @@
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
-ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and
-ZALS. Logical program, internal-data, and I/O transactions and instruction
-totals are modeled; pin subphases are not integrated with this model.
+ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR, TBLW, XOR, ZAC,
+ZALH, and ZALS. Logical program, internal-data, and I/O transactions and
+instruction totals are modeled; pin subphases are not integrated with this
+model.
 """
 
 from __future__ import annotations
@@ -311,6 +312,8 @@ class Tms32010Model:
             "SUB",
             "SUBC",
             "SUBS",
+            "TBLR",
+            "TBLW",
             "XOR",
             "ZALH",
             "ZALS",
@@ -333,8 +336,12 @@ class Tms32010Model:
             operands["effective_address"] = data_address
             if mnemonic in {"DMOV", "LTD"}:
                 operands["move_address"] = data_address + 1
+            if mnemonic in {"TBLR", "TBLW"}:
+                operands["program_address"] = self.state.acc & PC_MASK
             if mnemonic == "IN":
                 transaction_data = self.io_input[operands["port"]] & WORD_MASK
+            elif mnemonic == "TBLR":
+                transaction_data = self.program[operands["program_address"]]
             elif mnemonic in {
                 "ADD",
                 "ADDS",
@@ -353,6 +360,7 @@ class Tms32010Model:
                 "SUB",
                 "SUBC",
                 "SUBS",
+                "TBLW",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -416,6 +424,55 @@ class Tms32010Model:
                         ),
                     )
                 )
+            elif mnemonic in {"TBLR", "TBLW"}:
+                following_address = (pc + 1) & PC_MASK
+                transactions.append(
+                    Transaction(
+                        cycle=self.cycle_count + 1,
+                        space="program",
+                        operation="discarded_prefetch",
+                        address=following_address,
+                        data=self.program[following_address] & WORD_MASK,
+                    )
+                )
+                if mnemonic == "TBLR":
+                    transactions.extend(
+                        (
+                            Transaction(
+                                cycle=self.cycle_count + 2,
+                                space="program",
+                                operation="table_read",
+                                address=operands["program_address"],
+                                data=transaction_data,
+                            ),
+                            Transaction(
+                                cycle=self.cycle_count + 2,
+                                space="data",
+                                operation="write",
+                                address=data_address,
+                                data=transaction_data,
+                            ),
+                        )
+                    )
+                else:
+                    transactions.extend(
+                        (
+                            Transaction(
+                                cycle=self.cycle_count + 2,
+                                space="data",
+                                operation="read",
+                                address=data_address,
+                                data=transaction_data,
+                            ),
+                            Transaction(
+                                cycle=self.cycle_count + 2,
+                                space="program",
+                                operation="table_write",
+                                address=operands["program_address"],
+                                data=transaction_data,
+                            ),
+                        )
+                    )
             else:
                 transactions.append(
                     Transaction(
@@ -506,6 +563,16 @@ class Tms32010Model:
             self.io_output[operands["port"]] = (
                 self.data[operands["effective_address"]] & WORD_MASK
             )
+        elif mnemonic == "TBLR":
+            self.data[operands["effective_address"]] = (
+                self.program[operands["program_address"]] & WORD_MASK
+            )
+            self.state.stack[3] = self.state.stack[2]
+        elif mnemonic == "TBLW":
+            self.program[operands["program_address"]] = (
+                self.data[operands["effective_address"]] & WORD_MASK
+            )
+            self.state.stack[3] = self.state.stack[2]
         elif mnemonic == "MPY":
             data_word = self.data[operands["effective_address"]]
             if self.state.t == 0x8000 and data_word == 0x8000:
@@ -643,6 +710,8 @@ class Tms32010Model:
                 "SUB",
                 "SUBC",
                 "SUBS",
+                "TBLR",
+                "TBLW",
                 "XOR",
                 "ZALH",
                 "ZALS",
@@ -669,7 +738,12 @@ class Tms32010Model:
             if (control & 0x08) == 0 and mnemonic != "LST":
                 self.state.status.arp = control & 1
 
-        cycles = 2 if mnemonic in {"IN", "OUT"} else 1
+        if mnemonic in {"TBLR", "TBLW"}:
+            cycles = 3
+        elif mnemonic in {"IN", "OUT"}:
+            cycles = 2
+        else:
+            cycles = 1
         self.cycle_count += cycles
         return StepTrace(
             pc=pc,
@@ -789,6 +863,17 @@ class Tms32010Model:
                 raise UnsupportedOpcode(pc, opcode)
             return ("IN" if (opcode & 0xF800) == 0x4000 else "OUT"), {
                 "port": (opcode >> 8) & 0x7,
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if (opcode & 0xFF00) in {0x6700, 0x7D00}:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return ("TBLR" if (opcode & 0xFF00) == 0x6700 else "TBLW"), {
                 "indirect": indirect,
                 "addressing_field": control,
             }

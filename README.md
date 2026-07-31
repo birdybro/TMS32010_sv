@@ -14,10 +14,11 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support fifty
+The reference model, local tools, and partial RTL currently support fifty-two
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
+`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
+`XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
 `SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
@@ -77,12 +78,17 @@ old resolved internal-RAM address; OUT asserts WE and drives the selected RAM
 word. Both expose the three-bit port separately, apply indirect updates only
 at second-cycle retirement, and have directed state, cycle, stall, bus-phase,
 and differential tests.
+`TBLR` and `TBLW` perform an opcode read, a discarded following-instruction
+read, and an `ACC[11:0]` table transfer under MEN or WE. The following address
+is then fetched again. Directed and differential tests cover program-memory
+mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
+stack-bottom side effect.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
 instructions, eleven two-cycle control-flow instructions, and the two
-qualified I/O instructions; it is not a general pipeline or cycle-accuracy
-claim.
+qualified I/O instructions, plus both three-cycle table transfers; it is not
+a general pipeline or cycle-accuracy claim.
 
 ## Design principles
 

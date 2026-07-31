@@ -95,19 +95,21 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Fifty encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Fifty-two encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
-  `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBS`) are
-  primary-transcribed in the opcode research table. The twenty-two
+  `SOVM`, `SPAC`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`,
+  `SUBC`, `SUBS`) are primary-transcribed in the opcode research table. The
+  twenty-four
   common-address data instructions add
   conditional legality constraints for
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   IN and OUT add 2,240 legal direct/indirect port/address combinations under
-  those same common indirect constraints. The decoder exhaustively classifies
-  all 65,536 words against this partial set, accepting 21,302 supported words
-  without collisions; the remaining 10
+  those same common indirect constraints. TBLR/TBLW add 280 legal common
+  address combinations. The decoder exhaustively classifies all 65,536 words
+  against this partial set, accepting 21,582 supported words without
+  collisions; the remaining 8
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -138,6 +140,10 @@ objective passing evidence.
   Exact `CALL=0xf800`, canonical target word, opcode-PC+2 stack push,
   old-bottom discard, and two normal program reads are primary-verified and
   independently corroborated by pinned MAME.
+  Exact `TBLR=0x67xx` and `TBLW=0x7dxx`, common address legality,
+  ACC-derived program address, three-cycle total, discarded prefetch, table
+  direction, final stack-bottom effect, and repeated following address are
+  primary-verified.
 
 ## Milestone 5 — Executable reference model
 
@@ -154,11 +160,11 @@ objective passing evidence.
 - **Tests:** `sim/unit/test_model_*.py`
 - **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
-  `OUT`, `PAC`,
+  `OUT`, `PAC`, `TBLR`, `TBLW`,
   `ROVM`, `SACL`, `SACH`,
   `SAR`, `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, and `SUBS`,
   raw program loading, logical program/data traces, reset-boundary effects,
-  and deterministic replay. The twenty-two common-address data instructions
+  and deterministic replay. The twenty-four common-address data/table instructions
   cover
   direct/indirect reads or writes and nine-bit AR updates; `LAC` additionally
   covers sign extension and shifts, SACH covers output shifts 0/1/4, and the
@@ -229,9 +235,14 @@ objective passing evidence.
   transfer all 16 bits between that word and one of eight distinct I/O ports,
   apply indirect AR/ARP controls at completion, record an opcode fetch plus
   second-cycle I/O and internal-data transactions, and count two cycles.
+  `TBLR`/`TBLW` capture ACC and the old internal-data address, record opcode
+  and discarded PC+1 reads plus the third-cycle table transfer, mutate RAM or
+  program memory, duplicate old stack level 2 into the bottom, apply indirect
+  updates at completion, and count three cycles.
   Out-of-range
-  original-RAM addresses and unsupported words trap. Remaining table-memory
-  instructions, interrupt entry, and pin phases remain unimplemented.
+  original-RAM addresses and unsupported words trap. Remaining instruction
+  families, interrupt entry, and pin phases outside the qualified wrapper
+  remain unimplemented.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -248,21 +259,21 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same fifty instructions as the
+- **Notes:** Qualified slice supports the same fifty-two instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
   zero placeholder before a next ARP, SACH's sparse 0/1/4 shifts, and
   ADD/LAC/SUB common address syntax with shifts, `LAR`/`SAR` target-register
   syntax, MAR direct/indirect syntax and LARP aliases, and
-  ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
+  ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/TBLR/TBLW/XOR/ZALH/ZALS syntax without a shift operand,
   checked `IN`/`OUT` data-address plus numeric or PA0–PA7 port syntax,
   plus the complete signed 13-bit MPYK immediate range and implied
   PAC/APAC/SPAC/DINT/EINT and two-word
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 10
+  directed-tested. The remaining 8
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -282,10 +293,10 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  fifty-instruction slice. `LAC`
+  fifty-two-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
-  twenty-two common-address data instructions verify direct/indirect read/write
+  twenty-four common-address data instructions verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
   indirect load into the selected address register suppresses its otherwise
   requested post-modification. `SAR` verifies the distinct same-source rule:
@@ -362,6 +373,11 @@ objective passing evidence.
   enabled falling boundary completes a DEN read or WE write, commits the
   internal RAM effect and indirect AR/ARP update, advances PC, and retires.
   Program MEN is suppressed throughout that I/O cycle.
+  TBLR/TBLW use a three-cycle pending state: the opcode sample captures
+  ACC[11:0] and the old RAM address, the second MEN cycle discards PC+1, and
+  the third cycle performs a MEN table read or WE table write. Retirement,
+  indirect updates, and the documented final stack-bottom duplication occur
+  only on the table sample; the next program cycle repeats PC+1.
   General overlap, remaining branch/multi-cycle, and interrupt control
   do not exist yet. SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
@@ -396,8 +412,10 @@ objective passing evidence.
   addresses and target-read stalls; conditional branches cover both outcomes.
   CALL also verifies no early push and its target-sample stack commit. IN/OUT
   verify an ordinary opcode read before the distinct I/O cycle without
-  changing the qualified normal-program-read primitive. Table
-  cycles, remaining indirect-call/return,
+  changing the qualified normal-program-read primitive. TBLR/TBLW verify
+  opcode and discarded MEN reads, captured ACC address, third-cycle MEN/WE
+  ownership, RAM and program-write data, stack-bottom transformation, stalls,
+  and the repeated PC+1 address. Remaining indirect-call/return,
   general pipeline overlap, and interrupt sequences remain. Do not collapse Harvard spaces in the native
   interface.
 
@@ -679,6 +697,9 @@ objective passing evidence.
   IN/OUT assert one MEN opcode read followed by one mutually exclusive DEN/WE
   cycle, live input sampling or stable output data, old-address ownership,
   second-cycle indirect updates, retirement, and phase stalls.
+  TBLR/TBLW assert one MEN opcode read, one discarded MEN PC+1 read, one
+  ACC-addressed MEN/WE table cycle, third-cycle retirement and updates,
+  strobe/data stability during stalls, and the repeated PC+1 fetch.
   Other control flow remains. PUSH/POP are primary-confirmed as one-word/two-cycle
   instructions with exact state effects, but their second-cycle external
   sequence remains open under `OQ-016`. SUBC's one-cycle total is asserted
@@ -760,6 +781,9 @@ objective passing evidence.
   A focused IN/OUT differential compares direct and indirect transfers,
   opcode-plus-I/O transaction order, exact two-cycle totals, RAM results,
   port/data direction, PC, and AR/ARP post-updates.
+  A focused TBLR/TBLW differential compares opcode, discarded, table, and
+  repeated-following program addresses, three-cycle retirement, MEN/WE
+  direction, RAM and program-memory effects, PC, and all four stack levels.
   MAME comparison and
   legal randomized full-ISA streams
   remain. MAME disagreement
@@ -793,7 +817,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Forty-eight-instruction RTL, phase engine, multiplier, and
+- **Notes:** Fifty-two-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in

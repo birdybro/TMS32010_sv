@@ -67,5 +67,7 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "io_port_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to io_read_o
 set_instance_assignment -name VIRTUAL_PIN ON -to io_write_o
 set_instance_assignment -name VIRTUAL_PIN ON -to "io_write_data_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to program_write_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "program_write_data_o[*]"
 
 set_global_assignment -name LAST_QUARTUS_VERSION "17.0.2 Lite Edition"

@@ -55,6 +55,12 @@ reads and address updates, and include 16 seeded-random direct/indirect pairs.
 Both sides use the same provisional intermediate-overflow policy, so this is
 consistency evidence, not independent proof of `OQ-017` or `OQ-018`.
 
+The focused TBLR/TBLW differential chains a table read and self-modifying
+table write. It compares opcode, discarded-prefetch, table-transfer, and
+repeated-following program addresses; per-cycle retirement; MEN/write
+direction and write data; cumulative cycles; RAM and program-memory results;
+PC; and all four stack levels.
+
 The focused BANZ trace compares logical program transaction addresses
 `PC,PC+1`, per-cycle retirement, cumulative cycle count, branch/fallthrough
 PC, and low-nine-bit counter results for taken and untaken cases. The model
@@ -86,9 +92,10 @@ PC, and `[top, level_1, level_2, bottom]` stack state at each instruction
 commit.
 
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/BIOZ/BV/CALL/family differentials supply logical per-cycle evidence; their separate native
-phase test supplies the physical subphase relationship. Neither result
-qualifies the remaining pipeline. MAME comparison is not yet implemented.
+B/BANZ/BIOZ/BV/CALL/family/IN/OUT/TBLR/TBLW differentials supply logical
+per-cycle evidence; their separate native phase tests supply the physical
+subphase relationship. Neither result qualifies the remaining pipeline. MAME
+comparison is not yet implemented.
 
 Failing seeds must be preserved as regression fixtures when randomized
 coverage expands.

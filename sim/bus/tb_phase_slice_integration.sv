@@ -71,6 +71,8 @@ module tb_phase_slice_integration;
     .io_read_o                     (),
     .io_write_o                    (),
     .io_write_data_o               (),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .pc_o                          (pc),
     .accumulator_o                 (accumulator),
     .t_register_o                  (t_register),

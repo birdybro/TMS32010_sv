@@ -176,8 +176,11 @@ pp. 2-15–2-16 (PDF pp. 39–40)]. **Confidence: VERIFIED_PRIMARY.**
 
 The qualified portable interface exposes `io_port_o`, `io_read_o`,
 `io_write_o`, `io_write_data_o`, and `io_read_data_i` separately from
-program and internal-data signals. The native phase wrapper additionally
-exposes active-low `den_n_o` and `we_n_o` and multiplexes
+program and internal-data signals. Program space separately exposes the
+active transaction address, `program_read_o`, `program_write_o`,
+`program_data_i`, and `program_write_data_o`, so a TBLW cannot be mistaken
+for an I/O write. The native phase wrapper additionally exposes active-low
+`den_n_o` and `we_n_o` and multiplexes
 `program_address_o` to `{9'b0, io_port_o}` during the port cycle. This naming
 does not merge the I/O space into program memory: logical direction and
 transaction ownership remain explicit.
@@ -202,6 +205,26 @@ clock-enable hold, input sampling, output stability, and prefetch resumption.
 trap-before-effects, while the focused differential compares model and RTL
 cycles, transactions, state, and final RAM. The core exposes no READY input
 because the original pinout contains none.
+
+For `TBLR` and `TBLW`, the opcode is read at PC under `MEN` in cycle 1 and
+PC advances to PC+1 without retirement. Cycle 2 performs another full `MEN`
+read at PC+1, but its input is discarded. In cycle 3,
+`program_address_o` changes to the captured low 12 ACC bits. TBLR asserts
+`program_read_o`/`MEN`, samples `program_data_i`, and writes the selected
+internal-RAM word. TBLW asserts `program_write_o`/`WE` and drives
+`program_write_data_o` from that RAM word. `DEN` is inactive throughout.
+Indirect updates and the table instruction retire only at the cycle-3
+falling boundary; the following phase-zero address returns to PC+1
+[ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10,
+`TBLR`/`TBLW`, and Appendix A table timing, printed pp. 2-17 and
+3-64–3-67 plus data-sheet pp. 15–16
+(PDF pp. 41, 114–117, and 371–372)]. **Confidence: VERIFIED_PRIMARY.**
+
+`sim/bus/tb_table_transfer_phase.sv` checks the opcode, discarded, table,
+and repeated-following phases, all strobe combinations, clock-enable holds,
+read/write data, and retirement. `sim/instruction/tb_table_transfers_rtl.sv`
+checks direct/indirect data addressing and stack effects; the focused
+differential additionally validates final RAM and program-memory contents.
 
 ## No documented READY pin
 

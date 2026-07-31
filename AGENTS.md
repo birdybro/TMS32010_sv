@@ -235,10 +235,11 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support forty-eight instructions:
+tools, RTL, and seeded differential boundary support fifty-two instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-`LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+`LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
+`IN`, `OUT`, `PAC`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
+`SUBC`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
@@ -301,6 +302,10 @@ MAME's shorter untaken path.
 normal program cycle, pushes opcode-PC+2 onto the four-level 12-bit stack at
 retirement, and then selects the target. Stack overflow discards the old
 bottom without an exception.
+`IN`/`OUT` use distinct two-cycle I/O transactions. `TBLR`/`TBLW` use three
+cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
+write, followed by another PC+1 fetch. Table retirement also reproduces the
+documented old-stack-bottom loss and old-level-2 duplication.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

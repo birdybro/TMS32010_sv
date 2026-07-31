@@ -51,6 +51,8 @@ module tb_banz_phase;
     .io_read_o                     (),
     .io_write_o                    (),
     .io_write_data_o               (),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .pc_o                          (pc),
     .accumulator_o                 (),
     .t_register_o                  (),

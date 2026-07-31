@@ -8,6 +8,8 @@ module tb_model_rtl_slice;
   logic        bio;
   logic [11:0] program_address;
   logic        program_read;
+  logic        program_write;
+  logic [15:0] program_write_data;
   logic [15:0] program_data;
   logic [11:0] pc;
   logic [31:0] accumulator;
@@ -62,6 +64,8 @@ module tb_model_rtl_slice;
     .program_address_o (program_address),
     .program_next_address_o (),
     .program_read_o    (program_read),
+    .program_write_o               (program_write),
+    .program_write_data_o          (program_write_data),
     .program_data_i    (program_data),
     .io_port_o                     (io_port),
     .io_read_o                     (io_read),
@@ -169,6 +173,9 @@ module tb_model_rtl_slice;
       logic        io_read_before;
       logic        io_write_before;
       logic [15:0] io_transfer_data_before;
+      logic        program_read_before;
+      logic        program_write_before;
+      logic [15:0] program_write_data_before;
       pc_before     = program_address;
       opcode_before = program_data;
       data_address_before       = data_address;
@@ -184,10 +191,16 @@ module tb_model_rtl_slice;
       io_write_before           = io_write;
       io_transfer_data_before   =
         io_read ? io_read_data : io_write_data;
+      program_read_before       = program_read;
+      program_write_before      = program_write;
+      program_write_data_before = program_write_data;
       @(posedge clk);
       #1;
+      if (program_write_before) begin
+        program_memory[pc_before] = program_write_data_before;
+      end
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x %03x %03x %03x %03x %01x %01x %01x %04x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x %03x %03x %03x %03x %01x %01x %01x %04x %01x %01x %04x",
         pc_before,
         opcode_before,
         pc,
@@ -220,12 +233,17 @@ module tb_model_rtl_slice;
         io_port_before,
         io_read_before,
         io_write_before,
-        io_transfer_data_before
+        io_transfer_data_before,
+        program_read_before,
+        program_write_before,
+        program_write_data_before
       );
     end
     for (int unsigned index = 0; index < 144; index++) begin
       $display("RAM %02x %04x", index[7:0], dut.data_ram.memory[index]);
     end
+    $display("PROGRAM 020 %04x", program_memory[12'h020]);
+    $display("PROGRAM 021 %04x", program_memory[12'h021]);
     $display("PASS tb_model_rtl_slice");
     $finish;
   end

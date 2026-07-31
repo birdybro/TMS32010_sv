@@ -110,11 +110,14 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model, local assembler/disassembler, RTL, and seeded
-differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`,
-`LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
-`SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-`ZALS`. The twenty-two common-address data instructions have independent
+The executable model, local assembler/disassembler, RTL, and differential
+boundary support 52 mnemonics: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
+`BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`,
+`DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
+`LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
+`ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`,
+`TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 24 common-address
+data/table instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -185,7 +188,13 @@ sticky-overflow, OVM result, and program-only transaction rules.
 TI's separate rule deferring interrupt service through the instruction after
 MPY or MPYK is documented but cannot yet be execution-tested because
 interrupt entry does not exist.
+IN and OUT each execute as an opcode read followed by a distinct I/O cycle.
+TBLR and TBLW execute as an opcode read, a discarded PC+1 read, and an
+ACC-addressed program-space transfer; their third-cycle state, internal-RAM
+effect, indirect updates, stack-bottom duplication, and repeated PC+1 fetch
+are directed-tested.
 This is partial RTL support only.
-The sequential native-phase wrapper covers normal program reads only.
+The sequential native-phase wrapper covers qualified normal program reads,
+two-cycle control flow, I/O cycles, and table-transfer reads/writes.
 Current evidence does not constitute instruction completeness or cycle
 accuracy.

@@ -1,8 +1,8 @@
 `default_nettype none
 
 // Integration wrapper for the qualified one-cycle sequential slice, two-cycle
-// control-flow reads, and two-cycle native I/O transfers. This is not yet the
-// complete TMS32010 fetch pipeline.
+// control-flow reads, native I/O transfers, and three-cycle table transfers.
+// This is not yet the complete TMS32010 fetch pipeline.
 module tms32010_phase_slice (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -35,6 +35,8 @@ module tms32010_phase_slice (
   output logic        io_read_o,
   output logic        io_write_o,
   output logic [15:0] io_write_data_o,
+  output logic        program_write_o,
+  output logic [15:0] program_write_data_o,
 
   output logic [11:0] pc_o,
   output logic [31:0] accumulator_o,
@@ -59,6 +61,8 @@ module tms32010_phase_slice (
   logic [11:0] logical_program_address;
   logic [11:0] logical_program_next_address;
   logic        logical_program_read;
+  logic        logical_program_write;
+  logic [15:0] logical_program_write_data;
   logic        logical_io_read;
   logic        logical_io_write;
   logic [2:0]  logical_io_port;
@@ -78,6 +82,7 @@ module tms32010_phase_slice (
     clock_enable_i & bus_active_o & (phase_o == 2'd3) &
     (
       logical_program_read ||
+      logical_program_write ||
       logical_io_read ||
       logical_io_write
     ) & ~rs_i;
@@ -88,14 +93,18 @@ module tms32010_phase_slice (
   assign program_address_o =
     (logical_io_read || logical_io_write)
       ? {9'h000, logical_io_port}
-      : program_bus_address;
+      : logical_program_address;
   assign den_n_o =
     ~bus_active_o | ~logical_io_read | (phase_o == 2'd0);
   assign we_n_o =
-    ~bus_active_o | ~logical_io_write | (phase_o == 2'd0);
+    ~bus_active_o |
+    ~(logical_io_write || logical_program_write) |
+    (phase_o == 2'd0);
   assign io_port_o = logical_io_port;
   assign io_read_o = logical_io_read;
   assign io_write_o = logical_io_write;
+  assign program_write_o = logical_program_write;
+  assign program_write_data_o = logical_program_write_data;
 
   tms32010_core core (
     .clk_i                         (clk_i),
@@ -106,6 +115,8 @@ module tms32010_phase_slice (
     .program_address_o             (logical_program_address),
     .program_next_address_o        (logical_program_next_address),
     .program_read_o                (logical_program_read),
+    .program_write_o               (logical_program_write),
+    .program_write_data_o          (logical_program_write_data),
     .program_data_i                (program_data_i),
     .io_port_o                     (logical_io_port),
     .io_read_o                     (logical_io_read),
@@ -162,7 +173,12 @@ module tms32010_phase_slice (
   always_ff @(posedge clk_i) begin
     if (!initialize_i) begin
       assert (!(retired_o && !sample_o));
-      assert (logical_program_address == pc_o);
+      if (!logical_program_write && (logical_program_address != pc_o)) begin
+        assert (logical_program_read);
+      end
+      if (bus_active_o && !logical_program_write) begin
+        assert (program_bus_address == pc_o);
+      end
       assert (!(
         (!men_n_o && !den_n_o) ||
         (!men_n_o && !we_n_o) ||

@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fifty model/tool encodings.
+  mnemonics and fully describes the first fifty-two model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the fifty-instruction slice.
+  clock-enable execution core for the fifty-two-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -210,6 +210,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   OUT drives that RAM word under WE. Direct/indirect ordering, all eight
   ports, exact two-cycle retirement, clock-enable stalls, strobe exclusion,
   traps, and AR/ARP post-updates are automated.
+- Primary-cited `TBLR`/`TBLW` opcode families across the database, independent
+  fixtures, local tools, model, RTL, native phases, and differential trace.
+  Each performs an opcode read, discarded PC+1 read, and ACC-addressed
+  program-space transfer; directed tests cover RAM/program effects,
+  self-modification, stack-bottom duplication, indirect updates, exact
+  three-cycle retirement, stalls, strobe exclusion, and repeated PC+1 fetch.
 
 ### Changed
 
@@ -219,10 +225,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated fifty-instruction
-  phase/RAM/multiplier/I/O slice in 2,036 ALMs/2,563 registers and one DSP
-  block, with +2.013 ns worst setup and +0.167 ns worst hold slack at 50 MHz
-  and 55.60 MHz worst slow-corner internal Fmax; 366
+- Quartus 17.0.2 fits the integrated fifty-two-instruction
+  phase/RAM/multiplier/I/O/table slice in 2,033 ALMs/2,585 registers and one
+  DSP block, with +3.033 ns worst setup and +0.165 ns worst hold slack at
+  50 MHz and 58.94 MHz worst slow-corner internal Fmax; 383
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -237,9 +243,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers fifty of 60 documented
-  mnemonics: twenty-two common-address internal-data families plus the two
-  common-address I/O families.
+- The qualified model/tool/RTL boundary now covers fifty-two of 60 documented
+  mnemonics: twenty-two common-address internal-data families, two
+  common-address I/O families, and two table-transfer families.
 
 ### Fixed
 
@@ -359,8 +365,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.67+111 synthesizes the fifty-instruction hierarchy to 12,902
-  generic cells with 15 assertions, zero latches, and clean pre/post checks;
+- Yosys 0.67+111 synthesizes the fifty-two-instruction hierarchy to 13,218
+  generic cells with 21 retained checks, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
 - Hand fixtures and directed model/RTL tests verify both `SAR` sources,
@@ -515,15 +521,25 @@ Changelog, and the project follows semantic versioning once releases begin.
   transfer directions, live input sampling, stable output data, AR/ARP
   updates, unresolved-address and reserved-control traps, exact cycle counts,
   MEN/DEN/WE exclusion, phase stalls, and model/RTL transaction agreement.
-- The complete current regression passes 86 repository/ISA/tool tests, 189
-  directed model tests, 33 exhaustive/directed instruction RTL tests, nine
+- Directed TBLR/TBLW tests cover direct and indirect old-address ordering,
+  ACC-derived program addresses, RAM/program-memory direction and data,
+  discarded-prefetch refetch, self-modifying code, stack-bottom duplication,
+  AR/ARP updates, unresolved-address traps, exact three-cycle retirement,
+  MEN/WE exclusion, phase stalls, and model/RTL transaction agreement.
+- A rejected first table-transfer Quartus fit exposed 17 newly added
+  program-write outputs and 2,906 output paths missing from the
+  synthesis-harness exclusions. The corrected full rerun explicitly excludes
+  those harness-only ports and reports zero unconstrained categories; this is
+  still not wrapper I/O timing closure.
+- The complete current regression passes 89 repository/ISA/tool tests, 195
+  directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, one interrupt-mask RTL test, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
-  and one focused IN/OUT differential.
+  one focused IN/OUT differential, and one focused TBLR/TBLW differential.
 
 ### Known Issues
 
-- Only fifty of 60 documented instruction mnemonics have model, tool, and
+- Only fifty-two of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME

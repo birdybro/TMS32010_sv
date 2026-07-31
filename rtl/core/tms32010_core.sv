@@ -10,6 +10,8 @@ module tms32010_core (
   output logic [11:0] program_address_o,
   output logic [11:0] program_next_address_o,
   output logic        program_read_o,
+  output logic        program_write_o,
+  output logic [15:0] program_write_data_o,
   input  logic [15:0] program_data_i,
 
   output logic [2:0]  io_port_o,
@@ -102,6 +104,8 @@ module tms32010_core (
   localparam logic [5:0] OP_CALL = 6'd47;
   localparam logic [5:0] OP_IN   = 6'd48;
   localparam logic [5:0] OP_OUT  = 6'd49;
+  localparam logic [5:0] OP_TBLR = 6'd50;
+  localparam logic [5:0] OP_TBLW = 6'd51;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -182,6 +186,17 @@ module tms32010_core (
   logic        pending_io_decrement;
   logic        pending_io_preserve_arp;
   logic        pending_io_next_arp;
+  logic        table_pending;
+  logic        table_transfer_phase;
+  logic [5:0]  pending_table_operation;
+  logic [11:0] pending_table_program_address;
+  logic [7:0]  pending_table_data_address;
+  logic        pending_table_indirect;
+  logic        pending_table_selected_arp;
+  logic        pending_table_increment;
+  logic        pending_table_decrement;
+  logic        pending_table_preserve_arp;
+  logic        pending_table_next_arp;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -198,7 +213,9 @@ module tms32010_core (
 
   always_comb begin
     data_address_o = 8'h00;
-    if (io_pending) begin
+    if (table_pending) begin
+      data_address_o = pending_table_data_address;
+    end else if (io_pending) begin
       data_address_o = pending_io_data_address;
     end else if (
       !control_operand_pending &&
@@ -227,7 +244,9 @@ module tms32010_core (
         (decoded_operation == OP_MPY) ||
         (decoded_operation == OP_LST) ||
         (decoded_operation == OP_IN) ||
-        (decoded_operation == OP_OUT)
+        (decoded_operation == OP_OUT) ||
+        (decoded_operation == OP_TBLR) ||
+        (decoded_operation == OP_TBLW)
       )
     ) begin
       if (decoded_indirect) begin
@@ -268,7 +287,10 @@ module tms32010_core (
       ? {{3{decoded_immediate_13[12]}}, decoded_immediate_13}
       : ram_read_data;
 
-  assign program_address_o = pc_o;
+  assign program_address_o =
+    table_pending && table_transfer_phase
+      ? pending_table_program_address
+      : pc_o;
   always_comb begin
     program_next_address_o = pc_o;
     if (control_operand_pending) begin
@@ -317,15 +339,29 @@ module tms32010_core (
           end
         endcase
       end
-    end else if (io_pending) begin
+    end else if (io_pending || table_pending) begin
       // The program prefetch address already points at PC while the physical
-      // address pins carry the I/O port during this machine cycle.
+      // address pins may carry an I/O port or table address.
     end else if (instruction_valid_o) begin
       program_next_address_o = pc_o + 12'h001;
     end
   end
   assign program_read_o =
-    ~reset_i && ~initialize_i && ~io_pending;
+    ~reset_i &&
+    ~initialize_i &&
+    ~io_pending &&
+    !(
+      table_pending &&
+      table_transfer_phase &&
+      (pending_table_operation == OP_TBLW)
+    );
+  assign program_write_o =
+    ~reset_i &&
+    ~initialize_i &&
+    table_pending &&
+    table_transfer_phase &&
+    (pending_table_operation == OP_TBLW);
+  assign program_write_data_o = ram_read_data;
   assign io_port_o = pending_io_port;
   assign io_read_o =
     ~reset_i &&
@@ -347,6 +383,12 @@ module tms32010_core (
         (pending_io_operation == OP_OUT)
       ) ||
       (
+        table_pending &&
+        table_transfer_phase &&
+        (pending_table_operation == OP_TBLW)
+      ) ||
+      (
+        ~table_pending &&
         ~io_pending &&
         ~control_operand_pending &&
         decoded_valid &&
@@ -382,6 +424,12 @@ module tms32010_core (
         (pending_io_operation == OP_IN)
       ) ||
       (
+        table_pending &&
+        table_transfer_phase &&
+        (pending_table_operation == OP_TBLR)
+      ) ||
+      (
+        ~table_pending &&
         ~io_pending &&
         ~control_operand_pending &&
         decoded_valid &&
@@ -400,6 +448,7 @@ module tms32010_core (
     data_write_address_o = data_address_o;
     if (
       !io_pending &&
+      !table_pending &&
       (
         (decoded_operation == OP_DMOV) ||
         (decoded_operation == OP_LTD)
@@ -413,7 +462,13 @@ module tms32010_core (
   assign data_read_data_o     = ram_read_data;
   always_comb begin
     data_write_data_o = accumulator_o[15:0];
-    if (io_pending) begin
+    if (
+      table_pending &&
+      table_transfer_phase &&
+      (pending_table_operation == OP_TBLR)
+    ) begin
+      data_write_data_o = program_data_i;
+    end else if (io_pending) begin
       data_write_data_o = io_read_data_i;
     end else if (
       (decoded_operation == OP_DMOV) ||
@@ -460,6 +515,16 @@ module tms32010_core (
       instruction_valid_o =
         (program_data_i[15:12] == 4'h0) &&
         is_two_word_control_flow(pending_control_operation);
+    end else if (table_pending) begin
+      instruction_valid_o =
+        !table_transfer_phase ||
+        (
+          ram_address_valid &&
+          (
+            (pending_table_operation == OP_TBLR) ||
+            (pending_table_operation == OP_TBLW)
+          )
+        );
     end else if (io_pending) begin
       instruction_valid_o =
         ram_address_valid &&
@@ -495,7 +560,9 @@ module tms32010_core (
             (decoded_operation != OP_MPY) &&
             (decoded_operation != OP_LST) &&
             (decoded_operation != OP_IN) &&
-            (decoded_operation != OP_OUT)
+            (decoded_operation != OP_OUT) &&
+            (decoded_operation != OP_TBLR) &&
+            (decoded_operation != OP_TBLW)
           ) ||
           (
             ram_address_valid &&
@@ -580,6 +647,17 @@ module tms32010_core (
       pending_io_decrement          <= 1'b0;
       pending_io_preserve_arp       <= 1'b1;
       pending_io_next_arp           <= 1'b0;
+      table_pending                 <= 1'b0;
+      table_transfer_phase          <= 1'b0;
+      pending_table_operation       <= OP_TBLR;
+      pending_table_program_address <= 12'h000;
+      pending_table_data_address    <= 8'h00;
+      pending_table_indirect        <= 1'b0;
+      pending_table_selected_arp    <= 1'b0;
+      pending_table_increment       <= 1'b0;
+      pending_table_decrement       <= 1'b0;
+      pending_table_preserve_arp    <= 1'b1;
+      pending_table_next_arp        <= 1'b0;
     end else if (reset_i) begin
       pc_o             <= 12'h000;
       interrupt_mask_o <= 1'b1;
@@ -597,6 +675,17 @@ module tms32010_core (
       pending_io_decrement        <= 1'b0;
       pending_io_preserve_arp     <= 1'b1;
       pending_io_next_arp         <= 1'b0;
+      table_pending                 <= 1'b0;
+      table_transfer_phase          <= 1'b0;
+      pending_table_operation       <= OP_TBLR;
+      pending_table_program_address <= 12'h000;
+      pending_table_data_address    <= 8'h00;
+      pending_table_indirect        <= 1'b0;
+      pending_table_selected_arp    <= 1'b0;
+      pending_table_increment       <= 1'b0;
+      pending_table_decrement       <= 1'b0;
+      pending_table_preserve_arp    <= 1'b1;
+      pending_table_next_arp        <= 1'b0;
       // ACC, T, P, AR0, AR1, ARP, DP, stack, and OV receive no arbitrary
       // reset value.
       // TI explicitly documents that reset leaves OVM unchanged. Retention of
@@ -671,6 +760,55 @@ module tms32010_core (
         end else begin
           illegal_o <= 1'b1;
         end
+      end else if (table_pending) begin
+        if (instruction_valid_o) begin
+          if (!table_transfer_phase) begin
+            table_transfer_phase <= 1'b1;
+            illegal_o            <= 1'b0;
+            cycle_count_o        <= cycle_count_o + 32'h0000_0001;
+          end else begin
+            if (pending_table_indirect) begin
+              if (pending_table_increment) begin
+                if (pending_table_selected_arp) begin
+                  auxiliary_register_1_o <= {
+                    auxiliary_register_1_o[15:9],
+                    auxiliary_register_1_o[8:0] + 9'd1
+                  };
+                end else begin
+                  auxiliary_register_0_o <= {
+                    auxiliary_register_0_o[15:9],
+                    auxiliary_register_0_o[8:0] + 9'd1
+                  };
+                end
+              end else if (pending_table_decrement) begin
+                if (pending_table_selected_arp) begin
+                  auxiliary_register_1_o <= {
+                    auxiliary_register_1_o[15:9],
+                    auxiliary_register_1_o[8:0] - 9'd1
+                  };
+                end else begin
+                  auxiliary_register_0_o <= {
+                    auxiliary_register_0_o[15:9],
+                    auxiliary_register_0_o[8:0] - 9'd1
+                  };
+                end
+              end
+              if (!pending_table_preserve_arp) begin
+                auxiliary_register_pointer_o <= pending_table_next_arp;
+              end
+            end
+            // TI's documented temporary push/pop discards the old bottom
+            // entry and duplicates the old level-2 entry into that position.
+            stack_bottom_o       <= stack_level_2_o;
+            table_pending        <= 1'b0;
+            table_transfer_phase <= 1'b0;
+            retired_o            <= 1'b1;
+            illegal_o            <= 1'b0;
+            cycle_count_o        <= cycle_count_o + 32'h0000_0001;
+          end
+        end else begin
+          illegal_o <= 1'b1;
+        end
       end else if (io_pending) begin
         if (instruction_valid_o) begin
           if (pending_io_indirect) begin
@@ -732,6 +870,21 @@ module tms32010_core (
           pending_io_decrement        <= decoded_addressing_field[4];
           pending_io_preserve_arp     <= decoded_addressing_field[3];
           pending_io_next_arp         <= decoded_addressing_field[0];
+        end else if (
+          (decoded_operation == OP_TBLR) ||
+          (decoded_operation == OP_TBLW)
+        ) begin
+          table_pending                 <= 1'b1;
+          table_transfer_phase          <= 1'b0;
+          pending_table_operation       <= decoded_operation;
+          pending_table_program_address <= accumulator_o[11:0];
+          pending_table_data_address    <= data_address_o;
+          pending_table_indirect        <= decoded_indirect;
+          pending_table_selected_arp    <= auxiliary_register_pointer_o;
+          pending_table_increment       <= decoded_addressing_field[5];
+          pending_table_decrement       <= decoded_addressing_field[4];
+          pending_table_preserve_arp    <= decoded_addressing_field[3];
+          pending_table_next_arp        <= decoded_addressing_field[0];
         end else begin
           retired_o <= 1'b1;
         end
@@ -918,6 +1071,10 @@ module tms32010_core (
           end
           OP_OUT: begin
           end
+          OP_TBLR: begin
+          end
+          OP_TBLW: begin
+          end
           OP_BGEZ: begin
           end
           OP_BGZ: begin
@@ -1026,9 +1183,18 @@ module tms32010_core (
       end
       if (io_pending) begin
         assert (!program_read_o);
+        assert (!program_write_o);
         assert (io_read_o != io_write_o);
       end
+      if (table_pending) begin
+        assert (!(io_read_o || io_write_o));
+        assert (!(program_read_o && program_write_o));
+        if (!table_transfer_phase) begin
+          assert (program_read_o && !program_write_o);
+        end
+      end
       assert (!(io_read_o && io_write_o));
+      assert (!(program_read_o && program_write_o));
       if ((data_read_o || data_write_o) && !data_address_valid_o) begin
         assert (!instruction_valid_o);
       end

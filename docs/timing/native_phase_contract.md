@@ -76,6 +76,29 @@ The processor begins driving output data before `WE` asserts, holds it through
 the falling `CLKOUT` boundary, then releases it after `WE` deasserts. Exact
 `td6`–`td10` bounds remain data-sheet constraint parameters.
 
+The qualified synchronous phase mapping for both table instructions is:
+
+| Machine cycle / phase | Address | Active-low strobe | Boundary effect |
+|---|---|---|---|
+| opcode, phase 0 | opcode PC | none | address setup |
+| opcode, phases 1–3 | opcode PC | `MEN` | sample opcode, capture `ACC[11:0]` and old data address |
+| discarded, phase 0 | opcode PC + 1 | none | following-address setup |
+| discarded, phases 1–3 | opcode PC + 1 | `MEN` | discard input and enter table phase |
+| table, phase 0 | captured `ACC[11:0]` | none | table address and TBLW output-data setup |
+| TBLR table, phases 1–3 | captured `ACC[11:0]` | `MEN` | sample program word into selected RAM |
+| TBLW table, phases 1–3 | captured `ACC[11:0]` | `WE` | complete selected-RAM-to-program write |
+| following, phase 0 | opcode PC + 1 | none | repeat discarded following-address setup |
+
+The opcode and discarded samples increment the architectural cycle count
+without retiring. The table sample performs the RAM effect, indirect AR/ARP
+post-modification, and documented final stack-bottom duplication, then retires
+at exactly three cycles. A low FPGA clock enable holds every active table
+phase, address, strobe, write datum, pending operation, and architectural
+state. `sim/bus/tb_table_transfer_phase.sv` asserts every row, including
+`MEN`/`DEN`/`WE` exclusivity and the repeated following address.
+**Confidence: VERIFIED_PRIMARY for the logical waveform; VERIFIED_HARDWARE is
+not claimed.**
+
 ## I/O reads and writes
 
 `IN` and `OUT` each occupy two cycles. Cycle 1 is the instruction prefetch.

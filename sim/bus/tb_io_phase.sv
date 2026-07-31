@@ -63,6 +63,8 @@ module tb_io_phase;
     .io_read_o                     (io_read),
     .io_write_o                    (io_write),
     .io_write_data_o               (io_write_data),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .pc_o                          (pc),
     .accumulator_o                 (),
     .t_register_o                  (),

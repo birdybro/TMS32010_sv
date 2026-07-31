@@ -96,6 +96,8 @@ class Disassembler:
             "OR",
             "SUBC",
             "SUBS",
+            "TBLR",
+            "TBLW",
             "XOR",
             "ZALH",
             "ZALS",

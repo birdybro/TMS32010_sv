@@ -5,8 +5,8 @@ complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `OUT`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-  `ZALS`;
+  `OUT`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
+  `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
 - checked integer expressions;
@@ -85,6 +85,9 @@ two-word location accounting with exact opcode `0xf900`.
 example `IN 6,PA0`, `IN *+,7,AR1`, `OUT 24,3`, or `OUT *-,PA5`.
 Ports may be written as numeric 0–7 or `PA0`–`PA7`; the optional next ARP is
 valid only with an indirect data operand.
+
+`TBLR` and `TBLW` take one common data operand without a shift, for example
+`TBLR 6`, `TBLR *+,AR1`, or `TBLW *-`.
 
 `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` use that identical target
 workflow with exact opcodes `0xfd00`, `0xfc00`, `0xfb00`, `0xfa00`,

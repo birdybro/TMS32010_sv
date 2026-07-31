@@ -69,6 +69,8 @@ class IsaDatabaseTests(unittest.TestCase):
                 "CALL",
                 "IN",
                 "OUT",
+                "TBLR",
+                "TBLW",
                 "B",
                 "BGEZ",
                 "BGZ",
@@ -80,6 +82,22 @@ class IsaDatabaseTests(unittest.TestCase):
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
+
+    def test_table_transfers_use_common_addressing_and_three_cycles(self) -> None:
+        for match, mnemonic in ((0x6700, "TBLR"), (0x7D00, "TBLW")):
+            for control in (0xC8, 0x8A, 0xB8):
+                self.assertIsNone(decode_word(self.database, match | control))
+            direct = decode_word(self.database, match | 0x7F)
+            indirect = decode_word(self.database, match | 0xA1)
+            self.assertIsNotNone(direct)
+            self.assertIsNotNone(indirect)
+            assert direct is not None and indirect is not None
+            self.assertEqual(direct[0]["mnemonic"], mnemonic)
+            self.assertEqual(direct[0]["documented_cycle_count"], 3)
+            self.assertEqual(
+                indirect[1],
+                {"indirect": 1, "addressing_field": 0x21},
+            )
 
     def test_every_supported_instruction_has_required_fields(self) -> None:
         for instruction in self.database["instructions"]:

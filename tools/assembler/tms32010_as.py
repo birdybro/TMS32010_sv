@@ -354,6 +354,8 @@ class Assembler:
             "OR",
             "SUBC",
             "SUBS",
+            "TBLR",
+            "TBLW",
             "XOR",
             "ZALH",
             "ZALS",

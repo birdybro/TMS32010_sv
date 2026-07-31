@@ -39,6 +39,8 @@ resolved for:
   qualified; indirect call/return sequences remain (`OQ-007`);
 - IN and OUT are now qualified as one opcode-read cycle followed by one
   mutually exclusive DEN or WE I/O cycle;
+- TBLR and TBLW are now qualified as opcode read, discarded PC+1 read, and
+  ACC-addressed table transfer, followed by a repeated PC+1 read;
 - `CALA` and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
@@ -123,6 +125,20 @@ timing, printed pp. 3-6, 3-30, and 3-47 plus data-sheet pp. 17–18
 (PDF pp. 56, 80, 97, and 373–374)]. **Confidence: VERIFIED_PRIMARY for
 logical ordering and native pin phases; analog delays are wrapper
 constraints.**
+
+`TBLR` and `TBLW` use a distinct three-cycle pending state. Cycle 1 samples
+the opcode, advances architectural PC to PC+1, and captures `ACC[11:0]` plus
+the old resolved internal-data address. Cycle 2 performs a complete normal
+`MEN` read at PC+1 but discards its input. Cycle 3 drives the captured
+accumulator address and either reads under `MEN` into RAM or writes the
+selected RAM word under `WE`. Only the table sample applies indirect AR/ARP
+updates, the documented final stack-bottom duplication, and retirement. The
+next normal read repeats PC+1; stalls hold each pending phase without
+architectural progress
+[ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
+`TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
+(PDF pp. 41 and 114–117)]. **Confidence: VERIFIED_PRIMARY for logical
+ordering and native pin ownership.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

@@ -38,18 +38,30 @@ for verification, but those signals are not physical TMS32010 pins
 RAM location. `TBLW` transfers a data RAM word to program space at that
 address. Each is listed as three cycles. The intervening prefetched instruction
 is discarded and fetched again
-[ti-tms32010-users-guide-spru001b, §2.3 and Table 3-2, printed pp. 2-17,
-3-7 (PDF pp. 41, 57)]. **Confidence: VERIFIED_PRIMARY.**
+[ti-tms32010-users-guide-spru001b, §§2.3 and 2.8.2, Figure 2-10,
+Table 3-2, and `TBLR`/`TBLW`, printed pp. 2-17, 3-7, and 3-64–3-67
+(PDF pp. 41, 57, and 114–117)]. **Confidence: VERIFIED_PRIMARY.**
 
 Self-modifying program RAM is consequently architecturally meaningful and
 must remain observable. Program images are word-addressed; byte order belongs
 to file/wrapper formats, not to the CPU architecture.
 
+The qualified model and RTL resolve the internal address before entering the
+discarded-prefetch state, capture `ACC[11:0]` as the table address, then
+perform the program-space transfer in cycle 3. `TBLR` exposes a logical
+program read concurrent with an internal-RAM write; `TBLW` exposes an
+internal-RAM read and a distinct program write. The final temporary-stack
+effect discards the old bottom and duplicates the old level-2 value there.
+Directed tests also prove that TBLW may replace the discarded following word,
+which is then fetched in its new form. **Implementation evidence consistent
+with the cited primary sequence.**
+
 ## Current RTL boundary
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
-retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
-`SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
+retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`,
+`LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`,
+`TBLR`, `TBLW`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
 data-memory strobe. Direct and indirect tests cover both data pages, the final

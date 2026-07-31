@@ -51,7 +51,9 @@ package tms32010_pkg;
     OP_BIOZ = 6'd46,
     OP_CALL = 6'd47,
     OP_IN   = 6'd48,
-    OP_OUT  = 6'd49
+    OP_OUT  = 6'd49,
+    OP_TBLR = 6'd50,
+    OP_TBLW = 6'd51
   } tms32010_operation_t;
 endpackage
 

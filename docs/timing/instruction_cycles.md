@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-fifty-instruction subset, then check retirement on the falling-edge
+fifty-two-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -87,6 +87,18 @@ ACC paths, logical data read, and 16 legally spaced iterations of TI's
 the next instruction cannot use ACC. Exact result availability for a
 violating schedule and the arithmetic stage responsible for OV remain
 `OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
+
+Directed `TBLR`/`TBLW` tests assert exactly three complete machine cycles.
+Cycle 1 samples the opcode, cycle 2 reads and discards PC+1, and cycle 3
+transfers at `ACC[11:0]` under `MEN` or `WE`. Retirement, indirect AR/ARP
+updates, RAM effects, and final stack-bottom duplication occur only at the
+third sample; the next cycle returns to PC+1. Native tests stall both the
+discarded-prefetch and table phases, while differential tests compare the
+three program addresses, direction, cycle total, RAM, stack, and TBLW program
+mutation
+[ti-tms32010-users-guide-spru001b, §2.8.2, Table 3-2, Figure 2-10, and
+`TBLR`/`TBLW`, printed pp. 2-17, 3-7, and 3-64–3-67
+(PDF pp. 41, 57, and 114–117)]. **Confidence: VERIFIED_PRIMARY.**
 
 Directed `BANZ` tests assert two complete program-read cycles on both taken
 and untaken paths. Cycle 1 samples `0xf400`; cycle 2 samples the target word

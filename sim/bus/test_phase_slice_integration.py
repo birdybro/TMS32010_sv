@@ -75,6 +75,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_io_uses_distinct_two_cycle_den_and_we_waveforms(self) -> None:
         self._run_testbench("tb_io_phase")
 
+    def test_table_transfers_repeat_prefetch_and_use_men_or_we(self) -> None:
+        self._run_testbench("tb_table_transfer_phase")
+
     def test_accumulator_branches_use_two_stallable_native_reads(self) -> None:
         self._run_testbench("tb_accumulator_branches_phase")
 

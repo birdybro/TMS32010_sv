@@ -24,4 +24,5 @@ set_false_path -to \
               data_read_o data_write_o data_address_valid_o \
               data_write_address_o[*] data_write_address_valid_o \
               data_read_data_o[*] data_write_data_o[*] io_port_o[*] \
-              io_read_o io_write_o io_write_data_o[*]}]
+              io_read_o io_write_o io_write_data_o[*] \
+              program_write_o program_write_data_o[*]}]

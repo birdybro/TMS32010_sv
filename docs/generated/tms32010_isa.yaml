@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "IN", "OUT",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL", "IN", "OUT", "TBLR", "TBLW",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1954,6 +1954,110 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2, OUT instruction description, and Appendix A OUT timing", "printed_page": "3-6, 3-47, and data-sheet 18", "pdf_page": "56, 97, and 374"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "OUT instruction description", "printed_page": "3-47", "pdf_page": 68},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and OUT instruction description", "printed_page": "4-10 and 4-52", "pdf_page": "89 and 133"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-004", "OQ-010"]
+    },
+    {
+      "mnemonic": "TBLR",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6700",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC[11:0]", "PC", "four-level hardware stack", "DP for direct addressing", "ARP and selected AR for indirect addressing", "external program-memory word"],
+      "registers_written": ["selected internal data-memory word", "PC transiently", "stack bottom", "selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "discarded_following_instruction_prefetch", "external_program_read", "internal_data_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; all sixteen program-memory input bits are stored unchanged",
+      "shift_behavior": "none; common indirect post-increment or post-decrement changes the selected AR low nine bits after using its old address",
+      "overflow_behavior": "does not affect OV or apply OVM saturation; the temporary push/pop discards the old stack bottom and leaves a duplicate of the old level-2 value there",
+      "result_behavior": "the program-space word at ACC[11:0] is written to the selected internal data-memory word; ACC and the upper three final stack entries are unchanged",
+      "branch_behavior": "the following instruction is prefetched and discarded, ACC[11:0] temporarily addresses program space, then the following instruction address is restored and fetched again",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-recognition interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 3,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word TBLR opcode with MEN active"},
+        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "second machine cycle reads the following instruction address with MEN active but discards the input word"},
+        {"space": "program", "operation": "table_read", "count": 1, "phase_detail": "third machine cycle drives ACC[11:0], asserts MEN, and samples the program word into internal data memory; the following machine cycle fetches the discarded address again"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.8.2, Figure 2-10, Table 3-2, and TBLR instruction description", "printed_page": "2-17, 3-7, and 3-64 through 3-65", "pdf_page": "41, 57, and 114 through 115"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "TBLR instruction description", "printed_page": "3-64 through 3-65", "pdf_page": "85 through 86"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and TBLR instruction description", "printed_page": "4-11 and 4-71", "pdf_page": "90 and 152"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-004", "OQ-010"]
+    },
+    {
+      "mnemonic": "TBLW",
+      "aliases": [],
+      "opcode": {
+        "match": "0x7d00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC[11:0]", "PC", "four-level hardware stack", "selected internal data-memory word", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["external program-memory word", "PC transiently", "stack bottom", "selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "discarded_following_instruction_prefetch", "internal_data_read", "external_program_write"],
+      "status_flags_affected": ["ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 16,
+      "sign_extension_behavior": "none; all sixteen internal data-memory bits are driven unchanged",
+      "shift_behavior": "none; common indirect post-increment or post-decrement changes the selected AR low nine bits after using its old address",
+      "overflow_behavior": "does not affect OV or apply OVM saturation; the temporary push/pop discards the old stack bottom and leaves a duplicate of the old level-2 value there",
+      "result_behavior": "the selected internal data-memory word is written to program space at ACC[11:0]; ACC and the upper three final stack entries are unchanged",
+      "branch_behavior": "the following instruction is prefetched and discarded, ACC[11:0] temporarily addresses program space, then the following instruction address is restored and fetched again",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-recognition interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 3,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "first machine cycle reads the one-word TBLW opcode with MEN active"},
+        {"space": "program", "operation": "discarded_prefetch", "count": 1, "phase_detail": "second machine cycle reads the following instruction address with MEN active but discards the input word"},
+        {"space": "program", "operation": "table_write", "count": 1, "phase_detail": "third machine cycle drives ACC[11:0] and the selected data word and asserts WE; the following machine cycle fetches the discarded address again"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.8.2, Figure 2-10, Table 3-2, and TBLW instruction description", "printed_page": "2-17, 3-7, and 3-66 through 3-67", "pdf_page": "41, 57, and 116 through 117"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "TBLW instruction description", "printed_page": "3-66 through 3-67", "pdf_page": "87 through 88"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and TBLW instruction description", "printed_page": "4-11 and 4-72", "pdf_page": "90 and 153"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-004", "OQ-010"]

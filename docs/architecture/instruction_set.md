@@ -338,6 +338,44 @@ functional corroborator, not pin-timing proof
 [mame-tms320c1x-core-030fefc, `in_p()`/`out_p()` and opcode table,
 lines 530–535, 654–659, and 818–825]. **Confidence: CORROBORATED.**
 
+## Qualified `TBLR`/`TBLW`
+
+`TBLR` (`0x67xx`) and `TBLW` (`0x7dxx`) use the common direct/indirect
+internal-data address field. The old DP-selected direct address or old
+ARP-selected AR address owns the transfer; indirect AR/ARP modification
+occurs only after the table access. `TBLR` copies the program word at
+`ACC[11:0]` into the selected internal-RAM word. `TBLW` copies that RAM word
+unchanged to program space at `ACC[11:0]`. ACC, T, P, OV, OVM, DP, and INTM
+are unchanged
+[ti-tms32010-users-guide-spru001b, `TBLR`/`TBLW`, printed pp. 3-64–3-67
+(PDF pp. 114–117); ti-tms32010-assembly-guide-spru002b, `TBLR`/`TBLW`,
+printed pp. 3-64–3-67 (PDF pp. 85–88)]. **Confidence: VERIFIED_PRIMARY.**
+
+Both are one-word, three-cycle instructions. Cycle 1 reads the opcode under
+`MEN`; cycle 2 reads the following instruction address under `MEN` but
+discards the word; cycle 3 drives `ACC[11:0]` and either reads under `MEN`
+for TBLR or writes under `WE` for TBLW. The following normal program cycle
+then fetches the discarded address again. The temporary documented
+PC-to-stack, ACC-to-PC, and stack-to-PC sequence has a visible final stack
+effect: the old bottom is lost, the old level-2 value is duplicated into the
+bottom, and the upper three entries remain unchanged
+[ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
+`TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
+(PDF pp. 41 and 114–117); ti-first-generation-users-guide-1987,
+`TBLR`/`TBLW`, printed pp. 4-71–4-72 (PDF pp. 152–153)].
+**Confidence: VERIFIED_PRIMARY.**
+
+Directed model, RTL, native-phase, and differential tests cover both
+directions, all three cycles, the repeated following address, program-memory
+mutation, direct and indirect RAM addressing, AR/ARP post-modification,
+clock-enable stalls, mutually exclusive `MEN`/`WE`, and the stack-bottom
+transformation. Unresolved data addresses trap before the discarded prefetch
+or stack effect under the project's provisional `OQ-002` policy. Pinned MAME
+independently agrees on data direction, three-cycle totals, and the final
+stack-bottom duplication, but is not used as pin-timing proof
+[mame-tms320c1x-core-030fefc, table handlers and opcode table, lines
+761–772 and 823–826]. **Confidence: CORROBORATED.**
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

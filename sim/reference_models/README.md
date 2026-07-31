@@ -8,8 +8,8 @@ Current supported boundary:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
-  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-  `ZALS`;
+  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`, `TBLW`,
+  `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
   and positive saturation with `OVM=1`;
 - `ADD` sign extension, shifts 0 through 15, sticky overflow, wrapped results,
@@ -41,6 +41,10 @@ Current supported boundary:
 - `IN`/`OUT` direct/indirect internal-data selection, old-address ordering,
   eight-port I/O addressing, unchanged 16-bit transfers, common AR/ARP
   post-updates, one program plus one I/O transaction, and a two-cycle total;
+- `TBLR`/`TBLW` direct/indirect internal-data selection, captured
+  accumulator-derived program address, opcode and discarded-prefetch reads,
+  third-cycle program read or write, common AR/ARP post-updates, documented
+  stack-bottom duplication, and a three-cycle total;
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `LAR` direct/indirect loads to either auxiliary register, including

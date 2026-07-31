@@ -42,6 +42,8 @@ module tb_interrupt_mask;
     .program_address_o             (program_address),
     .program_next_address_o        (),
     .program_read_o                (program_read),
+    .program_write_o               (),
+    .program_write_data_o          (),
     .program_data_i                (program_data),
     .io_port_o                     (),
     .io_read_o                     (),

@@ -52,7 +52,9 @@ module tms32010_synth_top (
   output logic [2:0]  io_port_o,
   output logic        io_read_o,
   output logic        io_write_o,
-  output logic [15:0] io_write_data_o
+  output logic [15:0] io_write_data_o,
+  output logic        program_write_o,
+  output logic [15:0] program_write_data_o
 );
   tms32010_phase_slice phase_slice (
     .clk_i                         (clk_i),
@@ -85,6 +87,8 @@ module tms32010_synth_top (
     .io_read_o                     (io_read_o),
     .io_write_o                    (io_write_o),
     .io_write_data_o               (io_write_data_o),
+    .program_write_o               (program_write_o),
+    .program_write_data_o          (program_write_data_o),
     .pc_o                          (pc_o),
     .accumulator_o                 (accumulator_o),
     .t_register_o                  (t_register_o),
