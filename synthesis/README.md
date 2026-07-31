@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current thirty-six-instruction
+The checked-in projects synthesize the current thirty-seven-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
@@ -15,9 +15,10 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current one-cycle sequential instruction subset. Yosys 0.33 from
-Ubuntu 24.04 is the currently verified open-source synthesis baseline; see
-`synthesis/qualification.md` for the reproducible isolated command. The
+for the current one-cycle sequential instruction subset. Yosys 0.67+111 from
+the 2026-07-29 OSS CAD Suite is the currently verified open-source synthesis
+baseline; see `synthesis/qualification.md` for the exact invocation and
+results. The
 asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.

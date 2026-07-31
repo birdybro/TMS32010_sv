@@ -131,3 +131,31 @@ electrical result of an out-of-range access.
   C25 behavior proves the NMOS TMS32010.
 - **Confidence:** PROVISIONAL for the original TMS32010; CORROBORATED across
   the later TI guide and independent emulator.
+
+## SC-010 — SUBC overflow stage and dependent-instruction hazard
+
+- **Original-part sources:** SPRU001B and SPRU002B `SUBC`, printed p. 3-61,
+  define a 32-bit conditional subtract followed by a one-bit left shift and
+  warn that the next instruction cannot use ACC. They do not state which
+  arithmetic stage drives `OV` or the result of violating the scheduling
+  rule. SPRU001B §2.2.2.1 says accumulator arithmetic overflow sets sticky
+  `OV`.
+- **Later family source:** SPRU013 `SUBC`, printed p. 4-67, explicitly says
+  the instruction affects `OV`, ignores `OVM`, and never saturates, but still
+  does not identify the flag-producing stage.
+- **Independent oracle:** pinned MAME commit
+  `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` computes the documented
+  conditional result immediately. Its handler appears intended to detect
+  signed overflow of the intermediate subtraction, but the present Boolean
+  expression compares the old accumulator with an unchanged accumulator and
+  therefore cannot set `OV`
+  [mame-tms320c1x-core-030fefc, `subc()`, lines 732–742].
+- **Current treatment:** the model and RTL provisionally set sticky `OV` on
+  signed overflow of the intermediate subtract, ignore `OVM`, and never
+  saturate. Directed tests distinguish intermediate-only and final-shift-only
+  overflow vectors and label that boundary provisional.
+  Tests place an ACC-free instruction after every SUBC; behavior of a
+  violating dependent sequence is not claimed. See `OQ-017` and `OQ-018`.
+- **Confidence:** VERIFIED_PRIMARY for encoding, conditional ACC transform,
+  scheduling prohibition, word count, and cycle count; PROVISIONAL for the
+  overflow-producing stage; UNKNOWN for a prohibited dependent sequence.

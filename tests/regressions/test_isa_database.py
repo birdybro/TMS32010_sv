@@ -54,6 +54,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SUB",
                 "ADDS",
                 "SUBS",
+                "SUBC",
                 "AND",
                 "OR",
                 "XOR",
@@ -148,6 +149,27 @@ class IsaDatabaseTests(unittest.TestCase):
             self.assertIsNone(decode_word(self.database, 0x7B00 | control))
         self.assertIsNotNone(decode_word(self.database, 0x7B7F))
         self.assertIsNotNone(decode_word(self.database, 0x7BA1))
+
+    def test_subc_uses_common_data_addressing_without_reserved_controls(
+        self,
+    ) -> None:
+        for control in (0xC8, 0x8A, 0xB8):
+            self.assertIsNone(decode_word(self.database, 0x6400 | control))
+        direct = decode_word(self.database, 0x647F)
+        indirect = decode_word(self.database, 0x64A1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "SUBC")
+        self.assertEqual(
+            direct[1],
+            {"indirect": 0, "addressing_field": 0x7F},
+        )
+        self.assertEqual(indirect[0]["mnemonic"], "SUBC")
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
 
     def test_dmov_uses_common_data_addressing_without_reserved_controls(
         self,

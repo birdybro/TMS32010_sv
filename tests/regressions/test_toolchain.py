@@ -494,6 +494,7 @@ class ToolchainSliceTests(unittest.TestCase):
             ("LTD", 0x6B89),
             ("MPY", 0x6D89),
             ("LST", 0x7B89),
+            ("SUBC", 0x6489),
         ):
             for operand, message in (
                 ("128", "direct address"),
@@ -701,6 +702,45 @@ class ToolchainSliceTests(unittest.TestCase):
         self.assertEqual(source, ".word 0x6389\n")
         rebuilt = self.assembler.assemble_text(source)
         self.assertEqual(list(rebuilt.words.values()), [0x6389])
+
+    def test_subc_encodings_round_trip_and_diagnose_operands(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            SUBC 0
+            SUBC 127
+            SUBC *
+            SUBC *+,AR1
+            SUBC *-,0
+            """
+        )
+        self.assertEqual(
+            list(result.words.values()),
+            [0x6400, 0x647F, 0x6488, 0x64A1, 0x6490],
+        )
+        source = self.disassembler.disassemble_source(
+            [0x6400, 0x647F, 0x6488, 0x64A1, 0x6490]
+        )
+        self.assertEqual(
+            source,
+            "SUBC 0\n"
+            "SUBC 127\n"
+            "SUBC *\n"
+            "SUBC *+,1\n"
+            "SUBC *-,0\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(list(rebuilt.words.values()), list(result.words.values()))
+
+        cases = (
+            ("SUBC 128\n", "direct address"),
+            ("SUBC *+,2\n", "next ARP"),
+            ("SUBC 0,1\n", "only with indirect"),
+            ("SUBC\n", "1 to 2 operands"),
+        )
+        for case, message in cases:
+            with self.subTest(source=case):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(case)
 
     def test_sacl_operand_diagnostics(self) -> None:
         cases = (

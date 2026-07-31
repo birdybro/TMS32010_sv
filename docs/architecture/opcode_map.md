@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial thirty-six-instruction model/tool boundary is intentionally partial
+Its initial thirty-seven-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -41,6 +41,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `SUB dma,s` | `0x1000` | `0xf000` plus addressing constraints | 1 | 1 | individual `SUB` page, printed p. 3-60 |
 | `ADDS dma` | `0x6100` | `0xff00` plus addressing constraints | 1 | 1 | individual `ADDS` page, printed p. 3-12 |
 | `SUBS dma` | `0x6300` | `0xff00` plus addressing constraints | 1 | 1 | individual `SUBS` page, printed p. 3-63 |
+| `SUBC dma` | `0x6400` | `0xff00` plus addressing constraints | 1 | 1 | individual `SUBC` page, printed p. 3-61 |
 | `XOR dma` | `0x7800` | `0xff00` plus addressing constraints | 1 | 1 | individual `XOR` page, printed p. 3-68 |
 | `AND dma` | `0x7900` | `0xff00` plus addressing constraints | 1 | 1 | individual `AND` page, printed p. 3-13 |
 | `OR dma` | `0x7a00` | `0xff00` plus addressing constraints | 1 | 1 | individual `OR` page, printed p. 3-46 |
@@ -49,8 +50,8 @@ documented mnemonics so missing coverage remains machine-visible.
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
 descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-14, 3-27–3-29, 3-31–3-44,
-3-46, 3-48, 3-53–3-56, 3-58, 3-60, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 77–79, 81–94, 96, 98, 103–106, 108, 110, 113, 118,
+3-46, 3-48, 3-53–3-56, 3-58, 3-60–3-61, 3-63, 3-68, and 3-70–3-71 (PDF
+pp. 55–57, 60, 62–64, 77–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
 and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
@@ -235,6 +236,18 @@ common address form, conservative legality constraints, and alias policy as
 pp. 3-2–3-3 and 3-63 (PDF pp. 52–53 and 113)].
 **Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
 UNKNOWN.**
+
+`SUBC` fixes bits 15:8 to `0x64`; bit 7 and bits 6:0 use the same no-shift
+common address form and conservative legality/alias policy. Its opcode,
+addressing, one-word size, and one-cycle total are primary-verified. The
+supported execution boundary is narrower: tests obey TI's requirement that
+the following instruction not use ACC, while result availability after a
+violation and the exact overflow-producing arithmetic stage remain
+`OQ-017`/`OQ-018`
+[ti-tms32010-users-guide-spru001b, `SUBC`, printed p. 3-61 (PDF p. 111);
+ti-tms32010-assembly-guide-spru002b, `SUBC`, printed p. 3-61 (PDF p. 82)].
+**Confidence: VERIFIED_PRIMARY for decode, operands, and timing; PROVISIONAL
+for the two execution details named above.**
 
 `ADD` fixes bits 15:12 to zero; bits 11:8 encode every shift from 0 through
 15, and bit 7 plus bits 6:0 use the common direct/indirect address form. Its

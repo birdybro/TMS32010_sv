@@ -31,9 +31,9 @@ falling edge. See `docs/timing/native_phase_contract.md`
 pp. 13–18 (PDF pp. 369–374)]. **Confidence: VERIFIED_PRIMARY.**
 
 The current `tms32010_phase_slice` wrapper implements and tests this normal
-read relationship for the thirty-six supported one-cycle sequential
+read relationship for the thirty-seven supported one-cycle sequential
 instructions. Its `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SUB`,
-`XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent internal logical reads, while
+`SUBC`, `XOR`, `ZALH`, `ZALS`, `LST`, and `SUBS` cases expose concurrent internal logical reads, while
 `SACL`, `SACH`, and `SAR` expose writes, without changing the physical `MEN`
 activity from a normal program fetch. That is implementation evidence for the
 cited normal-read mapping, not a claim that control flow, external data/I/O
@@ -54,6 +54,13 @@ no physical `DEN` or `WE` transaction is produced
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY for its one-cycle program/internal-read
 boundary; indirect next-ARP precedence remains PROVISIONAL under `OQ-015`.**
+
+`SUBC` retains the ordinary external program fetch while performing its
+single internal divisor-word read. Directed phase tests place the required
+ACC-free NOP after SUBC and observe no physical `DEN` or `WE` activity
+[ti-tms32010-users-guide-spru001b, `SUBC`, printed p. 3-61 (PDF p. 111)].
+**Confidence: VERIFIED_PRIMARY for the one-cycle program/internal-read
+boundary; result availability remains open under `OQ-017`.**
 
 `LTA` presents its internal data-word read beside the same normal external
 program fetch while also accumulating the previous P value into ACC

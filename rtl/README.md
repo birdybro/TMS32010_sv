@@ -43,13 +43,18 @@ boundary, preserves address during the active strobe, and implements the
 documented one-cycle reset-release wait. It does not model analog pin delays.
 
 `tms32010_phase_slice` connects that phase primitive to the execution slice.
-For the thirty-six currently qualified one-cycle sequential instructions it
+For the thirty-seven currently qualified one-cycle sequential instructions it
 samples and retires on the same falling boundary, keeps PC and native address
 aligned, holds both on an unsupported opcode, and preserves
 phase/address/control state during a clock-enable stall. It is not a general
 sequencer: branch,
 multi-cycle, other data-memory operations, I/O, table, and interrupt sequences
 remain absent.
+
+SUBC retires through this same path only in legally scheduled test streams
+whose following instruction does not read ACC. Immediate internal ACC commit
+and intermediate-subtraction OV detection remain provisional under
+`OQ-017`/`OQ-018`.
 
 The phase primitive separates `initialize_i` (explicit deterministic FPGA/test
 initialization) from `rs_i` (the emulated active-high form of physical
@@ -73,7 +78,8 @@ The synthesizable code:
   `OQ-015`;
 - preserves `OVM` through physical reset as TI documents;
 - exposes sticky `OV` for ADD/ADDS/APAC/LTA/LTD/SPAC/SUB/SUBS
-  wrap/saturation verification;
+  wrap/saturation verification and a separately labeled provisional
+  intermediate-subtraction `OV` path for nonsaturating SUBC;
 - performs LTA's internal-RAM-to-T load and previous-P accumulation in one
   retirement with APAC's overflow result policy;
 - performs LTD's simultaneous source read, unchanged next-address copy,

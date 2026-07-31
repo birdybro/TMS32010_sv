@@ -73,6 +73,7 @@ class Disassembler:
             "MAR",
             "MPY",
             "OR",
+            "SUBC",
             "SUBS",
             "XOR",
             "ZALH",

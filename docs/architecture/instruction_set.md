@@ -90,6 +90,50 @@ logical-transaction boundary. This evidence does not qualify `SST`, whose
 reserved output bit 1 remains blocked by conflicting TI diagrams under
 `OQ-003`/`SC-008`.
 
+## Qualified `SUBC` legal-scheduling slice
+
+`SUBC` is a one-word, one-cycle common-address instruction with opcode family
+`0x64`. Let `old` be the 32-bit ACC value, `word` the zero-extended 16-bit
+internal-RAM operand, and
+`trial = wrap32(old - (word << 15))`. When `trial` is nonnegative as a signed
+32-bit value, ACC receives `wrap32((trial << 1) + 1)`; otherwise ACC receives
+`wrap32(old << 1)`. This is the one-bit conditional divide step: the low
+inserted bit is the next quotient bit. Direct and indirect address selection
+and AR/ARP post-modification use the common rules
+[ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SUBC`, printed
+pp. 3-2–3-3 and 3-61 (PDF pp. 52–53 and 111);
+ti-tms32010-assembly-guide-spru002b, `SUBC`, printed p. 3-61
+(PDF p. 82)]. **Confidence: VERIFIED_PRIMARY for the encoding, operand
+extension/shift, conditional ACC result, addressing, one-word size, and
+one-cycle total.**
+
+TI's worked division places 65 in ACC and 7 in data memory; 16 SUBC steps
+produce `0x00020009`, representing remainder 2 and quotient 9. Both original
+guides warn that the instruction immediately following SUBC cannot use ACC.
+The model, RTL, native-phase, and differential tests therefore insert an
+ACC-free NOP after every multi-step SUBC sequence. The temporary sequential
+implementation exposes the result at the SUBC retirement boundary as an
+implementation convenience, but assigns no silicon behavior to a program
+that violates TI's scheduling rule; exact availability remains `OQ-017`
+[ti-tms32010-assembly-guide-spru002b, §4.6, printed pp. 4-5–4-7
+(PDF pp. 98–100); ti-first-generation-users-guide-1987, `SUBC` and §5.7.2,
+printed pp. 4-67–4-68 and 5-37 (PDF pp. 148–149 and 194)].
+
+The later first-generation TI guide says SUBC affects sticky `OV`, is not
+affected by `OVM`, and never saturates. The original per-instruction pages
+omit the flag sentence, although SPRU001B's generic accumulator-status rule
+says arithmetic overflow sets `OV`. The current model and RTL provisionally
+associate OV with signed overflow of the intermediate subtraction and leave
+the final shift unsaturated regardless of OVM. This stage selection is
+explicitly PROVISIONAL under `OQ-018`/`SC-010`; ordinary positive division
+vectors do not depend on it. Directed model/RTL tests isolate an
+intermediate-only overflow, which sets sticky OV, from a final-shift-only
+overflow, which provisionally leaves OV clear
+[ti-tms32010-users-guide-spru001b, §2.2.2.1 and `SUBC`, printed pp. 2-5 and
+3-61 (PDF pp. 29 and 111); ti-first-generation-users-guide-1987, `SUBC`,
+printed p. 4-67 (PDF p. 148)]. **Confidence: CORROBORATED that SUBC affects
+OV and ignores OVM; PROVISIONAL for the exact overflow-producing stage.**
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

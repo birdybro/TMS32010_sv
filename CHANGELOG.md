@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first thirty-six model/tool encodings.
+  mnemonics and fully describes the first thirty-seven model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the thirty-six-instruction slice.
+  clock-enable execution core for the thirty-seven-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -38,7 +38,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   verification.
 - Primary-transcribed `LARK`, `LARP`, and `LDPK` encodings and effects across
   hand fixtures, model, assembler/disassembler, RTL, and differential traces.
-- Sequential native-phase wrapper that retires the thirty-six supported
+- Sequential native-phase wrapper that retires the thirty-seven supported
   instructions on falling-edge program samples and keeps PC/native address
   aligned across clock-enable stalls, traps, and reset.
 - Yosys 0.33 portable-synthesis qualification for the integrated partial core,
@@ -155,6 +155,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   four-level stack transformations, accumulator effect, overflow/underflow
   behavior, one-word size, and two-cycle totals without prematurely adding
   them to the supported implementation boundary.
+- Primary-cited `SUBC` database/model/tool/RTL/native-phase slice with hand
+  fixtures, common direct/indirect addressing, both conditional result paths,
+  TI's 16-step 65-divided-by-7 example, seeded direct/indirect randomized
+  differential coverage, and explicit `OQ-017`/`OQ-018` limits on result
+  availability and OV staging.
 
 ### Changed
 
@@ -164,10 +169,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated thirty-six-instruction
-  phase/RAM/multiplier slice in 1,816 ALMs/2,484 registers and one DSP block,
-  with +2.523 ns worst setup and +0.166 ns worst hold slack at 50 MHz and
-  57.22 MHz worst slow-corner internal Fmax; 278
+- Quartus 17.0.2 fits the integrated thirty-seven-instruction
+  phase/RAM/multiplier slice in 1,850 ALMs/2,484 registers and one DSP block,
+  with +3.142 ns worst setup and +0.166 ns worst hold slack at 50 MHz and
+  59.32 MHz worst slow-corner internal Fmax; 278
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -182,8 +187,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers thirty-six of 60 documented
-  mnemonics and twenty-one common-address data-operation families.
+- The qualified model/tool/RTL boundary now covers thirty-seven of 60 documented
+  mnemonics and twenty-two common-address data-operation families.
 
 ### Fixed
 
@@ -300,7 +305,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.33 synthesizes the thirty-six-instruction hierarchy to 11,238 generic
+- Yosys 0.67+111 synthesizes the thirty-seven-instruction hierarchy to 12,213 generic
   cells with nine assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
@@ -315,6 +320,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The seeded 512-step differential, final 144-word RAM comparison, and native
   phase integration include deterministic and randomized SAR writes without
   changing the external program-read sequence.
+- Four hand fixtures and exhaustive decode checks verify all 140 legal SUBC
+  words without collisions. Directed model/RTL tests cover both conditional
+  paths, unsigned operand alignment, address/update order, sticky-OV
+  boundaries, OVM independence, unresolved-address trapping, and the legally
+  scheduled 65/7 divide; native-phase and 512-step differential tests cover
+  its logical read and one-cycle retirement, including 16 seeded-random
+  SUBC/NOP pairs.
 - Exhaustive decode verifies all 128 direct MAR NOP encodings. Hand fixtures
   and directed model/RTL tests verify representative direct forms, indirect
   increment/decrement and ARP replacement/preservation, low-nine-bit wrap,
@@ -415,14 +427,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   address order, counter updates, status effects, INTM preservation,
   clock-enable hold, and trap-before-effects. Native-phase and seeded
   differential tests cover the same logical read and architectural state.
-- The complete current regression passes 69 repository/ISA/tool tests, 151
-  directed model tests, 25 exhaustive/directed instruction RTL tests, two
+- The complete current regression passes 71 repository/ISA/tool tests, 160
+  directed model tests, 26 exhaustive/directed instruction RTL tests, two
   native bus/phase tests, one interrupt-mask RTL test, and one 512-step
   model/RTL differential.
 
 ### Known Issues
 
-- Only thirty-six of 60 documented instruction mnemonics have model, tool, and
+- Only thirty-seven of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - Original TMS32010 manuals do not define LST's memory-sourced ARP versus
   encoded next-ARP precedence. The implemented memory-word precedence is
@@ -432,6 +444,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   `MEN` sequence during their extra internal cycle. Native two-cycle stack
   sequencing remains deferred under `OQ-016`; no repeated or speculative
   prefetch has been assigned.
+- TI requires the instruction after SUBC not to use ACC but does not establish
+  observable behavior for a violation; current same-boundary result commit is
+  an implementation convenience under `OQ-017`. TI also says SUBC affects OV
+  without identifying the producing arithmetic stage; intermediate-subtraction
+  sticky OV is PROVISIONAL under `OQ-018`.
 - DINT/EINT architectural mask changes are verified, but the core has no
   interrupt input, pending latch, EINT following-instruction service deferral,
   stack entry, or vector fetch; those remain under `CTRL-002`/`OQ-004`.

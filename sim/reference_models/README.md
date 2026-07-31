@@ -8,7 +8,7 @@ Current supported boundary:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
+  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - `ADDS` unsigned-source arithmetic, sticky overflow, wrapped `OVM=0` results,
   and positive saturation with `OVM=1`;
@@ -18,6 +18,10 @@ Current supported boundary:
   and positive/negative OVM saturation;
 - `SUBS` unsigned-source subtraction, sticky overflow, wrapped results, and
   negative OVM saturation;
+- `SUBC` unsigned-divisor conditional subtraction, both result paths, the TI
+  65-divided-by-7 example, common address updates, and a provisional sticky-OV
+  stage; tests obey the required ACC-free following instruction
+  (`OQ-017`/`OQ-018`);
 - `LAC` direct/indirect addressing, internal-data read traces, sign extension,
   shifts, nine-bit auxiliary-counter updates, and optional ARP replacement;
 - `LAR` direct/indirect loads to either auxiliary register, including

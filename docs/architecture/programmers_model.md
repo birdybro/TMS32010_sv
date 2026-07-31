@@ -55,6 +55,18 @@ SPRU001B calls it don't-care, its LST diagram and SPRU002B show one, and
 SPRU013 shows zero. `SST` remains blocked under `OQ-003`/`SC-008`; no value is
 guessed.
 
+`SUBC` is documented as affecting `OV` and as ignoring `OVM`, so its result
+never saturates. The located original and later TI instruction descriptions
+do not identify which internal subtraction/shift stage produces OV. The
+current model and RTL provisionally set sticky OV on signed overflow in the
+intermediate `ACC - (unsigned_data << 15)` subtraction and leave a previously
+set OV high. This is `OQ-018`, not a verified original-silicon claim
+[ti-first-generation-users-guide-1987, `SUBC`, printed pp. 4-67–4-68
+(PDF pp. 148–149); ti-tms32010-users-guide-spru001b, §2.2.2.1 and `SUBC`,
+printed pp. 2-5 and 3-61 (PDF pp. 29 and 111)]. **Confidence:
+VERIFIED_PRIMARY for affected status and OVM independence; PROVISIONAL for
+the overflow stage.**
+
 The qualified functional slice writes `INTM=1` for exact opcode `DINT`
 (`0x7f81`) and `INTM=0` for exact opcode `EINT` (`0x7f82`). DINT takes effect
 immediately. EINT's architectural bit write is immediate, but interrupt

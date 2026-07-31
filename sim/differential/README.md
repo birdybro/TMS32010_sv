@@ -2,12 +2,12 @@
 
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
-thirty-six supported instructions. It checks pre-execution PC/opcode,
+thirty-seven supported instructions. It checks pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
 registers and the ARP/DP/INTM status fields.
-`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBS`/
+`ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBS`/
 `XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
 and cover valid
 direct/indirect addresses, reads, writes, shifts, and auxiliary-register
@@ -43,6 +43,10 @@ old-address and counter-update ordering, and memory-word ARP precedence over
 an encoded next ARP. That last comparison is provisional original-part
 behavior under `OQ-015`, not independent proof from two implementations using
 the same policy.
+SUBC cases are followed by NOP, compare both conditional ACC paths, logical
+reads and address updates, and include 16 seeded-random direct/indirect pairs.
+Both sides use the same provisional intermediate-overflow policy, so this is
+consistency evidence, not independent proof of `OQ-017` or `OQ-018`.
 
 This is model/RTL functional evidence only. Both sides currently use a logical
 instruction-boundary program interface, so the test supplies no pin-phase or

@@ -29,7 +29,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 ## Qualified timing tests
 
 The current native-phase integration test observes one complete four-subphase
-program-read cycle for every instruction in the thirty-six-instruction subset,
+program-read cycle for every instruction in the thirty-seven-instruction subset,
 then checks retirement on the falling-edge sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -80,12 +80,19 @@ trap-before-effects at an unresolved address. Native-phase integration
 observes its internal read beside the ordinary program fetch. The encoded
 next-ARP versus memory-sourced ARP precedence is PROVISIONAL under `OQ-015`.
 
+Directed `SUBC` tests assert its documented one-cycle total, both conditional
+ACC paths, logical data read, and 16 legally spaced iterations of TI's
+65-divided-by-7 example. Every iteration is followed by NOP because TI says
+the next instruction cannot use ACC. Exact result availability for a
+violating schedule and the arithmetic stage responsible for OV remain
+`OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
+
 ## Open timing dimensions
 
 - whether taken and untaken conditions have identical two-cycle totals;
 - exact immediate-word fetch ordering for branch and call;
 - interaction of program fetch with internal data RAM beyond the qualified
-  one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBS`/`XOR`/`ZALH`/
+  one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;
 - table-operation discarded fetch order;
 - interrupt entry latency, recognition boundary, and MPY/MPYK's documented

@@ -349,6 +349,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_subc_divide_step_status_and_counter_behavior(self) -> None:
+        self._run_testbench(
+            "tb_subc_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_subc_rtl.sv",
+            ],
+        )
+
     def test_logic_halves_status_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_logic_rtl",

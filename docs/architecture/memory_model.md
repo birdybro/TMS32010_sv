@@ -49,7 +49,7 @@ to file/wrapper formats, not to the CPU architecture.
 
 The partial RTL implements exactly 144 addressable 16-bit words and refuses to
 retire `ADD`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`,
-`SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
+`SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`, or `ZALS` when its effective address is
 `0x90`–`0xff`. It exposes the effective address, operation-valid
 indication, and read/write data for verification without creating a physical
 data-memory strobe. Direct and indirect tests cover both data pages, the final
@@ -65,6 +65,14 @@ effects, consistent with the partial core's explicit `OQ-002` boundary
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY except indirect next-ARP precedence, which is
 PROVISIONAL under `OQ-015`.**
+
+`SUBC` performs one ordinary internal-RAM read through the same old-address
+and post-update ordering. The selected 16-bit word is treated as an unsigned
+divisor and aligned by 15 bits for the conditional subtraction; it never
+writes data RAM
+[ti-tms32010-users-guide-spru001b, `SUBC`, printed p. 3-61 (PDF p. 111)].
+**Confidence: VERIFIED_PRIMARY for the memory transaction and operand
+alignment; see `OQ-017`/`OQ-018` for execution-stage uncertainties.**
 
 `DMOV` captures the selected source word and writes it unchanged to the
 numerically next internal-RAM address in the same documented cycle. It uses

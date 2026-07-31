@@ -113,8 +113,8 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 The executable model, local assembler/disassembler, RTL, and seeded
 differential boundary support `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`,
 `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `DMOV`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`,
-`SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
-`ZALS`. The twenty-one common-address data instructions have independent
+`SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
+`ZALS`. The twenty-two common-address data instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
 accumulator behavior, and nine-bit counter updates. SACH additionally verifies
@@ -138,6 +138,13 @@ verifies the corresponding signed subtraction, shift, sticky-overflow, wrap,
 and saturation cases.
 SUBS verifies unsigned-source subtraction, sticky overflow, negative wrap,
 and negative saturation without importing SUB's sign extension.
+SUBC verifies TI's conditional subtract/divide recurrence, unsigned
+16-bit divisor alignment at bit 15, both conditional result paths, and the
+documented 65-divided-by-7 example. The test stream inserts an ACC-free
+instruction after every SUBC as TI requires. The partial implementation
+commits ACC at the SUBC retirement boundary and sets sticky OV from signed
+overflow in the intermediate subtraction; those two details are explicitly
+PROVISIONAL under `OQ-017`/`OQ-018` rather than silicon timing claims.
 LAR verifies 16-bit loads to either auxiliary register, including suppression
 of an indirect counter update when the destination also supplied the address.
 SAR verifies 16-bit stores from either auxiliary register, including its

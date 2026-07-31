@@ -5,7 +5,7 @@ complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
+  `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -63,6 +63,10 @@ shift operand, for example `ZALH 6` or `ZALS *-,AR1`.
 
 `SUBS` uses the same no-shift common address forms, for example `SUBS 6` or
 `SUBS *+,AR1`.
+
+`SUBC` also uses those no-shift common address forms, for example `SUBC 6` or
+`SUBC *+,AR1`. Assembly support does not hide TI's requirement that the next
+instruction not use ACC.
 
 `AND`, `OR`, and `XOR` use the same forms, for example `AND 6`,
 `OR *+,AR1`, or `XOR *-`.

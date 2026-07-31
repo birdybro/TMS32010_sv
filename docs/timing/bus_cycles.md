@@ -43,7 +43,7 @@ data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
-`DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`, `ZALH`,
+`DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`
 perform the same external program fetch as the other qualified sequential
 instructions while their ordinary data operands remain internal,
@@ -56,6 +56,13 @@ introduces no external data or I/O strobe
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY for the bus boundary; indirect next-ARP
 precedence remains PROVISIONAL under `OQ-015`.**
+
+The phase test also verifies SUBC's internal divisor-word read beside the
+ordinary external program fetch and requires no physical data or I/O strobe.
+The following program word is NOP so the trace obeys TI's ACC-use restriction
+[ti-tms32010-users-guide-spru001b, `SUBC`, printed p. 3-61 (PDF p. 111)].
+**Confidence: VERIFIED_PRIMARY for bus scope; exact ACC result availability
+after a prohibited dependency remains UNKNOWN under `OQ-017`.**
 
 The phase test verifies that `LTA` performs its internal data-word read and
 previous-P accumulation during the ordinary one-cycle external program fetch;

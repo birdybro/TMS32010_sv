@@ -14,13 +14,13 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-six
+The reference model, local tools, and partial RTL currently support thirty-seven
 instructions: `ADD`, `ADDS`, `AND`, `APAC`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
+`SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/
-`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
+`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS` reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes;
 MAR changes only AR/ARP and produces no data transaction; MPYK consumes its
 signed immediate from the program word, PAC copies P to ACC, and APAC adds P
 to ACC while SPAC subtracts P from ACC; APAC and SPAC apply sticky overflow
@@ -42,10 +42,15 @@ service delay, stack entry, and vector fetch are not implemented.
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
 provisional under `OQ-015`, based on later TI and independent MAME
 corroboration because the original-part manuals do not state the precedence.
+`SUBC` performs TI's one-cycle conditional subtract/divide step through the
+common data-address path. Tests use the documented requirement that its next
+instruction not consume ACC; the exact illegal-scheduling result availability
+and the precise arithmetic stage that sets sticky `OV` remain explicitly
+provisional under `OQ-017` and `OQ-018`.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies normal sequential program reads for this
-thirty-six-instruction subset only; it is not a general pipeline or
+thirty-seven-instruction subset only; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

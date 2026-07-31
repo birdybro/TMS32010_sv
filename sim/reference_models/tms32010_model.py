@@ -2,7 +2,7 @@
 
 This partial slice supports ADD, ADDS, AND, APAC, DINT, DMOV, EINT, LAC, LACK,
 LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC,
-ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -200,6 +200,7 @@ class Tms32010Model:
             "SACH",
             "SAR",
             "SUB",
+            "SUBC",
             "SUBS",
             "XOR",
             "ZALH",
@@ -238,6 +239,7 @@ class Tms32010Model:
                 "MPY",
                 "OR",
                 "SUB",
+                "SUBC",
                 "SUBS",
                 "XOR",
                 "ZALH",
@@ -286,6 +288,7 @@ class Tms32010Model:
                             "MPY",
                             "OR",
                             "SUB",
+                            "SUBC",
                             "SUBS",
                             "XOR",
                             "ZALH",
@@ -415,6 +418,10 @@ class Tms32010Model:
             self._subtract_accumulator(
                 self.data[operands["effective_address"]]
             )
+        elif mnemonic == "SUBC":
+            self._conditional_subtract(
+                self.data[operands["effective_address"]]
+            )
         elif mnemonic == "XOR":
             self.state.acc = (
                 (self.state.acc & 0xFFFF_0000)
@@ -473,6 +480,7 @@ class Tms32010Model:
                 "SACH",
                 "SAR",
                 "SUB",
+                "SUBC",
                 "SUBS",
                 "XOR",
                 "ZALH",
@@ -551,6 +559,22 @@ class Tms32010Model:
                 )
                 return
         self.state.acc = wrapped
+
+    def _conditional_subtract(self, data_word: int) -> None:
+        """Apply the documented divide step and provisional OV stage."""
+        old_acc = self.state.acc & ACC_MASK
+        operand = ((data_word & WORD_MASK) << 15) & ACC_MASK
+        intermediate = (old_acc - operand) & ACC_MASK
+        overflow = (
+            ((old_acc ^ operand) & (old_acc ^ intermediate) & 0x8000_0000)
+            != 0
+        )
+        if overflow:
+            self.state.status.ov = True
+        if intermediate & 0x8000_0000:
+            self.state.acc = (old_acc << 1) & ACC_MASK
+        else:
+            self.state.acc = ((intermediate << 1) | 1) & ACC_MASK
 
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
@@ -672,6 +696,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "SUBS", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6400:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "SUBC", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

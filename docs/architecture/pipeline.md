@@ -44,6 +44,17 @@ resolved for:
 Until these rows have cited diagrams and automated traces, the project does
 not claim cycle accuracy.
 
+`SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
+following instruction from using ACC. This exposes a result-availability
+constraint that the current instruction-boundary core cannot physically
+characterize. Qualified programs insert an ACC-free NOP after every SUBC;
+the core's immediate result commit is an implementation convenience, not a
+claim about a violating instruction sequence. The missing silicon behavior is
+tracked as `OQ-017`
+[ti-tms32010-users-guide-spru001b, `SUBC`, printed p. 3-61 (PDF p. 111)].
+**Confidence: VERIFIED_PRIMARY for the scheduling restriction; UNKNOWN for
+violation behavior.**
+
 `PUSH` and `POP` are primary-defined one-word, two-cycle instructions. Their
 architectural stack transformations are fully specified, but the located
 original documentation contains no dedicated external-bus waveform for their

@@ -150,7 +150,10 @@ module tb_phase_slice_integration;
     program_memory[36] = 16'h7f80;  // instruction following EINT
     program_memory[37] = 16'h7f81;  // DINT
     program_memory[38] = 16'h7b03;  // LST 3
-    program_memory[39] = 16'h7f83;  // unsupported and not a silent NOP
+    program_memory[39] = 16'h6e00;  // LDPK 0
+    program_memory[40] = 16'h6400;  // SUBC 0
+    program_memory[41] = 16'h7f80;  // required ACC-free instruction
+    program_memory[42] = 16'h7f83;  // unsupported and not a silent NOP
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -161,6 +164,9 @@ module tb_phase_slice_integration;
     tick();
     debug_data_address = 8'h03;
     debug_data         = 16'hbeef;
+    tick();
+    debug_data_address = 8'h00;
+    debug_data         = 16'h0007;
     tick();
     debug_data_address = 8'h04;
     debug_data         = 16'h0002;
@@ -565,13 +571,40 @@ module tb_phase_slice_integration;
             "LST preserves datapath state at its native retirement boundary");
     require(pc == 12'h027 && cycle_count == 32'd39,
             "LST consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "LDPK before SUBC is program-only");
+
+    advance_to_sample();
+    require(retired && !data_page_pointer,
+            "LDPK selects page zero before the direct SUBC operand");
+    require(pc == 12'h028 && cycle_count == 32'd40,
+            "SUBC setup consumes one native instruction cycle");
+    require(data_read && !data_write && data_address_valid &&
+            data_address == 8'h00 && data_read_data == 16'h0007,
+            "SUBC exposes its internal operand read beside normal phases");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0006_b997,
+            "SUBC commits its conditional subtract and quotient bit");
+    require(overflow_flag && !overflow_mode,
+            "nonoverflowing SUBC preserves loaded sticky OV and ignores OVM");
+    require(pc == 12'h029 && cycle_count == 32'd41,
+            "SUBC consumes one native instruction cycle");
+    require(!data_read && !data_write && !data_address_valid,
+            "the required following ACC-free NOP is program-only");
+
+    advance_to_sample();
+    require(retired && accumulator == 32'h0006_b997,
+            "the required ACC-free instruction preserves the SUBC result");
+    require(pc == 12'h02a && cycle_count == 32'd42,
+            "the post-SUBC NOP consumes one native instruction cycle");
 
     advance_to_sample();
     require(sample && !retired && illegal, "unsupported word traps at sample");
     require(!instruction_valid, "unsupported word remains visibly invalid");
-    require(pc == 12'h027, "trap holds architectural PC");
-    require(program_address == 12'h027, "trap holds native program address");
-    require(cycle_count == 32'd39, "trap does not count as retired cycle");
+    require(pc == 12'h02a, "trap holds architectural PC");
+    require(program_address == 12'h02a, "trap holds native program address");
+    require(cycle_count == 32'd42, "trap does not count as retired cycle");
 
     // Assertion is recognized at the next falling boundary, after the current
     // machine cycle, and resets the architectural PC with the native address.

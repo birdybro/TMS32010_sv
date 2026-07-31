@@ -313,6 +313,7 @@ class Assembler:
             "MAR",
             "MPY",
             "OR",
+            "SUBC",
             "SUBS",
             "XOR",
             "ZALH",

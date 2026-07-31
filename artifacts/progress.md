@@ -1,23 +1,24 @@
 # Progress summary
 
-- **Current milestone:** PUSH/POP stack and two-cycle sequencing research
+- **Current milestone:** SUBC conditional-subtract qualification
 - **Completed task IDs:** REPO-001, REF-001
-- **Tests passing:** 69 repository/provenance/document/ISA/toolchain tests; 151
-  directed model tests; 25 RTL instruction/decode tests; 1 interrupt-mask RTL
+- **Tests passing:** 71 repository/provenance/document/ISA/toolchain tests; 160
+  directed model tests; 26 RTL instruction/decode tests; 1 interrupt-mask RTL
   test; 2 native bus/phase tests; one 512-instruction seeded
-  thirty-six-instruction model/RTL differential including T, P, OV/OVM/INTM,
+  thirty-seven-instruction model/RTL differential including T, P, OV/OVM/INTM,
   distinct logical source/write addresses, and all 144 final RAM words; 16
   reference hashes
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the thirty-six-instruction partial core, multiplier, 144-word RAM, and phase
-  engine on `5CSEBA6U23I7`: 1,816 ALMs, 2,484 registers, 0 RAM blocks,
-  1 DSP block, 57.22 MHz worst slow-corner internal Fmax, +2.523 ns setup
+  the thirty-seven-instruction partial core, multiplier, 144-word RAM, and phase
+  engine on `5CSEBA6U23I7`: 1,850 ALMs, 2,484 registers, 0 RAM blocks,
+  1 DSP block, 59.32 MHz worst slow-corner internal Fmax, +3.142 ns setup
   slack, and +0.166 ns worst hold slack at 50 MHz. TimeQuest reports zero
   unconstrained categories after enumerated
-  harness-only exclusions; no wrapper I/O is closed. Yosys 0.33 passes
-  structural checks and generic synthesis in isolated Ubuntu 24.04, producing
-  11,238 generic cells with nine assertions and lowering the asynchronous RAM to registers/muxes;
-  its technology-neutral multiplier contributes 1,841 generic cells; Yosys
+  harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
+  structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
+  producing 12,213 generic cells with nine assertions and lowering the
+  asynchronous RAM to registers/muxes; its technology-neutral multiplier
+  contributes 1,756 generic cells; Yosys
   is not installed on the host path
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
@@ -94,16 +95,24 @@
   12-bit stack while discarding the old bottom; POP is exact opcode `0x7f9d`,
   zero-extends the old top into ACC and duplicates the old bottom while
   shifting upward; neither detects overflow/underflow, and both are one word
-  and two cycles
+  and two cycles; SUBC is opcode family `0x64`, treats the selected word as an
+  unsigned divisor aligned at bit 15, conditionally subtracts it, shifts the
+  chosen intermediate left, appends a quotient bit, and completes in one
+  cycle; 16 legally spaced steps transform the documented 65/7 inputs into
+  `0x00020009`; TI requires the following instruction not to use ACC, says
+  SUBC affects OV but ignores OVM, and does not specify either violation
+  behavior or the exact overflow-producing stage
 - **Unresolved issues:** general pipeline overlap, control-flow and
   interrupt-entry traces, SST reserved bit 1, LST next-ARP precedence,
-  PUSH/POP second-cycle program-bus sequencing, simultaneous indirect
+  PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
+  OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, original-part ADDH and ABS
   overflow-status behavior, physical-reset retention of unlisted state,
   MPY/MPYK interrupt deferral, DMOV/LTD source-`0x8f` destination behavior,
   Hard Drivin' INT net, and safe phase adaptation without READY
-- **Next task:** research and qualify the one-cycle `SUBC` arithmetic family
-  while keeping PUSH/POP RTL outside the boundary until `OQ-016` supplies the
+- **Next task:** research the highest-priority unblocked control-flow family,
+  beginning with BANZ encoding, state effects, and the exact two-cycle
+  immediate/prefetch sequence; keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
   precedence labeled PROVISIONAL under `OQ-015`; keep interrupt recognition,
@@ -112,4 +121,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `c43d6f6`
+  `98dbbd0`

@@ -76,6 +76,7 @@ module tms32010_core (
   localparam logic [5:0] OP_DINT = 6'd33;
   localparam logic [5:0] OP_EINT = 6'd34;
   localparam logic [5:0] OP_LST  = 6'd35;
+  localparam logic [5:0] OP_SUBC = 6'd36;
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -97,6 +98,10 @@ module tms32010_core (
   logic        sub_overflow;
   logic [31:0] subs_wrapped_result;
   logic        subs_overflow;
+  logic [31:0] subc_operand;
+  logic [31:0] subc_intermediate;
+  logic        subc_overflow;
+  logic [31:0] subc_result;
   logic [31:0] multiplier_product;
   logic [15:0] multiplier_operand;
   logic [31:0] apac_wrapped_result;
@@ -133,6 +138,7 @@ module tms32010_core (
         (decoded_operation == OP_ADD) ||
         (decoded_operation == OP_SUB) ||
         (decoded_operation == OP_SUBS) ||
+        (decoded_operation == OP_SUBC) ||
         (decoded_operation == OP_LAR) ||
         (decoded_operation == OP_SAR) ||
         (decoded_operation == OP_LDP) ||
@@ -199,6 +205,7 @@ module tms32010_core (
       (decoded_operation == OP_ADD) ||
       (decoded_operation == OP_SUB) ||
       (decoded_operation == OP_SUBS) ||
+      (decoded_operation == OP_SUBC) ||
       (decoded_operation == OP_LAR) ||
       (decoded_operation == OP_LDP) ||
       (decoded_operation == OP_DMOV) ||
@@ -291,6 +298,7 @@ module tms32010_core (
         (decoded_operation != OP_ADD) &&
         (decoded_operation != OP_SUB) &&
         (decoded_operation != OP_SUBS) &&
+        (decoded_operation != OP_SUBC) &&
         (decoded_operation != OP_LAR) &&
         (decoded_operation != OP_SAR) &&
         (decoded_operation != OP_LDP) &&
@@ -330,6 +338,16 @@ module tms32010_core (
     accumulator_o - {16'h0000, ram_read_data};
   assign subs_overflow =
     accumulator_o[31] && ~subs_wrapped_result[31];
+  assign subc_operand =
+    {16'h0000, ram_read_data} << 5'd15;
+  assign subc_intermediate = accumulator_o - subc_operand;
+  assign subc_overflow =
+    (accumulator_o[31] ^ subc_operand[31]) &&
+    (accumulator_o[31] ^ subc_intermediate[31]);
+  assign subc_result =
+    subc_intermediate[31]
+      ? (accumulator_o << 1)
+      : ((subc_intermediate << 1) | 32'h0000_0001);
   assign apac_wrapped_result = accumulator_o + product_register_o;
   assign apac_overflow =
     ~(accumulator_o[31] ^ product_register_o[31]) &&
@@ -509,6 +527,12 @@ module tms32010_core (
               accumulator_o <= subs_wrapped_result;
             end
           end
+          OP_SUBC: begin
+            accumulator_o <= subc_result;
+            if (subc_overflow) begin
+              overflow_flag_o <= 1'b1;
+            end
+          end
           OP_LARK: begin
             if (decoded_auxiliary_register) begin
               auxiliary_register_1_o <= {8'h00, decoded_immediate};
@@ -551,6 +575,7 @@ module tms32010_core (
            (decoded_operation == OP_ADD) ||
            (decoded_operation == OP_SUB) ||
            (decoded_operation == OP_SUBS) ||
+           (decoded_operation == OP_SUBC) ||
            (decoded_operation == OP_LAR) ||
            (decoded_operation == OP_SAR) ||
            (decoded_operation == OP_MAR) ||
