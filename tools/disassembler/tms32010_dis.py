@@ -67,6 +67,7 @@ class Disassembler:
             "LDP",
             "LT",
             "LTA",
+            "LTD",
             "MAR",
             "MPY",
             "OR",

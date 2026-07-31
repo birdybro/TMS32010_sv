@@ -5,10 +5,12 @@
 // not represent an external TMS32010 bus or an electrical timing claim.
 module tms32010_internal_ram (
   input  logic        clk_i,
-  input  logic [7:0]  address_i,
+  input  logic [7:0]  read_address_i,
   output logic [15:0] read_data_o,
-  output logic        address_valid_o,
+  output logic        read_address_valid_o,
   input  logic        write_i,
+  input  logic [7:0]  write_address_i,
+  output logic        write_address_valid_o,
   input  logic [15:0] write_data_i,
 
   // Explicit, nonarchitectural preload/debug port. Physical reset never
@@ -20,20 +22,21 @@ module tms32010_internal_ram (
   logic [15:0] memory [0:143];
 
   always_comb begin
-    address_valid_o = address_i < 8'd144;
-    read_data_o     = 16'h0000;
-    if (address_valid_o) begin
-      read_data_o = memory[address_i];
+    read_address_valid_o  = read_address_i < 8'd144;
+    write_address_valid_o = write_address_i < 8'd144;
+    read_data_o            = 16'h0000;
+    if (read_address_valid_o) begin
+      read_data_o = memory[read_address_i];
     end
   end
 
   always_ff @(posedge clk_i) begin
     if (debug_write_i && (debug_address_i < 8'd144)) begin
       memory[debug_address_i] <= debug_data_i;
-    end else if (write_i && address_valid_o) begin
-      memory[address_i] <= write_data_i;
+    end else if (write_i && write_address_valid_o) begin
+      memory[write_address_i] <= write_data_i;
     end
-    assert (!(write_i && !address_valid_o));
+    assert (!(write_i && !write_address_valid_o));
     assert (!(debug_write_i && (debug_address_i >= 8'd144)));
     assert (!(write_i && debug_write_i));
   end

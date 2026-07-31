@@ -27,6 +27,8 @@ module tb_model_rtl_slice;
   logic        data_read;
   logic        data_write;
   logic        data_address_valid;
+  logic [7:0]  data_write_address;
+  logic        data_write_address_valid;
   logic [15:0] data_read_data;
   logic [15:0] data_write_data;
   logic        debug_data_write;
@@ -51,6 +53,8 @@ module tb_model_rtl_slice;
     .data_read_o       (data_read),
     .data_write_o      (data_write),
     .data_address_valid_o (data_address_valid),
+    .data_write_address_o (data_write_address),
+    .data_write_address_valid_o (data_write_address_valid),
     .data_read_data_o  (data_read_data),
     .data_write_data_o (data_write_data),
     .debug_data_write_i (debug_data_write),
@@ -127,6 +131,8 @@ module tb_model_rtl_slice;
       logic        data_read_before;
       logic        data_write_before;
       logic        data_address_valid_before;
+      logic [7:0]  data_write_address_before;
+      logic        data_write_address_valid_before;
       logic [15:0] data_read_data_before;
       logic [15:0] data_write_data_before;
       pc_before     = program_address;
@@ -135,12 +141,14 @@ module tb_model_rtl_slice;
       data_read_before          = data_read;
       data_write_before         = data_write;
       data_address_valid_before = data_address_valid;
+      data_write_address_before = data_write_address;
+      data_write_address_valid_before = data_write_address_valid;
       data_read_data_before     = data_read_data;
       data_write_data_before    = data_write_data;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %04x %04x %01x %04x %08x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x",
         pc_before,
         opcode_before,
         pc,
@@ -158,6 +166,8 @@ module tb_model_rtl_slice;
         data_read_before,
         data_write_before,
         data_address_valid_before,
+        data_write_address_before,
+        data_write_address_valid_before,
         data_read_data_before,
         data_write_data_before,
         overflow_flag,

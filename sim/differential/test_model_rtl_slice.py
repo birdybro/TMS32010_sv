@@ -126,12 +126,15 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             0x6C00,
             0x6C01,
             0x6C0F,
+            0x6B00,
+            0x6B01,
+            0x6B7F,
         ):
             append_and_step(word)
 
         choices = [0x7F80, 0x7F89, 0x7F8A, 0x7F8B]
-        for _ in range(451):
-            family = randomizer.randrange(29)
+        for _ in range(448):
+            family = randomizer.randrange(30)
             if family == 0:
                 word = 0x7E00 | randomizer.randrange(256)
             elif family == 1:
@@ -475,6 +478,28 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                             else randomizer.randrange(16)
                         )
                         word = 0x6C00 | address
+            elif family == 27:
+                if randomizer.randrange(2):
+                    address = (
+                        randomizer.randrange(127)
+                        if model.state.status.dp == 0
+                        else randomizer.randrange(15)
+                    )
+                    word = 0x6B00 | address
+                else:
+                    selected = model.state.status.arp
+                    if (model.state.ar[selected] & 0xFF) < 143:
+                        control = randomizer.choice(
+                            [0x88, 0xA8, 0x98, 0x80, 0x81, 0xA0, 0xA1, 0x90, 0x91]
+                        )
+                        word = 0x6B00 | control
+                    else:
+                        address = (
+                            randomizer.randrange(127)
+                            if model.state.status.dp == 0
+                            else randomizer.randrange(15)
+                        )
+                        word = 0x6B00 | address
             else:
                 word = randomizer.choice(choices)
             append_and_step(word)
@@ -530,17 +555,17 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 (SEED, index),
             )
             self.assertEqual(
-                bool(int(fields[20], 16)),
+                bool(int(fields[22], 16)),
                 model_trace.state_after["status"]["ov"],
                 (SEED, index),
             )
             self.assertEqual(
-                int(fields[21], 16),
+                int(fields[23], 16),
                 model_trace.state_after["t"],
                 (SEED, index),
             )
             self.assertEqual(
-                int(fields[22], 16),
+                int(fields[24], 16),
                 model_trace.state_after["p"],
                 (SEED, index),
             )
@@ -577,12 +602,24 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 for transaction in model_trace.transactions
                 if transaction.space == "data"
             ]
-            expected_read = bool(
-                data_transactions and data_transactions[0].operation == "read"
+            read_transaction = next(
+                (
+                    transaction
+                    for transaction in data_transactions
+                    if transaction.operation == "read"
+                ),
+                None,
             )
-            expected_write = bool(
-                data_transactions and data_transactions[0].operation == "write"
+            write_transaction = next(
+                (
+                    transaction
+                    for transaction in data_transactions
+                    if transaction.operation == "write"
+                ),
+                None,
             )
+            expected_read = read_transaction is not None
+            expected_write = write_transaction is not None
             self.assertEqual(bool(int(fields[15], 16)), expected_read, (SEED, index))
             self.assertEqual(bool(int(fields[16], 16)), expected_write, (SEED, index))
             self.assertEqual(
@@ -590,15 +627,37 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 bool(data_transactions),
                 (SEED, index),
             )
-            if data_transactions:
+            self.assertEqual(
+                bool(int(fields[19], 16)),
+                expected_write,
+                (SEED, index),
+            )
+            if read_transaction is not None:
                 self.assertEqual(
                     int(fields[14], 16),
-                    data_transactions[0].address,
+                    read_transaction.address,
                     (SEED, index),
                 )
                 self.assertEqual(
-                    int(fields[18 if expected_read else 19], 16),
-                    data_transactions[0].data,
+                    int(fields[20], 16),
+                    read_transaction.data,
+                    (SEED, index),
+                )
+            elif write_transaction is not None:
+                self.assertEqual(
+                    int(fields[14], 16),
+                    write_transaction.address,
+                    (SEED, index),
+                )
+            if write_transaction is not None:
+                self.assertEqual(
+                    int(fields[18], 16),
+                    write_transaction.address,
+                    (SEED, index),
+                )
+                self.assertEqual(
+                    int(fields[21], 16),
+                    write_transaction.data,
                     (SEED, index),
                 )
 

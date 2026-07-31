@@ -227,6 +227,40 @@ instruction's documented interrupt-deferral window; actual interrupt
 recognition remains unimplemented under `INT-001`. Simultaneous indirect
 update controls remain under `OQ-010`.
 
+## Qualified `LTD` functional slice
+
+`LTD` fixes bits 15:8 to `0x6b`; bit 7 and bits 6:0 use the common
+direct/indirect data-address field. In one word and one cycle it performs
+three parallel operations: the selected 16-bit internal RAM word loads T, the
+unchanged previous 32-bit P value is added to ACC, and the selected word is
+copied unchanged to the next higher data-memory address. The source word and
+P remain unchanged. TI's worked example starts with RAM[24]=`0x0062`,
+RAM[25]=`0x0000`, T=`0x0003`, P=`0x0000000f`, and ACC=`0x00000005`;
+afterward RAM[24] remains `0x0062`, RAM[25] and T are `0x0062`, and ACC is
+`0x00000014`
+[ti-tms32010-users-guide-spru001b, `LTD`, printed p. 3-41 (PDF p. 91);
+ti-tms32010-assembly-guide-spru002b, `LTD`, printed p. 3-41 (PDF p. 62)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The ACC-plus-P path affects sticky `OV` and is affected by `OVM`, with the
+same wrapped or signed-endpoint saturated results as APAC/LTA. The data move
+is a source read followed logically by a write of that captured value to
+`source+1`; it is independent of the optional indirect AR modification.
+Indirect addressing therefore selects the source with the old AR/ARP, moves
+to the numerically next data address, and only then exposes the ordinary
+nine-bit AR and optional ARP post-update at the architectural boundary
+[ti-first-generation-users-guide-1987, §§3.4.3, 3.5.2 and `LTD`, printed
+pp. 3-13, 3-19–3-20, and 4-46 (PDF pp. 42, 48–49, and 127)].
+**Confidence: VERIFIED_PRIMARY.**
+
+The original documentation does not define a move whose next-higher
+destination is outside the 144-word RAM. The current partial model and RTL
+therefore trap before changing T, ACC, RAM, AR, or ARP when either the source
+or destination is unresolved. This is an explicit implementation boundary,
+not a hardware-behavior claim (`OQ-002`, `OQ-014`). Simultaneous indirect
+increment/decrement remains rejected under `OQ-010`; multiply-following
+interrupt recognition remains deferred to `INT-001`.
+
 ## Qualified `MPY` functional slice
 
 `MPY` fixes bits 15:8 to `0x6d`; bit 7 and bits 6:0 use the common

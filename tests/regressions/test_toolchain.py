@@ -35,6 +35,11 @@ class ToolchainSliceTests(unittest.TestCase):
             LTA *
             LTA *+,AR1
             LTA *-,0
+            LTD 0
+            LTD 127
+            LTD *
+            LTD *+,AR1
+            LTD *-,0
             MPY 0
             MPY 127
             MPY *
@@ -151,6 +156,11 @@ class ToolchainSliceTests(unittest.TestCase):
                 0x6C88,
                 0x6CA1,
                 0x6C90,
+                0x6B00,
+                0x6B7F,
+                0x6B88,
+                0x6BA1,
+                0x6B90,
                 0x6D00,
                 0x6D7F,
                 0x6D88,
@@ -264,6 +274,11 @@ class ToolchainSliceTests(unittest.TestCase):
             0x6C88,
             0x6CA1,
             0x6C90,
+            0x6B00,
+            0x6B7F,
+            0x6B88,
+            0x6BA1,
+            0x6B90,
             0x6F00,
             0x6F7F,
             0x6F88,
@@ -437,6 +452,7 @@ class ToolchainSliceTests(unittest.TestCase):
             ("LDP", 0x6F89),
             ("LT", 0x6A89),
             ("LTA", 0x6C89),
+            ("LTD", 0x6B89),
             ("MPY", 0x6D89),
         ):
             for operand, message in (

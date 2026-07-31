@@ -22,6 +22,8 @@ module tms32010_phase_slice (
   output logic        data_read_o,
   output logic        data_write_o,
   output logic        data_address_valid_o,
+  output logic [7:0]  data_write_address_o,
+  output logic        data_write_address_valid_o,
   output logic [15:0] data_read_data_o,
   output logic [15:0] data_write_data_o,
 
@@ -77,6 +79,8 @@ module tms32010_phase_slice (
     .data_read_o                   (data_read_o),
     .data_write_o                  (data_write_o),
     .data_address_valid_o          (data_address_valid_o),
+    .data_write_address_o          (data_write_address_o),
+    .data_write_address_valid_o    (data_write_address_valid_o),
     .data_read_data_o              (data_read_data_o),
     .data_write_data_o             (data_write_data_o),
     .debug_data_write_i            (debug_data_write_i),

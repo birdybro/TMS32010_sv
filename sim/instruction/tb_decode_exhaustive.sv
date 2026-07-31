@@ -47,6 +47,7 @@ module tb_decode_exhaustive;
       logic expected_mar;
       logic expected_ldp;
       logic expected_lt;
+      logic expected_ltd;
       logic expected_lta;
       logic expected_mpy;
       logic expected_mpyk;
@@ -231,6 +232,16 @@ module tb_decode_exhaustive;
             (instruction[5:4] != 2'b11)
           )
         );
+      expected_ltd =
+        (instruction[15:8] == 8'h6b) &&
+        (
+          !instruction[7] ||
+          (
+            !instruction[6] &&
+            (instruction[2:1] == 2'b00) &&
+            (instruction[5:4] != 2'b11)
+          )
+        );
       expected_lta =
         (instruction[15:8] == 8'h6c) &&
         (
@@ -260,7 +271,8 @@ module tb_decode_exhaustive;
         expected_zalh || expected_zals || expected_adds ||
         expected_xor || expected_and || expected_or || expected_add ||
         expected_sub || expected_subs || expected_lar || expected_sar ||
-        expected_mar || expected_ldp || expected_lt || expected_lta ||
+        expected_mar || expected_ldp || expected_lt || expected_ltd ||
+        expected_lta ||
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
         ((instruction & 16'hfffe) == 16'h6880) ||
@@ -389,6 +401,13 @@ module tb_decode_exhaustive;
           $fatal(1, "LT decode mismatch at %04x", word);
         end
       end
+      if (expected_ltd) begin
+        if (operation != OP_LTD ||
+            indirect != word[7] ||
+            addressing_field != word[6:0]) begin
+          $fatal(1, "LTD decode mismatch at %04x", word);
+        end
+      end
       if (expected_mpy) begin
         if (operation != OP_MPY ||
             indirect != word[7] ||
@@ -440,8 +459,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 18489) begin
-      $fatal(1, "expected 18489 supported words, got %0d", valid_count);
+    if (valid_count != 18629) begin
+      $fatal(1, "expected 18629 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

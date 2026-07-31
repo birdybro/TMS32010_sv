@@ -51,6 +51,8 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "data_address_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to data_read_o
 set_instance_assignment -name VIRTUAL_PIN ON -to data_write_o
 set_instance_assignment -name VIRTUAL_PIN ON -to data_address_valid_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "data_write_address_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to data_write_address_valid_o
 set_instance_assignment -name VIRTUAL_PIN ON -to "data_read_data_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "data_write_data_o[*]"
 

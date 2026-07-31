@@ -12,6 +12,8 @@ module tb_pac_rtl;
   logic        data_read;
   logic        data_write;
   logic        data_address_valid;
+  logic [7:0]  data_write_address;
+  logic        data_write_address_valid;
   logic [15:0] data_read_data;
   logic [15:0] data_write_data;
   logic        debug_data_write;
@@ -46,6 +48,8 @@ module tb_pac_rtl;
     .data_read_o                   (data_read),
     .data_write_o                  (data_write),
     .data_address_valid_o          (data_address_valid),
+    .data_write_address_o          (data_write_address),
+    .data_write_address_valid_o    (data_write_address_valid),
     .data_read_data_o              (data_read_data),
     .data_write_data_o             (data_write_data),
     .debug_data_write_i            (debug_data_write),
@@ -76,6 +80,7 @@ module tb_pac_rtl;
   task automatic tick;
     @(posedge clk);
     #1;
+    assert (!data_write_address_valid || (data_write_address < 8'd144));
   endtask
 
   task automatic require(input logic condition, input string message);

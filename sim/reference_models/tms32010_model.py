@@ -1,8 +1,8 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LT, LTA, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC,
-SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
+LDPK, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM,
+SPAC, SUB, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -191,6 +191,7 @@ class Tms32010Model:
             "LDP",
             "LT",
             "LTA",
+            "LTD",
             "MPY",
             "OR",
             "SACL",
@@ -211,7 +212,15 @@ class Tms32010Model:
                 )
             if data_address >= DATA_WORDS:
                 raise UnsupportedDataAddress(pc, opcode, data_address)
+            if mnemonic == "LTD" and data_address + 1 >= DATA_WORDS:
+                raise UnsupportedDataAddress(
+                    pc,
+                    opcode,
+                    data_address + 1,
+                )
             operands["effective_address"] = data_address
+            if mnemonic == "LTD":
+                operands["move_address"] = data_address + 1
             if mnemonic in {
                 "ADD",
                 "ADDS",
@@ -221,6 +230,7 @@ class Tms32010Model:
                 "LDP",
                 "LT",
                 "LTA",
+                "LTD",
                 "MPY",
                 "OR",
                 "SUB",
@@ -266,6 +276,7 @@ class Tms32010Model:
                             "LDP",
                             "LT",
                             "LTA",
+                            "LTD",
                             "MPY",
                             "OR",
                             "SUB",
@@ -280,6 +291,16 @@ class Tms32010Model:
                     data=transaction_data,
                 )
             )
+            if mnemonic == "LTD":
+                transactions.append(
+                    Transaction(
+                        cycle=self.cycle_count,
+                        space="data",
+                        operation="write",
+                        address=data_address + 1,
+                        data=transaction_data,
+                    )
+                )
 
         self.state.pc = (pc + 1) & PC_MASK
 
@@ -302,6 +323,11 @@ class Tms32010Model:
             self.state.t = self.data[operands["effective_address"]]
         elif mnemonic == "LTA":
             self.state.t = self.data[operands["effective_address"]]
+            self._add_accumulator(self.state.p)
+        elif mnemonic == "LTD":
+            data_word = self.data[operands["effective_address"]]
+            self.state.t = data_word
+            self.data[operands["move_address"]] = data_word
             self._add_accumulator(self.state.p)
         elif mnemonic == "MPY":
             data_word = self.data[operands["effective_address"]]
@@ -418,6 +444,7 @@ class Tms32010Model:
                 "LDP",
                 "LT",
                 "LTA",
+                "LTD",
                 "MAR",
                 "MPY",
                 "OR",
@@ -689,6 +716,17 @@ class Tms32010Model:
             ):
                 raise UnsupportedOpcode(pc, opcode)
             return "LTA", {
+                "indirect": indirect,
+                "addressing_field": control,
+            }
+        if opcode & 0xFF00 == 0x6B00:
+            indirect = (opcode >> 7) & 1
+            control = opcode & 0x7F
+            if indirect and (
+                (control & 0x46) != 0 or (control & 0x30) == 0x30
+            ):
+                raise UnsupportedOpcode(pc, opcode)
+            return "LTD", {
                 "indirect": indirect,
                 "addressing_field": control,
             }

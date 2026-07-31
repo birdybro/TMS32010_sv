@@ -36,6 +36,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "LDP",
                 "LDPK",
                 "LT",
+                "LTD",
                 "LTA",
                 "MPY",
                 "MPYK",
@@ -201,6 +202,28 @@ class IsaDatabaseTests(unittest.TestCase):
             {"indirect": 1, "addressing_field": 0x21},
         )
         for word in (0x6CC8, 0x6C8A, 0x6CB8):
+            with self.subTest(word=word):
+                self.assertIsNone(decode_word(self.database, word))
+
+    def test_ltd_uses_common_data_addressing_without_reserved_controls(
+        self,
+    ) -> None:
+        direct = decode_word(self.database, 0x6B7F)
+        indirect = decode_word(self.database, 0x6BA1)
+        self.assertIsNotNone(direct)
+        self.assertIsNotNone(indirect)
+        assert direct is not None and indirect is not None
+        self.assertEqual(direct[0]["mnemonic"], "LTD")
+        self.assertEqual(
+            direct[1],
+            {"indirect": 0, "addressing_field": 0x7F},
+        )
+        self.assertEqual(indirect[0]["mnemonic"], "LTD")
+        self.assertEqual(
+            indirect[1],
+            {"indirect": 1, "addressing_field": 0x21},
+        )
+        for word in (0x6BC8, 0x6B8A, 0x6BB8):
             with self.subTest(word=word):
                 self.assertIsNone(decode_word(self.database, word))
 

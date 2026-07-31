@@ -16,7 +16,7 @@
       "DMOV", "IN", "OUT", "TBLR", "TBLW"
     ],
     "supported_mnemonics": [
-      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
+      "LACK", "NOP", "ZAC", "ROVM", "SOVM", "LARK", "LARP", "MAR", "LDP", "LDPK", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
       "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "XOR", "AND", "OR", "ZALH", "ZALS"
     ],
     "complete": false,
@@ -450,6 +450,56 @@
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-002", "OQ-010"]
+    },
+    {
+      "mnemonic": "LTD",
+      "aliases": [],
+      "opcode": {
+        "match": "0x6b00",
+        "mask": "0xff00",
+        "variable_fields": [
+          {"name": "indirect", "lsb": 7, "width": 1, "signed": false},
+          {"name": "addressing_field", "lsb": 0, "width": 7, "signed": false}
+        ],
+        "constraints": [
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "require": {"mask": "0x0046", "match": "0x0000"}
+          },
+          {
+            "when": {"mask": "0x0080", "match": "0x0080"},
+            "forbid": {"mask": "0x0030", "match": "0x0030"}
+          }
+        ]
+      },
+      "operands": [
+        {"name": "data_operand", "kind": "direct_or_indirect_data", "width": 8},
+        {"name": "next_arp", "kind": "register_select", "width": 1, "optional": true}
+      ],
+      "addressing_modes": ["direct", "indirect"],
+      "registers_read": ["ACC", "P", "OV", "OVM", "DP for direct addressing", "ARP and selected AR for indirect addressing"],
+      "registers_written": ["ACC", "T", "OV on overflow", "selected AR when post-modified", "ARP only when requested by indirect addressing"],
+      "memory_accesses": ["instruction_fetch", "internal_data_read", "internal_data_write_to_next_higher_address"],
+      "status_flags_affected": ["OV", "ARP only when requested by indirect addressing"],
+      "arithmetic_width_bits": 32,
+      "sign_extension_behavior": "the complete signed 32-bit P register is added to ACC; all 16 selected source-word bits replace T and are copied unchanged",
+      "shift_behavior": "the data move changes address by one word, not bit position; common indirect AR increment/decrement independently modifies the selected AR's low nine bits",
+      "overflow_behavior": "signed ACC-plus-P overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
+      "result_behavior": "T receives the selected internal data word, the next higher data-memory address receives the same word, and ACC receives ACC plus the previous P value subject to OVM; P and the source word are unchanged",
+      "branch_behavior": "none",
+      "interrupt_interaction": "no special LTD interaction documented; when LTD follows MPY or MPYK, its completion reaches that multiply instruction's documented interrupt-deferral boundary, which is not yet implemented",
+      "documented_cycle_count": 1,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; the concurrent internal source read and next-address write have no external data-memory cycle"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3 and LTD instruction description", "printed_page": "3-2 through 3-3 and 3-41", "pdf_page": "52-53 and 91"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "LTD instruction description and 4.5 LTD Instruction", "printed_page": "3-41 and 4-4", "pdf_page": "62 and 86"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.4.3, 3.5.2, and LTD instruction description", "printed_page": "3-13, 3-19 through 3-20, and 4-46", "pdf_page": "42, 48-49, and 127"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-002", "OQ-010", "OQ-014"]
     },
     {
       "mnemonic": "LTA",

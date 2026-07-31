@@ -14,6 +14,8 @@ module tms32010_core (
   output logic        data_read_o,
   output logic        data_write_o,
   output logic        data_address_valid_o,
+  output logic [7:0]  data_write_address_o,
+  output logic        data_write_address_valid_o,
   output logic [15:0] data_read_data_o,
   output logic [15:0] data_write_data_o,
   input  logic        debug_data_write_i,
@@ -69,6 +71,7 @@ module tms32010_core (
   localparam logic [4:0] OP_APAC = 5'd28;
   localparam logic [4:0] OP_SPAC = 5'd29;
   localparam logic [4:0] OP_LTA  = 5'd30;
+  localparam logic [4:0] OP_LTD  = 5'd31;
 
   logic [4:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -79,6 +82,7 @@ module tms32010_core (
   logic [6:0] decoded_addressing_field;
   logic       decoded_valid;
   logic       ram_address_valid;
+  logic       ram_write_address_valid;
   logic [15:0] ram_read_data;
   logic [31:0] adds_wrapped_result;
   logic        adds_overflow;
@@ -129,6 +133,7 @@ module tms32010_core (
         (decoded_operation == OP_SAR) ||
         (decoded_operation == OP_LDP) ||
         (decoded_operation == OP_LT) ||
+        (decoded_operation == OP_LTD) ||
         (decoded_operation == OP_LTA) ||
         (decoded_operation == OP_MPY)
       )
@@ -145,17 +150,19 @@ module tms32010_core (
   end
 
   tms32010_internal_ram data_ram (
-    .clk_i           (clk_i),
-    .address_i       (data_address_o),
-    .read_data_o     (ram_read_data),
-    .address_valid_o (ram_address_valid),
-    .write_i         (
+    .clk_i                  (clk_i),
+    .read_address_i         (data_address_o),
+    .read_data_o            (ram_read_data),
+    .read_address_valid_o   (ram_address_valid),
+    .write_i                (
       data_write_o && clock_enable_i && instruction_valid_o
     ),
-    .write_data_i    (data_write_data_o),
-    .debug_write_i   (debug_data_write_i),
-    .debug_address_i (debug_data_address_i),
-    .debug_data_i    (debug_data_i)
+    .write_address_i        (data_write_address_o),
+    .write_address_valid_o  (ram_write_address_valid),
+    .write_data_i           (data_write_data_o),
+    .debug_write_i          (debug_data_write_i),
+    .debug_address_i        (debug_data_address_i),
+    .debug_data_i           (debug_data_i)
   );
 
   tms32010_multiplier multiplier (
@@ -189,6 +196,7 @@ module tms32010_core (
       (decoded_operation == OP_LAR) ||
       (decoded_operation == OP_LDP) ||
       (decoded_operation == OP_LT) ||
+      (decoded_operation == OP_LTD) ||
       (decoded_operation == OP_LTA) ||
       (decoded_operation == OP_MPY)
     );
@@ -199,14 +207,25 @@ module tms32010_core (
     (
       (decoded_operation == OP_SACL) ||
       (decoded_operation == OP_SACH) ||
-      (decoded_operation == OP_SAR)
+      (decoded_operation == OP_SAR) ||
+      (decoded_operation == OP_LTD)
     );
   assign data_address_valid_o =
     (data_read_o || data_write_o) && ram_address_valid;
+  always_comb begin
+    data_write_address_o = data_address_o;
+    if (decoded_operation == OP_LTD) begin
+      data_write_address_o = data_address_o + 8'd1;
+    end
+  end
+  assign data_write_address_valid_o =
+    data_write_o && ram_write_address_valid;
   assign data_read_data_o     = ram_read_data;
   always_comb begin
     data_write_data_o = accumulator_o[15:0];
-    if (decoded_operation == OP_SAR) begin
+    if (decoded_operation == OP_LTD) begin
+      data_write_data_o = ram_read_data;
+    end else if (decoded_operation == OP_SAR) begin
       data_write_data_o =
         decoded_auxiliary_register
           ? auxiliary_register_1_o
@@ -261,10 +280,17 @@ module tms32010_core (
         (decoded_operation != OP_SAR) &&
         (decoded_operation != OP_LDP) &&
         (decoded_operation != OP_LT) &&
+        (decoded_operation != OP_LTD) &&
         (decoded_operation != OP_LTA) &&
         (decoded_operation != OP_MPY)
       ) ||
-      ram_address_valid
+      (
+        ram_address_valid &&
+        (
+          (decoded_operation != OP_LTD) ||
+          ram_write_address_valid
+        )
+      )
     );
   assign adds_wrapped_result =
     accumulator_o + {16'h0000, ram_read_data};
@@ -340,6 +366,20 @@ module tms32010_core (
           end
           OP_LDP: data_page_pointer_o <= ram_read_data[0];
           OP_LT: t_register_o <= ram_read_data;
+          OP_LTD: begin
+            t_register_o <= ram_read_data;
+            if (apac_overflow) begin
+              overflow_flag_o <= 1'b1;
+              if (overflow_mode_o) begin
+                accumulator_o <=
+                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
+              end else begin
+                accumulator_o <= apac_wrapped_result;
+              end
+            end else begin
+              accumulator_o <= apac_wrapped_result;
+            end
+          end
           OP_LTA: begin
             t_register_o <= ram_read_data;
             if (apac_overflow) begin
@@ -486,6 +526,7 @@ module tms32010_core (
            (decoded_operation == OP_MAR) ||
            (decoded_operation == OP_LDP) ||
            (decoded_operation == OP_LT) ||
+           (decoded_operation == OP_LTD) ||
            (decoded_operation == OP_LTA) ||
            (decoded_operation == OP_MPY)) &&
           decoded_indirect
@@ -542,6 +583,9 @@ module tms32010_core (
     if (!reset_i && !initialize_i) begin
       assert (!(debug_data_write_i && clock_enable_i));
       if ((data_read_o || data_write_o) && !data_address_valid_o) begin
+        assert (!instruction_valid_o);
+      end
+      if (data_write_o && !data_write_address_valid_o) begin
         assert (!instruction_valid_o);
       end
     end

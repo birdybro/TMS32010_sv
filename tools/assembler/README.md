@@ -4,7 +4,7 @@ This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
-  `LDPK`, `LT`, `LTA`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
+  `LDPK`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
 - two-pass labels;
@@ -33,8 +33,8 @@ an explicit next ARP is permitted only on an indirect form.
 such as `MAR 127`, `MAR *`, or `MAR *+,AR1`. `MAR *,AR0/AR1` assembles the
 documented exact aliases of `LARP 0/1`.
 
-`LDP`, `LT`, `LTA`, and `MPY` accept the no-shift common address forms, such
-as `LDP 6`, `LT *`, `LTA 24`, or `MPY *+,AR1`.
+`LDP`, `LT`, `LTA`, `LTD`, and `MPY` accept the no-shift common address forms,
+such as `LDP 6`, `LT *`, `LTA 24`, `LTD *-,AR1`, or `MPY *+,AR1`.
 
 `MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.
