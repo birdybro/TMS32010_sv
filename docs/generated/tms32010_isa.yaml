@@ -23,6 +23,53 @@
     "complete": false,
     "reserved_encoding_audit_complete": false
   },
+  "opcode_space_audit": {
+    "status": "PARTIAL_PRIMARY_CLASSIFICATION",
+    "claim_boundary": "Classification records why a word is outside the documented legal decoder; it does not assign execution behavior to unsupported words.",
+    "classification_definitions": [
+      {
+        "name": "DOCUMENTED_LEGAL",
+        "meaning": "Exactly one primary-documented instruction entry accepts the complete word and all of its operand-field constraints.",
+        "source_citations": [
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.4.2 Instruction Set Summary and individual instruction descriptions", "printed_page": "3-5 through 3-71", "pdf_page": "55-121"}
+        ]
+      },
+      {
+        "name": "PRIMARY_RESERVED_INDIRECT_FIELD",
+        "meaning": "The word otherwise enters a documented data-address instruction pattern, selects indirect addressing, and sets one or more of addressing bits 6, 2, or 1 that TI explicitly reserves and requires software to program as zero.",
+        "source_citations": [
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3.2 Indirect Addressing Format", "printed_page": "3-2", "pdf_page": 52}
+        ]
+      },
+      {
+        "name": "UNRESOLVED_SIMULTANEOUS_UPDATE",
+        "meaning": "The word enters a documented indirect data-address pattern, keeps the explicitly reserved bits clear and every other enumerated field legal, but sets both auxiliary-register increment and decrement; TI defines each control separately without defining the combination.",
+        "source_citations": [
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3.2 Indirect Addressing Format", "printed_page": "3-2", "pdf_page": 52}
+        ],
+        "unresolved_questions": ["OQ-010"]
+      },
+      {
+        "name": "DOCUMENTED_PATTERN_MISMATCH",
+        "meaning": "The word lies inside a declared audit envelope for a documented instruction pattern but violates a fixed or enumerated field. This label does not assert that TI calls the word reserved or define silicon behavior.",
+        "source_citations": [
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.4.2 Instruction Set Summary and individual instruction encoding diagrams", "printed_page": "3-5 through 3-71", "pdf_page": "55-121"}
+        ]
+      },
+      {
+        "name": "UNCLASSIFIED",
+        "meaning": "No qualified instruction entry or declared documented-pattern envelope covers the word. No reserved, no-op, trap, or silicon behavior is inferred.",
+        "source_citations": []
+      }
+    ],
+    "expected_counts": {
+      "DOCUMENTED_LEGAL": 21895,
+      "PRIMARY_RESERVED_INDIRECT_FIELD": 10976,
+      "UNRESOLVED_SIMULTANEOUS_UPDATE": 372,
+      "DOCUMENTED_PATTERN_MISMATCH": 3637,
+      "UNCLASSIFIED": 28656
+    }
+  },
   "instructions": [
     {
       "mnemonic": "LACK",
@@ -1771,6 +1818,7 @@
       "opcode": {
         "match": "0xf400",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xf400", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -1809,6 +1857,7 @@
       "opcode": {
         "match": "0xf900",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xf900", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -1847,6 +1896,7 @@
       "opcode": {
         "match": "0xf500",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xf500", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -1885,6 +1935,7 @@
       "opcode": {
         "match": "0xf600",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xf600", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -1923,6 +1974,7 @@
       "opcode": {
         "match": "0xf800",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xf800", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2311,6 +2363,7 @@
       "opcode": {
         "match": "0xfd00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xfd00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2349,6 +2402,7 @@
       "opcode": {
         "match": "0xfc00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xfc00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2387,6 +2441,7 @@
       "opcode": {
         "match": "0xfb00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xfb00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2425,6 +2480,7 @@
       "opcode": {
         "match": "0xfa00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xfa00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2463,6 +2519,7 @@
       "opcode": {
         "match": "0xfe00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xfe00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [
@@ -2501,6 +2558,7 @@
       "opcode": {
         "match": "0xff00",
         "mask": "0xffff",
+        "audit_envelope": {"match": "0xff00", "mask": "0xff00"},
         "variable_fields": []
       },
       "operands": [

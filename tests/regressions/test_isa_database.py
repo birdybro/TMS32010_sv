@@ -6,9 +6,12 @@ from pathlib import Path
 
 from tools.generators.isa_database import (
     REQUIRED_INSTRUCTION_FIELDS,
+    audit_opcode_space,
+    classify_word,
     decode_word,
     load_database,
 )
+from tools.generators.opcode_audit import render_report
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -90,6 +93,41 @@ class IsaDatabaseTests(unittest.TestCase):
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
+
+    def test_exhaustive_opcode_space_classification_is_stable(self) -> None:
+        counts = audit_opcode_space(self.database)
+        self.assertEqual(
+            counts,
+            self.database["opcode_space_audit"]["expected_counts"],
+        )
+        self.assertEqual(sum(counts.values()), 0x10000)
+        report = ROOT / "docs" / "generated" / "tms32010_opcode_audit.md"
+        self.assertEqual(
+            report.read_text(encoding="utf-8"),
+            render_report(self.database, counts),
+        )
+
+    def test_opcode_classification_boundaries_do_not_infer_behavior(self) -> None:
+        cases = {
+            0x0000: ("DOCUMENTED_LEGAL", ["ADD"]),
+            0x00C8: ("PRIMARY_RESERVED_INDIRECT_FIELD", ["ADD"]),
+            0x00B0: ("UNRESOLVED_SIMULTANEOUS_UPDATE", ["ADD"]),
+            0x5A00: ("DOCUMENTED_PATTERN_MISMATCH", ["SACH"]),
+            0x5AB0: ("DOCUMENTED_PATTERN_MISMATCH", ["SACH"]),
+            0x5AC8: ("PRIMARY_RESERVED_INDIRECT_FIELD", ["SACH"]),
+            0x7C10: ("DOCUMENTED_PATTERN_MISMATCH", ["SST"]),
+            0xF401: ("DOCUMENTED_PATTERN_MISMATCH", ["BANZ"]),
+            0x7F83: ("UNCLASSIFIED", []),
+        }
+        for word, (classification, mnemonics) in cases.items():
+            with self.subTest(word=word):
+                result = classify_word(self.database, word)
+                self.assertEqual(result["classification"], classification)
+                self.assertEqual(result["mnemonics"], mnemonics)
+        self.assertEqual(
+            classify_word(self.database, 0x00B0)["unresolved_question"],
+            "OQ-010",
+        )
 
     def test_abs_is_exact_one_cycle_and_preserves_status(self) -> None:
         decoded = decode_word(self.database, 0x7F88)

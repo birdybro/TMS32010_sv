@@ -86,6 +86,7 @@ synth-quartus:
 
 docs:
 	$(PYTHON) scripts/check_documentation.py
+	$(PYTHON) -m tools.generators.opcode_audit --check
 
 clean:
 	$(PYTHON) scripts/clean.py

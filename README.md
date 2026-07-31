@@ -179,10 +179,14 @@ read, and an `ACC[11:0]` table transfer under MEN or WE. The following address
 is then fetched again. Directed and differential tests cover program-memory
 mutation, internal RAM, indirect AR/ARP updates, stalls, and the documented
 stack-bottom side effect.
-Unsupported opcodes,
-undocumented SACH shifts, and unresolved RAM addresses trap. A separate
-native-phase wrapper qualifies the normal reads for all 41 supported one-cycle
-instructions, eleven two-cycle control-flow instructions, and the two
+The exhaustive opcode audit partitions all 65,536 words, including 21,895
+documented-legal words and 10,976 words that set TI's explicitly reserved
+indirect-address bits. Another 372 simultaneous-update words remain under
+`OQ-010`, and 28,656 words remain unclassified. Unsupported opcodes,
+undocumented SACH shifts, and unresolved RAM addresses currently trap as a
+conservative project policy, not a claim about original-silicon behavior. A
+separate native-phase wrapper qualifies the normal reads for all 41 supported
+one-cycle instructions, eleven two-cycle control-flow instructions, and the two
 qualified I/O instructions, plus both three-cycle table transfers; it is not
 a general pipeline or cycle-accuracy claim.
 

@@ -41,6 +41,13 @@ VALID_CONFIDENCE_LEVELS = {
     "PROVISIONAL",
     "UNKNOWN",
 }
+OPCODE_CLASSIFICATIONS = {
+    "DOCUMENTED_LEGAL",
+    "PRIMARY_RESERVED_INDIRECT_FIELD",
+    "UNRESOLVED_SIMULTANEOUS_UPDATE",
+    "DOCUMENTED_PATTERN_MISMATCH",
+    "UNCLASSIFIED",
+}
 
 
 class IsaDatabaseError(ValueError):
@@ -95,6 +102,105 @@ def decode_entry(entry: dict[str, Any], word: int) -> dict[str, int] | None:
     return fields
 
 
+def classify_word(database: dict[str, Any], word: int) -> dict[str, Any]:
+    """Classify one word without assigning behavior to unsupported encodings.
+
+    Classification is deliberately narrower than decode. A word may lie in a
+    primary-documented instruction pattern while violating a fixed, reserved,
+    or unresolved field. That does not make the word a legal instruction or
+    establish what original silicon does when it is executed.
+    """
+    if not 0 <= word <= 0xFFFF:
+        raise ValueError(f"instruction word out of range: {word}")
+
+    legal: list[tuple[dict[str, Any], dict[str, int]]] = []
+    pattern_candidates: list[dict[str, Any]] = []
+    base_candidates: list[dict[str, Any]] = []
+    for entry in database["instructions"]:
+        opcode = entry["opcode"]
+        match = parse_int(opcode["match"])
+        mask = parse_int(opcode["mask"])
+        if word & mask == match & mask:
+            base_candidates.append(entry)
+        envelope = opcode.get("audit_envelope", opcode)
+        envelope_match = parse_int(envelope["match"])
+        envelope_mask = parse_int(envelope["mask"])
+        if word & envelope_mask == envelope_match & envelope_mask:
+            pattern_candidates.append(entry)
+        operands = decode_entry(entry, word)
+        if operands is not None:
+            legal.append((entry, operands))
+
+    if len(legal) > 1:
+        names = ", ".join(item[0]["mnemonic"] for item in legal)
+        raise IsaDatabaseError(f"ambiguous decode at 0x{word:04x}: {names}")
+    if legal:
+        entry, operands = legal[0]
+        return {
+            "classification": "DOCUMENTED_LEGAL",
+            "mnemonics": [entry["mnemonic"]],
+            "operands": operands,
+        }
+
+    reserved_candidates: list[str] = []
+    simultaneous_candidates: list[str] = []
+    for entry in base_candidates:
+        fields = {
+            field["name"]: field
+            for field in entry["opcode"]["variable_fields"]
+        }
+        if "indirect" not in fields or "addressing_field" not in fields:
+            continue
+        indirect_field = fields["indirect"]
+        address_field = fields["addressing_field"]
+        indirect = (word >> int(indirect_field["lsb"])) & 1
+        address = (
+            word >> int(address_field["lsb"])
+        ) & ((1 << int(address_field["width"])) - 1)
+        if not indirect:
+            continue
+        if address & 0x46:
+            reserved_candidates.append(entry["mnemonic"])
+        elif (address & 0x30) == 0x30 and all(
+            "legal_values" not in field
+            or (
+                (word >> int(field["lsb"]))
+                & ((1 << int(field["width"])) - 1)
+            )
+            in field["legal_values"]
+            for field in entry["opcode"]["variable_fields"]
+        ):
+            simultaneous_candidates.append(entry["mnemonic"])
+
+    if reserved_candidates:
+        return {
+            "classification": "PRIMARY_RESERVED_INDIRECT_FIELD",
+            "mnemonics": sorted(set(reserved_candidates)),
+        }
+    if simultaneous_candidates:
+        return {
+            "classification": "UNRESOLVED_SIMULTANEOUS_UPDATE",
+            "mnemonics": sorted(set(simultaneous_candidates)),
+            "unresolved_question": "OQ-010",
+        }
+    if pattern_candidates:
+        return {
+            "classification": "DOCUMENTED_PATTERN_MISMATCH",
+            "mnemonics": sorted(
+                {entry["mnemonic"] for entry in pattern_candidates}
+            ),
+        }
+    return {"classification": "UNCLASSIFIED", "mnemonics": []}
+
+
+def audit_opcode_space(database: dict[str, Any]) -> dict[str, int]:
+    """Return exhaustive classification counts for all 65,536 words."""
+    counts = {name: 0 for name in sorted(OPCODE_CLASSIFICATIONS)}
+    for word in range(0x10000):
+        counts[classify_word(database, word)["classification"]] += 1
+    return counts
+
+
 def validate_database(database: dict[str, Any]) -> None:
     """Validate schema, coverage partition, encodings, and decode uniqueness."""
     if database.get("schema_version") != 1:
@@ -117,6 +223,28 @@ def validate_database(database: dict[str, Any]) -> None:
         raise IsaDatabaseError("documented mnemonic list contains duplicates")
     if not set(supported) <= set(expected):
         raise IsaDatabaseError("supported mnemonics are outside documented scope")
+
+    audit = database.get("opcode_space_audit")
+    if not isinstance(audit, dict):
+        raise IsaDatabaseError("database must contain opcode_space_audit")
+    definitions = audit.get("classification_definitions")
+    expected_counts = audit.get("expected_counts")
+    if not isinstance(definitions, list) or not isinstance(expected_counts, dict):
+        raise IsaDatabaseError("opcode-space audit definitions/counts are missing")
+    definition_names = [definition.get("name") for definition in definitions]
+    if set(definition_names) != OPCODE_CLASSIFICATIONS:
+        raise IsaDatabaseError("opcode-space classification definitions differ")
+    if len(definition_names) != len(set(definition_names)):
+        raise IsaDatabaseError("duplicate opcode-space classification definition")
+    if set(expected_counts) != OPCODE_CLASSIFICATIONS:
+        raise IsaDatabaseError("opcode-space expected-count categories differ")
+    if any(
+        type(count) is not int or count < 0
+        for count in expected_counts.values()
+    ):
+        raise IsaDatabaseError("opcode-space expected counts must be nonnegative integers")
+    if sum(expected_counts.values()) != 0x10000:
+        raise IsaDatabaseError("opcode-space expected counts do not cover 16 bits")
 
     entry_names: list[str] = []
     source_ids = _manifest_source_ids()
@@ -174,11 +302,48 @@ def validate_database(database: dict[str, Any]) -> None:
             )
         for constraint in opcode.get("constraints", []):
             _validate_constraint(mnemonic, constraint)
+        if "audit_envelope" in opcode:
+            envelope = opcode["audit_envelope"]
+            if not isinstance(envelope, dict) or set(envelope) != {"mask", "match"}:
+                raise IsaDatabaseError(
+                    f"{mnemonic} audit envelope is not a mask/match pattern"
+                )
+            envelope_mask = parse_int(envelope["mask"])
+            envelope_match = parse_int(envelope["match"])
+            if (
+                not 0 <= envelope_mask <= 0xFFFF
+                or not 0 <= envelope_match <= 0xFFFF
+            ):
+                raise IsaDatabaseError(f"{mnemonic} audit envelope is not 16 bits")
+            if envelope_match & ~envelope_mask:
+                raise IsaDatabaseError(
+                    f"{mnemonic} audit envelope sets an unmasked bit"
+                )
+            if envelope_mask & ~mask:
+                raise IsaDatabaseError(
+                    f"{mnemonic} audit envelope is narrower than legal decode"
+                )
+            if match & envelope_mask != envelope_match:
+                raise IsaDatabaseError(
+                    f"{mnemonic} audit envelope excludes its legal match"
+                )
         if entry["documented_cycle_count"] < 1:
             raise IsaDatabaseError(f"{mnemonic} has invalid cycle count")
         for citation in entry["source_citations"]:
             if citation.get("source_id") not in source_ids:
                 raise IsaDatabaseError(f"{mnemonic} has unresolved source citation")
+
+    for definition in definitions:
+        if not isinstance(definition.get("meaning"), str):
+            raise IsaDatabaseError("opcode-space classification meaning is missing")
+        citations = definition.get("source_citations")
+        if not isinstance(citations, list):
+            raise IsaDatabaseError("opcode-space classification citations are missing")
+        for citation in citations:
+            if citation.get("source_id") not in source_ids:
+                raise IsaDatabaseError(
+                    f"{definition['name']} has unresolved source citation"
+                )
 
     if entry_names != supported:
         raise IsaDatabaseError("entry order/content differs from supported mnemonics")

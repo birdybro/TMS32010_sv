@@ -6,6 +6,49 @@ while the database remains explicitly incomplete until every unmatched word
 has an authoritative reserved/undocumented classification and all RTL/timing
 criteria pass.
 
+## Exhaustive 16-bit classification
+
+The database and `tools.generators.opcode_audit` now partition all 65,536
+words without assigning behavior to unsupported encodings. The generated
+count table is [tms32010_opcode_audit.md](../generated/tms32010_opcode_audit.md)
+and is checked by `make docs`.
+
+| Classification | Count | Evidence boundary |
+|---|---:|---|
+| `DOCUMENTED_LEGAL` | 21,895 | Exactly one supported instruction entry accepts the word and all field constraints. |
+| `PRIMARY_RESERVED_INDIRECT_FIELD` | 10,976 | A documented indirect data-address pattern sets bit 6, 2, or 1, which TI explicitly says is reserved and must be zero. |
+| `UNRESOLVED_SIMULTANEOUS_UPDATE` | 372 | Reserved bits and every other enumerated field are legal, but both AR increment and decrement are set; the combination remains `OQ-010`. |
+| `DOCUMENTED_PATTERN_MISMATCH` | 3,637 | The word is inside a documented pattern envelope but violates a fixed/enumerated field, such as a nonzero branch-opcode low byte, an unsupported SACH shift, or an out-of-range direct SST field. TI does not call this whole class reserved. |
+| `UNCLASSIFIED` | 28,656 | No qualified instruction or declared pattern envelope covers the word. Nothing is inferred about silicon behavior. |
+
+TI explicitly reserves indirect-format bits 6, 2, and 1 and directs software
+to program them to zero
+[ti-tms32010-users-guide-spru001b, §3.3.2, printed p. 3-2
+(PDF p. 52)]. The instruction summary and individual encoding diagrams define
+the legal pattern fields but do not provide a blanket statement that every
+unlisted 16-bit word is a reserved opcode
+[ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
+descriptions, printed pp. 3-5–3-71 (PDF pp. 55–121)]. **Confidence:
+VERIFIED_PRIMARY for the legal decoder and explicitly reserved indirect bits;
+UNKNOWN for execution of every other unsupported word.**
+
+The eleven two-word branches have explicit `0xff00` audit envelopes because
+their primary encoding diagrams fix the low opcode byte to zero and place the
+12-bit target in the following program word. A word such as `0xf401` is thus a
+documented-pattern mismatch for BANZ, not a legal BANZ alias and not silently
+called reserved. Fixed-control gaps such as `0x7f83` remain `UNCLASSIFIED`
+because adjacency to DINT/EINT supplies no envelope or behavior.
+
+This partition improves provenance and test generation, but
+`reserved_encoding_audit_complete` remains false while 28,656 words are
+unclassified and `OQ-010` remains open. Classification priority is legal,
+explicitly reserved indirect bit, otherwise-legal simultaneous update,
+documented-pattern mismatch, then unclassified. Thus a word that sets a
+primary-reserved bit retains that strongest label even if another field also
+mismatches. The architectural model and RTL still
+trap unsupported words as a conservative implementation policy; that trap is
+not represented as original-silicon behavior.
+
 ## Hand-transcribed initial encodings
 
 | Mnemonic | Match | Mask | Words | Cycles | Primary evidence |
@@ -111,14 +154,16 @@ ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59)].
 `PUSH` and `POP` are primary-transcribed exact words `0x7f9c` and `0x7f9d`.
 Each is one word and two cycles with no operand fields. Both are now in the
 machine-readable model/tool list and independent hand-fixture boundary. Their
-second-cycle native program-bus sequence is still not established under
-`OQ-016`; model/tool decode and state qualification do not imply RTL/native
-timing qualification
+per-cycle program address and fetched-word ownership are still not established
+under `OQ-016`; TI's general pin rule does establish active `MEN` in both
+non-I/O cycles, but model/tool decode and state qualification do not imply
+RTL/native timing qualification
 [ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
 (PDF pp. 99–100); ti-first-generation-users-guide-1987, `POP`/`PUSH`,
 printed pp. 4-55–4-56 (PDF pp. 136–137)].
-**Confidence: VERIFIED_PRIMARY for encoding, size, and cycle total; UNKNOWN
-for extra-cycle external subphases.**
+**Confidence: VERIFIED_PRIMARY for encoding, size, cycle total, and the
+every-cycle `MEN` constraint; UNKNOWN for program-address/fetched-word
+ownership.**
 
 `CALA` is primary-transcribed exact word `0x7f8c`, with no operand field. It
 is one word and two cycles, pushes opcode-PC+1, and selects the program

@@ -245,6 +245,14 @@ tools support all sixty documented instructions:
 CALA's primary-defined computed-call effects, RET's primary-defined stack
 pop/PC load, and PUSH/POP's primary-defined stack effects at their two-cycle
 model boundaries.
+The opcode audit assigns exactly one evidence-scoped classification to every
+16-bit word: 21,895 documented legal, 10,976 that set TI's explicitly reserved
+indirect-address bits, 372 simultaneous increment/decrement combinations
+under `OQ-010`, 3,637 documented-pattern mismatches, and 28,656 unclassified.
+Only the explicit reserved-bit class may be called reserved. Pattern mismatch
+and unclassified do not establish execution behavior; the current model/RTL
+trap remains conservative project policy. The reserved-encoding audit is not
+complete.
 RTL and seeded differential support the same set except CALA, POP, PUSH, and
 RET, for fifty-six shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
@@ -391,8 +399,9 @@ program cycle remains unknown, so RTL/native and differential support are
 deferred under `OQ-007`.
 `PUSH=0x7f9c` and `POP=0x7f9d` have model/tool evidence for their complete
 four-level stack transformations, PC+1 sequencing, and two-cycle totals.
-Their second external program cycles remain unknown, so RTL/native and
-differential support are deferred under `OQ-016`.
+TI's general pin rule requires active `MEN` in both non-I/O cycles, but their
+per-cycle program address and fetched-word ownership remain unknown, so
+RTL/native and differential support are deferred under `OQ-016`/`SC-018`.
 `IN`/`OUT` use distinct two-cycle I/O transactions. `TBLR`/`TBLW` use three
 cycles: opcode fetch, discarded PC+1 fetch, and ACC-addressed program read or
 write, followed by another PC+1 fetch. Table retirement also reproduces the

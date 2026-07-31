@@ -111,9 +111,16 @@ objective passing evidence.
   to 0, 1, and 4. The
   IN and OUT add 2,240 legal direct/indirect port/address combinations under
   those same common indirect constraints. TBLR/TBLW add 280 legal common
-  address combinations. The decoder exhaustively classifies all 65,536 words
-  against this supported set, accepting 21,895 supported words without
-  collisions; full reserved-region classification remains. Exact `ABS=0x7f88`, accumulator result, OVM-selected
+  address combinations. The decoder accepts 21,895 supported words without
+  collisions. A separate provenance-aware audit now partitions all 65,536
+  words into 21,895 documented-legal encodings, 10,976 words that set TI's
+  explicitly reserved indirect bits 6/2/1, 372 unresolved simultaneous
+  increment/decrement controls under `OQ-010`, 3,637 documented-pattern
+  mismatches, and 28,656 unclassified words. Generated counts and boundary
+  vectors are regression-checked. Full reserved-region classification remains
+  incomplete: only the explicit indirect-bit class is called reserved, while
+  mismatches/unclassified words receive no invented behavior. Exact
+  `ABS=0x7f88`, accumulator result, OVM-selected
   most-negative wrap/saturation, and one-cycle program-only boundary are
   primary-verified. Original-part OV preservation is `CORROBORATED` by
   SPRU013's instruction-format rule, the absence of status annotations on the

@@ -26,6 +26,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   68000-side interrupt path.
 - Machine-readable ISA database that represents all 60 documented mnemonics;
   reserved/unmatched-word classification remains incomplete.
+- Provenance-aware exhaustive opcode audit and generated count report. All
+  65,536 words are partitioned into documented legal encodings, explicitly
+  reserved indirect fields, unresolved simultaneous AR updates, documented-
+  pattern mismatches, and unclassified words without assigning unsupported
+  silicon behavior.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -345,6 +350,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   be active in both non-I/O execution cycles, but the address and fetched-word
   ownership remain unknown. Native/RTL implementation stays deferred rather
   than inventing a repeated or speculative prefetch.
+- Replaced the single undifferentiated unsupported-opcode bucket with five
+  evidence-scoped classifications. Only words setting TI's explicitly
+  reserved indirect bits are labeled reserved; fixed-pattern mismatches and
+  map gaps retain narrower or unknown labels.
 
 - Replaced the initial placeholder README with an evidence-oriented project
   overview.
@@ -415,6 +424,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   program-counter/stack description and PUSH/POP Execution blocks. Pinned
   IKA32010 instead suppresses its first PUSH/POP bus microcycle, now preserved
   as secondary-source conflict `SC-018`, not used as silicon proof.
+- Exhaustively classified all 65,536 instruction words with stable counts:
+  21,895 documented legal, 10,976 primary-reserved indirect-field, 372
+  unresolved simultaneous-update, 3,637 documented-pattern mismatch, and
+  28,656 unclassified. Boundary tests distinguish legal ADD, reserved
+  indirect ADD, ambiguous update, unsupported SACH/SST/branch fields, and an
+  unclassified fixed-control gap.
 
 - Original-part `ADDH=0x60xx` encoding, one-cycle/common-address behavior,
   modulo high-half result, and unconditional low-half preservation through
@@ -789,7 +804,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 104 repository/ISA/tool tests, 229
+- The complete current regression passes 106 repository/ISA/tool tests, 229
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 23
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
@@ -802,6 +817,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - All 60 documented instruction mnemonics have model/tool evidence; fifty-six
   also have RTL/differential evidence. CALA, RET, PUSH, and POP remain outside
   RTL/native qualification because their second external cycles are unresolved.
+- The exhaustive opcode partition still contains 28,656 `UNCLASSIFIED` words
+  and 372 simultaneous-update words under `OQ-010`. The audit is therefore
+  not a completed reserved-opcode map; unsupported execution behavior remains
+  unclaimed and the model/RTL trap is only conservative project policy.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).

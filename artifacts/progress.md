@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** pipeline and timing research
+- **Current milestone:** instruction encoding database
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 104 repository/provenance/document/ISA/toolchain tests; 229
+- **Tests passing:** 106 repository/provenance/document/ISA/toolchain tests; 229
   directed model tests; one standalone fetch/execute RTL unit; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
   tests; 23 native bus/phase tests, including thirteen explicit pipeline tests;
@@ -311,6 +311,14 @@
   families, IN/OUT, and TBLR/TBLW, including native strobe ownership,
   no midinstruction entry, one protected retirement, dummy discard, stack
   entry, acknowledge state, and vector capture
+- **New opcode-audit evidence:** all 65,536 words now receive exactly one
+  evidence-scoped classification: 21,895 documented legal, 10,976 setting
+  TI's explicitly reserved indirect-address bits 6/2/1, 372 otherwise legal-
+  pattern simultaneous increment/decrement combinations held under `OQ-010`,
+  3,637 documented-pattern mismatches, and 28,656 unclassified. A generated
+  report and boundary tests guard the counts. Pattern mismatches and
+  unclassified words are not called reserved and receive no original-silicon
+  behavior; the audit therefore remains partial.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -326,14 +334,15 @@
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
-  safe phase adaptation without READY
-- **Next task:** resume `ISA-001` with a primary-cited audit of unmatched
-  opcode regions and reserved encodings; preserve the distinction between
-  documented reserved words, illegal common-address controls, and words not
-  yet classified. Keep PUSH/POP outside RTL until `OQ-016` gains the measured
-  address/word-ownership trace; keep LST's loaded-ARP precedence PROVISIONAL
-  under `OQ-015`; keep DMOV/LTD source-`0x8f` behavior provisional under
-  `OQ-014`; retain ADDH and ABS status behavior at CORROBORATED until physical
-  evidence justifies an upgrade.
+  safe phase adaptation without READY; the opcode audit still has 28,656
+  unclassified words and 372 unresolved simultaneous-update words
+- **Next task:** continue `ISA-001` by reducing the 28,656-word
+  `UNCLASSIFIED` set only where primary opcode diagrams establish a defensible
+  pattern envelope; add no blanket reserved label and retain the 372
+  simultaneous-update combinations under `OQ-010`. Keep PUSH/POP outside RTL
+  until `OQ-016` gains the measured address/word-ownership trace; keep LST's
+  loaded-ARP precedence PROVISIONAL under `OQ-015`; keep DMOV/LTD source-
+  `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
+  behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `4d01c16`
+  `46fb578`
