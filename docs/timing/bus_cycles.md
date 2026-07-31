@@ -89,6 +89,14 @@ MAME shortens the untaken path; `SC-015` records that emulator abstraction
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
 **Confidence: VERIFIED_PRIMARY.**
 
+`CALL` reads exact opcode `0xf800` at PC and its canonical target at PC+1 as
+two ordinary `MEN` program reads. The following normal read is at the target.
+The target-word retirement pushes opcode-PC+2 onto the internal return stack;
+neither CALL cycle emits `DEN` or `WE`
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
+`CALL`, printed pp. 2-2, 2-13, 3-6, and 3-26
+(PDF pp. 26, 37, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

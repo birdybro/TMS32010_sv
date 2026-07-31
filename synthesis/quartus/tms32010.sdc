@@ -13,6 +13,8 @@ set_false_path -to \
   [get_ports {pc_o[*] accumulator_o[*] t_register_o[*] product_register_o[*] \
               auxiliary_register_0_o[*] auxiliary_register_1_o[*] \
               auxiliary_register_pointer_o data_page_pointer_o \
+              stack_top_o[*] stack_level_1_o[*] stack_level_2_o[*] \
+              stack_bottom_o[*] \
               overflow_flag_o overflow_mode_o interrupt_mask_o instruction_valid_o \
               retired_o illegal_o \
               cycle_count_o[*] phase_o[*] clkout_o native_address_o[*] \

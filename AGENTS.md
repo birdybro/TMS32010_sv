@@ -235,8 +235,8 @@ or user-supplied Hard Drivin' execution test.
 ## Current architectural status
 
 As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support forty-seven instructions:
-`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+tools, RTL, and seeded differential boundary support forty-eight instructions:
+`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
@@ -297,6 +297,10 @@ MAME's shorter untaken path.
 `BIOZ` exposes the raw active-low pin and uses its live value at the second
 falling-edge target-word sample. Both paths take two cycles; `SC-015` records
 MAME's shorter untaken path.
+`CALL` uses exact opcode `0xf800`, reads its canonical target in the second
+normal program cycle, pushes opcode-PC+2 onto the four-level 12-bit stack at
+retirement, and then selects the target. Stack overflow discards the old
+bottom without an exception.
 Both multiply instructions' interrupt-deferral rule remains unverified
 until interrupt entry exists. The phase wrapper qualifies
 their normal sequential program reads, but no general pipeline, interrupt

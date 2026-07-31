@@ -8,8 +8,8 @@ from typing import Iterable
 
 from tools.generators.isa_database import decode_word, load_database
 
-TWO_WORD_BRANCHES = frozenset(
-    {"B", "BANZ", "BGEZ", "BGZ", "BIOZ", "BLEZ", "BLZ", "BNZ", "BV", "BZ"}
+TWO_WORD_CONTROL_FLOW = frozenset(
+    {"B", "BANZ", "BGEZ", "BGZ", "BIOZ", "BLEZ", "BLZ", "BNZ", "BV", "BZ", "CALL"}
 )
 
 
@@ -25,7 +25,7 @@ class Disassembler:
             return f".word 0x{word:04x}"
         entry, operands = decoded
         mnemonic = entry["mnemonic"]
-        if mnemonic in TWO_WORD_BRANCHES:
+        if mnemonic in TWO_WORD_CONTROL_FLOW:
             # A lone opcode cannot be reconstructed as valid assembly without
             # its following target word. Stream methods consume the pair.
             return f".word 0x{word:04x}"
@@ -127,7 +127,7 @@ class Disassembler:
             decoded = decode_word(self.database, word)
             if (
                 decoded is not None
-                and decoded[0]["mnemonic"] in TWO_WORD_BRANCHES
+                and decoded[0]["mnemonic"] in TWO_WORD_CONTROL_FLOW
                 and index + 1 < len(materialized)
                 and materialized[index + 1] & 0xF000 == 0
             ):
@@ -155,7 +155,7 @@ class Disassembler:
             decoded = decode_word(self.database, word)
             if (
                 decoded is not None
-                and decoded[0]["mnemonic"] in TWO_WORD_BRANCHES
+                and decoded[0]["mnemonic"] in TWO_WORD_CONTROL_FLOW
                 and offset + 1 < len(materialized)
                 and materialized[offset + 1] & 0xF000 == 0
             ):

@@ -48,7 +48,8 @@ package tms32010_pkg;
     OP_BNZ  = 6'd43,
     OP_BZ   = 6'd44,
     OP_BV   = 6'd45,
-    OP_BIOZ = 6'd46
+    OP_BIOZ = 6'd46,
+    OP_CALL  = 6'd47
   } tms32010_operation_t;
 endpackage
 

@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first forty-seven model/tool encodings.
+  mnemonics and fully describes the first forty-eight model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -26,7 +26,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   expressions, labels, origin/data/include directives, raw/hex/listing output,
   and lossless source round trips.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the forty-seven-instruction slice.
+  clock-enable execution core for the forty-eight-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
@@ -194,6 +194,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Explicit `SC-015` record for MAME's shorter untaken BIOZ abstraction and its
   abstract asserted callback polarity; project behavior follows the original
   TI pin-level and two-cycle definitions.
+- Primary-cited exact `CALL=0xf800` support across the database, hand fixture,
+  local tools, independent model, shared two-cycle RTL state, native phases,
+  and a focused differential. CALL reads its canonical following target,
+  pushes wrapped opcode-PC+2 onto the top of the four-level 12-bit stack at
+  target-word retirement, shifts the older entries, and discards the old
+  bottom.
+- Architectural stack observation across the portable core, phase wrapper,
+  synthesis harness, and differential trace, with deterministic test
+  initialization kept explicitly separate from physical reset behavior.
 
 ### Changed
 
@@ -203,10 +212,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   40-pin TMS32010 has no READY/WAIT input.
 - The local assembler diagnoses out-of-range `LACK` operands instead of
   reproducing the historical assembler's silent truncation.
-- Quartus 17.0.2 fits the integrated forty-seven-instruction
-  phase/RAM/multiplier slice in 1,942 ALMs/2,491 registers and one DSP block,
-  with +3.903 ns worst setup and +0.167 ns worst hold slack at 50 MHz and
-  62.12 MHz worst slow-corner internal Fmax; 279
+- Quartus 17.0.2 fits the integrated forty-eight-instruction
+  phase/RAM/multiplier slice in 1,973 ALMs/2,539 registers and one DSP block,
+  with +3.482 ns worst setup and +0.166 ns worst hold slack at 50 MHz and
+  60.54 MHz worst slow-corner internal Fmax; 327
   diagnostic pins are virtual, and enumerated harness I/O paths are explicitly
   excluded pending a real wrapper.
 - Appendix A establishes falling `CLKOUT` as the input sampling boundary and
@@ -221,7 +230,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers forty-seven of 60 documented
+- The qualified model/tool/RTL boundary now covers forty-eight of 60 documented
   mnemonics and twenty-two common-address data-operation families.
 
 ### Fixed
@@ -339,7 +348,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   read transactions, loaded auxiliary-register values, both update-ordering
   cases, and one-cycle retirement without changing the external program-read
   sequence.
-- Yosys 0.67+111 synthesizes the forty-seven-instruction hierarchy to 12,655
+- Yosys 0.67+111 synthesizes the forty-eight-instruction hierarchy to 12,690
   generic cells with 11 assertions, zero latches, and clean pre/post checks;
   Quartus 17.0.2 completes analysis, fit, and TimeQuest with zero errors and
   three scoped harness warnings.
@@ -486,14 +495,20 @@ Changelog, and the project follows semantic versioning once releases begin.
   opcode-time latch. They also cover active-low target/fallthrough selection,
   the mandatory target read, target-phase stalls, malformed-target
   trap-before-effects, native control phases, and focused model/RTL traces.
-- The complete current regression passes 81 repository/ISA/tool tests, 180
-  directed model tests, 31 exhaustive/directed instruction RTL tests, seven
+- Directed CALL tests cover five nested calls, exact return addresses, all
+  four stack levels, old-bottom discard, target-word stalls, program-counter
+  and return-address wrap, malformed-target trap-before-push, and the absence
+  of data-memory transactions. Native-phase and focused differential tests
+  compare both program reads and the target-sample stack commit.
+- The complete current regression passes 83 repository/ISA/tool tests, 183
+  directed model tests, 32 exhaustive/directed instruction RTL tests, eight
   native bus/phase tests, one interrupt-mask RTL test, one 512-step seeded
-  model/RTL differential, and five focused two-cycle branch differentials.
+  model/RTL differential, and six focused two-cycle control-flow
+  differentials.
 
 ### Known Issues
 
-- Only forty-seven of 60 documented instruction mnemonics have model, tool, and
+- Only forty-eight of 60 documented instruction mnemonics have model, tool, and
   RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME

@@ -35,9 +35,9 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Exact pipeline ownership remains to be
 resolved for:
 
-- B, BANZ, BIOZ, BV, and the six accumulator-tested conditions are now
-  qualified; CALL and call/return sequences remain (`OQ-007`);
-- `CALL`, `CALA`, and `RET`, plus the second cycle of `PUSH`/`POP`
+- B, BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions are now
+  qualified; indirect call/return sequences remain (`OQ-007`);
+- `CALA` and `RET`, plus the second cycle of `PUSH`/`POP`
   (`OQ-016`);
 - interrupt entry and its dummy fetches (`OQ-004`);
 - any external cycle stretching (`OQ-001`).
@@ -94,6 +94,17 @@ abstraction is disclosed in `SC-015`
 [ti-tms32010-users-guide-spru001b, §§2.9 and 2.6.1, Table 3-2, `BIOZ`, and
 Appendix A BIO timing, printed pp. 2-13, 2-18, 3-6, 3-19, and data-sheet 20
 (PDF pp. 37, 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
+
+`CALL` uses the same two normal program reads, then commits two architectural
+effects at the target-word sample: opcode-PC+2 is pushed onto the four-level
+stack and the canonical target becomes PC. Directed tests prove no early push
+at the opcode sample, preserve stack/PC during an active target-phase stall,
+and check old-bottom discard and 12-bit return-address wrap
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
+printed pp. 2-13–2-14, 3-6, and 3-26
+(PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY for instruction
+effects and two-read sequence; implementation commit ownership is qualified
+at the architectural falling-edge boundary only.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

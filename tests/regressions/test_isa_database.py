@@ -66,6 +66,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "BANZ",
                 "BV",
                 "BIOZ",
+                "CALL",
                 "B",
                 "BGEZ",
                 "BGZ",
@@ -226,6 +227,20 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(instruction["conditional_cycle_differences"], [])
         self.assertIn("BIO pin", instruction["registers_read"][0])
         self.assertIsNone(decode_word(self.database, 0xF601))
+
+    def test_call_is_exact_two_word_stack_control_flow(self) -> None:
+        decoded = decode_word(self.database, 0xF800)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        instruction, operands = decoded
+        self.assertEqual(instruction["mnemonic"], "CALL")
+        self.assertEqual(operands, {})
+        self.assertEqual(instruction["word_count"], 2)
+        self.assertEqual(instruction["documented_cycle_count"], 2)
+        self.assertEqual(instruction["status_flags_affected"], [])
+        self.assertEqual(instruction["conditional_cycle_differences"], [])
+        self.assertIn("all four stack levels", instruction["registers_written"])
+        self.assertIsNone(decode_word(self.database, 0xF801))
 
     def test_accumulator_branches_are_exact_two_word_opcodes(self) -> None:
         expected = {

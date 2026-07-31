@@ -1,7 +1,7 @@
 # Project-local TMS32010 disassembler
 
 The disassembler is driven by `docs/generated/tms32010_isa.yaml` and currently
-recognizes the forty-seven-instruction model/tool slice. B, BANZ, BIOZ, BV, and the six
+recognizes the forty-eight-instruction model/tool slice. B, BANZ, BIOZ, BV, CALL, and the six
 accumulator-conditional branches consume and render their canonical following
 target words; a lone opcode or noncanonical
 target remains lossless `.word` data. Unknown words are

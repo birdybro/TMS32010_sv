@@ -1,7 +1,7 @@
 # Opcode map status
 
 The canonical machine-readable map is `docs/generated/tms32010_isa.yaml`.
-Its initial forty-seven-instruction model/tool boundary is intentionally partial
+Its initial forty-eight-instruction model/tool boundary is intentionally partial
 while scan encodings are checked against individual instruction pages and
 independent assembly listings. The database separately enumerates all 60
 documented mnemonics so missing coverage remains machine-visible.
@@ -50,6 +50,7 @@ documented mnemonics so missing coverage remains machine-visible.
 | `BANZ pma` | `0xf400` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BANZ` page, printed p. 3-16 |
 | `BV pma` | `0xf500` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BV` page, printed p. 3-23 |
 | `BIOZ pma` | `0xf600` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BIOZ` page, printed p. 3-19 |
+| `CALL pma` | `0xf800` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `CALL` page, printed p. 3-26 |
 | `B pma` | `0xf900` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `B` page, printed p. 3-15 |
 | `BLZ pma` | `0xfa00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BLZ` page, printed p. 3-21 |
 | `BLEZ pma` | `0xfb00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BLEZ` page, printed p. 3-20 |
@@ -59,9 +60,9 @@ documented mnemonics so missing coverage remains machine-visible.
 | `BZ pma` | `0xff00` | `0xffff`; target is following 12-bit word | 2 | 2 | individual `BZ` page, printed p. 3-24 |
 
 Source: [ti-tms32010-users-guide-spru001b, §3.4.2 and individual instruction
-descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-27–3-29, 3-31–3-44,
+descriptions, printed pp. 3-5–3-7, 3-10, 3-12–3-18, 3-20–3-24, 3-26–3-29, 3-31–3-44,
 3-46, 3-48, 3-53–3-56, 3-58, 3-60–3-61, 3-63, 3-68, and 3-70–3-71 (PDF
-pp. 55–57, 60, 62–64, 66, 77–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
+pp. 55–57, 60, 62–64, 66, 76–79, 81–94, 96, 98, 103–106, 108, 110–111, 113, 118,
 and 120–121)].
 **Confidence: VERIFIED_PRIMARY.**
 
@@ -296,6 +297,14 @@ for nonzero upper target-word bits.**
 through `0xf6ff` remain unsupported
 [ti-tms32010-users-guide-spru001b, `BIOZ`, printed p. 3-19 (PDF p. 69);
 ti-tms32010-assembly-guide-spru002b, `BIOZ`, printed p. 3-19 (PDF p. 40)].
+**Confidence: VERIFIED_PRIMARY for the canonical two-word encoding; UNKNOWN
+for nonzero upper target-word bits.**
+
+`CALL` is exact first word `0xf800`, followed by the same canonical 12-bit
+absolute target form. The opcode has no low-byte field, so `0xf801` through
+`0xf8ff` remain unsupported
+[ti-tms32010-users-guide-spru001b, `CALL`, printed p. 3-26 (PDF p. 76);
+ti-tms32010-assembly-guide-spru002b, `CALL`, printed p. 3-26 (PDF p. 47)].
 **Confidence: VERIFIED_PRIMARY for the canonical two-word encoding; UNKNOWN
 for nonzero upper target-word bits.**
 

@@ -410,6 +410,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_call_pushes_return_address_and_uses_two_program_cycles(self) -> None:
+        self._run_testbench(
+            "tb_call_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_call_rtl.sv",
+            ],
+        )
+
     def test_accumulator_branch_predicates_and_two_cycle_timing(self) -> None:
         self._run_testbench(
             "tb_accumulator_branches_rtl",

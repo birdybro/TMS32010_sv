@@ -414,6 +414,8 @@ class ToolchainSliceTests(unittest.TestCase):
             0x0100,
             0xF600,
             0x0101,
+            0xF800,
+            0x0102,
             0xF900,
             0x0123,
             0xFA00,
@@ -626,6 +628,51 @@ class ToolchainSliceTests(unittest.TestCase):
             ("BIOZ 4096\n", "program address"),
             ("BIOZ\n", "1 operand"),
             ("BIOZ 1,2\n", "1 operand"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
+    def test_call_round_trips_target_and_diagnostics(self) -> None:
+        result = self.assembler.assemble_text(
+            "CALL TARGET\nZAC\nTARGET: NOP\n"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0: 0xF800,
+                1: 0x0003,
+                2: 0x7F89,
+                3: 0x7F80,
+            },
+        )
+        self.assertEqual(result.symbols["TARGET"], 3)
+        source = self.disassembler.disassemble_source(
+            [0xF800, 0x035A, 0x7F80]
+        )
+        self.assertEqual(source, "CALL 0x35a\nNOP\n")
+        self.assertEqual(
+            self.disassembler.disassemble_listing(
+                [0xF800, 0x035A],
+                origin=0x100,
+            ),
+            "100 f800  CALL 0x35a\n"
+            "101 035a  .word 0x035a ; CALL target\n",
+        )
+        self.assertEqual(
+            list(self.assembler.assemble_text(source).words.values()),
+            [0xF800, 0x035A, 0x7F80],
+        )
+        self.assertEqual(
+            self.disassembler.disassemble_word(0xF800),
+            ".word 0xf800",
+        )
+
+        for invalid, message in (
+            ("CALL -1\n", "program address"),
+            ("CALL 4096\n", "program address"),
+            ("CALL\n", "1 operand"),
+            ("CALL 1,2\n", "1 operand"),
         ):
             with self.subTest(source=invalid):
                 with self.assertRaisesRegex(AssemblyError, message):

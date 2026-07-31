@@ -14,8 +14,8 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support forty-seven
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support forty-eight
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
@@ -67,10 +67,14 @@ timing disagreement is `SC-014`.
 the portable core. The live level at the second falling-edge target sample
 selects target or `PC+2`; both paths take two cycles. MAME's shorter untaken
 path is disclosed as `SC-015`.
+`CALL` is exact opcode `0xf800` followed by a canonical 12-bit target word.
+At the second normal program-read sample it pushes opcode-PC+2 onto the
+four-level 12-bit stack and selects the target. Nested-call, stack-overflow,
+target-stall, return-address-wrap, and malformed-target cases are automated.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
-instructions and the ten qualified two-cycle branches; it is not a general pipeline or
+instructions and eleven qualified two-cycle control-flow instructions; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

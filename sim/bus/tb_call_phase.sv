@@ -1,11 +1,10 @@
 `default_nettype none
 
-module tb_bioz_phase;
+module tb_call_phase;
   logic        clk;
   logic        initialize;
   logic        rs;
   logic        clock_enable;
-  logic        bio;
   logic [15:0] program_data;
   logic [1:0]  phase;
   logic        clkout;
@@ -17,6 +16,10 @@ module tb_bioz_phase;
   logic        data_write;
   logic        data_address_valid;
   logic [11:0] pc;
+  logic [11:0] stack_top;
+  logic [11:0] stack_level_1;
+  logic [11:0] stack_level_2;
+  logic [11:0] stack_bottom;
   logic        instruction_valid;
   logic        retired;
   logic        illegal;
@@ -28,7 +31,7 @@ module tb_bioz_phase;
     .initialize_i                  (initialize),
     .rs_i                          (rs),
     .clock_enable_i                (clock_enable),
-    .bio_i                         (bio),
+    .bio_i                         (1'b1),
     .program_data_i                (program_data),
     .debug_data_write_i            (1'b0),
     .debug_data_address_i          (8'h00),
@@ -55,10 +58,10 @@ module tb_bioz_phase;
     .auxiliary_register_1_o        (),
     .auxiliary_register_pointer_o  (),
     .data_page_pointer_o           (),
-    .stack_top_o                    (),
-    .stack_level_1_o                (),
-    .stack_level_2_o                (),
-    .stack_bottom_o                 (),
+    .stack_top_o                   (stack_top),
+    .stack_level_1_o               (stack_level_1),
+    .stack_level_2_o               (stack_level_2),
+    .stack_bottom_o                (stack_bottom),
     .overflow_flag_o               (),
     .overflow_mode_o               (),
     .interrupt_mask_o              (),
@@ -95,26 +98,23 @@ module tb_bioz_phase;
     $fatal(1, "sample event did not arrive");
   endtask
 
-  task automatic run_transition(
-    input logic  opcode_bio_high,
-    input logic  target_bio_high,
-    input logic  expect_taken,
-    input string name
-  );
-    program_memory[0] = 16'hf600;
+  initial begin
+    for (int unsigned index = 0; index < 4096; index++) begin
+      program_memory[index] = 16'h7f80;
+    end
+    program_memory[0] = 16'hf800;
     program_memory[1] = 16'h0004;
-    program_memory[2] = 16'h7f80;
+    program_memory[2] = 16'h7f89;
     program_memory[4] = 16'h7f80;
 
     initialize   = 1'b1;
     rs           = 1'b1;
     clock_enable = 1'b1;
-    bio          = opcode_bio_high;
     tick();
     initialize = 1'b0;
     for (int unsigned index = 0; index < 20; index++) begin
       tick();
-      require(!bus_active && men_n, {name, " reset bus"});
+      require(!bus_active && men_n, "reset keeps native bus inactive");
     end
     rs = 1'b0;
 
@@ -122,44 +122,40 @@ module tb_bioz_phase;
     require(sample && instruction_valid && !retired && !illegal &&
             pc == 12'h001 && program_address == 12'h001 &&
             cycle_count == 32'd1,
-            {name, " opcode sample"});
+            "CALL opcode sample starts target cycle");
+    require(
+      {stack_top, stack_level_1, stack_level_2, stack_bottom} ==
+      48'h000_000_000_000,
+      "CALL does not push at opcode sample"
+    );
 
-    bio = target_bio_high;
     tick();
     require(phase == 2'd1 && bus_active && !men_n &&
             program_address == 12'h001,
-            {name, " target has ordinary active MEN phase"});
+            "CALL target has ordinary active MEN phase");
     require(!data_read && !data_write && !data_address_valid,
-            {name, " target read has no data transaction"});
+            "CALL target read has no data transaction");
 
     clock_enable = 1'b0;
     tick();
     require(phase == 2'd1 && bus_active && !men_n &&
             program_address == 12'h001 && pc == 12'h001 &&
-            cycle_count == 32'd1 && !retired,
-            {name, " active target phase stalls"});
+            cycle_count == 32'd1 && !retired &&
+            stack_top == 12'h000,
+            "active target phase stalls before stack push");
     clock_enable = 1'b1;
 
     advance_to_sample();
     require(sample && retired && !illegal && cycle_count == 32'd2 &&
-            pc == (expect_taken ? 12'h004 : 12'h002) &&
-            program_address == (expect_taken ? 12'h004 : 12'h002),
-            {name, " target sample owns predicate and retires"});
-  endtask
+            pc == 12'h004 && program_address == 12'h004,
+            "CALL target sample selects subroutine and retires");
+    require(
+      {stack_top, stack_level_1, stack_level_2, stack_bottom} ==
+      48'h002_000_000_000,
+      "CALL target sample pushes opcode PC plus two"
+    );
 
-  initial begin
-    for (int unsigned index = 0; index < 4096; index++) begin
-      program_memory[index] = 16'h7f80;
-    end
-    initialize   = 1'b1;
-    rs           = 1'b1;
-    clock_enable = 1'b1;
-    bio          = 1'b1;
-
-    run_transition(1'b1, 1'b0, 1'b1, "high-to-low taken");
-    run_transition(1'b0, 1'b1, 1'b0, "low-to-high untaken");
-
-    $display("PASS tb_bioz_phase");
+    $display("PASS tb_call_phase");
     $finish;
   end
 endmodule

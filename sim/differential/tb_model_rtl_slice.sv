@@ -17,6 +17,10 @@ module tb_model_rtl_slice;
   logic [15:0] auxiliary_register_1;
   logic        auxiliary_register_pointer;
   logic        data_page_pointer;
+  logic [11:0] stack_top;
+  logic [11:0] stack_level_1;
+  logic [11:0] stack_level_2;
+  logic [11:0] stack_bottom;
   logic        overflow_flag;
   logic        overflow_mode;
   logic        interrupt_mask;
@@ -72,6 +76,10 @@ module tb_model_rtl_slice;
     .auxiliary_register_1_o (auxiliary_register_1),
     .auxiliary_register_pointer_o (auxiliary_register_pointer),
     .data_page_pointer_o (data_page_pointer),
+    .stack_top_o       (stack_top),
+    .stack_level_1_o   (stack_level_1),
+    .stack_level_2_o   (stack_level_2),
+    .stack_bottom_o    (stack_bottom),
     .overflow_flag_o   (overflow_flag),
     .overflow_mode_o   (overflow_mode),
     .interrupt_mask_o  (interrupt_mask),
@@ -155,7 +163,7 @@ module tb_model_rtl_slice;
       @(posedge clk);
       #1;
       $display(
-        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x",
+        "TRACE %03x %04x %03x %08x %01x %04x %04x %01x %01x %01x %01x %01x %08x %02x %01x %01x %01x %02x %01x %04x %04x %01x %04x %08x %01x %03x %03x %03x %03x",
         pc_before,
         opcode_before,
         pc,
@@ -180,7 +188,11 @@ module tb_model_rtl_slice;
         overflow_flag,
         t_register,
         product_register,
-        interrupt_mask
+        interrupt_mask,
+        stack_top,
+        stack_level_1,
+        stack_level_2,
+        stack_bottom
       );
     end
     for (int unsigned index = 0; index < 144; index++) begin

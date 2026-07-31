@@ -35,6 +35,10 @@ set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_0_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to "auxiliary_register_1_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to auxiliary_register_pointer_o
 set_instance_assignment -name VIRTUAL_PIN ON -to data_page_pointer_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "stack_top_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "stack_level_1_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "stack_level_2_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "stack_bottom_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to overflow_flag_o
 set_instance_assignment -name VIRTUAL_PIN ON -to overflow_mode_o
 set_instance_assignment -name VIRTUAL_PIN ON -to interrupt_mask_o

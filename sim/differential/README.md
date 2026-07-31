@@ -7,12 +7,13 @@ two-cycle instruction and checks both branch outcomes; a focused B trace
 checks unconditional two-cycle control flow. A family trace checks taken and
 untaken cases for all six accumulator conditions; a BV trace checks its
 taken-path OV clear and untaken path. A BIOZ differential checks both raw
-active-low input levels. The tests check
+active-low input levels, and a CALL trace checks nested return-address pushes.
+The tests check
 pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
 architectural cycles. The expanded slice also compares both auxiliary
-registers and the ARP/DP/INTM status fields.
+registers, all four stack levels, and the ARP/DP/INTM status fields.
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBS`/
 `XOR`/`ZALH`/`ZALS` streams use identical deterministic 144-word RAM images
 and cover valid
@@ -79,8 +80,13 @@ It compares both mandatory program reads, second-cycle retirement, target or
 fallthrough PC, and cumulative cycles. Separate native tests change the pin
 between its two samples to verify non-latched ownership.
 
+The focused CALL differential chains two calls and a target NOP. It compares
+both opcode/target reads, no first-cycle retirement, cumulative cycles, target
+PC, and `[top, level_1, level_2, bottom]` stack state at each instruction
+commit.
+
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/BIOZ/BV/family differentials supply logical per-cycle evidence; their separate native
+B/BANZ/BIOZ/BV/CALL/family differentials supply logical per-cycle evidence; their separate native
 phase test supplies the physical subphase relationship. Neither result
 qualifies the remaining pipeline. MAME comparison is not yet implemented.
 

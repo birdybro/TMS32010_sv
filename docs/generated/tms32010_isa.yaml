@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ",
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B", "BV", "BIOZ", "CALL",
       "BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"
     ],
     "complete": false,
@@ -1810,6 +1810,44 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.9 BIO Pin, Table 3-2, BIOZ instruction description, and Appendix A BIO timing", "printed_page": "2-18, 3-6, 3-19, and data-sheet 20", "pdf_page": "42, 56, 69, and 376"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BIOZ instruction description and 4.3 BIOZ Instruction", "printed_page": "3-19 and 4-2", "pdf_page": "40 and 84"},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and BIOZ instruction description", "printed_page": "4-10 and 4-24", "pdf_page": "89 and 105"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "CALL",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xf800",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": ["PC", "old top three stack levels"],
+      "registers_written": ["PC", "all four stack levels"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none; stack overflow is not detected and the old bottom level is discarded",
+      "result_behavior": "push opcode PC plus two onto the four-level 12-bit stack, shifting old entries one level deeper and discarding the old bottom",
+      "branch_behavior": "unconditional subroutine call to the canonical following-word program address",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-recognition interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; push opcode PC plus two and select the target at retirement"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.1, Table 3-2, and CALL instruction description", "printed_page": "2-13, 3-6, and 3-26", "pdf_page": "37, 56, and 76"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "CALL instruction description", "printed_page": "3-26", "pdf_page": 47},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2, CALL instruction description, and 5.3.2 Subroutine Calls", "printed_page": "4-10, 4-31, and 5-17", "pdf_page": "89, 112, and 174"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]

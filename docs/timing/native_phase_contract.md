@@ -182,6 +182,25 @@ low before retirement
 and data-sheet 20 (PDF pp. 26, 37, 42, 56, 69, and 376)].
 **Confidence: VERIFIED_PRIMARY.**
 
+## Direct subroutine call
+
+`CALL` has the same two normal program reads as an unconditional branch and
+adds a return-stack push:
+
+| Cycle | Address role | Result at falling-edge sample |
+|---:|---|---|
+| 1 | opcode PC | recognize exact `0xf800`; advance PC/address to the following target word; do not push |
+| 2 | opcode PC + 1 | sample canonical target; push opcode PC + 2, select target, and retire |
+| following | target | normal next instruction read |
+
+A clock-enable stall during the active target phase holds PC, address, pending
+operation, and all stack levels. Directed phase tests require an ordinary
+`MEN` target read, no data/I/O transaction, and the push only at the enabled
+falling-edge sample
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1–2.6.2, Table 3-2, and
+`CALL`, printed pp. 2-2, 2-13–2-14, 3-6, and 3-26
+(PDF pp. 26, 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Reset assertion and release
 
 `RS` may change at any point in a processor cycle. To guarantee synchronous
@@ -229,5 +248,5 @@ one-cycle sequential execution subset and the qualified two-cycle branch
 paths: directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary
 retirement, branch target-word fetch and second-boundary retirement, stalls,
-traps, and recognized reset. It has not been qualified for CALL/return,
+traps, and recognized reset. It has not been qualified for indirect call/return,
 other multi-cycle operations, table, I/O, or interrupt sequences.

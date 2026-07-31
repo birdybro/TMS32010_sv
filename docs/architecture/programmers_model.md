@@ -27,6 +27,14 @@ the same deterministic modeled state, while physical reset leaves unlisted
 state without an assigned reset value; retention is provisional under
 `OQ-012`.
 
+Project traces and RTL diagnostics order the four stack entries as
+`[top, level_1, level_2, bottom]`. A push inserts the new 12-bit value at
+`top`, moves the former top through level 1 toward the bottom, and discards
+the former bottom. These names describe the documented stack order without
+assigning undocumented physical register indices
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, printed pp. 2-13–2-14
+(PDF pp. 37–38)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Status register
 
 The five architecturally described status bits are `OV`, `OVM`, `INTM`, `ARP`,
@@ -108,3 +116,9 @@ Absolute branches carry their 12-bit target in the second program word.
 `CALA` obtains the target from the low 12 accumulator bits
 [ti-tms32010-users-guide-spru001b, §§2.2.1–2.2.2, printed pp. 2-13–2-14
 (PDF pp. 37–38)]. **Confidence: VERIFIED_PRIMARY.**
+
+Direct `CALL` carries its target in the following program word, pushes
+opcode-PC+2 as the return address, and then loads the target into PC. A full
+stack silently discards the old bottom level
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `CALL`, printed pp. 3-6 and
+3-26 (PDF pp. 56 and 76)]. **Confidence: VERIFIED_PRIMARY.**

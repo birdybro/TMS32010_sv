@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
-BLEZ, BLZ, BNZ, BV, BZ, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP, LDP,
-LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH, SACL,
-SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
+BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, LAC, LACK, LAR, LARK, LARP,
+LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, PAC, ROVM, SACH,
+SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -22,7 +22,13 @@ PROGRAM_WORDS = 4096
 DATA_WORDS = 144
 IO_PORTS = 8
 ACCUMULATOR_BRANCHES = frozenset({"BGEZ", "BGZ", "BLEZ", "BLZ", "BNZ", "BZ"})
-TWO_WORD_BRANCHES = ACCUMULATOR_BRANCHES | {"B", "BANZ", "BIOZ", "BV"}
+TWO_WORD_CONTROL_FLOW = ACCUMULATOR_BRANCHES | {
+    "B",
+    "BANZ",
+    "BIOZ",
+    "BV",
+    "CALL",
+}
 
 
 class UnsupportedOpcode(RuntimeError):
@@ -197,7 +203,7 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
-        if mnemonic in TWO_WORD_BRANCHES:
+        if mnemonic in TWO_WORD_CONTROL_FLOW:
             operand_address = (pc + 1) & PC_MASK
             operand_word = self.program[operand_address] & WORD_MASK
             if operand_word & 0xF000:
@@ -250,6 +256,15 @@ class Tms32010Model:
                 self.state.pc = (
                     target if branch_taken else (pc + 2) & PC_MASK
                 )
+            elif mnemonic == "CALL":
+                return_address = (pc + 2) & PC_MASK
+                self.state.stack = [
+                    return_address,
+                    self.state.stack[0],
+                    self.state.stack[1],
+                    self.state.stack[2],
+                ]
+                self.state.pc = target
             else:
                 branch_taken = self._accumulator_branch_taken(
                     mnemonic,
@@ -709,6 +724,8 @@ class Tms32010Model:
             return "BV", {}
         if opcode == 0xF600:
             return "BIOZ", {}
+        if opcode == 0xF800:
+            return "CALL", {}
         if opcode & 0xF000 == 0x0000:
             indirect = (opcode >> 7) & 1
             control = opcode & 0x7F

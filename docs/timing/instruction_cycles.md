@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-forty-seven-instruction subset, then check retirement on the falling-edge
+forty-eight-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -133,10 +133,20 @@ sampling rule. Malformed target words trap before applying the pin predicate
 BIO timing, printed pp. 2-18, 3-6, 3-19, and data-sheet 20
 (PDF pp. 42, 56, 69, and 376)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed `CALL` tests assert the opcode and canonical target as two complete
+program reads, no stack mutation at the opcode sample, and one
+opcode-PC+2 push at target-word retirement. Native tests hold an active target
+phase under clock enable; directed state tests cover five nested calls,
+old-bottom discard, return-address wrap, state preservation, and malformed
+target trap-before-push
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
+printed pp. 2-13–2-14, 3-6, and 3-26
+(PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
-  other than the now-qualified B, BANZ, BIOZ, BV, and accumulator-condition
+  other than the now-qualified B, BANZ, BIOZ, BV, CALL, and accumulator-condition
   sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/

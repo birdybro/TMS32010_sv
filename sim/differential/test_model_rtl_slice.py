@@ -686,6 +686,11 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 model_trace.state_after["status"]["intm"],
                 (SEED, index),
             )
+            self.assertEqual(
+                [int(field, 16) for field in fields[26:30]],
+                model_trace.state_after["stack"],
+                (SEED, index),
+            )
             self.assertEqual(int(fields[10], 16), 1, (SEED, index))
             self.assertEqual(int(fields[11], 16), 1, (SEED, index))
             self.assertEqual(int(fields[12], 16), 0, (SEED, index))
@@ -1143,6 +1148,102 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                     int(fields[-1][13], 16),
                     expected.state_after["cycle_count"],
                 )
+
+    def test_call_program_reads_pc_and_stack_match_model(self) -> None:
+        words = [
+            0xF800,  # CALL 4
+            0x0004,
+            0x7F89,  # Skipped.
+            0x7F89,  # Skipped.
+            0xF800,  # CALL 8
+            0x0008,
+            0x7F89,  # Skipped.
+            0x7F89,  # Skipped.
+            0x7F80,  # Final NOP.
+        ]
+        data_words = [0] * 144
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        expected = [model.step(), model.step(), model.step()]
+        transactions = [
+            transaction
+            for trace in expected
+            for transaction in trace.transactions
+            if transaction.space == "program"
+        ]
+        machine_cycles = sum(trace.cycles for trace in expected)
+        self.assertEqual(machine_cycles, 5)
+        self.assertEqual(
+            [trace.mnemonic for trace in expected],
+            ["CALL", "CALL", "NOP"],
+        )
+        self.assertEqual(expected[0].state_after["stack"], [2, 0, 0, 0])
+        self.assertEqual(expected[1].state_after["stack"], [6, 2, 0, 0])
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    f"+COUNT={machine_cycles}",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        lines = [
+            line for line in result.stdout.splitlines()
+            if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(lines), machine_cycles)
+        fields = [line.split() for line in lines]
+        self.assertEqual(
+            [int(field[1], 16) for field in fields],
+            [transaction.address for transaction in transactions],
+        )
+        self.assertEqual(
+            [int(field[2], 16) for field in fields],
+            [transaction.data for transaction in transactions],
+        )
+        self.assertEqual(
+            [int(field[11], 16) for field in fields],
+            [0, 1, 0, 1, 1],
+        )
+        self.assertEqual(
+            [int(field[13], 16) for field in fields],
+            [1, 2, 3, 4, 5],
+        )
+        self.assertTrue(all(int(field[10], 16) for field in fields))
+        self.assertTrue(all(not int(field[12], 16) for field in fields))
+
+        cumulative_cycles = 0
+        for trace in expected:
+            cumulative_cycles += trace.cycles
+            rtl = fields[cumulative_cycles - 1]
+            self.assertEqual(int(rtl[3], 16), trace.state_after["pc"])
+            self.assertEqual(
+                [int(field, 16) for field in rtl[26:30]],
+                trace.state_after["stack"],
+            )
+            self.assertEqual(
+                int(rtl[13], 16),
+                trace.state_after["cycle_count"],
+            )
 
     def test_accumulator_branch_family_trace_matches_model(self) -> None:
         cases = [

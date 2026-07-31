@@ -62,6 +62,7 @@ module tb_decode_exhaustive;
       logic expected_banz;
       logic expected_bv;
       logic expected_bioz;
+      logic expected_call;
       logic expected_b;
       logic expected_accumulator_branch;
       instruction = word[15:0];
@@ -311,6 +312,7 @@ module tb_decode_exhaustive;
       expected_banz = instruction == 16'hf400;
       expected_bv = instruction == 16'hf500;
       expected_bioz = instruction == 16'hf600;
+      expected_call = instruction == 16'hf800;
       expected_b = instruction == 16'hf900;
       expected_accumulator_branch =
         (instruction[15:8] >= 8'hfa) &&
@@ -327,7 +329,8 @@ module tb_decode_exhaustive;
         expected_mpy ||
         expected_mpyk || expected_pac || expected_apac || expected_spac ||
         expected_dint || expected_eint || expected_lst ||
-        expected_banz || expected_bv || expected_bioz || expected_b ||
+        expected_banz || expected_bv || expected_bioz || expected_call ||
+        expected_b ||
         expected_accumulator_branch ||
         ((instruction & 16'hfffe) == 16'h6880) ||
         ((instruction & 16'hfffe) == 16'h6e00) ||
@@ -526,6 +529,9 @@ module tb_decode_exhaustive;
       if (expected_bioz && operation != OP_BIOZ) begin
         $fatal(1, "BIOZ decode mismatch at %04x", word);
       end
+      if (expected_call && operation != OP_CALL) begin
+        $fatal(1, "CALL decode mismatch at %04x", word);
+      end
       if (expected_b && operation != OP_B) begin
         $fatal(1, "B decode mismatch at %04x", word);
       end
@@ -575,8 +581,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 19061) begin
-      $fatal(1, "expected 19061 supported words, got %0d", valid_count);
+    if (valid_count != 19062) begin
+      $fatal(1, "expected 19062 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

@@ -262,6 +262,28 @@ Malformed target words trap before the pin predicate is applied. Pinned MAME
 corroborates the active condition through its abstract callback, but shortens
 the untaken path; `SC-015` records that disagreement.
 
+## Qualified direct-call slice
+
+`CALL` is exact opcode `0xf800` followed by a canonical 12-bit absolute target.
+It pushes opcode-PC+2 onto the four-level, 12-bit return stack, shifting old
+entries one level deeper and discarding the old bottom, then loads the target
+into PC. It is two words and two cycles. ACC, T, P, all status bits, both ARs,
+and internal RAM remain unchanged; stack overflow is not detected
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, Table 3-2, and `CALL`,
+printed pp. 2-13–2-14, 3-6, and 3-26 (PDF pp. 37–38, 56, and 76);
+ti-tms32010-assembly-guide-spru002b, `CALL`, printed p. 3-26 (PDF p. 47);
+ti-first-generation-users-guide-1987, `CALL`, printed p. 4-31
+(PDF p. 112)]. **Confidence: VERIFIED_PRIMARY.**
+
+The qualified native sequence reads the opcode at PC and the target at PC+1
+as two normal program reads. The implementation pushes at the second
+falling-edge retirement boundary; this is an architectural commit boundary,
+not a claim about an undocumented internal write subphase. Directed tests
+cover five nested calls, old-bottom discard, target-phase stall, target and
+return-address wrap, state preservation, and malformed-target
+trap-before-push. Pinned MAME independently agrees on the push, target, and
+fixed two-cycle total.
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

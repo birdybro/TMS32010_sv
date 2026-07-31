@@ -95,7 +95,7 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Forty-seven encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Forty-eight encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `ROVM`,
   `PAC`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`, `SUBC`, `SUBS`) are
@@ -105,7 +105,7 @@ objective passing evidence.
   indirect control bits; SACH additionally restricts its sparse shift field
   to 0, 1, and 4. The
   decoder exhaustively classifies all 65,536 words against this partial set,
-  accepting 19,061 supported words without collisions; the remaining 13
+  accepting 19,062 supported words without collisions; the remaining 12
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -133,6 +133,9 @@ objective passing evidence.
   Exact `BIOZ=0xf600`, canonical target word, active-low raw pin predicate,
   non-latched second-sample ownership, and unconditional two-cycle total are
   primary-verified; `SC-015` records MAME's shorter untaken timing.
+  Exact `CALL=0xf800`, canonical target word, opcode-PC+2 stack push,
+  old-bottom discard, and two normal program reads are primary-verified and
+  independently corroborated by pinned MAME.
 
 ## Milestone 5 — Executable reference model
 
@@ -147,7 +150,7 @@ objective passing evidence.
   arithmetic is width-explicit; unknown opcodes trap; traces support replay.
 - **Documentation:** `sim/reference_models/README.md`
 - **Tests:** `sim/unit/test_model_*.py`
-- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
+- **Notes:** Independent model supports `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`,
   `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
   `PAC`,
   `ROVM`, `SACL`, `SACH`,
@@ -218,6 +221,8 @@ objective passing evidence.
   with clear OV unchanged, and preserves unrelated state.
   `BIOZ` uses inactive-high external input state, branches on a low level,
   records both mandatory reads, and preserves all architectural state but PC.
+  `CALL` pushes wrapped opcode-PC+2 onto a top-first four-level stack, discards
+  the old bottom, selects its canonical target, and records both reads.
   Out-of-range
   original-RAM addresses and unsupported words trap. Remaining memory/I/O
   instructions and pin phases remain unimplemented.
@@ -237,7 +242,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same forty-seven instructions as the
+- **Notes:** Qualified slice supports the same forty-eight instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -247,10 +252,10 @@ objective passing evidence.
   ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/XOR/ZALH/ZALS syntax without a shift operand,
   plus the complete signed 13-bit MPYK immediate range and implied
   PAC/APAC/SPAC/DINT/EINT and two-word
-  `B`/`BANZ`/`BIOZ`/`BV`/accumulator-branch targets.
+  `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 13
+  directed-tested. The remaining 12
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -270,7 +275,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  forty-seven-instruction slice. `LAC`
+  forty-eight-instruction slice. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty-two common-address data instructions verify direct/indirect read/write
@@ -314,7 +319,9 @@ objective passing evidence.
   preserves OVM as documented and assigns no arbitrary value to
   ACC/T/P/AR/ARP/DP/OV or RAM; retention of unlisted FPGA state remains
   provisional under OQ-012. ALU, multiplier, other output-shifter consumers,
-  stack, and remaining status behavior remain.
+  remaining stack operations and remaining status behavior remain. The CALL
+  path implements and exposes all four 12-bit stack levels, including
+  nested pushes and old-bottom discard.
   The asynchronous RAM read is a provisional implementation boundary and
   synthesizes to registers, not block RAM.
 
@@ -336,11 +343,12 @@ objective passing evidence.
   trap-without-PC-advance are verified. The sequential phase wrapper now
   retires each of 37 supported one-cycle instructions, including all
   twenty-two internal-data operations, on its falling-edge sample. B, BANZ,
-  BIOZ, BV, and six accumulator branches share the first two-cycle state:
+  BIOZ, BV, CALL, and six accumulator branches share the first two-cycle state:
   opcode and following target receive
   separate normal program reads, retirement occurs only on the target-word
   sample, and next-address selection aligns PC with the native bus across
-  stalls. General overlap, remaining branch/multi-cycle, and interrupt control
+  stalls. CALL additionally pushes opcode-PC+2 only at target-word retirement.
+  General overlap, remaining branch/multi-cycle, and interrupt control
   do not exist yet. SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
   PUSH/POP stack state is
@@ -367,12 +375,13 @@ objective passing evidence.
   transcribed. The four-subphase normal-read/reset engine verifies
   falling-edge sampling, quarter-cycle MEN assertion, address stability, and
   release delay. A partial wrapper integrates those phases with all 37
-  supported one-cycle instructions plus both cycles of ten qualified
-  branches, checks that internal logical data
+  supported one-cycle instructions plus both cycles of eleven qualified
+  control-flow instructions, checks that internal logical data
   activity retains a normal external program read, and holds PC/address on
-  traps and stalls. Every qualified branch verifies opcode/target addresses
-  and target-read stalls; conditional branches cover both outcomes. Table
-  cycles, remaining branch/call/return,
+  traps and stalls. Every qualified control-flow path verifies opcode/target
+  addresses and target-read stalls; conditional branches cover both outcomes.
+  CALL also verifies no early push and its target-sample stack commit. Table
+  cycles, remaining indirect-call/return,
   general pipeline overlap, and interrupt sequences remain. Do not collapse Harvard spaces in the native
   interface.
 
@@ -512,6 +521,10 @@ objective passing evidence.
   both raw pin levels. Pin transitions between opcode and target samples
   prove live second-sample ownership; `SC-015` preserves MAME's untaken
   timing disagreement.
+  `CALL` passes exact decode/tool/model/RTL/native/differential checks for
+  canonical target fetch, opcode-PC+2 push, five nested calls against the
+  four-level stack, old-bottom discard, target stall, 12-bit return-address
+  wrap, state preservation, and malformed-target trap-before-push.
   Cycle evidence
   is qualified only for the current sequential native-phase boundary. `LAC`
   now passes primary-cited database/model/tool tests, directed RTL cycle and
@@ -634,8 +647,9 @@ objective passing evidence.
   second-cycle stall/retirement boundary are asserted. The six accumulator
   branches assert that boundary for both outcomes. BV asserts it for both OV
   states and places the taken clear at second-cycle retirement. BIOZ asserts
-  both active-low paths and changes the pin between its samples. Other control flow
-  remains. PUSH/POP are primary-confirmed as one-word/two-cycle
+  both active-low paths and changes the pin between its samples. CALL asserts
+  two reads, no opcode-sample push, target-sample push, and target-phase stall.
+  Other control flow remains. PUSH/POP are primary-confirmed as one-word/two-cycle
   instructions with exact state effects, but their second-cycle external
   sequence remains open under `OQ-016`. SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
@@ -710,6 +724,9 @@ objective passing evidence.
   cumulative cycles, PC, and OV at every commit.
   A focused BIOZ differential compares low/high pin paths, both mandatory
   reads, second-cycle retirement, cumulative cycles, and PC.
+  A focused CALL differential compares two nested calls, every opcode/target
+  read, second-cycle retirement, cumulative cycles, PC, and all four stack
+  levels at each commit.
   MAME comparison and
   legal randomized full-ISA streams
   remain. MAME disagreement
@@ -743,7 +760,7 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Thirty-eight-instruction RTL, phase engine, multiplier, and
+- **Notes:** Forty-eight-instruction RTL, phase engine, multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in
