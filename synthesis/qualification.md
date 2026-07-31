@@ -134,6 +134,13 @@ debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
 pinout, I/O timing result, or evidence for the still-missing instruction
 families.
 
+The fourth checked-in script directly synthesizes the storage-free
+`hard_drivin_sound_bus_decode`. Yosys 0.67+111 passes both structural checks
+with zero problems and reports 15 generic combinational cells, with no
+register or memory cells. This is a portability check for the verified
+A044427 Rev-A ownership/port/program decode only; it is not a shared-memory
+implementation, arbitration policy, Quartus fit, or timing result.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite

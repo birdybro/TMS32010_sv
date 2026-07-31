@@ -1279,7 +1279,9 @@ objective passing evidence.
   harness (13,877 generic cells/26 checks) and the
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
   pipeline slice (15,733 cells/103 checks), each with zero structural
-  problems. Full-core
+  problems. A fourth standalone script exhaustively tests and synthesizes the
+  A044427 storage-free bus decoder to 15 generic combinational cells with no
+  structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
@@ -1324,14 +1326,21 @@ objective passing evidence.
   confidence; synthetic smoke program tests reset, handshake, interrupt, and
   DAC traces without copyrighted ROMs.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`
-- **Tests:** `sim/programs/hard_drivin_smoke/`
+- **Tests:** `sim/programs/hard_drivin_smoke/`,
+  `sim/bus/tb_hard_drivin_sound_bus_decode.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
   resampled by `CLKOUT` before reaching `/BIOS`. The distinct `320IRQ` net
-  feeds the 68000-side interrupt path. Exact program-RAM arbitration phases,
-  complete BIO divider state, signed-audio DAC interpretation, board-variant
-  audit, and synthetic wrapper tests remain. A044427 sheet 7 plus the AMD
+  feeds the 68000-side interrupt path. A044427 has no program-RAM arbiter:
+  independent `/320RES` and `/320RAM` buffer enables require reset during host
+  access, and overlap is invalid contention. Its native write decode also
+  diverts TBLW addresses `0x000`–`0x007` to output ports. The storage-free
+  board decoder exhaustively verifies all 4,096 addresses and all ownership
+  states; firmware compliance/release timing remains `OQ-021`. Complete BIO
+  divider state, signed-audio DAC interpretation, board-variant audit, shared
+  storage/reset-handoff implementation, and synthetic wrapper tests remain.
+  A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
   that wiring and remains isolated under `SC-019`/`OQ-020`. The first ROM-free

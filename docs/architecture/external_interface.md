@@ -238,8 +238,11 @@ The qualified portable interface exposes `io_port_o`, `io_read_o`,
 program and internal-data signals. Program space separately exposes the
 active transaction address, `program_read_o`, `program_write_o`,
 `program_data_i`, and `program_write_data_o`, so a TBLW cannot be mistaken
-for an I/O write. The native phase wrapper additionally exposes active-low
-`den_n_o` and `we_n_o` and multiplexes
+for an I/O write at the reusable logical interface. A physical board decoder
+may intentionally discard that distinction: Atari A044427 Rev A routes every
+WE transaction at address `0x000`–`0x007` through its output-port decoder,
+including low-address TBLW (`SC-021`). The native phase wrapper additionally
+exposes active-low `den_n_o` and `we_n_o` and multiplexes
 `program_address_o` to `{9'b0, io_port_o}` during the port cycle. This naming
 does not merge the I/O space into program memory: logical direction and
 transaction ownership remain explicit.

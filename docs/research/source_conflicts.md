@@ -420,3 +420,47 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A raw digital mapping and
   first analog-stage polarity; UNKNOWN for the intended signed PCM mapping
   and production-board equivalence beyond that drawing.
+
+## SC-020 — Physical reset-qualified RAM ownership versus MAME shared RAM
+
+- **Primary board evidence:** A044427 LS259 bit 4 is `/320RES`. Its inversion
+  enables the TMS-side address/control LS244s only after reset release;
+  independent active-low `/320RAM` enables the host address/control buffers
+  and host-data LS245s. No gate prevents both sets from driving together
+  [atari-driver-sound-board-schematic, sheets 3–4 of 10, PDF pp. 5–8].
+- **Required hardware protocol:** legal host program-RAM access holds
+  `/320RES=0` and `/320RAM=0`; legal DSP execution uses `/320RES=1` and
+  `/320RAM=1`. `/320RES=1` with `/320RAM=0` is electrical contention, not a
+  defined priority case.
+- **Secondary abstraction:** pinned MAME exposes the 4K-word shared array to
+  host handlers at all times and maps latch bit 4 to an inverted HALT line.
+  It neither gates host access on reset nor models the address/control buffer
+  overlap [mame-harddriv-audio-030fefc, host RAM handlers, address maps, and
+  device configuration].
+- **Current treatment:** the board decoder reports simultaneous ownership.
+  A future storage wrapper must require reset during host access or document a
+  protective FPGA arbitration policy as an implementation divergence. See
+  `OQ-021` for the unverified firmware sequence.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A wiring and the invalid overlap;
+  UNKNOWN for firmware compliance and exact handoff timing.
+
+## SC-021 — Low-address TBLW board alias versus split MAME address spaces
+
+- **Primary board evidence:** A044427 generates `PORT` when `TA11:TA3=0` and
+  implements `/RAMEN = /MEN AND (/TWE OR PORT)`. Its LS138 write decoder is
+  enabled by `PORT` and `/PWE`. Because TMS32010 MEN, DEN, and WE are mutually
+  exclusive, WE at address `0x000`–`0x007` selects the corresponding output
+  port and suppresses program RAM, regardless of whether the executing
+  instruction was OUT or TBLW [atari-driver-sound-board-schematic, sheet 5
+  of 10, PDF p. 9; ti-tms32010-users-guide-spru001b, Table 2-4 and §2.8.2].
+- **Secondary abstraction:** pinned MAME assigns TBLW through the CPU program
+  space and OUT through a separate I/O space. Its board maps therefore retain
+  a low-address TBLW as a program-RAM write rather than applying the external
+  decode [mame-harddriv-audio-030fefc, `driversnd_dsp_program_map` and
+  `driversnd_dsp_io_map`].
+- **Current treatment:** the reusable CPU continues to expose both logical
+  qualifiers, but `hard_drivin_sound_bus_decode` follows native
+  address/MEN/DEN/WE and diverts low-address WE to I/O. An exhaustive 4,096-
+  address test protects this board-specific rule.
+- **Confidence:** VERIFIED_PRIMARY for A044427 Rev A; documented
+  secondary-source mismatch.

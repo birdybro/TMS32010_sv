@@ -370,6 +370,14 @@ TMS32010 active-low interrupt input inactive through the `PR1`/`R26` 1 kΩ
 pull-up. Its board-generated `/320BIO` signal is resampled by `CLKOUT` into
 `/BIOS`; the similarly named `320IRQ` is instead part of the 68000-side
 interrupt path. These are board-wrapper facts, not generic-core behavior.
+A044427 also directly latches raw DAC code `TD15:TD4` onto Am6012 `B1:B12`;
+pinned MAME's bit-11 complement is an unresolved secondary conflict under
+`SC-019`/`OQ-020`. Its 4K-by-16 program RAM has no hardware arbiter: the
+68000 must hold `/320RES` asserted while `/320RAM` enables host buffers, and
+simultaneous host/running-DSP ownership is invalid (`SC-020`/`OQ-021`). The
+board's physical WE decode also routes addresses `0x000`–`0x007` to output
+ports, so low-address TBLW aliases OUT on Rev A (`SC-021`). Keep all of this
+outside the generic core.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

@@ -56,6 +56,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   opcodes, raw program/I/O traces, model state, and explicitly scoped MAME
   adapter expectations. Port 2 and the signed-audio DAC interpretation remain
   disclosed as unqualified rather than inferred from the fixture.
+- A synthesizable, storage-free A044427 Rev-A bus decoder exposing physical
+  program-RAM ownership, invalid host/running-DSP overlap, low-eight I/O
+  selection, and the board's low-address TBLW/OUT alias, plus an exhaustive
+  address/ownership test and standalone Yosys target.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -377,6 +381,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Clarified that the generic program/I/O qualifiers preserve architectural
+  ownership while the Hard Drivin' board deliberately decodes native address
+  and strobes, causing WE at addresses 0–7 to select output ports.
 - Split Hard Drivin' port-0 qualification into the primary-backed raw DAC code
   `data[15:4]` and MAME's secondary `(data >> 4) XOR 0x800` transform. The
   latter is no longer described as shown board wiring because A044427 contains
@@ -462,6 +469,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- A044427's complete 4,096-address combinational target decode and four-state
+  host/DSP ownership truth table. Every MEN read selects 4K-by-16 program RAM;
+  DEN reaches only input ports 0–7; WE reaches output ports 0–7 or program RAM
+  at addresses 8–4095. Yosys 0.67+111 reports 15 combinational cells and zero
+  structural problems for the standalone decoder.
 - A044427 Rev-A `/DACL` latches `TD15:TD4` directly onto Am6012 `B1:B12` and
   omits `TD3:TD0`; AMD identifies those pins as uncomplemented straight-binary
   MSB-to-LSB inputs. The smoke fixture independently fixes raw physical code
@@ -920,8 +932,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 113 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 25
+- The complete current regression passes 114 repository/ISA/tool tests, 231
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 26
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -930,6 +942,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- A044427 has no program-RAM arbiter. Simultaneously selecting the host window
+  while `/320RES` is released enables conflicting buffer paths; pinned MAME's
+  always-accessible shared array and HALT mapping do not reproduce that
+  electrical contract (`SC-020`/`OQ-021`). The project has only the verified
+  decoder, not shared storage or reset-handoff control.
 - A044427 Rev A directly wires the 12-bit Am6012 code, while pinned MAME
   complements bit 11 before its unsigned DAC mapper and describes that as a
   schematic inversion. No inverter is present in the reviewed drawing.

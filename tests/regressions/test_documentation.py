@@ -110,6 +110,25 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         )
         self.assertIn("UNKNOWN for the intended signed PCM mapping", conflicts)
 
+    def test_hard_drivin_program_decode_remains_evidence_scoped(self) -> None:
+        integration = (
+            DOCS / "integration" / "hard_drivin_requirements.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "The drawing contains no mutual-exclusion arbiter",
+            "invalid driver contention, not arbitration",
+            "`/RAMEN = /MEN AND (/TWE OR PORT)`",
+            "`0x000`–`0x007`",
+            "electrically decoded exactly like OUT",
+            "`SC-021`",
+        ):
+            self.assertIn(required, integration)
+        self.assertIn("Physical reset-qualified RAM ownership", conflicts)
+        self.assertIn("Low-address TBLW board alias", conflicts)
+
 
 if __name__ == "__main__":
     unittest.main()

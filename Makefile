@@ -70,7 +70,8 @@ synth-yosys:
 		for script in \
 			synthesis/yosys/tms32010.ys \
 			synthesis/yosys/tms32010_sequential_pipeline.ys \
-			synthesis/yosys/tms32010_mister.ys; do \
+			synthesis/yosys/tms32010_mister.ys \
+			synthesis/yosys/hard_drivin_sound_bus_decode.ys; do \
 			"$(YOSYS)" -s "$$script" || exit 1; \
 		done; \
 	else \
