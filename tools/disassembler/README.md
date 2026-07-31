@@ -1,8 +1,8 @@
 # Project-local TMS32010 disassembler
 
 The disassembler is driven by `docs/generated/tms32010_isa.yaml` and currently
-recognizes the thirty-eight-instruction model/tool slice. BANZ consumes and
-renders its canonical following target word; a lone opcode or noncanonical
+recognizes the thirty-nine-instruction model/tool slice. B and BANZ consume
+and render their canonical following target words; a lone opcode or noncanonical
 target remains lossless `.word` data. Unknown words are
 rendered as lossless `.word 0xNNNN` directives, so disassembly remains reassemblable
 without claiming that an encoding is reserved or inert. A legal but

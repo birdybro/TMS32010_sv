@@ -374,6 +374,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_b_two_cycle_unconditional_target_and_state_preservation(self) -> None:
+        self._run_testbench(
+            "tb_b_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_b_rtl.sv",
+            ],
+        )
+
     def test_logic_halves_status_and_counter_behavior(self) -> None:
         self._run_testbench(
             "tb_logic_rtl",

@@ -12,6 +12,7 @@ from typing import Iterable
 from tools.generators.isa_database import load_database, parse_int
 
 PROGRAM_WORDS = 4096
+TWO_WORD_BRANCHES = frozenset({"B", "BANZ"})
 LABEL_PATTERN = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*):")
 TI_HEX_PATTERN = re.compile(r"(?<![A-Za-z0-9_])>([0-9A-Fa-f]+)")
 
@@ -207,7 +208,7 @@ class Assembler:
             )
             self._emit(words, listing, location, word, line)
             location += 1
-            if operation == "BANZ":
+            if operation in TWO_WORD_BRANCHES:
                 target = self._evaluate(
                     operand_text,
                     symbols,
@@ -265,11 +266,11 @@ class Assembler:
             if not 0 <= value <= 0xFF:
                 raise line.error(f"LACK constant out of range 0..255: {value}")
             word |= value
-        elif operation == "BANZ":
+        elif operation in TWO_WORD_BRANCHES:
             value = self._evaluate(operand_text, symbols, location, line)
             if not 0 <= value < PROGRAM_WORDS:
                 raise line.error(
-                    f"BANZ program address out of range 0..4095: {value}"
+                    f"{operation} program address out of range 0..4095: {value}"
                 )
         elif operation in {"ADD", "LAC", "SUB"}:
             shift = (

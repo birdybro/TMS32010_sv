@@ -64,6 +64,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "SAR",
                 "MAR",
                 "BANZ",
+                "B",
             },
         )
         self.assertFalse(coverage["complete"])
@@ -180,6 +181,16 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertEqual(decoded[1], {})
         self.assertEqual(decoded[0]["documented_cycle_count"], 2)
         self.assertIsNone(decode_word(self.database, 0xF401))
+
+    def test_b_is_the_exact_two_word_opcode(self) -> None:
+        decoded = decode_word(self.database, 0xF900)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        self.assertEqual(decoded[0]["mnemonic"], "B")
+        self.assertEqual(decoded[1], {})
+        self.assertEqual(decoded[0]["word_count"], 2)
+        self.assertEqual(decoded[0]["documented_cycle_count"], 2)
+        self.assertIsNone(decode_word(self.database, 0xF901))
 
     def test_dmov_uses_common_data_addressing_without_reserved_controls(
         self,

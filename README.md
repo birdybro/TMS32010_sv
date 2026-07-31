@@ -14,8 +14,8 @@ accepted only when they are tied to cited evidence and automated tests. See
 [TASKS.md](TASKS.md), [CHANGELOG.md](CHANGELOG.md), and
 [artifacts/progress.md](artifacts/progress.md) for current evidence.
 
-The reference model, local tools, and partial RTL currently support thirty-eight
-instructions: `ADD`, `ADDS`, `AND`, `APAC`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
+The reference model, local tools, and partial RTL currently support thirty-nine
+instructions: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`,
 `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
 `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 144-word
 internal RAM exposes verification-visible logical
@@ -54,10 +54,13 @@ its low nine bits, and selects the target or `PC+2` at the second sample.
 Taken and untaken paths both take two cycles. A later first-generation guide's
 contradictory full-register wrap example and MAME's shortened untaken timing
 are recorded as `SC-011` and `SC-012`.
+`B` is exact opcode `0xf900` followed by the same canonical 12-bit target-word
+form. It unconditionally loads PC at the second sample, takes two cycles, and
+otherwise preserves architectural state.
 Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses trap. A separate
 native-phase wrapper qualifies the normal reads for all 37 supported one-cycle
-instructions and both BANZ cycles; it is not a general pipeline or
+instructions and both cycles of B and BANZ; it is not a general pipeline or
 cycle-accuracy claim.
 
 ## Design principles

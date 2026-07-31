@@ -30,7 +30,7 @@ count; UNKNOWN for the second-cycle external subphases.**
 
 The current native-phase integration tests observe one complete four-subphase
 program-read cycle for every one-cycle instruction in the
-thirty-eight-instruction subset, then check retirement on the falling-edge
+thirty-nine-instruction subset, then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -97,10 +97,19 @@ native pin to remain stable
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `BANZ`, printed pp. 3-6 and
 3-16 (PDF pp. 56 and 66)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed `B` tests assert two complete program-read cycles: cycle 1 samples
+exact opcode `0xf900`, cycle 2 samples the canonical target at PC+1, and the
+second sample retires with PC and the next bus address set to that target.
+Tests cover a second-cycle clock-enable hold, operand-fetch PC wrap, successive
+branches, state preservation, skipped fall-through words, and
+trap-before-effects for a noncanonical target
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
+3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Open timing dimensions
 
 - taken/untaken timing and immediate-word ordering for branch/call families
-  other than the now-qualified BANZ sequence;
+  other than the now-qualified B and BANZ sequences;
 - interaction of program fetch with internal data RAM beyond the qualified
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes;

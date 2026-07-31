@@ -109,6 +109,23 @@ the normal address/`MEN`/falling-edge relationship above; BANZ adds no
 printed pp. 2-9–2-10, 2-13, 3-6, and 3-16
 (PDF pp. 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
 
+## B
+
+`B` also uses two consecutive normal program reads:
+
+| Cycle | Address role | Result at falling-edge sample |
+|---:|---|---|
+| 1 | opcode PC | recognize `0xf900`; advance PC/address to the following word |
+| 2 | opcode PC + 1 | sample the canonical 12-bit target, load PC, and retire |
+| following | target | normal next instruction read |
+
+Each read uses the normal address/`MEN`/falling-edge relationship and has no
+`DEN` or `WE` phase. A clock-enable stall in the implementation holds the
+active target-word phase, address, PC, and pending operation
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `B`,
+printed pp. 2-2, 2-13, 3-6, and 3-15
+(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY.**
+
 ## Reset assertion and release
 
 `RS` may change at any point in a processor cycle. To guarantee synchronous
@@ -152,8 +169,8 @@ startup, quarter-cycle `MEN` assertion, address stability, the falling-edge
 sample event, and clock-enable stalls. This four-phase mapping is an
 implementation choice, not an assertion about the original internal gate
 topology. `tms32010_phase_slice` now integrates these phases with the current
-one-cycle sequential execution subset and two-cycle BANZ: directed tests
+one-cycle sequential execution subset and two-cycle B/BANZ paths: directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary
-retirement, BANZ target-word fetch and second-boundary retirement, stalls,
+retirement, branch target-word fetch and second-boundary retirement, stalls,
 traps, and recognized reset. It has not been qualified for the remaining
 branches, other multi-cycle operations, table, I/O, or interrupt sequences.

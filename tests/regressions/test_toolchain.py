@@ -410,6 +410,8 @@ class ToolchainSliceTests(unittest.TestCase):
             0x6689,
             0xF400,
             0x035A,
+            0xF900,
+            0x0123,
         ]
         source = self.disassembler.disassemble_source(original)
         rebuilt = self.assembler.assemble_text(source)
@@ -464,6 +466,60 @@ class ToolchainSliceTests(unittest.TestCase):
             ("BANZ 4096\n", "program address"),
             ("BANZ\n", "1 operand"),
             ("BANZ 1,2\n", "1 operand"),
+        ):
+            with self.subTest(source=invalid):
+                with self.assertRaisesRegex(AssemblyError, message):
+                    self.assembler.assemble_text(invalid)
+
+    def test_b_emits_and_consumes_the_following_target_word(self) -> None:
+        result = self.assembler.assemble_text(
+            """
+            START: B TARGET
+            SKIP:  ZAC
+            TARGET: NOP
+            """
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0: 0xF900,
+                1: 0x0003,
+                2: 0x7F89,
+                3: 0x7F80,
+            },
+        )
+        self.assertEqual(result.symbols["SKIP"], 2)
+        self.assertEqual(result.symbols["TARGET"], 3)
+        self.assertEqual(len(result.listing), 4)
+
+        source = self.disassembler.disassemble_source(
+            [0xF900, 0x035A, 0x7F80]
+        )
+        self.assertEqual(source, "B 0x35a\nNOP\n")
+        self.assertEqual(
+            self.disassembler.disassemble_listing(
+                [0xF900, 0x035A, 0x7F80],
+                origin=0x100,
+            ),
+            "100 f900  B 0x35a\n"
+            "101 035a  .word 0x035a ; B target\n"
+            "102 7f80  NOP\n",
+        )
+        rebuilt = self.assembler.assemble_text(source)
+        self.assertEqual(
+            list(rebuilt.words.values()),
+            [0xF900, 0x035A, 0x7F80],
+        )
+        self.assertEqual(
+            self.disassembler.disassemble_word(0xF900),
+            ".word 0xf900",
+        )
+
+        for invalid, message in (
+            ("B -1\n", "program address"),
+            ("B 4096\n", "program address"),
+            ("B\n", "1 operand"),
+            ("B 1,2\n", "1 operand"),
         ):
             with self.subTest(source=invalid):
                 with self.assertRaisesRegex(AssemblyError, message):

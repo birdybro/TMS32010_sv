@@ -17,7 +17,7 @@
     ],
     "supported_mnemonics": [
       "LACK", "NOP", "ZAC", "ROVM", "SOVM", "DINT", "EINT", "LST", "LARK", "LARP", "MAR", "LDP", "LDPK", "DMOV", "LT", "LTD", "LTA", "MPY", "MPYK", "PAC", "APAC", "SPAC",
-      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ"
+      "LAR", "SAR", "LAC", "SACL", "SACH", "ADD", "SUB", "ADDS", "SUBS", "SUBC", "XOR", "AND", "OR", "ZALH", "ZALS", "BANZ", "B"
     ],
     "complete": false,
     "reserved_encoding_audit_complete": false
@@ -1695,6 +1695,44 @@
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1, 2.6.1, Table 3-2, and BANZ instruction description", "printed_page": "2-9 through 2-10, 2-13, 3-6, and 3-16", "pdf_page": "33-34, 37, 56, and 66"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "BANZ instruction description and 4.4 loop examples", "printed_page": "3-16 and 4-3", "pdf_page": "37 and 85"},
         {"source_id": "ti-first-generation-users-guide-1987", "section": "3.4.5 and BANZ instruction description", "printed_page": "3-14 through 3-15 and 4-21", "pdf_page": "43-44 and 102"}
+      ],
+      "confidence_level": "VERIFIED_PRIMARY",
+      "unresolved_questions": ["OQ-004"]
+    },
+    {
+      "mnemonic": "B",
+      "aliases": [],
+      "word_count": 2,
+      "opcode": {
+        "match": "0xf900",
+        "mask": "0xffff",
+        "variable_fields": []
+      },
+      "operands": [
+        {"name": "program_address", "kind": "following_word_program_address", "width": 12}
+      ],
+      "addressing_modes": ["absolute_program"],
+      "registers_read": [],
+      "registers_written": ["PC"],
+      "memory_accesses": ["instruction_fetch", "following_program_word_fetch"],
+      "status_flags_affected": [],
+      "arithmetic_width_bits": null,
+      "sign_extension_behavior": "not applicable",
+      "shift_behavior": "none",
+      "overflow_behavior": "none",
+      "result_behavior": "PC receives the following word's 12-bit program address",
+      "branch_behavior": "unconditional absolute branch to the canonical following-word target",
+      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt-entry interaction remains outside the current interrupt boundary",
+      "documented_cycle_count": 2,
+      "conditional_cycle_differences": [],
+      "external_bus_cycles": [
+        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
+        {"space": "program", "operation": "following_word_fetch", "count": 1, "phase_detail": "normal program read at opcode PC plus one; the next read is the target"}
+      ],
+      "source_citations": [
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "Table 3-2 and B instruction description", "printed_page": "3-6 and 3-15", "pdf_page": "56 and 65"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "B instruction description", "printed_page": "3-15", "pdf_page": 36},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and B instruction description", "printed_page": "4-10 and 4-20", "pdf_page": "89 and 101"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004"]

@@ -53,6 +53,14 @@ functional-emulator abstraction in `SC-012`, not copied into the RTL
 printed pp. 2-2, 2-13, 3-6, and 3-16
 (PDF pp. 26, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY.**
 
+`B` has the same two ordinary program-read cycles without BANZ's counter
+condition: exact opcode `0xf900` at PC, canonical target at PC+1, then the
+next normal read at the target. Both cycles assert only `MEN`; no `DEN` or
+`WE` transaction occurs
+[ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and `B`,
+printed pp. 2-2, 2-13, 3-6, and 3-15
+(PDF pp. 26, 37, 56, and 65)]. **Confidence: VERIFIED_PRIMARY.**
+
 The partial phase integration test proves that one-cycle `ADD`, `ADDS`, `AND`,
 `DMOV`, `LAC`, `LAR`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, `MPY`, `OR`, `SACL`, `SACH`, `SAR`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZALH`,
 and `ZALS`

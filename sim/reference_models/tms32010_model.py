@@ -1,9 +1,9 @@
 """Independent, partial architectural model of the original TMS32010.
 
-This partial slice supports ADD, ADDS, AND, APAC, BANZ, DINT, DMOV, EINT, LAC,
-LACK, LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR,
-PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC, ZALH, and
-ZALS.
+This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, DINT, DMOV, EINT,
+LAC, LACK, LAR, LARK, LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK,
+NOP, OR, PAC, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, XOR, ZAC,
+ZALH, and ZALS.
 Logical program and internal-data transactions and instruction totals are
 modeled; pin subphases are not yet integrated with this model.
 """
@@ -194,7 +194,7 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
-        if mnemonic == "BANZ":
+        if mnemonic in {"B", "BANZ"}:
             operand_address = (pc + 1) & PC_MASK
             operand_word = self.program[operand_address] & WORD_MASK
             if operand_word & 0xF000:
@@ -205,15 +205,7 @@ class Tms32010Model:
                     operand_word,
                 )
             target = operand_word & PC_MASK
-            selected_arp = self.state.status.arp
-            branch_taken = bool(self.state.ar[selected_arp] & 0x01FF)
-            operands.update(
-                {
-                    "program_address": target,
-                    "auxiliary_register": selected_arp,
-                    "branch_taken": int(branch_taken),
-                }
-            )
+            operands["program_address"] = target
             transactions.append(
                 Transaction(
                     cycle=self.cycle_count + 1,
@@ -223,11 +215,24 @@ class Tms32010Model:
                     data=operand_word,
                 )
             )
-            self.state.ar[selected_arp] = self._modify_counter(
-                self.state.ar[selected_arp],
-                -1,
-            )
-            self.state.pc = target if branch_taken else (pc + 2) & PC_MASK
+            if mnemonic == "BANZ":
+                selected_arp = self.state.status.arp
+                branch_taken = bool(self.state.ar[selected_arp] & 0x01FF)
+                operands.update(
+                    {
+                        "auxiliary_register": selected_arp,
+                        "branch_taken": int(branch_taken),
+                    }
+                )
+                self.state.ar[selected_arp] = self._modify_counter(
+                    self.state.ar[selected_arp],
+                    -1,
+                )
+                self.state.pc = (
+                    target if branch_taken else (pc + 2) & PC_MASK
+                )
+            else:
+                self.state.pc = target
             cycles = 2
             self.cycle_count += cycles
             return StepTrace(
@@ -640,6 +645,8 @@ class Tms32010Model:
     @staticmethod
     def _decode(opcode: int, pc: int) -> tuple[str, dict[str, int]]:
         """Independent hand-written decode for the qualified model slice."""
+        if opcode == 0xF900:
+            return "B", {}
         if opcode == 0xF400:
             return "BANZ", {}
         if opcode & 0xF000 == 0x0000:

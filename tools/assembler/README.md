@@ -3,7 +3,7 @@
 This clean-room assembler is currently a qualified workflow slice, not a
 complete TMS32010 assembler. It supports:
 
-- `ADD`, `ADDS`, `AND`, `APAC`, `BANZ`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
+- `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `DINT`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
   `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `XOR`, `ZAC`, `ZALH`, and
   `ZALS`;
@@ -71,6 +71,9 @@ instruction not use ACC.
 `BANZ` accepts a label or checked 12-bit program address. It emits exact
 opcode `0xf400` followed by one canonical target word, and its two-word size
 participates in label and `.org` location accounting.
+
+`B` uses the same target syntax, range checking, canonical following word, and
+two-word location accounting with exact opcode `0xf900`.
 
 `AND`, `OR`, and `XOR` use the same forms, for example `AND 6`,
 `OR *+,AR1`, or `XOR *-`.

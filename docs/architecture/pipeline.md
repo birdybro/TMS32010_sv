@@ -57,6 +57,15 @@ and `BANZ`, printed pp. 2-2, 2-9–2-10, 2-13, 3-6, and 3-16
 (PDF pp. 26, 33–34, 37, 56, and 66)]. **Confidence: VERIFIED_PRIMARY for
 logical ordering and normal-read pin phases.**
 
+Unconditional `B` reuses the same verified two-read shape without a counter
+condition. Cycle 1 reads exact opcode `0xf900` at PC; cycle 2 reads the
+canonical target at PC+1; at the second falling-edge sample PC receives the
+target and the instruction retires. Both reads use normal program phases, and
+a clock-enable stall holds the second phase without architectural progress
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
+3-15 (PDF pp. 56 and 65)]. **Confidence: VERIFIED_PRIMARY for logical
+ordering and normal-read pin phases.**
+
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability
 constraint that the current instruction-boundary core cannot physically

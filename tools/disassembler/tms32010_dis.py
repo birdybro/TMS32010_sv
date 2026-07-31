@@ -8,6 +8,8 @@ from typing import Iterable
 
 from tools.generators.isa_database import decode_word, load_database
 
+TWO_WORD_BRANCHES = frozenset({"B", "BANZ"})
+
 
 class Disassembler:
     def __init__(self) -> None:
@@ -21,7 +23,7 @@ class Disassembler:
             return f".word 0x{word:04x}"
         entry, operands = decoded
         mnemonic = entry["mnemonic"]
-        if mnemonic == "BANZ":
+        if mnemonic in TWO_WORD_BRANCHES:
             # A lone opcode cannot be reconstructed as valid assembly without
             # its following target word. Stream methods consume the pair.
             return f".word 0x{word:04x}"
@@ -123,11 +125,14 @@ class Disassembler:
             decoded = decode_word(self.database, word)
             if (
                 decoded is not None
-                and decoded[0]["mnemonic"] == "BANZ"
+                and decoded[0]["mnemonic"] in TWO_WORD_BRANCHES
                 and index + 1 < len(materialized)
                 and materialized[index + 1] & 0xF000 == 0
             ):
-                rows.append(f"BANZ 0x{materialized[index + 1]:03x}\n")
+                rows.append(
+                    f"{decoded[0]['mnemonic']} "
+                    f"0x{materialized[index + 1]:03x}\n"
+                )
                 index += 2
             else:
                 rows.append(f"{self.disassemble_word(word)}\n")
@@ -148,20 +153,23 @@ class Disassembler:
             decoded = decode_word(self.database, word)
             if (
                 decoded is not None
-                and decoded[0]["mnemonic"] == "BANZ"
+                and decoded[0]["mnemonic"] in TWO_WORD_BRANCHES
                 and offset + 1 < len(materialized)
                 and materialized[offset + 1] & 0xF000 == 0
             ):
                 if address == 0xFFF:
-                    raise ValueError("BANZ operand exceeds program image")
+                    raise ValueError(
+                        f"{decoded[0]['mnemonic']} operand exceeds program image"
+                    )
                 target_word = materialized[offset + 1]
+                mnemonic = decoded[0]["mnemonic"]
                 rows.append(
                     f"{address:03x} {word:04x}  "
-                    f"BANZ 0x{target_word:03x}\n"
+                    f"{mnemonic} 0x{target_word:03x}\n"
                 )
                 rows.append(
                     f"{address + 1:03x} {target_word:04x}  "
-                    f".word 0x{target_word:04x} ; BANZ target\n"
+                    f".word 0x{target_word:04x} ; {mnemonic} target\n"
                 )
                 offset += 2
             else:

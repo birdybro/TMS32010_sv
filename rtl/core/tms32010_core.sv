@@ -79,6 +79,7 @@ module tms32010_core (
   localparam logic [5:0] OP_LST  = 6'd35;
   localparam logic [5:0] OP_SUBC = 6'd36;
   localparam logic [5:0] OP_BANZ = 6'd37;
+  localparam logic [5:0] OP_B    = 6'd38;
 
   logic [5:0] decoded_operation;
   logic [7:0] decoded_immediate;
@@ -110,7 +111,8 @@ module tms32010_core (
   logic        apac_overflow;
   logic [31:0] spac_wrapped_result;
   logic        spac_overflow;
-  logic        banz_operand_pending;
+  logic        branch_operand_pending;
+  logic [5:0]  pending_branch_operation;
 
   tms32010_decode decode (
     .instruction_i (program_data_i),
@@ -127,7 +129,7 @@ module tms32010_core (
   always_comb begin
     data_address_o = 8'h00;
     if (
-      !banz_operand_pending &&
+      !branch_operand_pending &&
       decoded_valid &&
       (
         (decoded_operation == OP_LAC) ||
@@ -195,17 +197,24 @@ module tms32010_core (
   assign program_address_o = pc_o;
   always_comb begin
     program_next_address_o = pc_o;
-    if (banz_operand_pending) begin
+    if (branch_operand_pending) begin
       if (program_data_i[15:12] == 4'h0) begin
-        if (
-          auxiliary_register_pointer_o
-            ? (auxiliary_register_1_o[8:0] != 9'h000)
-            : (auxiliary_register_0_o[8:0] != 9'h000)
-        ) begin
-          program_next_address_o = program_data_i[11:0];
-        end else begin
-          program_next_address_o = pc_o + 12'h001;
-        end
+        case (pending_branch_operation)
+          OP_B: program_next_address_o = program_data_i[11:0];
+          OP_BANZ: begin
+            if (
+              auxiliary_register_pointer_o
+                ? (auxiliary_register_1_o[8:0] != 9'h000)
+                : (auxiliary_register_0_o[8:0] != 9'h000)
+            ) begin
+              program_next_address_o = program_data_i[11:0];
+            end else begin
+              program_next_address_o = pc_o + 12'h001;
+            end
+          end
+          default: begin
+          end
+        endcase
       end
     end else if (instruction_valid_o) begin
       program_next_address_o = pc_o + 12'h001;
@@ -215,7 +224,7 @@ module tms32010_core (
   assign data_read_o =
     ~reset_i &&
     ~initialize_i &&
-    ~banz_operand_pending &&
+    ~branch_operand_pending &&
     decoded_valid &&
     (
       (decoded_operation == OP_LAC) ||
@@ -241,7 +250,7 @@ module tms32010_core (
   assign data_write_o =
     ~reset_i &&
     ~initialize_i &&
-    ~banz_operand_pending &&
+    ~branch_operand_pending &&
     decoded_valid &&
     (
       (decoded_operation == OP_SACL) ||
@@ -307,8 +316,13 @@ module tms32010_core (
     end
   end
   always_comb begin
-    if (banz_operand_pending) begin
-      instruction_valid_o = program_data_i[15:12] == 4'h0;
+    if (branch_operand_pending) begin
+      instruction_valid_o =
+        (program_data_i[15:12] == 4'h0) &&
+        (
+          (pending_branch_operation == OP_B) ||
+          (pending_branch_operation == OP_BANZ)
+        );
     end else begin
       instruction_valid_o =
         decoded_valid &&
@@ -404,42 +418,51 @@ module tms32010_core (
       interrupt_mask_o             <= 1'b1;
       illegal_o                    <= 1'b0;
       cycle_count_o                <= 32'h0000_0000;
-      banz_operand_pending         <= 1'b0;
+      branch_operand_pending       <= 1'b0;
+      pending_branch_operation     <= OP_B;
     end else if (reset_i) begin
       pc_o             <= 12'h000;
       interrupt_mask_o <= 1'b1;
       illegal_o        <= 1'b0;
       cycle_count_o    <= 32'h0000_0000;
-      banz_operand_pending <= 1'b0;
+      branch_operand_pending   <= 1'b0;
+      pending_branch_operation <= OP_B;
       // ACC, T, P, AR0, AR1, ARP, DP, and OV receive no arbitrary reset value.
       // TI explicitly documents that reset leaves OVM unchanged. Retention of
       // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
-      if (banz_operand_pending) begin
+      if (branch_operand_pending) begin
         if (instruction_valid_o) begin
-          if (auxiliary_register_pointer_o) begin
-            auxiliary_register_1_o <= {
-              auxiliary_register_1_o[15:9],
-              auxiliary_register_1_o[8:0] - 9'd1
-            };
-            pc_o <=
-              (auxiliary_register_1_o[8:0] != 9'h000)
-                ? program_data_i[11:0]
-                : pc_o + 12'h001;
-          end else begin
-            auxiliary_register_0_o <= {
-              auxiliary_register_0_o[15:9],
-              auxiliary_register_0_o[8:0] - 9'd1
-            };
-            pc_o <=
-              (auxiliary_register_0_o[8:0] != 9'h000)
-                ? program_data_i[11:0]
-                : pc_o + 12'h001;
-          end
-          banz_operand_pending <= 1'b0;
-          retired_o            <= 1'b1;
-          illegal_o            <= 1'b0;
-          cycle_count_o        <= cycle_count_o + 32'h0000_0001;
+          case (pending_branch_operation)
+            OP_B: pc_o <= program_data_i[11:0];
+            OP_BANZ: begin
+              if (auxiliary_register_pointer_o) begin
+                auxiliary_register_1_o <= {
+                  auxiliary_register_1_o[15:9],
+                  auxiliary_register_1_o[8:0] - 9'd1
+                };
+                pc_o <=
+                  (auxiliary_register_1_o[8:0] != 9'h000)
+                    ? program_data_i[11:0]
+                    : pc_o + 12'h001;
+              end else begin
+                auxiliary_register_0_o <= {
+                  auxiliary_register_0_o[15:9],
+                  auxiliary_register_0_o[8:0] - 9'd1
+                };
+                pc_o <=
+                  (auxiliary_register_0_o[8:0] != 9'h000)
+                    ? program_data_i[11:0]
+                    : pc_o + 12'h001;
+              end
+            end
+            default: begin
+            end
+          endcase
+          branch_operand_pending <= 1'b0;
+          retired_o              <= 1'b1;
+          illegal_o              <= 1'b0;
+          cycle_count_o          <= cycle_count_o + 32'h0000_0001;
         end else begin
           illegal_o <= 1'b1;
         end
@@ -447,8 +470,12 @@ module tms32010_core (
         pc_o          <= pc_o + 12'h001;
         illegal_o     <= 1'b0;
         cycle_count_o <= cycle_count_o + 32'h0000_0001;
-        if (decoded_operation == OP_BANZ) begin
-          banz_operand_pending <= 1'b1;
+        if (
+          (decoded_operation == OP_B) ||
+          (decoded_operation == OP_BANZ)
+        ) begin
+          branch_operand_pending   <= 1'b1;
+          pending_branch_operation <= decoded_operation;
         end else begin
           retired_o <= 1'b1;
         end
@@ -623,6 +650,8 @@ module tms32010_core (
           OP_SOVM: overflow_mode_o <= 1'b1;
           OP_BANZ: begin
           end
+          OP_B: begin
+          end
           default: begin
             // All enum values are covered above.
           end
@@ -708,7 +737,7 @@ module tms32010_core (
     assert (!(retired_o && illegal_o));
     if (!reset_i && !initialize_i) begin
       assert (!(debug_data_write_i && clock_enable_i));
-      if (banz_operand_pending) begin
+      if (branch_operand_pending) begin
         assert (!(data_read_o || data_write_o || data_address_valid_o));
       end
       if ((data_read_o || data_write_o) && !data_address_valid_o) begin

@@ -3,7 +3,8 @@
 The current differential boundary compares the independent Python model with
 the partial SystemVerilog core over a deterministic mixed stream of the
 37 supported one-cycle instructions. A focused BANZ trace adds the first
-two-cycle instruction and checks both branch outcomes. The tests check
+two-cycle instruction and checks both branch outcomes; a focused B trace
+checks unconditional two-cycle control flow. The tests check
 pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
 indication, and cumulative
@@ -56,8 +57,12 @@ PC, and low-nine-bit counter results for taken and untaken cases. The model
 steps at instruction boundaries while the RTL exposes both machine cycles, so
 the comparison deliberately aligns state only at the second-cycle commit.
 
-The 512-instruction stream is model/RTL functional evidence only. BANZ's
-focused differential supplies logical per-cycle evidence; its separate native
+The focused B trace applies the same boundary alignment to two successive
+branches, checking opcode/target transaction addresses, skipped fall-through
+words, retirement, cycles, target PCs, and preserved accumulator state.
+
+The 512-instruction stream is model/RTL functional evidence only. The focused
+B/BANZ differentials supply logical per-cycle evidence; their separate native
 phase test supplies the physical subphase relationship. Neither result
 qualifies the remaining pipeline. MAME comparison is not yet implemented.
 

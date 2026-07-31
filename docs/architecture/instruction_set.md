@@ -166,6 +166,30 @@ nine counter bits change. The implementation follows the original-part
 but charges the second cycle only when taken, contrary to TI's unconditional
 two-cycle listing; see `SC-012`. MAME timing is not used as proof.
 
+## Qualified `B` control-flow slice
+
+`B` is exact opcode word `0xf900`, followed by a canonical word whose low
+12 bits are an absolute program-memory target. It consumes two words and two
+machine cycles unconditionally. The second word is loaded into PC; ACC, T, P,
+both auxiliary registers, stack, data RAM, and status remain unchanged
+[ti-tms32010-users-guide-spru001b, Table 3-2 and `B`, printed pp. 3-6 and
+3-15 (PDF pp. 56 and 65);
+ti-tms32010-assembly-guide-spru002b, `B`, printed p. 3-15 (PDF p. 36);
+ti-first-generation-users-guide-1987, Table 4-2 and `B`, printed pp. 4-10 and
+4-20 (PDF pp. 89 and 101)]. **Confidence: VERIFIED_PRIMARY.**
+
+The qualified program sequence reads `0xf900` at PC in cycle 1 and the target
+word at PC+1 in cycle 2, then performs the next normal read at the target.
+Retirement occurs only at the second sample. Directed model, RTL,
+native-phase, and differential tests cover two successive branches, skipped
+fall-through words, PC wrap on the operand fetch, architectural-state
+preservation, a clock-enable stall in the target phase, and trap-before-effects
+for a noncanonical target word. Pinned MAME independently corroborates the PC
+load and fixed two-cycle total
+[mame-tms320c1x-core-030fefc, `tms320c1x_device_base::br`, lines 402–405,
+and opcode table line 842]. **Confidence: VERIFIED_PRIMARY for behavior and
+logical timing; CORROBORATED by independent emulator code.**
+
 ## Researched, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the
