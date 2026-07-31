@@ -28,6 +28,7 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_sequential_pipeline_slice.sv",
+            ROOT / "rtl" / "wrappers" / "tms32010_mister.sv",
             testbench,
         ]
         result = subprocess.run(
@@ -128,6 +129,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         self,
     ) -> None:
         self._run_testbench("tb_wait_states")
+
+    def test_mister_callbacks_reset_and_synchronous_waits(self) -> None:
+        self._run_testbench("tb_mister_wrapper")
 
     def test_accumulator_branches_use_two_stallable_native_reads(self) -> None:
         self._run_testbench("tb_accumulator_branches_phase")

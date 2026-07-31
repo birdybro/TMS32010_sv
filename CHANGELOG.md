@@ -43,6 +43,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   data-transaction expectations. It exercises the primary-documented
   `LTD`/`MPY` pipelined multiply/accumulate idiom without reproducing TI
   example source.
+- A portable `tms32010_mister` integration layer with active-high synchronous
+  reset, automatic five-machine-cycle modeled reset hold, same-clock
+  program/I/O request-ready callbacks, registered phase-3 waits, native-phase
+  visibility, interrupt/BIO inputs, and deterministic state/RAM debug ports.
+  It contains no Atari-specific memory or peripheral behavior.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -445,6 +450,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Generic wrapper integration with registered program and I/O responders,
+  delayed readiness, a separate three-clock global pause, exact-once OUT/IN
+  and TBLW commits, documented `1/1/2/2/1/3/1 = 11` cycle total, unsupported-
+  word parking, and reset recovery. Yosys 0.67+111 independently synthesizes
+  the wrapper top to 15,779 generic cells with 110 retained checks and zero
+  structural problems.
 - Complete local assembler/disassembler acceptance across all sixty documented
   mnemonics and the first realistic test-program workflow. The synthetic FIR
   image round-trips exactly, executes twelve one-cycle instructions, sums four

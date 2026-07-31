@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs two checked-in scripts. The main synthesis harness targets
+The command runs three checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -47,6 +47,14 @@ Explicit reset-time instruction qualification and the loop-free recognized-
 reset boundary bring the current checkpoint to 15,733 generic cells, 103
 retained checks, and zero
 structural-check problems.
+
+The third script directly targets the generic `tms32010_mister` adapter and
+writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
+stretcher, registered program/I/O response wait, callback mapping, and debug
+fanout around the same partial explicit pipeline. It does not synthesize an
+SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
+Yosys 0.67+111 reports 15,779 generic cells and 110 retained checks, with zero
+structural problems; 46 cells and seven checks are local to the new adapter.
 
 ## Quartus
 

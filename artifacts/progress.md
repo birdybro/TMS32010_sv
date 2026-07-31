@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** assembler and realistic FIR-program qualification
+- **Current milestone:** generic MiSTer/FPGA callback wrapper
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 109 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 24 native bus/phase tests, including thirteen explicit pipeline tests
+  tests; 25 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -39,9 +39,11 @@
   `make synth-yosys` now also runs the sequential pipeline script, which
   independently passes at 15,733 generic cells with 103 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
-  IN/OUT/TBLR/TBLW/interrupt integration;
-  this is not a
-  Quartus fit or complete-pipeline result
+  IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
+  complete-pipeline result. The generic MiSTer wrapper separately passes
+  Yosys at 15,779 generic cells
+  with 110 retained checks and zero structural problems, including 46 cells
+  and seven checks local to reset/callback adaptation.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -407,9 +409,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** begin the generic MiSTer-facing wrapper without introducing
-  Hard Drivin'-specific behavior into the architectural core. Retain the
-  documented physical clock envelope and platform-only phase-pause distinction
-  at that integration boundary.
+- **Next task:** extend generic integration toward a separately clocked SDRAM
+  adapter only with explicit CDC, or continue the highest-priority unblocked
+  instruction/timing task needed before that bridge can be qualified.
 - **Latest committed baseline before this cycle:**
-  `b702eaa`
+  `70d953f`

@@ -124,6 +124,16 @@ one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
 instruction-complete resource estimate.
 
+The third checked-in script directly synthesizes `tms32010_mister` around the
+same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
+with zero problems, retains 110 checks, and reports 15,779 generic cells. The
+adapter itself contributes 46 cells and seven checks beyond the 15,733-cell,
+103-check pipeline checkpoint. This result covers the five-cycle synchronous
+reset stretcher, registered same-clock callback wait, request mapping, and
+debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
+pinout, I/O timing result, or evidence for the still-missing instruction
+families.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -134,8 +144,9 @@ release after verifying its published SHA-256
 make YOSYS=/path/to/oss-cad-suite/bin/yosys synth-yosys
 ```
 
-The ignored outputs are `build/yosys/tms32010.json` and
-`build/yosys/tms32010_sequential_pipeline.json`. Tool-version differences
+The ignored outputs are `build/yosys/tms32010.json`,
+`build/yosys/tms32010_sequential_pipeline.json`, and
+`build/yosys/tms32010_mister.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.

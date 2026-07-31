@@ -333,6 +333,15 @@ evidence that an NMOS TMS32010 clock may be stopped at an arbitrary point.
 `OQ-001` therefore resolves to bounded physical slowing within the TI clock
 envelope, not arbitrary clock stretching.
 
+The first platform adapter implements this separation explicitly:
+`tms32010_mister` presents same-clock program/I/O request and ready callbacks,
+registers a late response at phase 2, and holds only the phase-3 sample
+boundary until ready is observed. Its directed test includes synchronous
+program reads, I/O reads/writes, and a TBLW program write without duplicate
+commits [`docs/integration/mister_wrapper.md` and
+`sim/bus/tb_mister_wrapper.sv`]. **Confidence: VERIFIED_SIMULATION for this
+platform adapter; not physical-device evidence.**
+
 ## Native RTL signal groups
 
 The current qualified slice retains:

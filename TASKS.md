@@ -1284,7 +1284,7 @@ objective passing evidence.
 
 ### INTEG-001 — Generic MiSTer-facing wrapper
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P1
 - **Dependencies:** TIMING-001, SYNTH-001
 - **Description:** Adapt the native interface to clock-enable operation,
@@ -1294,7 +1294,18 @@ objective passing evidence.
   simulations, and contains no Hard Drivin'-specific processor behavior.
 - **Documentation:** `docs/integration/mister_wrapper.md`
 - **Tests:** `sim/bus/tb_mister_wrapper.sv`
-- **Notes:** Vendor resources are permitted only behind this boundary.
+- **Notes:** Vendor resources are permitted only behind this boundary. The
+  first portable `tms32010_mister` adapter now supplies active-high
+  synchronous reset with an exact five-machine-cycle modeled RS hold,
+  clock-enable operation, registered same-clock program/I/O request-ready
+  callbacks, native phase visibility, active-low INT/BIO pass-through, and
+  deterministic state/RAM debug ports. A directed callback test uses
+  registered responders, late-response phase-3 holds, a separate global
+  pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
+  unsupported-word parking, and reset recovery. Yosys reports 15,779 generic
+  cells/110 checks with no structural problems. This is an IMPLEMENTING
+  milestone: asynchronous SDRAM CDC/adaptation, a block-RAM-safe core, a full
+  instruction pipeline, Quartus wrapper timing, and board integration remain.
 
 ## Milestone 21 — Hard Drivin' integration research
 

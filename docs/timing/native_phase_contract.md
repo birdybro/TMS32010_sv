@@ -418,6 +418,15 @@ Characteristics and Timing, printed pp. 2-20 and data-sheet pp. 10–11 (PDF
 pp. 44 and 366–367)]. `OQ-001` is therefore resolved for pin-compatible
 design: only bounded slowing within those requirements is primary-supported.
 
+`tms32010_mister` now applies this platform-only contract to same-clock
+program and I/O callbacks. It captures a missing response at the phase-2
+boundary, enters a registered phase-3 hold, and advances only after ready is
+observed. The registered hold avoids a combinational ready-to-core-enable
+path. `tb_mister_wrapper` verifies both program directions, both I/O
+directions, exact-once commits, stable callback ownership, and an independent
+global clock-enable pause. An eventually-ready assumption is still required
+for liveness; asynchronous controllers require an external CDC adapter.
+
 ## RTL mapping status
 
 The standalone `tms32010_program_bus` primitive represents the normal read
