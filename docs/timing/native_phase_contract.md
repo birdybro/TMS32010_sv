@@ -401,7 +401,14 @@ minimum assertion interval, one-cycle release delay, address-0/address-1
 startup, quarter-cycle `MEN` assertion, address stability, the falling-edge
 sample event, and clock-enable stalls. This four-phase mapping is an
 implementation choice, not an assertion about the original internal gate
-topology. `tms32010_phase_slice` now integrates these phases with the current
+topology. A 40-step bounded proof additionally leaves logical reset, clock
+enable, read qualification, and next address arbitrary while checking the
+phase transition relation, synchronous assertion boundary, release delay,
+`MEN` qualification, and stall behavior. Its five-cycle reset/address-0/
+address-1 cover reaches step 34. This remains digital wrapper evidence, not
+electrical-timing or physical-silicon proof
+[`formal/tms32010_program_bus_reset.sby`].
+`tms32010_phase_slice` now integrates these phases with the current
 one-cycle sequential execution subset and the qualified two-cycle branch
 paths: directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary

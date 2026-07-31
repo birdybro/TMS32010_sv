@@ -30,6 +30,32 @@ OV, but that bundle is explicitly only PROVISIONAL FPGA policy under
 cover is reached at step 5. Internal-RAM retention is directed-tested rather
 than formally quantified by this harness.
 
+## Native program-bus reset/release harness
+
+`tms32010_program_bus_reset.sby` checks the standalone native program-read
+phase engine with a 40-step BMC and cover. The harness input `rs_i` is the
+active-high logical assertion used inside the repository; a physical pin
+wrapper must invert the original part's active-low `RS` pin. Logical reset,
+clock enable, read qualification, and the next program address all remain
+arbitrary in the safety proof.
+
+Assertions check deterministic FPGA initialization, exact four-phase
+progression, `CLKOUT` and active-low `MEN` relationships, phase/address/
+transaction retention across arbitrary clock-enable stalls, and single-pulse
+sampling. They also prove that reset assertion does not abort an active read
+before an enabled phase-3 falling boundary, that a recognized boundary makes
+the bus inactive at address zero, that the first deasserted boundary only
+synchronizes release, and that the second deasserted boundary starts the
+first read using the supplied address.
+
+The cover selects an unstalled path with five consecutive complete asserted
+machine cycles, release synchronization, one complete inactive cycle,
+address-0 read activation, and address-1 sampling. It reaches step 34. This
+is bounded digital-phase evidence for the source-transcribed wrapper. It does
+not prove electrical setup/hold timing, that an external board held physical
+`RS` for the required duration, analog pin behavior, architectural state
+values not listed by TI, or general pipeline correctness.
+
 ## Interrupt-entry harness
 
 `tms32010_interrupt.sby` checks the actual portable core, not a replacement
@@ -211,7 +237,7 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The eight harnesses leave DINT ordering, formal coverage of the represented
+The nine harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

@@ -118,8 +118,13 @@ indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
 12/14/20/20-step bounds and reachable covers are documented in
 `formal/README.md`. A 10-step actual-core reset harness separately proves the
 documented reset controls and explicitly provisional unlisted-state retention,
-with a nonzero-ACC/OVM cover at step 5. A separate 40-step integrated-pipeline
-harness checks one direct TBLR discarded/transfer/repeated-fetch sequence and
+with a nonzero-ACC/OVM cover at step 5. A separate 40-step native-program-bus
+harness proves the digital reset/release transition relation for arbitrary
+logical reset, clock-enable, read-qualification, and next-address inputs; its
+five-cycle-reset/address-0/address-1 cover reaches step 34. This is bounded
+wrapper evidence, not electrical or original-silicon qualification. Another
+40-step integrated-pipeline harness checks one direct TBLR
+discarded/transfer/repeated-fetch sequence and
 reaches its LACK/TBLR/LAC/NOP cover at step 34. A complementary 40-step direct-TBLW
 harness proves one synchronous phase-3 program write and rewritten-word
 execution, reaching cover step 35. These are bounded scenarios, not a general

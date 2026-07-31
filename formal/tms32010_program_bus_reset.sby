@@ -1,0 +1,21 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 40
+cover: mode cover
+cover: depth 40
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv tms32010_program_bus.sv
+read -formal -sv tms32010_program_bus_reset_formal.sv
+prep -top tms32010_program_bus_reset_formal
+
+[files]
+rtl/core/tms32010_program_bus.sv
+formal/tms32010_program_bus_reset_formal.sv

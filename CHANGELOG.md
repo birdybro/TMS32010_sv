@@ -435,6 +435,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- A 40-step bounded proof over the standalone native program bus leaves
+  logical reset, clock enable, read qualification, and next address arbitrary.
+  It proves boundary-only reset recognition without premature read abort,
+  inactive address zero, the complete release-wait cycle, first-read
+  activation, `CLKOUT`/`MEN`/sample relationships, and stall behavior. Its
+  five-cycle reset/address-0/address-1 cover reaches step 34; electrical and
+  original-silicon qualification are explicitly excluded.
 - Recognized core reset clears PC, pending interrupt, trap state, and cycle
   count, sets INTM, suppresses all transaction classes, overrides a disabled
   clock enable, and preserves OVM. Directed testing also guards the explicitly

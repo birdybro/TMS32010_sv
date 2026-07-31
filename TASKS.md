@@ -675,7 +675,7 @@ objective passing evidence.
   documented unknowns; assertions show no unintended unknown control state.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/bus/tb_program_bus_phase.sv`, `sim/unit/tb_reset.sv`,
-  `formal/tms32010_reset.sby`
+  `formal/tms32010_reset.sby`, `formal/tms32010_program_bus_reset.sby`
 - **Notes:** Appendix A verifies five-machine-cycle minimum assertion,
   synchronized response, inactive strobes/high-Z data, PC/address clear after
   the next full cycle, and first address-0 read one full cycle after release.
@@ -688,8 +688,13 @@ objective passing evidence.
   retention under `OQ-012`. A 10-step BMC proves the exposed core reset
   transition for arbitrary reset/clock-enable inputs and reaches a nonzero-
   ACC/OVM reset cover at step 5. `instruction_valid_o` is now explicitly low
-  during initialization/reset. Full native-wrapper formalization and physical
-  values for TI-unlisted state remain; no complete reset claim is made.
+  during initialization/reset. A separate 40-step native-program-bus BMC
+  leaves reset, clock enable, read qualification, and next address arbitrary;
+  it proves boundary-only assertion, inactive address zero, the full release
+  wait, first-read activation, `MEN`/phase relationships, and stall behavior.
+  Its five-cycle reset/address-0/address-1 cover reaches step 34. Physical
+  electrical timing and values for TI-unlisted state remain; no complete reset
+  claim is made.
   FPGA-deterministic behavior, if any, must be separately labeled.
 
 ## Milestone 13 — Interrupt behavior
@@ -1151,6 +1156,14 @@ objective passing evidence.
   nonzero retained ACC/OVM after reset at step 5. It does not prove native RS
   phasing, internal-RAM retention, or original-silicon values for unlisted
   state.
+  A ninth 40-step standalone native-program-bus configuration leaves logical
+  reset, clock enable, program-read qualification, and next address arbitrary.
+  It proves four-phase progression, synchronous assertion without premature
+  read abort, recognized inactive/address-zero state, one-complete-cycle
+  release delay, first-read activation, `MEN` qualification, sample pulses,
+  and stall behavior. Its five asserted cycles followed by address-0 and
+  address-1 reads reach cover step 34. It does not prove electrical timing or
+  that an external environment satisfies physical reset duration.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general

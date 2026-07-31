@@ -70,7 +70,14 @@
   actual-core BMC proves recognized-reset controls, transaction and
   instruction-valid suppression, clock-enable priority, documented OVM
   retention, and the explicitly provisional retention bundle under `OQ-012`;
-  its nonzero-ACC/OVM reset cover reaches step 5.
+  its nonzero-ACC/OVM reset cover reaches step 5. A ninth 40-step standalone
+  native-program-bus BMC leaves logical reset, clock enable, program-read
+  qualification, and next address arbitrary. It proves four-phase
+  progression, synchronous boundary-only reset assertion, no premature read
+  abort, inactive address zero, the full release wait, first-read activation,
+  `CLKOUT`/`MEN`/sample relationships, and stall behavior. Its five-cycle
+  reset/address-0/address-1 cover reaches step 34; physical electrical timing
+  remains outside the proof.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -348,11 +355,12 @@
   promoting primary-unlisted words to reserved behavior; resolve the 372
   simultaneous-update combinations only from further primary or physical
   evidence under `OQ-010`. Continue with the next unblocked P0 architecture or
-  RTL task. For `CTRL-001`, extend reset proof through the native phase wrapper
-  without assigning values to TI-unlisted state. Keep PUSH/POP outside RTL
+  RTL task. For `CTRL-001`, physical electrical timing and original-silicon
+  values for TI-unlisted state remain outside current evidence. Keep PUSH/POP
+  outside RTL
   until `OQ-016` gains the measured address/word-ownership trace; keep LST's
   loaded-ARP precedence PROVISIONAL under `OQ-015`; keep DMOV/LTD source-
   `0x8f` behavior provisional under `OQ-014`; retain ADDH and ABS status
   behavior at CORROBORATED until physical evidence justifies an upgrade.
 - **Latest committed baseline before this cycle:**
-  `6e8b8a8`
+  `23f6a6f`

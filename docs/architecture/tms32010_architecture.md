@@ -120,6 +120,18 @@ original-silicon register values or replace the separate native phase test
 [`sim/unit/tb_reset.sv`, `formal/tms32010_reset.sby`,
 `sim/bus/tb_program_bus_phase.sv`].
 
+The native program-bus phase engine has a separate 40-step bounded proof. It
+keeps logical reset, clock enable, program-read qualification, and next
+address arbitrary while proving phase progression, boundary-only reset
+recognition, inactive address-zero state, the complete release-wait cycle,
+first-read activation, `MEN` qualification, and stall behavior. A nonvacuity
+cover holds reset for five complete cycles and reaches the address-1 sample at
+step 34. This proves only the repository's digital phase mapping; it does not
+establish physical setup/hold compliance or any TI-unlisted architectural
+reset value [`formal/tms32010_program_bus_reset.sby`].
+**Source confidence: VERIFIED_PRIMARY; implementation evidence: bounded
+formal at the stated bound; VERIFIED_HARDWARE is not claimed.**
+
 ## Current qualification boundary
 
 The executable model and local assembler/disassembler support all 60
