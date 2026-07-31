@@ -42,6 +42,13 @@ transition. It is not yet connected to the partial core, so these tests prove
 the building block rather than the integrated pipeline
 [`docs/decisions/ADR-0002-fetch-execute-separation.md`,
 `sim/unit/tb_fetch_execute.sv`].
+A 12-step bounded proof additionally checks exact arbitrary-word capture,
+non-boundary stability, incomplete-slot retention, completion/replacement,
+bubbles, and reset/flush invalidation under the two documented legal-input
+contracts. Its step-7 cover traverses prime, stall, replacement, flush, and
+target capture. These remain standalone-register properties, not integrated
+pipeline evidence
+[`formal/tms32010_fetch_execute.sby`, `formal/README.md`].
 
 ## Required implementation model
 

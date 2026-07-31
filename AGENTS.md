@@ -253,6 +253,10 @@ fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests and
 standalone Yosys synthesis, but is not connected to the partial core; no
 integrated fetch/execute claim follows from its existence.
+A 12-step standalone BMC checks its transition relation for arbitrary
+fetch/control inputs satisfying the two legal sequencer contracts; the cover
+reaches prime/stall/replacement/flush/target capture at step 7. This is not
+evidence for correct core integration.
 The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts

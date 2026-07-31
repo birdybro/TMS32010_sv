@@ -625,9 +625,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   clock-enable choices; its cover reaches completed entry at step 12 after
   checking old address `0x8f`, product `0xffff0000`, AR0
   `0xaa8f`-to-`0xaa8e` decrement, and ARP replacement.
-- The complete current regression passes 97 repository/ISA/tool tests, 217
-  directed model tests, 35 exhaustive/directed instruction RTL tests, ten
-  native bus/phase tests, four interrupt RTL/phase tests, one 512-step seeded
+- A standalone 12-step BMC proves fetch/execute-register initialization,
+  arbitrary-word capture, boundary stalls, incomplete retention,
+  completion/replacement, bubbles, and reset/flush invalidation under two
+  explicit sequencer assumptions; its cover reaches the complete
+  prime/stall/replace/flush/target path at step 7.
+- The complete current regression passes 98 repository/ISA/tool tests, 218
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, ten
+  native bus/phase tests, five interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
   one focused interrupt-entry differential.

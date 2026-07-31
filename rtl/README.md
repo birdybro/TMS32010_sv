@@ -49,6 +49,11 @@ synthesis finds 29 flip-flops, 68 generic cells including two retained checks,
 and no structural problems. The block does not alter current integrated-core
 behavior until the surrounding sequencer can classify every fetched,
 operand, and dummy transaction.
+A 12-step bounded formal harness proves its capture, hold, replacement,
+bubble, reset, and flush transitions for arbitrary words and boundary timing
+under the block's two explicit legal-input contracts. The non-vacuity cover
+reaches a complete prime/stall/replace/flush/target path at step 7; this still
+does not qualify core integration.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one

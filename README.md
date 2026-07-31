@@ -56,6 +56,9 @@ the required distinct fetched-word and execute-slot validity/address state.
 Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy
 suppression, vector capture, and reset; the register is not yet connected to
 the partial core.
+Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
+standalone register's transition relation for arbitrary fetch words and
+boundaries, with a prime/stall/replace/flush/target cover reached at step 7.
 Bounded actual-core formal harnesses check fixed EINT entry,
 MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
 indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their

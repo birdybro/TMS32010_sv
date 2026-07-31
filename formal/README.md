@@ -112,10 +112,34 @@ indirect decrement/ARP-replacement case; it does not prove every indirect
 control encoding, counter wrap, arbitrary instruction placement, or
 unbounded interrupt behavior.
 
-All four harnesses leave DINT ordering, multicycle arrival positions, RET,
-arbitrary multiply-chain placement/length, the complete fetch/execute
-pipeline, and electrical timing to
+## Fetch/execute ownership-register harness
+
+`tms32010_fetch_execute.sby` checks the standalone ADR-0002 ownership
+register with a 12-step BMC and cover. Reset, cycle-boundary, fetched-valid,
+fetched address/word, completion, and flush inputs remain arbitrary. The
+harness assumes only the two legal-sequencer contracts that the RTL also
+asserts:
+
+- a redirect does not simultaneously supply a valid executable fetch; and
+- a new valid fetch does not overwrite an incomplete valid execute slot.
+
+Within that environment, assertions check synchronous FPGA initialization,
+zero-valued invalid state, exact capture of arbitrary address/word values,
+non-boundary stall stability, incomplete-slot retention, simultaneous
+completion/replacement, completion-to-bubble behavior, and reset/flush
+invalidation. The cover reaches a prime, stall, replacement, flush, and target
+capture path at step 7.
+
+This proof qualifies the isolated register transition relation at the stated
+bound. It does not prove that the partial core classifies program transactions
+correctly, connects the register correctly, implements TI's complete
+fetch/execute overlap, or meets electrical timing.
+
+The five harnesses leave DINT ordering, multicycle arrival positions, RET,
+arbitrary multiply-chain placement/length, the complete integrated
+fetch/execute pipeline, and electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
 `OQ-004`, and `OQ-019`.
-No liveness theorem is claimed because arbitrary clock-enable input may remain
-disabled forever; the covers supply non-vacuity evidence for enabled paths.
+No liveness theorem is claimed because arbitrary clock-enable or
+cycle-boundary inputs may remain disabled forever; the covers supply
+non-vacuity evidence for enabled paths.

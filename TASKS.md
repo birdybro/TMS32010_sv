@@ -927,6 +927,13 @@ objective passing evidence.
   configurations check initialization, pending retention, MPY/MPYK
   extension, program-only entry, stack/vector/INTM effects, bus exclusion,
   relatching, and stall stability.
+  A fifth standalone 12-step BMC leaves all fetch/execute register inputs
+  arbitrary while assuming only no valid fetch on flush and no overwrite of
+  an incomplete slot. It proves initialization, exact arbitrary-word capture,
+  non-boundary stability, incomplete retention, completion/replacement,
+  bubbles, and reset/flush invalidation. Its cover reaches
+  prime/stall/replace/flush/target capture at step 7. This does not prove core
+  integration or complete TI pipeline overlap.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, multicycle arrival points, RET, general

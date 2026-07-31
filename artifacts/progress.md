@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** explicit fetch/execute pipeline state
+- **Current milestone:** formal fetch/execute ownership
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 217
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
@@ -43,7 +43,12 @@
   LT/LAR/LARP/EINT/NOP/MPY/LACK/dummy/vector cover reaches completed entry at
   step 12 after proving old address `0x8f`, product `0xffff0000`, AR0
   decrement from `0xaa8f` to `0xaa8e`, and ARP replacement. This is bounded
-  scenario evidence, not a complete interrupt or core proof.
+  scenario evidence, not a complete interrupt or core proof. A separate
+  12-step standalone fetch/execute BMC covers arbitrary input values under
+  two legal sequencer assumptions and proves initialization, exact capture,
+  stall/retention, replacement/bubble, and reset/flush transitions; its
+  prime/stall/replace/flush/target cover reaches step 7. It does not prove
+  integrated pipeline behavior.
 - **New architecture facts:** original part is ROMless NMOS with 144 data
   words and no READY pin; reset requires at least five machine cycles and leaves
   OVM unchanged; most instructions are one cycle, branches are two, and table
@@ -242,4 +247,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `eea9447`
+  `0e259df`
