@@ -1041,9 +1041,17 @@ objective passing evidence.
   bubbles, and reset/flush invalidation. Its cover reaches
   prime/stall/replace/flush/target capture at step 7. This does not prove core
   integration or complete TI pipeline overlap.
+  A sixth configuration runs a 40-step BMC and cover over the actual
+  sequential-pipeline hierarchy for fixed `LACK 4; TBLR 0; LAC 0; NOP`.
+  It leaves clock enable arbitrary and proves discarded PC+1 ownership,
+  ACC-addressed MEN transfer of `0x1234`, exact logical RAM commit, repeated
+  PC+1 fetch, following LAC consumption, bus exclusion, stack/interrupt
+  preservation, and stall stability. The complete path reaches cover step 34.
+  This is one direct TBLR scenario, not a TBLW, indirect-table,
+  interrupt-arrival, arbitrary-program, or general integrated-pipeline proof.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
-  placement/length, multicycle arrival points, RET, general
+  placement/length, formal multicycle-arrival coverage, RET, general
   decode/FSM/RAM/arithmetic properties, and liveness assumptions remain.
   Never describe bounded checks as complete proof.
 

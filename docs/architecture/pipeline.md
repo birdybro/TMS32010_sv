@@ -323,18 +323,31 @@ implementations.**
 
 `TBLR` and `TBLW` have three execution intervals after their opcode-prefetch
 boundary: a discarded PC+1 prefetch, an ACC-addressed table transfer, and the
-repeated PC+1 instruction prefetch. The legacy wrapper captures
-`ACC[11:0]` and the old resolved internal-data address at its opcode sample,
-then preserves all four ordered transactions. It applies indirect updates,
-the documented final stack-bottom duplication, and retirement at the table
-sample before presenting the repeated PC+1 address. Explicit ownership
-through repeated-prefetch completion remains unintegrated; stalls hold each
-legacy pending phase without architectural progress
+repeated PC+1 instruction prefetch. The explicit pipeline retains the table
+opcode across all three intervals. It captures `ACC[11:0]` and the old
+resolved internal-data address, marks the first PC+1 read nonexecutable,
+performs TBLR MEN or TBLW WE at the captured table address, and commits RAM or
+program memory, indirect updates, the documented final stack-bottom
+duplication, retirement, and execute-slot replacement only at the repeated
+PC+1 sample. Stalls hold every interval without architectural progress; a
+self-modifying TBLW test proves that the discarded old PC+1 word cannot
+execute after replacement.
+
+A 40-step bounded check over the actual sequential-pipeline hierarchy
+independently asserts one direct TBLR path: `LACK 4` supplies the table
+address, program word `0x1234` is transferred to RAM, PC+1 is repeated, and
+the following `LAC 0` consumes that committed word. Arbitrary clock-enable
+stalls preserve all checked bus and architectural state, and the complete
+path reaches cover step 34. This is one fixed direct scenario, not a proof of
+indirect TBLR, TBLW, arbitrary programs, or the general pipeline
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
-(PDF pp. 41 and 114–117)]. **Confidence: VERIFIED_PRIMARY for source
-ordering and native pin ownership; VERIFIED_SIMULATION for legacy bus order;
-explicit execute ownership unqualified.**
+(PDF pp. 41 and 114–117);
+`sim/bus/tb_sequential_pipeline_table.sv`;
+`formal/tms32010_pipeline_table.sby`; `formal/README.md`].
+**Confidence: VERIFIED_PRIMARY for source ordering and native pin ownership;
+VERIFIED_SIMULATION for explicit execute ownership; bounded formal evidence
+for the stated direct scenario.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

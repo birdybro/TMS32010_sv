@@ -402,7 +402,12 @@ formal harnesses at 12, 14, 20, and 20 steps check ordinary EINT entry, MPYK
 extension, held-low relatching, direct data-memory MPY, a fixed repeated
 multiply chain, one indirect MPY old-address/decrement/ARP-replacement case,
 and arbitrary clock-enable stalls, with reachable covers.
-This is not a complete formal proof; no general pipeline, exhaustive
-interrupt entry matrix, or complete pin timing exists.
+A separate 40-step bounded harness checks one integrated direct-TBLR sequence
+through discarded PC+1, ACC-addressed program read, repeated PC+1 capture,
+RAM commit, and following LAC consumption across arbitrary clock-enable
+stalls; its complete path is reachable at step 34.
+This is not a complete formal proof; no general pipeline, formally exhaustive
+interrupt entry matrix, indirect/TBLW table proof, or complete pin timing
+exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

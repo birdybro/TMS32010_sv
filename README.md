@@ -98,7 +98,10 @@ Bounded actual-core formal harnesses check fixed EINT entry,
 MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
 indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
 12/14/20/20-step bounds and reachable covers are documented in
-`formal/README.md`; they are not a general interrupt proof.
+`formal/README.md`. A separate 40-step integrated-pipeline harness checks one
+direct TBLR discarded/transfer/repeated-fetch sequence and reaches its
+LACK/TBLR/LAC/NOP cover at step 34. These are bounded scenarios, not a general
+interrupt or pipeline proof.
 `LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
 provisional under `OQ-015`, based on later TI and independent MAME

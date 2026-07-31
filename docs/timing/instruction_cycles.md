@@ -163,6 +163,14 @@ not the discarded old word, is later executed
 transactions and numeric total; VERIFIED_SIMULATION for legacy bus order and
 explicit pipeline ownership.**
 
+The same direct TBLR ordering has bounded integrated-pipeline evidence through
+40 formal steps with arbitrary clock-enable stalls. Assertions cover the
+discarded PC+1 MEN read, ACC-addressed MEN transfer, logical RAM commit,
+repeated PC+1 MEN read, and subsequent LAC consumption; the complete fixed
+path reaches cover step 34. The bound does not generalize to TBLW, indirect
+addressing, interrupt arrival, or arbitrary instruction context
+[`formal/tms32010_pipeline_table.sby`, `formal/README.md`].
+
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,
 keeps BANZ in the execute slot during its nonexecutable PC+1 operand fetch,

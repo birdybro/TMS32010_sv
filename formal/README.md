@@ -135,9 +135,38 @@ bound. It does not prove that the partial core classifies program transactions
 correctly, connects the register correctly, implements TI's complete
 fetch/execute overlap, or meets electrical timing.
 
-The five harnesses leave DINT ordering, multicycle arrival positions, RET,
-arbitrary multiply-chain placement/length, the complete integrated
-fetch/execute pipeline, and electrical timing to
+## Integrated direct-TBLR pipeline harness
+
+`tms32010_pipeline_table.sby` checks the actual
+`tms32010_sequential_pipeline_slice` hierarchy with a 40-step BMC and cover.
+The fixed program executes `LACK 4`, direct `TBLR 0`, the repeated `LAC 0`
+following word, and NOP; program address 4 contains `0x1234`.
+`clock_enable_i` remains arbitrary.
+
+Assertions check:
+
+- reset/prime state and program-only bus exclusion;
+- retained TBLR execute ownership while the first PC+1 word is discarded;
+- the ACC-addressed MEN transfer and exact `0x1234` logical RAM write;
+- the repeated PC+1 MEN fetch before TBLR ownership is released;
+- subsequent LAC observation of the committed RAM word and ACC result;
+- absence of program writes, I/O traffic, illegal execution, interrupt state,
+  and stack mutation; and
+- complete architectural and bus-output stability across arbitrary
+  clock-enable stalls, except the intentionally transient sample/retire
+  observation pulses.
+
+All assertions pass through 40 solver steps. The separate cover reaches the
+complete LACK/TBLR/LAC/NOP path at step 34. This is bounded evidence for one
+direct TBLR sequence. It does not prove TBLW, indirect table addressing,
+self-modification, arbitrary surrounding instructions, interrupts during the
+table operation, the complete integrated pipeline, or electrical timing.
+Those behaviors remain simulation/research or future-formal work.
+
+The six harnesses leave DINT ordering, formal coverage of the represented
+multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
+placement/length, the complete integrated fetch/execute pipeline, and
+electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
 `OQ-004`, and `OQ-019`.
 No liveness theorem is claimed because arbitrary clock-enable or

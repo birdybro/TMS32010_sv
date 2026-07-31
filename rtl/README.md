@@ -96,6 +96,12 @@ the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
 mechanism, not claimed hardware behavior.
 
+A 40-step formal harness checks one fixed direct-TBLR use of this complete
+hierarchy across arbitrary clock-enable stalls. It covers discarded PC+1,
+ACC-addressed program read, RAM commit, repeated PC+1, and consumption by the
+following LAC; the complete path is reachable at step 34. It is not a general
+pipeline, TBLW, indirect-table, or interrupt proof.
+
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one
 quarter-cycle after the falling boundary, samples at the next falling
