@@ -30,7 +30,8 @@ accounts and retires them at fetch-sample boundaries without a distinct
 execute slot. Its “opcode cycle” terminology must therefore not be read as
 TI's numbered execution-cycle label or as complete pipeline evidence. The
 explicit `tms32010_sequential_pipeline_slice` currently maps this convention
-only for sequential one-cycle instructions and exact `B`/`BANZ`
+only for sequential one-cycle instructions, exact `B`/`BANZ`, and the six
+accumulator branches
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for the source labels and transaction
@@ -171,14 +172,14 @@ VERIFIED_SIMULATION for legacy bus order; VERIFIED_HARDWARE is not claimed.**
 
 ## BANZ
 
-Except for exact `B` and `BANZ`, the branch-family tables below describe transaction
-order in the legacy wrapper. Their numbered read slots are not TI's
-post-prefetch execution-cycle labels. TI establishes two words, two cycles,
-the following target word, and ordinary program-memory fetch behavior, but no
-located original-part document supplies a dedicated branch pin waveform.
-Consequently, the combined read/execute/commit mapping for these still
-unintegrated families is INFERRED even where each component fact is
-VERIFIED_PRIMARY.
+Except for exact `B`, `BANZ`, and the six accumulator branches, the
+branch-family tables below describe transaction order in the legacy wrapper.
+Their numbered read slots are not TI's post-prefetch execution-cycle labels.
+TI establishes two words, two cycles, the following target word, and ordinary
+program-memory fetch behavior, but no located original-part document supplies
+a dedicated branch pin waveform. Consequently, the combined
+read/execute/commit mapping for these still unintegrated families is INFERRED
+even where each component fact is VERIFIED_PRIMARY.
 
 The explicit pipeline drives `BANZ` through these source-derived intervals:
 
@@ -222,23 +223,26 @@ component facts; INFERRED for the combined execute-interval mapping.**
 
 ## Accumulator-conditional branches
 
-The legacy wrapper gives `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` the
-same ordered-read shape:
+The explicit pipeline drives `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ`
+through these source-derived intervals:
 
-| Legacy read slot | Address role | Result at falling-edge sample |
-|---:|---|---|
-| 1 | opcode PC | recognize the exact condition; advance PC/address to the following word |
-| 2 | opcode PC + 1 | sample the canonical target, test unchanged 32-bit ACC, select target or opcode PC + 2, and retire |
-| following | selected target/fallthrough | normal next instruction read |
+| Boundary/interval | Address role | Execute ownership/effect |
+|---|---|---|
+| opcode prefetch boundary | opcode PC | recognize exact condition; branch enters execute ownership |
+| execution cycle 1 | opcode PC + 1 | sample canonical target operand; unchanged full 32-bit ACC selects target or fallthrough fetch |
+| execution cycle 2 | selected target or opcode PC + 2 | fetch selected instruction; retire branch and capture fetched word |
 
-Every predicate outcome consumes cycle 2. Each read has the ordinary
-address/`MEN` relationship and no `DEN` or `WE` phase. Directed phase tests
-cover both outcomes and an active target-phase stall for all six instructions
+Every predicate outcome consumes both execution intervals. Each transaction
+has the ordinary address/`MEN` relationship and no `DEN` or `WE` phase. A
+directed matrix covers every predicate and both outcomes, stalls the selected
+fetch on each path, preserves ACC, defers the fetched instruction's effect,
+and parks malformed operands. Legacy directed phase tests retain the complete
+taken/untaken native transaction matrix
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
-**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
-transaction/commit mapping.**
+**Confidence: VERIFIED_PRIMARY for component facts; INFERRED for the combined
+execute-interval mapping; VERIFIED_SIMULATION for the implementation.**
 
 ## Branch on overflow
 

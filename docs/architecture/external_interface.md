@@ -65,16 +65,20 @@ it. No data or I/O transaction accompanies either interval
 facts; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for the implementation.**
 
-The six accumulator-conditional branches present their exact opcode at PC and
-canonical target at PC+1 on both outcomes. The second falling-edge sample
-selects target or PC+2 from ACC; no data or I/O transaction occurs. Directed
-native-phase tests cover taken, untaken, and target-phase stall cases for
-every mnemonic
+The explicit pipeline prefetches each exact accumulator-conditional opcode at
+PC, reads its canonical operand at PC+1 during execution cycle 1, and uses the
+unchanged full 32-bit ACC to select execution cycle 2's instruction fetch at
+target or PC+2. The branch owns execution until that fetch completes, when it
+retires and captures the selected word without executing it. No data or I/O
+transaction occurs. The explicit matrix covers both outcomes for every
+mnemonic, zero/positive/negative ACC, stalls on both selected paths, and
+malformed-operand parking; legacy native-phase tests retain additional
+transaction coverage
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 (PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY for
-component facts; INFERRED for the legacy combined transaction/commit
-mapping.**
+component facts; INFERRED for the combined execute-interval mapping;
+VERIFIED_SIMULATION for the implementation.**
 
 `BV` likewise presents `0xf500` at PC and its canonical target at PC+1 for
 both OV states. The second falling-edge sample selects target or PC+2 and

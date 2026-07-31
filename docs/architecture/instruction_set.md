@@ -229,6 +229,16 @@ verify opcode/target reads and target/fallthrough address selection. Pinned
 MAME corroborates every predicate but shortens untaken paths; the project does
 not copy that timing abstraction (`SC-013`).
 
+The source-derived explicit-pipeline mapping places each exact opcode in
+execute ownership at opcode-prefetch completion, reads the nonexecutable
+canonical operand at PC+1 during execution cycle 1, and selects execution
+cycle 2's instruction fetch from the unchanged full 32-bit ACC. The branch
+retires and captures—but does not execute—that word only when the selected
+fetch completes. A directed matrix covers every predicate in both directions,
+selected-fetch stalls on both outcomes, ACC preservation, effect deferral,
+and malformed-operand parking. **Confidence: INFERRED for the combined
+execute-interval mapping; VERIFIED_SIMULATION for the implementation.**
+
 ## Qualified branch-on-overflow slice
 
 `BV` is exact opcode `0xf500` followed by a canonical 12-bit absolute target.

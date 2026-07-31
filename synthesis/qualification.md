@@ -103,13 +103,15 @@ signed multiplier accounts for 1,753 of those generic cells; unlike Quartus,
 generic Yosys synthesis does not map it to a target DSP resource.
 
 The second checked-in script directly synthesizes
-`tms32010_sequential_pipeline_slice`. After exact B and BANZ integration it
-passes both structural checks with zero reported problems, retains 42 RTL
-checks, and contains 14,276 generic cells. This is 63 cells and one check
-above the exact-B 14,213-cell/41-check checkpoint, and 336 cells/ten checks
-above the one-cycle-only 13,940-cell/32-check checkpoint. The result is a
-portability smoke test for the narrow explicit-pipeline subset, not a Quartus
-fit or an instruction-complete resource estimate.
+`tms32010_sequential_pipeline_slice`. After exact B, BANZ, and the six
+accumulator branches are integrated it passes both structural checks with
+zero reported problems, retains 43 RTL checks, and contains 14,525 generic
+cells. This is 249 cells and one check above the exact-B/BANZ
+14,276-cell/42-check checkpoint, 312 cells/two checks above the exact-B
+14,213-cell/41-check checkpoint, and 585 cells/11 checks above the
+one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
+smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
+instruction-complete resource estimate.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.

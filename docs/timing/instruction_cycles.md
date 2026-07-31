@@ -24,8 +24,8 @@ one intervening port transfer, while a three-cycle `TBLR` spans the
 corresponding boundary via dummy, table-transfer, and repeated-prefetch
 intervals. The legacy phase wrapper preserves those external transactions and
 numeric totals but attaches retirement to fetch samples without a distinct
-execute slot. Only the sequential one-cycle subset and exact `B`/`BANZ` currently
-have explicit fetch/execute ownership
+execute slot. Only the sequential one-cycle subset, exact `B`/`BANZ`, and the
+six accumulator branches currently have explicit fetch/execute ownership
 [ti-tms32010-users-guide-spru001b, §2.1.1 and Figures 2-2, 2-9, and 2-10,
 printed pp. 2-3 and 2-16–2-17 (PDF pp. 27 and 40–41)].
 **Confidence: VERIFIED_PRIMARY for source cycle labels; VERIFIED_SIMULATION
@@ -177,17 +177,21 @@ coverage
 **Confidence: VERIFIED_PRIMARY for component facts; INFERRED for their
 combined B interval mapping; VERIFIED_SIMULATION for the implementation.**
 
-Directed `BGEZ`/`BGZ`/`BLEZ`/`BLZ`/`BNZ`/`BZ` tests assert the same two
-complete program reads and second-sample retirement for both predicate
-outcomes. The RTL matrix distinguishes zero, positive, and negative ACC for
-every mnemonic; the model additionally covers maximum-positive and
-most-negative boundaries. Native tests assert the ordinary `MEN` target phase
-and clock-enable stability for every taken and untaken case
+The explicit-pipeline `BGEZ`/`BGZ`/`BLEZ`/`BLZ`/`BNZ`/`BZ` matrix primes each
+exact opcode, retains it through the nonexecutable PC+1 operand fetch in
+execution cycle 1, and uses the unchanged full 32-bit ACC to select execution
+cycle 2's instruction fetch at target or PC+2. Only completion of that fetch
+retires the branch and captures the fetched word. Every predicate is covered
+in both directions with zero, positive, or negative ACC; the model
+additionally covers maximum-positive and most-negative boundaries. The
+pipeline test stalls both selected paths, proves ACC and execute ownership
+stable, defers the fetched instruction's effect, and parks a malformed
+operand. Legacy tests retain the additional native transaction matrix
 [ti-tms32010-users-guide-spru001b, Table 3-2 and individual branch pages,
 printed pp. 3-6, 3-17–3-18, 3-20–3-22, and 3-24
 (PDF pp. 56, 67–68, 70–72, and 74)]. **Confidence: VERIFIED_PRIMARY for
-component facts; VERIFIED_SIMULATION for legacy ordering; explicit pipeline
-ownership unqualified.**
+component facts; INFERRED for the combined interval mapping;
+VERIFIED_SIMULATION for the implementation and legacy ordering.**
 
 Directed `BV` tests assert two complete program reads for OV set and clear,
 with OV stable through the opcode cycle and any target-phase stall. A taken

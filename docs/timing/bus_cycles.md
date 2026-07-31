@@ -118,11 +118,12 @@ data transfer. Native stack bus sequencing remains `OQ-016`; no waveform is
 invented here.
 
 No dedicated original-part pin waveform has been located for the two-word
-branch family. Except for the newly integrated exact `B` and `BANZ`, the
-ordered reads below are derived from the primary word/cycle totals,
-following-word operand definitions, normal program-read rules, and legacy
-directed traces. They remain INFERRED as combined pipeline mappings even
-though the component facts are VERIFIED_PRIMARY.
+branch family. Except for the newly integrated exact `B`, `BANZ`, and six
+accumulator-conditional branches, the ordered reads below are derived from
+the primary word/cycle totals, following-word operand definitions, normal
+program-read rules, and legacy directed traces. They remain INFERRED as
+combined pipeline mappings even though the component facts are
+VERIFIED_PRIMARY.
 
 Exact `BANZ` now has explicit pipeline ownership. Opcode `0xf400` prefetches
 at PC and enters the execute slot. Its canonical operand is read at PC+1
@@ -155,16 +156,20 @@ printed pp. 2-2, 2-13, 3-6, and 3-15
 facts; INFERRED for combined interval mapping; VERIFIED_SIMULATION for the
 implementation.**
 
-`BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` also use two ordinary
-program reads at opcode PC and PC+1 on both outcomes. The next read is the
-target when the ACC predicate is true or opcode PC+2 when false. No `DEN` or
-`WE` phase occurs. MAME's untaken shortcut is recorded in `SC-013` and is not
-used as bus evidence
+Exact `BGEZ`, `BGZ`, `BLEZ`, `BLZ`, `BNZ`, and `BZ` now have explicit
+pipeline ownership. Each opcode prefetch enters execution, its canonical
+PC+1 operand is a nonexecutable execution-cycle-1 read, and the unchanged
+full 32-bit ACC selects execution cycle 2's normal `MEN` read at target or
+opcode PC+2. The branch owns execution until that selected word is captured
+and retires; no `DEN` or `WE` phase occurs. A directed matrix covers every
+predicate and both outcomes, including stalls on the taken and untaken
+selected reads and malformed-operand parking. MAME's untaken shortcut is
+recorded in `SC-013` and is not used as bus evidence
 [ti-tms32010-users-guide-spru001b, §§2.1.1 and 2.6.1, Table 3-2, and
 individual branch pages, printed pp. 2-2, 2-13, 3-6, 3-17–3-18, 3-20–3-22,
 and 3-24 (PDF pp. 26, 37, 56, 67–68, 70–72, and 74)].
 **Confidence: VERIFIED_PRIMARY for component facts; INFERRED for combined
-pipeline mapping.**
+interval mapping; VERIFIED_SIMULATION for the implementation.**
 
 `BV` also reads its opcode and following target at PC and PC+1 regardless of
 OV. The next read is the target when OV was set or PC+2 when clear. OV clears

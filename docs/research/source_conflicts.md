@@ -213,7 +213,9 @@ electrical result of an out-of-range access.
 - **Current treatment:** follow TI's unconditional two-word/two-cycle total
   and perform the second normal program read on both paths. MAME corroborates
   the signed/zero predicates but is not used as a timing oracle for untaken
-  paths.
+  paths. The explicit pipeline therefore retains branch ownership through a
+  nonexecutable operand fetch and the condition-selected instruction fetch on
+  both outcomes; this combined interval mapping remains labeled INFERRED.
 - **Confidence:** VERIFIED_PRIMARY for project timing and predicates;
   documented secondary-source timing disagreement.
 

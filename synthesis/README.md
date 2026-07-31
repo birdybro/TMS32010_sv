@@ -34,8 +34,9 @@ a second decoder, program bus, and fetch/execute register. It is not a
 Quartus resource or timing result and qualifies only the pipeline subset
 documented in `docs/architecture/pipeline.md`. After exact B integration,
 the checkpoint was 14,213 generic cells and 41 checks. With exact BANZ
-integrated, Yosys 0.67+111 reports 14,276 generic cells, 42 retained checks,
-and zero structural-check problems.
+integrated, the checkpoint was 14,276 generic cells and 42 checks. With the
+six accumulator branches integrated, Yosys 0.67+111 reports 14,525 generic
+cells, 43 retained checks, and zero structural-check problems.
 
 ## Quartus
 
