@@ -276,8 +276,11 @@ at that falling boundary, and retire only when cycle 2 fetches the following
 instruction under MEN. Directed stalls prove stable phase, address, strobe,
 data, and ownership in both intervals; invalid RAM addresses park before any
 native strobe. Figure 2-9 makes this combined I/O mapping
-VERIFIED_PRIMARY rather than inferred. Other multicycle,
-interrupt, and table pipeline integration remains absent; do not
+VERIFIED_PRIMARY rather than inferred. Figure 2-12's basic
+EINT/protected-instruction/dummy/vector path now has explicit ownership,
+including stalls and deferred vector execution; multiply-extension and the
+complete arrival matrix remain core-only evidence. Other multicycle and table
+pipeline integration remains absent; do not
 generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover
@@ -324,9 +327,11 @@ matches TI Figure 2-12's external address order. A 32-case core matrix
 exhausts arrival at every represented machine cycle of all 15 supported
 multicycle families. A four-case native test also proves the current digital
 wrapper samples a held-low request only at the enabled falling boundary from
-each modeled subphase, including a phase stall. Complete fetch/execute
-overlap, physical setup/synchronizer behavior, native/RTL CALA/RET sequencing,
-PUSH/POP second-cycle sequencing, and the provisional
+each modeled subphase, including a phase stall. The explicit pipeline
+additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
+sequence. MPY/MPYK extension and the complete multicycle-arrival matrix in
+that pipeline, physical setup/synchronizer behavior, native/RTL CALA/RET
+sequencing, PUSH/POP second-cycle sequencing, and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 For Atari integration specifically, production drawing A044427 Rev A holds the

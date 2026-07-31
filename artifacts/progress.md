@@ -5,7 +5,7 @@
 - **Tests passing:** 98 repository/provenance/document/ISA/toolchain tests; 218
   directed model tests; one standalone fetch/execute RTL unit; 35 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 19 native bus/phase tests, including nine explicit pipeline tests; one
+  tests; 20 native bus/phase tests, including ten explicit pipeline tests; one
   512-instruction seeded
   38-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
@@ -34,9 +34,9 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,035 generic cells with 67 retained checks and
+  independently passes at 15,129 generic cells with 78 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
-  IN/OUT integration;
+  IN/OUT/interrupt integration;
   this is not a
   Quartus fit or complete-pipeline result
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -253,12 +253,16 @@
   supported two-word control-flow families and IN/OUT, plus all three modeled
   cycles of TBLR/TBLW, checking family-specific logical bus activity,
   completion before service, one protected retirement, the resolved-PC dummy
-  fetch, stack/acknowledge effects, and vector selection
+  fetch, stack/acknowledge effects, and vector selection; the explicit
+  pipeline now implements the basic Figure 2-12 ownership sequence by
+  retiring one protected word while discarding N+2, performing entry with an
+  empty execute slot while capturing vector 2, and deferring vector execution
+  until the following interval
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
-  branches, and exact IN/OUT; table and interrupt
-  execute-overlap
-  ownership and physical interrupt setup/synchronizer behavior, CALA/RET
+  branches, exact IN/OUT, and the basic interrupt path; table ownership,
+  explicit MPY/MPYK interrupt extension, the complete explicit multicycle
+  arrival matrix, and physical interrupt setup/synchronizer behavior, CALA/RET
   second external cycles and native/RTL resumption, unsupported
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
@@ -270,15 +274,13 @@
   DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
   divider state and program-RAM arbitration, board-revision equivalence, and
   safe phase adaptation without READY
-- **Next task:** continue `CTRL-002` by
-  separating Figure 2-12 fetch/execute ownership from the now-qualified core
-  machine-cycle and digital-subphase arrival matrices, and
-  extend `FORMAL-001` only with bounded cases whose architectural ordering is
-  already documented; preserve the
+- **Next task:** continue `CTRL-002` by transferring MPY/MPYK protection and
+  the represented multicycle arrival matrix into the explicit pipeline, or
+  advance `BUS-001` by integrating the already primary-qualified TBLR/TBLW
+  repeated-prefetch ownership; extend `FORMAL-001` only with bounded cases
+  whose architectural ordering is already documented; preserve the
   distinction between model-qualified CALA/RET/PUSH/POP
-  state/cycle behavior and absent native/RTL timing, and between the
-  verified Figure 2-12 external address order and the still-collapsed
-  fetch/execute pipeline;
+  state/cycle behavior and absent native/RTL timing;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
   second-cycle program-bus sequence; keep `SST` outside the qualified boundary until reserved output
   bit 1 is resolved under `OQ-003`/`SC-008`; keep LST's loaded-ARP
@@ -288,4 +290,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `45bb641`
+  `33f1c78`

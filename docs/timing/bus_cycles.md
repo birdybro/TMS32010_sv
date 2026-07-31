@@ -99,15 +99,22 @@ there is no external acknowledge pin
 [ti-tms32010-users-guide-spru001b, §§2.10 and Figure 2-12, printed
 pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
 
-The partial native wrapper reproduces the tested address/strobe sequence with
+The legacy native wrapper reproduces the tested address/strobe sequence with
 four normal program-read subphases per word. Its dummy-return-PC cycle asserts
 only `MEN`; `DEN`, `WE`, logical data operations, I/O operations, and
 instruction retirement remain inactive. At the dummy sample the core pushes
 the return PC and selects vector 2. `sim/interrupt/tb_interrupt_phase.sv`
 observes branch target `0x100`, EINT at `0x100`, protected word `0x101`,
-dummy address `0x102`, and vector `0x002`. This qualifies external bus order,
-not the still-collapsed general fetch/execute ownership described in
-`docs/architecture/pipeline.md`.
+dummy address `0x102`, and vector `0x002`.
+
+The explicit wrapper independently retires the protected word while
+discarding N+2, leaves the execute slot empty during vector fetch and entry,
+captures vector 2 without executing it, and executes it only in the following
+interval. Directed stalls prove the dummy and vector addresses remain stable
+and that retirement, stack entry, and vector effects cannot occur early
+[`sim/interrupt/tb_sequential_pipeline_interrupt.sv`]. This qualifies the
+basic Figure 2-12 ownership path, not MPY/MPYK extension or the complete
+multicycle-arrival matrix described in `docs/architecture/pipeline.md`.
 
 `PUSH` and `POP` each consume two cycles despite carrying only one program
 word. No located original-part timing figure shows whether `MEN` is inactive,
@@ -313,8 +320,10 @@ are transcribed and have directed native-phase tests. Remaining work must
 identify:
 
 - branch/call/return prefetch address order;
-- complete interrupt execute-overlap ownership and native-subphase arrival
-  ownership; the 32 represented machine-cycle arrival cases for the 15
-  supported multicycle families are qualified;
+- explicit interrupt ownership beyond the qualified EINT/protected-word/
+  discarded-N+2/vector path, including MPY/MPYK extension and the complete
+  multicycle-arrival matrix; the 32 represented machine-cycle arrival cases
+  for the 15 supported multicycle families remain qualified in the
+  legacy/core path;
 - any internal conflict that changes an otherwise normal read;
 - safe wrapper phase pause, if one exists, despite the absence of READY.

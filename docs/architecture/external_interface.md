@@ -130,13 +130,18 @@ diagnostic `interrupt_pending_o` is not a physical TMS32010 pin
 For ordinary interrupt entry, Figure 2-12 shows normal program reads at N and
 N+1, a dummy read at return address N+2, and a read at vector `0x002`. The
 dummy word cannot decode into a logical internal-data or I/O transaction.
-At its sample the partial core pushes the return address, masks interrupts,
-clears its pending diagnostic, and makes 2 the next program address. There is
-no native interrupt-acknowledge output; TI's acknowledge is internal
+The explicit pipeline wrapper executes exactly one protected word while
+discarding the N+2 read, then performs entry with an empty execute slot while
+reading vector 2. At that vector sample the core pushes N+2, masks interrupts,
+clears its pending diagnostic, and captures vector 2 without executing it.
+The following interval executes that vector word. Stalls preserve each
+address and defer all boundary effects. There is no native
+interrupt-acknowledge output; TI's acknowledge is internal
 [ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed
 pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY for the
-external fetch order and entry effects; full execute overlap remains
-`OQ-004`.**
+external fetch order and entry effects; VERIFIED_SIMULATION for the basic
+explicit ownership path. MPY/MPYK extension and the complete multicycle
+arrival matrix remain `OQ-004`.**
 
 `LST` retains the ordinary external program fetch while exposing one internal
 logical data read. The loaded status fields commit at the falling-edge sample;

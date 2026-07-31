@@ -2,9 +2,10 @@
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
 // instructions, exact B/BANZ/BV/BIOZ/CALL, the exact
-// accumulator-conditional branch family, and exact IN/OUT transfer plus
-// following-prefetch ownership. Program fetch owns a separate address from
-// the core PC. Other multicycle, reserved, and
+// accumulator-conditional branch family, exact IN/OUT transfer plus
+// following-prefetch ownership, and Figure 2-12 protected/dummy/vector
+// ownership. Program fetch owns a separate address from the core PC. Other
+// multicycle, reserved, and
 // invalid-data-address instructions park the wrapper before execution; the
 // legacy phase wrapper remains responsible for their separately qualified
 // traces.
@@ -14,6 +15,7 @@ module tms32010_sequential_pipeline_slice (
   input  logic        rs_i,
   input  logic        clock_enable_i,
   input  logic        bio_i,
+  input  logic        int_i,
   input  logic [15:0] program_data_i,
   input  logic [15:0] io_read_data_i,
   input  logic        debug_data_write_i,
@@ -62,6 +64,7 @@ module tms32010_sequential_pipeline_slice (
   output logic        overflow_flag_o,
   output logic        overflow_mode_o,
   output logic        interrupt_mask_o,
+  output logic        interrupt_pending_o,
   output logic        instruction_valid_o,
   output logic        retired_o,
   output logic        illegal_o,
@@ -82,6 +85,10 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_IN   = 6'd48;
   localparam logic [5:0] OP_OUT  = 6'd49;
   localparam logic [5:0] OP_SUBH = 6'd52;
+  localparam logic [5:0] OP_MPY  = 6'd25;
+  localparam logic [5:0] OP_MPYK = 6'd26;
+  localparam logic [5:0] OP_DINT = 6'd33;
+  localparam logic [5:0] OP_EINT = 6'd34;
 
   function automatic logic is_accumulator_branch(
     input logic [5:0] operation
@@ -116,11 +123,12 @@ module tms32010_sequential_pipeline_slice (
     endcase
   endfunction
 
-  typedef enum logic [1:0] {
+  typedef enum logic [2:0] {
     PIPELINE_SEQUENTIAL,
     PIPELINE_CONTROL_TARGET,
     PIPELINE_CONTROL_INVALID,
-    PIPELINE_IO_PREFETCH
+    PIPELINE_IO_PREFETCH,
+    PIPELINE_INTERRUPT_VECTOR
   } pipeline_state_t;
 
   pipeline_state_t pipeline_state;
@@ -152,6 +160,12 @@ module tms32010_sequential_pipeline_slice (
   logic        io_transfer_active;
   logic        io_prefetch_step;
   logic [15:0] io_read_sample;
+  logic        interrupt_protected;
+  logic        interrupt_vector_step;
+  logic        interrupt_dummy_fetch_step;
+  logic        execute_extends_interrupt_deferral;
+  logic        execute_disables_interrupts;
+  logic        retiring_interrupt_mask;
   logic [8:0]  banz_counter;
   logic        accumulator_condition_taken;
   logic        bioz_taken;
@@ -176,7 +190,6 @@ module tms32010_sequential_pipeline_slice (
   logic [15:0] core_data_write_data;
   logic [11:0] core_program_address;
   logic [11:0] core_program_next_address;
-  logic        core_interrupt_pending;
 
   // The packed decoder interface is shared with the core. This wrapper needs
   // only validity and operation class to enforce its one-cycle boundary.
@@ -246,7 +259,9 @@ module tms32010_sequential_pipeline_slice (
     next_fetch_address = 12'h000;
     if (bus_active_o) begin
       next_fetch_address = program_bus_address + 12'h001;
-      if (io_transfer_active) begin
+      if (interrupt_dummy_fetch_step) begin
+        next_fetch_address = 12'h002;
+      end else if (io_transfer_active) begin
         next_fetch_address = program_bus_address;
       end else if (control_operand_step) begin
         // A documented branch operand has a zero upper nibble. If it does
@@ -344,6 +359,8 @@ module tms32010_sequential_pipeline_slice (
   assign io_prefetch_step =
     execute_io_supported &&
     (pipeline_state == PIPELINE_IO_PREFETCH);
+  assign interrupt_vector_step =
+    pipeline_state == PIPELINE_INTERRUPT_VECTOR;
   assign banz_counter =
     auxiliary_register_pointer_o
       ? auxiliary_register_1_o[8:0]
@@ -382,6 +399,24 @@ module tms32010_sequential_pipeline_slice (
       control_target_step ||
       io_prefetch_step
     );
+  assign execute_extends_interrupt_deferral =
+    (execute_decoded_operation == OP_MPY) ||
+    (execute_decoded_operation == OP_MPYK);
+  assign execute_disables_interrupts =
+    execute_decoded_operation == OP_DINT;
+  assign retiring_interrupt_mask =
+    (execute_decoded_operation == OP_EINT)
+      ? 1'b0
+      : (
+        execute_disables_interrupts
+          ? 1'b1
+          : interrupt_mask_o
+      );
+  assign interrupt_dummy_fetch_step =
+    interrupt_protected &&
+    execute_complete &&
+    !execute_disables_interrupts &&
+    !execute_extends_interrupt_deferral;
   assign pipeline_blocked_o =
     execute_valid_o &&
     !rs_i &&
@@ -402,13 +437,21 @@ module tms32010_sequential_pipeline_slice (
   assign fetched_instruction =
     fetch_boundary &&
     (
-      !execute_valid_o ||
-      execute_one_cycle_supported ||
-      control_target_step ||
-      io_prefetch_step
+      interrupt_vector_step ||
+      (
+        !interrupt_dummy_fetch_step &&
+        (
+          !execute_valid_o ||
+          execute_one_cycle_supported ||
+          control_target_step ||
+          io_prefetch_step
+        )
+      )
     );
   assign core_reset = pipeline_boundary && rs_i;
-  assign core_execute_boundary = fetch_boundary && execute_ready;
+  assign core_execute_boundary =
+    fetch_boundary &&
+    (execute_ready || interrupt_vector_step);
   assign instruction_valid_o = execute_ready;
 
   tms32010_decode execute_decode (
@@ -445,7 +488,7 @@ module tms32010_sequential_pipeline_slice (
     .reset_i                       (core_reset),
     .clock_enable_i                (core_execute_boundary),
     .bio_i                         (core_bio),
-    .int_i                         (1'b1),
+    .int_i                         (int_i),
     .program_address_o             (core_program_address),
     .program_next_address_o        (core_program_next_address),
     .program_read_o                (core_program_read),
@@ -483,7 +526,7 @@ module tms32010_sequential_pipeline_slice (
     .overflow_flag_o               (overflow_flag_o),
     .overflow_mode_o               (overflow_mode_o),
     .interrupt_mask_o              (interrupt_mask_o),
-    .interrupt_pending_o           (core_interrupt_pending),
+    .interrupt_pending_o           (interrupt_pending_o),
     .instruction_valid_o           (core_instruction_valid),
     .retired_o                     (retired_o),
     .illegal_o                     (illegal_o),
@@ -511,12 +554,19 @@ module tms32010_sequential_pipeline_slice (
       branch_operand_word <= 16'h0000;
       bioz_taken          <= 1'b0;
       io_read_sample       <= 16'h0000;
+      interrupt_protected  <= 1'b0;
     end else if (pipeline_boundary) begin
       if (rs_i) begin
         pipeline_state      <= PIPELINE_SEQUENTIAL;
         branch_operand_word <= 16'h0000;
         bioz_taken          <= 1'b0;
         io_read_sample       <= 16'h0000;
+        interrupt_protected  <= 1'b0;
+      end else if (
+        core_execute_boundary &&
+        interrupt_dummy_fetch_step
+      ) begin
+        pipeline_state <= PIPELINE_INTERRUPT_VECTOR;
       end else if (core_execute_boundary && control_operand_step) begin
         branch_operand_word <= program_data_i;
         bioz_taken <=
@@ -537,6 +587,25 @@ module tms32010_sequential_pipeline_slice (
         pipeline_state <= PIPELINE_IO_PREFETCH;
       end else if (core_execute_boundary && io_prefetch_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
+      end else if (core_execute_boundary && interrupt_vector_step) begin
+        pipeline_state <= PIPELINE_SEQUENTIAL;
+      end
+
+      if (core_execute_boundary && execute_complete) begin
+        if (interrupt_protected) begin
+          if (execute_disables_interrupts) begin
+            interrupt_protected <= 1'b0;
+          end else if (execute_extends_interrupt_deferral) begin
+            interrupt_protected <= 1'b1;
+          end else begin
+            interrupt_protected <= 1'b0;
+          end
+        end else if (
+          (interrupt_pending_o || !int_i) &&
+          !retiring_interrupt_mask
+        ) begin
+          interrupt_protected <= 1'b1;
+        end
       end
     end
   end
@@ -545,7 +614,6 @@ module tms32010_sequential_pipeline_slice (
     if (!initialize_i) begin
       assert (!(retired_o && !sample_o));
       assert (!core_program_write);
-      assert (!core_interrupt_pending);
       assert (!(
         (!men_n_o && !den_n_o) ||
         (!men_n_o && !we_n_o) ||
@@ -557,7 +625,13 @@ module tms32010_sequential_pipeline_slice (
         end else begin
           assert (core_program_read);
         end
-        if (control_target_step) begin
+        if (interrupt_vector_step) begin
+          assert (!execute_valid_o);
+          assert (!core_instruction_valid);
+          assert (core_program_address == pc_o);
+          assert (core_program_next_address == 12'h002);
+          assert (program_bus_address == 12'h002);
+        end else if (control_target_step) begin
           assert (pc_o == execute_address_o + 12'h001);
           assert (core_program_address == pc_o);
           assert (core_program_next_address == program_bus_address);
@@ -660,6 +734,17 @@ module tms32010_sequential_pipeline_slice (
           assert (!core_io_read && core_io_write);
           assert (core_io_write_data == io_write_data_o);
         end
+      end
+      if (interrupt_dummy_fetch_step && fetch_boundary) begin
+        assert (!fetched_instruction);
+        assert (execute_complete);
+        assert (next_fetch_address == 12'h002);
+      end
+      if (interrupt_vector_step && fetch_boundary) begin
+        assert (fetched_instruction);
+        assert (!execute_complete);
+        assert (!(io_read_o || io_write_o));
+        assert (program_address_o == 12'h002);
       end
       if (pipeline_blocked_o) begin
         assert (!core_execute_boundary);

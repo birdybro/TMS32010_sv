@@ -102,7 +102,9 @@ does not pretend the discarded word executed
 [ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
 pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
 **Confidence: VERIFIED_PRIMARY for those architectural effects and the tested
-fetch order; full overlapped execute timing remains `OQ-004`.**
+fetch order; VERIFIED_SIMULATION for the basic protected/discard/vector
+ownership path. Explicit MPY/MPYK extension and the complete
+multicycle-arrival matrix remain `OQ-004`.**
 
 ## Addressing
 

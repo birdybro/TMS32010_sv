@@ -39,9 +39,9 @@ six accumulator branches integrated, Yosys 0.67+111 reports 14,525 generic
 cells and 43 retained checks. With exact BV integrated, the
 checkpoint was 14,567 generic cells and 44 retained checks. With exact BIOZ
 integrated, the checkpoint was 14,715 generic cells and 47 retained checks.
-With exact IN/OUT transfer and following-prefetch ownership integrated, the
-current checkpoint is 15,035 generic cells, 67 retained checks, and zero
-structural-check problems.
+With the basic Figure 2-12 interrupt path integrated, the current checkpoint
+is 15,129 generic cells, 78 retained checks, and zero structural-check
+problems.
 
 ## Quartus
 

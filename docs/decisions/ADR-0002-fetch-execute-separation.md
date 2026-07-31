@@ -38,7 +38,8 @@ The first implementation was the standalone synthesizable
 `tms32010_sequential_pipeline_slice` now connects it to `tms32010_core` for
 the qualified one-cycle subset plus exact `B`, `BANZ`, `BV`, `BIOZ`, `CALL`,
 the six accumulator-conditional branches, and exact `IN`/`OUT` execution
-ownership. Other
+ownership. It also maps Figure 2-12's qualified interrupt path by discarding
+N+2, emptying the execute slot during entry, and capturing vector 2. Other
 multicycle integration will proceed only when directed traces preserve the
 already qualified I/O, table, reset, and interrupt bus sequences and map
 their execution intervals to the explicit pipeline.
@@ -78,6 +79,9 @@ their execution intervals to the explicit pipeline.
   owns the executable PC+1 prefetch. The port word is sampled or held at the
   first falling boundary, while retirement and replacement occur only at the
   second.
+- An interrupt-protected instruction may complete while its concurrent N+2
+  program read is classified as a dummy. Entry then executes in an empty slot
+  while vector 2 is fetched; vector execution is deferred to the next fetch.
 - CALA, RET, PUSH, and POP remain outside native integration until their
   unresolved external cycles are sourced.
 

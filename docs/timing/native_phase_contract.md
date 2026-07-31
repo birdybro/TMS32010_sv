@@ -355,11 +355,14 @@ Both active-low inputs have a 50 ns setup requirement before falling
 full `CLKOUT` cycle. BIOZ applies the current BIO level at its target-word
 sample. Figure 2-12 establishes the interrupt fetch sequence as instruction N,
 instruction N+1, dummy instruction N+2, then vector word 2, with a dummy
-execute slot during the vector fetch. The phase wrapper now verifies those
-four external program reads for a masked request released by EINT. Its input
-is sampled only at enabled falling-edge boundaries; a later integration
-wrapper must provide explicit CDC logic if `INT` originates in another FPGA
-clock domain.
+execute slot during the vector fetch. The native phase wrapper verifies those
+four external program reads for a masked request released by EINT. The
+explicit fetch/execute wrapper further proves that N+2 is discarded, the
+vector fetch owns an empty execute slot, entry effects occur only at the
+vector boundary, and vector execution waits until the following interval.
+Both wrappers sample their input only at enabled falling-edge boundaries; a
+later integration wrapper must provide explicit CDC logic if `INT` originates
+in another FPGA clock domain.
 
 The directed native INT sampling test starts a low level in each of modeled
 phases 0 through 3 and retains it through an enabled phase-3-to-phase-0
@@ -396,4 +399,6 @@ traps, and recognized reset. It has not been qualified for indirect call/return,
 other unimplemented multi-cycle operations, or the complete fetch/execute
 pipeline. Table, I/O, and the cited interrupt program-read sequence now have
 directed native-phase tests, including INT ownership at the enabled falling
-boundary for all four modeled arrival phases.
+boundary for all four modeled arrival phases. The basic EINT/protected-word/
+discarded-N+2/vector sequence also has explicit fetch/execute ownership;
+MPY/MPYK extension and the complete multicycle-arrival matrix do not.

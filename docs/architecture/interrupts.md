@@ -72,18 +72,22 @@ previously pending request can schedule another dummy entry. RET remains
 absent from the RTL because its second external cycle is unresolved under
 `OQ-007`.
 
-This is not yet a complete pipeline claim. The existing partial core maps a
-fetched word's effect to its program-sample boundary rather than maintaining
-TI's separate fetch and execute registers. It reproduces the cited external
-read order and architectural entry effects for the tested paths, and the
-matrix exhausts arrival at each machine-cycle boundary represented by every
-currently supported multicycle core state. The four-phase test establishes
-the current digital wrapper's enabled falling-boundary sampling rule, but it
-does not establish physical synchronizer/setup behavior, the full Figure 2-12
-fetch/execute-overlap timeline, unsupported CALA/RET/PUSH/POP cycles,
-native/RTL return through `RET`, or analog input timing. Those dimensions
-remain outside the qualified boundary (`CTRL-002`, `OQ-004`, `OQ-007`,
-`OQ-016`).
+The explicit pipeline now qualifies Figure 2-12's basic EINT path. EINT
+captures exactly one protected instruction. That instruction executes while
+N+2 is read under MEN but classified as a dummy; its retirement leaves the
+execute slot empty and selects vector 2. The entry interval pushes the
+resolved N+2 return PC, masks/acknowledges internally, and captures vector 2
+without executing it. A following interval executes the vector. Directed
+stalls on both reads prove that protected retirement, entry push, and vector
+effects cannot occur early
+[`sim/interrupt/tb_sequential_pipeline_interrupt.sv`].
+
+This remains an incomplete pipeline claim. The explicit test does not yet
+cover MPY/MPYK extension, every multicycle protected instruction, DINT's
+provisional cancellation, physical synchronizer/setup behavior, unsupported
+CALA/RET/PUSH/POP cycles, native/RTL return through `RET`, or analog input
+timing. The legacy/core matrix remains the evidence for those represented
+arrival cases (`CTRL-002`, `OQ-004`, `OQ-007`, `OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's

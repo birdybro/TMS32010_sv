@@ -76,12 +76,15 @@ occurs only at that second boundary. The IN word is sampled at the transfer
 boundary and committed before the captured following instruction can execute;
 OUT data comes from the old resolved internal-RAM word. Both intervals hold
 under clock-enable stalls, and invalid RAM addresses park before a native
-strobe. Other
+strobe. The qualified Figure 2-12 path retains one protected instruction
+while its concurrent N+2 read is discarded, empties the execute slot for the
+entry interval, and captures vector 2 without executing it. Independent N+2
+and vector stalls prove retirement, stack push, and vector effects occur only
+at their owning boundaries. Other
 multicycle, reserved, or invalid-address execute words park the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
-mechanism, not claimed hardware behavior. Table and interrupt overlap
-remain in the legacy wrapper and are not
-pipeline-integrated.
+mechanism, not claimed hardware behavior. Table overlap remains in the legacy
+wrapper and is not pipeline-integrated.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one

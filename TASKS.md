@@ -75,7 +75,8 @@ objective passing evidence.
 - **Tests:** `tests/regressions/test_documentation.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. Remaining acceptance
   work includes exact reserved status bits,
-  out-of-range RAM decode, complete interrupt execute-overlap ownership, and the
+  out-of-range RAM decode, explicit interrupt ownership beyond the qualified
+  basic Figure 2-12 path, and the
   second-cycle program-bus behavior of single-word PUSH/POP under `OQ-016`.
   Physical pin timing and logical transaction timing must remain distinct.
 
@@ -398,6 +399,7 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_bioz.sv`,
   `sim/bus/tb_sequential_pipeline_call.sv`,
   `sim/bus/tb_sequential_pipeline_io.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
@@ -423,7 +425,8 @@ objective passing evidence.
   pipeline deferral, MPY/MPYK extension, a non-retiring return-PC dummy read,
   stack entry, mask/flag acknowledge effects, and vector-2 selection.
   Complete fetch/execute overlap still does not exist; the narrow explicit
-  ownership slice is described below. A four-case native test now
+  ownership slice now includes the basic Figure 2-12 interrupt path and is
+  described below. A four-case native test now
   asserts falling-boundary request ownership from each modeled subphase,
   including a stalled pre-sample phase, while leaving physical setup/CDC
   behavior unclaimed. A 32-case core matrix exhausts arrival at every
@@ -477,8 +480,9 @@ objective passing evidence.
   parking on unsupported `TBLR`, and reset recovery. An offset differential
   runs the full existing 43-word/38-family one-cycle program and compares PC,
   ACC, T, P, both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count,
-  and illegal state after every pipelined retirement. Table and interrupt
-  pipeline integration remain absent.
+  and illegal state after every pipelined retirement. Figure 2-12's basic
+  EINT/protected/dummy/vector path now has explicit ownership with stalls and
+  deferred vector execution. Table pipeline integration remains absent.
 
 ## Milestone 9 — Program-memory interface
 
@@ -525,7 +529,8 @@ objective passing evidence.
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
   indirect-call/return, pipeline ownership for table operations,
-  interrupt execute ownership, and unsupported CALA/RET/PUSH/POP cycles
+  exhaustive explicit interrupt ownership, and unsupported CALA/RET/PUSH/POP
+  cycles
   remain. Do not collapse Harvard
   spaces in the native interface.
 
@@ -626,6 +631,7 @@ objective passing evidence.
   `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`,
   `sim/interrupt/tb_interrupt_native_sampling.sv`,
   `sim/interrupt/tb_interrupt_phase.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`
 - **Notes:** Primary sources establish an internally latched request from a
@@ -647,8 +653,11 @@ objective passing evidence.
   state, acknowledge effects, and vector-2 selection.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
-  Figure 2-12 resolves external fetch order, but complete fetch/execute
-  overlap, physical setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP
+  Figure 2-12's basic explicit path now discards N+2, performs entry with an
+  empty execute slot, captures vector 2 without executing it, and defers the
+  vector effect through independently stalled reads. MPY/MPYK extension and
+  the complete multicycle arrival matrix remain legacy/core-only evidence.
+  Physical setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP
   arrival cycles, RTL/native RET behavior, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete
   interrupt-cycle claim is made.
@@ -1040,8 +1049,8 @@ objective passing evidence.
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
   harness (13,514 generic cells/26 checks) and the
-  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT pipeline slice
-  (15,035 cells/67 checks), each with zero structural problems. Full-core
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/interrupt pipeline slice
+  (15,129 cells/78 checks), each with zero structural problems. Full-core
   resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 

@@ -15,6 +15,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
             raise RuntimeError("Verilator is required once architectural RTL exists")
         build = ROOT / "build" / "verilator" / name
         build.mkdir(parents=True, exist_ok=True)
+        testbench = ROOT / "sim" / "bus" / f"{name}.sv"
+        if not testbench.exists():
+            testbench = ROOT / "sim" / "interrupt" / f"{name}.sv"
         sources = [
             ROOT / "rtl" / "packages" / "tms32010_pkg.sv",
             ROOT / "rtl" / "core" / "tms32010_decode.sv",
@@ -25,7 +28,7 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_sequential_pipeline_slice.sv",
-            ROOT / "sim" / "bus" / f"{name}.sv",
+            testbench,
         ]
         result = subprocess.run(
             [
@@ -82,6 +85,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
 
     def test_io_transfer_precedes_following_instruction_prefetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_io")
+
+    def test_interrupt_discards_dummy_and_captures_vector(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_interrupt")
 
     def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
         self._run_testbench("tb_sequential_pipeline_differential")

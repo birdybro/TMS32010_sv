@@ -54,8 +54,9 @@ reset-established mask, masked pending-request persistence, EINT's
 previously-disabled following-instruction service delay, and vector entry.
 Tests also prove that an EINT executed while already enabled does not add a
 second deferral. The warning against placing EINT before branch remains a
-software restriction; the current two-cycle-branch arrival test does not
-constitute an exhaustive fetch/execute pipeline proof (`OQ-004`).
+software restriction. The explicit pipeline now qualifies the basic
+EINT/protected-word/discarded-N+2/vector path, but MPY/MPYK extension and the
+complete multicycle-arrival matrix remain `OQ-004`.
 
 ## Qualified `LST` functional slice
 

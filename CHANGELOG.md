@@ -74,6 +74,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   the mutually exclusive DEN/WE transfer at the encoded port, cycle 2
   prefetches PC+1 under MEN, and retirement/capture occurs only at that
   following-prefetch boundary.
+- Explicit Figure 2-12 interrupt ownership for the qualified EINT path:
+  protected execution discards N+2, entry uses an empty execute slot while
+  fetching vector 2, and vector execution waits for the following interval.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -665,8 +668,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   explicit sequencer assumptions; its cover reaches the complete
   prime/stall/replace/flush/target path at step 7.
 - Yosys 0.67+111 synthesizes the
-  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT sequential pipeline
-  wrapper to 15,035 generic cells with 67 retained checks and zero
+  exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/interrupt sequential
+  pipeline wrapper to 15,129 generic cells with 78 retained checks and zero
   structural errors;
   `make synth-yosys` now reproducibly runs this top as well as the unchanged
   13,514-cell/26-check legacy harness.
@@ -707,9 +710,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   stalls in both execution intervals, no early RAM or AR/ARP mutation,
   following-word effect deferral, and invalid-address parking before any
   native transaction.
+- A directed interrupt pipeline test proves masked-request retention through
+  B/EINT, protected-instruction retirement, stalled N+2 discard, stalled
+  vector fetch without early stack push, return-PC entry state, and deferred
+  vector execution.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 19
-  native bus/phase tests including nine pipeline tests, five interrupt
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 20
+  native bus/phase tests including ten pipeline tests, five interrupt
   RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and

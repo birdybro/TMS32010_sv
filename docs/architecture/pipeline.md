@@ -77,7 +77,14 @@ both I/O strobes and fetches PC+1 under MEN. IN samples the live external
 word at the cycle-1 falling boundary; OUT holds the old resolved RAM word
 through that boundary. Architectural RAM/AR/ARP effects, retirement, and
 replacement with PC+1 occur only at the cycle-2 boundary, so the captured
-following instruction cannot execute early. Another
+following instruction cannot execute early. Figure 2-12 is mapped explicitly
+for the qualified interrupt path: the protected instruction retains execute
+ownership while N+2 is read under MEN but marked nonexecutable; its boundary
+empties the slot and selects vector 2. Entry pushes the resolved return PC
+while vector 2 is fetched into that empty slot, without retirement or vector
+effects. A following interval executes the vector. Directed stalls cover both
+the N+2 and vector reads and prove no early retirement, stack push, or vector
+effect. Another
 directed test checks the sequential boundary explicitly. A differential test runs
 the existing 43-word stream spanning all 38 qualified one-cycle operation
 families through both wrappers and compares complete exposed architectural
@@ -90,19 +97,21 @@ state one retirement apart
 `sim/bus/tb_sequential_pipeline_bioz.sv`,
 `sim/bus/tb_sequential_pipeline_call.sv`,
 `sim/bus/tb_sequential_pipeline_io.sv`,
+`sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
 `sim/bus/tb_sequential_pipeline_differential.sv`].
 
 This wrapper is intentionally a qualification slice. It parks at phase zero
 when the execute slot contains any other multicycle, reserved, or
 invalid-address word; it does not claim that parking is TMS32010 hardware
 behavior. The legacy phase wrapper retains the separately verified bus order
-for the remaining table and interrupt sequences until those states are
+for the remaining table sequences until those states are
 reworked around explicit pipeline ownership. **Confidence:
 VERIFIED_PRIMARY for the required overlap; INFERRED for exact
 B/BANZ/BV/BIOZ/CALL/accumulator-branch interval ownership because no
 dedicated branch/call waveform has been located; VERIFIED_PRIMARY for the
 IN/OUT interval mapping in §2.8.1 and Figure 2-9; implementation behavior
-VERIFIED_SIMULATION only within this stated slice.**
+VERIFIED_PRIMARY for Figure 2-12 interrupt ownership; VERIFIED_SIMULATION
+only within this stated slice.**
 
 ## Required implementation model
 
@@ -132,10 +141,11 @@ accumulator branches, plus `IN`/`OUT`:
 - CALA and RET have model-qualified state/cycle behavior but externally
   unresolved second cycles, as do the second cycles of model-qualified
   `PUSH`/`POP` (`OQ-007`, `OQ-016`);
-- complete implementation of the now-transcribed interrupt fetch/execute
-  overlap and request ownership within native subphases (`OQ-004`); all 32
-  represented machine-cycle arrival points across the 15 currently supported
-  multicycle core families are directed-tested;
+- interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
+  vector path, particularly MPY/MPYK extension and the complete multicycle
+  arrival matrix (`OQ-004`); all 32 represented machine-cycle arrival points
+  across the 15 currently supported multicycle families remain directed-tested
+  in the legacy/core path;
 - any external cycle stretching (`OQ-001`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
