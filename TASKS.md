@@ -390,6 +390,8 @@ objective passing evidence.
   cycle tests pass without gated clocks or combinational cycles.
 - **Documentation:** `docs/architecture/pipeline.md`
 - **Tests:** `sim/bus/tb_phase_slice_integration.sv`,
+  `sim/bus/tb_sequential_pipeline_slice.sv`,
+  `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/sequencer/`
 - **Notes:** Temporary clock-enable execution and
@@ -430,9 +432,15 @@ objective passing evidence.
   standalone synthesizable `tms32010_fetch_execute` block passes priming,
   sequential replacement, stall, multicycle-retention, branch-flush,
   interrupt-dummy/vector, and recognized-reset tests plus independent Yosys
-  synthesis. It is intentionally not connected to `tms32010_core` until the
-  surrounding sequencer can classify all already-qualified bus cycles without
-  regression.
+  synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
+  it to the core only for reset priming and decoded one-cycle operation
+  families. A directed test proves first-fetch nonretirement, distinct
+  fetch/execute addresses, phase stalls, sequential replacement, visible
+  parking on `B`, and reset recovery. An offset differential runs the full
+  existing 43-word/38-family one-cycle program and compares PC, ACC, T, P,
+  both ARs, ARP, DP, all stack levels, OV/OVM/INTM, cycle count, and illegal
+  state after every pipelined retirement. Branch, I/O, table, and interrupt
+  pipeline integration remain absent.
 
 ## Milestone 9 — Program-memory interface
 

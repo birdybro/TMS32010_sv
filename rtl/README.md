@@ -37,8 +37,8 @@ fetch/execute overlap, or pin subphases. It exists to qualify decode, state
 effects, clock enables, and reset preservation. It must not be used alone as
 evidence of cycle accuracy.
 
-`tms32010_fetch_execute` is a standalone, not-yet-integrated pipeline
-boundary required by ADR-0002. It stores explicit execute validity, word, and
+`tms32010_fetch_execute` is the pipeline ownership boundary required by
+ADR-0002. It stores explicit execute validity, word, and
 address; accepts a valid fetched instruction only when the slot is empty or
 the current instruction completes; holds an incomplete instruction; and
 invalidates the slot on reset or redirect. Assertions reject a valid fetch on
@@ -54,6 +54,17 @@ bubble, reset, and flush transitions for arbitrary words and boundary timing
 under the block's two explicit legal-input contracts. The non-vacuity cover
 reaches a complete prime/stall/replace/flush/target path at step 7; this still
 does not qualify core integration.
+
+`tms32010_sequential_pipeline_slice` is its first deliberately narrow core
+integration. A separate fetch address primes word 0 without retirement, then
+stays one word ahead while the core retires decoded one-cycle instructions.
+Directed tests cover stalls and reset recovery; a 43-retirement offset
+differential spans all 38 already-qualified one-cycle operation families and
+compares the complete exposed architectural state. A multicycle, reserved, or
+invalid-address execute word parks the wrapper at phase zero with a visible
+`pipeline_blocked_o`; this is a qualification mechanism, not claimed hardware
+behavior. Branch, I/O, table, and interrupt overlap remain in the legacy
+wrapper and are not pipeline-integrated.
 
 `tms32010_program_bus` is the first independently tested native timing
 primitive. It advances a four-subphase logical `CLKOUT`, asserts `MEN` one

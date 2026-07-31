@@ -50,6 +50,26 @@ target capture. These remain standalone-register properties, not integrated
 pipeline evidence
 [`formal/tms32010_fetch_execute.sby`, `formal/README.md`].
 
+The first core-connected use is
+`tms32010_sequential_pipeline_slice`. It gives the native program bus a fetch
+address separate from the core PC. Fetch 0 primes an empty slot; while fetch
+N+1 runs, the core owns and retires one-cycle instruction N. Arbitrary
+clock-enable stalls hold both addresses, and recognized reset empties both
+domains. A directed test checks the boundary explicitly. A second test runs
+the existing 43-word stream spanning all 38 qualified one-cycle operation
+families through both wrappers and compares complete exposed architectural
+state one retirement apart
+[`sim/bus/tb_sequential_pipeline_slice.sv`,
+`sim/bus/tb_sequential_pipeline_differential.sv`].
+
+This wrapper is intentionally a qualification slice. It parks at phase zero
+when the execute slot contains a multicycle, reserved, or invalid-address
+word; it does not claim that parking is TMS32010 hardware behavior. The
+legacy phase wrapper retains the separately verified branch, I/O, table, and
+interrupt sequences until those states are reworked around explicit pipeline
+ownership. **Confidence: VERIFIED_PRIMARY for the required overlap;
+implementation behavior VERIFIED_SIMULATION only within this stated slice.**
+
 ## Required implementation model
 
 The portable RTL will use one FPGA clock and explicit phase/state enables. It

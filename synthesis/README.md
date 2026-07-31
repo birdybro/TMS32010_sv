@@ -26,6 +26,14 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
+The main synthesis harness still targets the legacy multicycle phase wrapper.
+The separately invoked Yosys 0.67+111 synthesis of
+`tms32010_sequential_pipeline_slice` passes pre/post structural checks with
+13,940 generic cells, 32 retained checks, and no inferred memory blocks. This
+standalone result includes the core, a second decoder, program bus, and
+fetch/execute register. It is not a Quartus resource or timing result and does
+not qualify the still-absent multicycle pipeline integration.
+
 ## Quartus
 
 The initial project targets the DE10-Nano Cyclone V SoC FPGA

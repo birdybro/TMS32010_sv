@@ -54,8 +54,14 @@ DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
 ADR-0002 and a standalone synthesizable fetch/execute register now establish
 the required distinct fetched-word and execute-slot validity/address state.
 Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy
-suppression, vector capture, and reset; the register is not yet connected to
-the partial core.
+suppression, vector capture, and reset.
+The separate `tms32010_sequential_pipeline_slice` connects that register to
+the core for reset priming and sequential one-cycle instructions. Its fetch
+address stays one word ahead of the execute PC, all 43 words in the existing
+38-family one-cycle stream match the previously qualified architectural state
+at a one-retirement offset, and the wrapper parks before executing a
+multicycle branch. It does not yet integrate branch, I/O, table, or interrupt
+pipeline sequencing.
 Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.

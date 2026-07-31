@@ -20,9 +20,11 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_decode.sv",
             ROOT / "rtl" / "core" / "tms32010_internal_ram.sv",
             ROOT / "rtl" / "core" / "tms32010_multiplier.sv",
+            ROOT / "rtl" / "core" / "tms32010_fetch_execute.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "rtl" / "core" / "tms32010_program_bus.sv",
             ROOT / "rtl" / "wrappers" / "tms32010_phase_slice.sv",
+            ROOT / "rtl" / "wrappers" / "tms32010_sequential_pipeline_slice.sv",
             ROOT / "sim" / "bus" / f"{name}.sv",
         ]
         result = subprocess.run(
@@ -56,6 +58,12 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
 
     def test_native_samples_drive_sequential_execution_slice(self) -> None:
         self._run_testbench("tb_phase_slice_integration")
+
+    def test_fetch_primes_before_sequential_one_cycle_execution(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_slice")
+
+    def test_qualified_one_cycle_stream_matches_at_pipeline_offset(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_differential")
 
     def test_banz_uses_two_stallable_native_program_reads(self) -> None:
         self._run_testbench("tb_banz_phase")

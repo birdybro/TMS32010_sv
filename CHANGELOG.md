@@ -45,6 +45,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   with explicit word/address validity, completion, stall, and flush ownership;
   directed tests cover Figure 2-2 priming/overlap and Figure 2-12
   dummy/vector flow without claiming integrated pipeline completion.
+- A core-connected sequential pipeline qualification wrapper with a distinct
+  fetch address, first-fetch priming, one-cycle retirement overlap, visible
+  multicycle parking, reset recovery, and full-state offset comparison across
+  the existing 43-word/38-family one-cycle stream.
 - Reproducible Yosys and Quartus synthesis projects with synchronous I/O
   constraints and partial-core synthesis qualification record.
 - Primary-transcribed native timing contract for normal program reads, table
@@ -630,9 +634,17 @@ Changelog, and the project follows semantic versioning once releases begin.
   completion/replacement, bubbles, and reset/flush invalidation under two
   explicit sequencer assumptions; its cover reaches the complete
   prime/stall/replace/flush/target path at step 7.
+- Yosys 0.67+111 independently synthesizes the sequential pipeline wrapper to
+  13,940 generic cells with 32 retained checks and zero structural errors.
+- Directed pipeline tests prove that fetch 0 does not retire, fetch and execute
+  addresses remain one word apart across stalls, every word in the qualified
+  one-cycle stream matches legacy architectural state at one-retirement
+  offset, a branch cannot enter the one-cycle execution path, and reset
+  recovers the parked pipeline.
 - The complete current regression passes 98 repository/ISA/tool tests, 218
-  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, ten
-  native bus/phase tests, five interrupt RTL/phase tests, one 512-step seeded
+  directed model/unit tests, 35 exhaustive/directed instruction RTL tests, 12
+  native bus/phase tests including two pipeline tests, five interrupt
+  RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
   one focused interrupt-entry differential.

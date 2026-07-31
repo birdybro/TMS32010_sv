@@ -6,6 +6,7 @@ read_verilog -sv rtl/core/tms32010_fetch_execute.sv
 read_verilog -sv rtl/core/tms32010_core.sv
 read_verilog -sv rtl/core/tms32010_program_bus.sv
 read_verilog -sv rtl/wrappers/tms32010_phase_slice.sv
+read_verilog -sv rtl/wrappers/tms32010_sequential_pipeline_slice.sv
 read_verilog -sv synthesis/common/tms32010_synth_top.sv
 
 hierarchy -check -top tms32010_synth_top

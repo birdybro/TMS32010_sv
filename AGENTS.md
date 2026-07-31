@@ -250,9 +250,14 @@ RET, for fifty-three shared instructions; their second external cycles remain
 `OQ-007`/`OQ-016`.
 The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
-flush controls. It passes directed overlap/dummy/redirect/reset tests and
-standalone Yosys synthesis, but is not connected to the partial core; no
-integrated fetch/execute claim follows from its existence.
+flush controls. It passes directed overlap/dummy/redirect/reset tests,
+standalone Yosys synthesis, and a bounded transition proof.
+`tms32010_sequential_pipeline_slice` now connects it to the partial core only
+for reset priming and the 38 already-qualified one-cycle operation families.
+Its full-state offset differential covers the 43-word directed one-cycle
+stream and parks before a multicycle branch. Multicycle, interrupt, I/O, and
+table pipeline integration remain absent; do not generalize this narrow
+evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover
 reaches prime/stall/replacement/flush/target capture at step 7. This is not
