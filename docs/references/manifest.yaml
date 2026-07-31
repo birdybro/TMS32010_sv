@@ -21,8 +21,8 @@
       "notes": "Bitsavers scan. Bibliographic year appears as 1983 in filename while cover revision is March 1985; preserve both facts.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Sections 2.1-2.5, printed pages 2-1 through 2-19 (PDF pages 25-43)",
-        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/SACH/SACL/SAR/SPAC/SUB/SUBC/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-24, 3-26 through 3-44, 3-46 through 3-50, 3-53 through 3-58, 3-60 through 3-61, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-74, 76-94, 96-100, 103-108, 110-111, 113, 118, and 120-121)",
+        "Sections 2.1-2.10, printed pages 2-1 through 2-19 (PDF pages 25-43)",
+        "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SUB/SUBC/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-24, 3-26 through 3-44, 3-46 through 3-51, 3-53 through 3-58, 3-60 through 3-61, 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-74, 76-94, 96-101, 103-108, 110-111, 113, 118, and 120-121)",
         "Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 13-20 (PDF pages 369-376)"
       ],
       "status": "acquired",
@@ -50,7 +50,7 @@
       "notes": "Use opcode examples as an independent check, not as the only encoding authority.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LDP, LST, LT, LTA, LTD, MPY, MPYK, OUT, PAC, POP, PUSH, SPAC, and SUBC assembler syntax, operation, encoding, and examples, printed pages 3-14 through 3-24, 3-26 through 3-30, 3-36, 3-38 through 3-41, 3-43, 3-44, 3-47 through 3-50, 3-58, and 3-61 (PDF pages 35-45, 47-51, 57, 59-62, 64, 65, 68-71, 79, and 82); sections 4.3-4.6 BIOZ polling, BANZ loop, LTD filter, and SUBC divide examples, printed pages 4-2 through 4-7 (PDF pages 84-86 and 98-100)",
+        "APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LDP, LST, LT, LTA, LTD, MPY, MPYK, OUT, PAC, POP, PUSH, RET, SPAC, and SUBC assembler syntax, operation, encoding, and examples, printed pages 3-14 through 3-24, 3-26 through 3-30, 3-36, 3-38 through 3-41, 3-43, 3-44, 3-47 through 3-51, 3-58, and 3-61 (PDF pages 35-45, 47-51, 57, 59-62, 64, 65, 68-72, 79, and 82); sections 4.3-4.6 BIOZ polling, BANZ loop, LTD filter, and SUBC divide examples, printed pages 4-2 through 4-7 (PDF pages 84-86 and 98-100)",
         "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)"
       ],
       "status": "acquired",
@@ -82,7 +82,7 @@
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
         "Section 3.5.3 multiplier behavior, printed page 3-21 (PDF page 50)",
         "Section 3.4.3 data movement, printed page 3-13 (PDF page 42)",
-        "ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, OUT, PAC, POP, PUSH, SAR, SPAC, SUB, SUBC, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-35, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54 through 4-56, 4-61 through 4-68, 4-70, and 4-73 (PDF pages 95-116, 119, 122, 124-131, 133, 135-137, 142-149, 151, and 154)",
+        "ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, OUT, PAC, POP, PUSH, RET, SAR, SPAC, SUB, SUBC, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-35, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54 through 4-57, 4-61 through 4-68, 4-70, and 4-73 (PDF pages 95-116, 119, 122, 124-131, 133, 135-138, 142-149, 151, and 154)",
         "Section 5.3.2 Subroutine Calls, printed page 5-17 (PDF page 174)",
         "Section 5.7.2 unsigned divide using repeated SUBC, printed page 5-37 (PDF page 194)",
         "ROVM instruction description, printed page 4-58 (PDF page 139)"
@@ -280,6 +280,7 @@
         "bv() OV test/clear handler and conditional cycle accounting, lines 480-489, 841, and 855-857",
         "bioz() callback predicate and conditional cycle accounting, lines 440-448, 841, and 855-857",
         "call() target fetch, return-address push, and fixed cycle-table entry, lines 507-512 and 842",
+        "POP_STACK()/ret() stack-pop/PC handlers and fixed two-cycle opcode-table entry, lines 222-228, 676-679, and 849",
         "in_p()/out_p() handlers, common data-address helpers, and fixed two-cycle opcode-table entries for high bytes 0x40-0x4f, lines 260-304, 530-535, 654-659, and 818-825"
       ],
       "status": "acquired",

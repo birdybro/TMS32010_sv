@@ -160,6 +160,18 @@ target trap-before-push
 printed pp. 2-13–2-14, 3-6, and 3-26
 (PDF pp. 37–38, 56, and 76)]. **Confidence: VERIFIED_PRIMARY.**
 
+Directed model tests assert RET's two-cycle total, old-TOS PC load, complete
+four-level pop with old-bottom duplication, and EINT protection through RET
+before pending interrupt reentry
+[ti-tms32010-users-guide-spru001b, §§2.6.2 and 2.9, Table 3-2, and `RET`,
+printed pp. 2-14, 2-18–2-19, 3-6, and 3-51
+(PDF pp. 38, 42–43, 56, and 101)]. The primary instruction pages do not
+identify the address or `MEN` behavior of the second cycle, so there is no
+native-phase or RTL timing claim for RET and its logical model trace reports
+only the opcode fetch. **Confidence: VERIFIED_PRIMARY for the numeric cycle
+total and architectural boundary; UNKNOWN for the second external cycle
+under `OQ-007`.**
+
 Directed `IN`/`OUT` tests assert one opcode `MEN` cycle followed by exactly
 one port cycle. The opcode sample advances PC without retirement. The second
 sample performs the selected `DEN` input or `WE` output transaction, commits
@@ -183,8 +195,9 @@ IN/OUT timing, printed pp. 3-6, 3-30, 3-47, and data-sheet pp. 17–18
   `IN` write and `OUT` read;
 - table-operation discarded fetch order;
 - complete interrupt fetch/execute overlap, every request arrival point in
-  every multicycle instruction, RET-based resumption, and the provisional
-  DINT-at-final-boundary ordering (`OQ-004`, `OQ-019`);
+  every multicycle instruction, native/RTL RET-based resumption, and the
+  provisional DINT-at-final-boundary ordering (`OQ-004`, `OQ-007`,
+  `OQ-019`);
 - board-level phase stretching in the absence of a READY pin.
 
 These map to `OQ-001`, `OQ-004`, and `OQ-007`. Reset-to-first-fetch timing is

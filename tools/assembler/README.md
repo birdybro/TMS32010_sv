@@ -5,7 +5,7 @@ complete TMS32010 assembler. It supports:
 
 - `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
   `DMOV`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `PAC`, `ROVM`, `SACL`,
-  `OUT`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
+  `OUT`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`, `TBLR`,
   `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`;
 - two-pass labels;
 - decimal, `0x` hexadecimal, and TI-style `>hex` constants;
@@ -80,6 +80,8 @@ two-word location accounting with exact opcode `0xf900`.
 `BIOZ` uses that target workflow with exact opcode `0xf600`.
 
 `CALL` uses that target workflow with exact opcode `0xf800`.
+
+`RET` is the exact implied word `0x7f8d`; it accepts no operands.
 
 `IN` and `OUT` take a common data operand followed by a checked port, for
 example `IN 6,PA0`, `IN *+,7,AR1`, `OUT 24,3`, or `OUT *-,PA5`.

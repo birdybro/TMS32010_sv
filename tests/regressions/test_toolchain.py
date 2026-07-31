@@ -678,6 +678,22 @@ class ToolchainSliceTests(unittest.TestCase):
                 with self.assertRaisesRegex(AssemblyError, message):
                     self.assembler.assemble_text(invalid)
 
+    def test_ret_round_trips_exact_implied_word(self) -> None:
+        result = self.assembler.assemble_text("RET\n")
+        self.assertEqual(result.words, {0: 0x7F8D})
+        self.assertEqual(
+            self.disassembler.disassemble_word(0x7F8D),
+            "RET",
+        )
+        source = self.disassembler.disassemble_source([0x7F8D, 0x7F80])
+        self.assertEqual(source, "RET\nNOP\n")
+        self.assertEqual(
+            list(self.assembler.assemble_text(source).words.values()),
+            [0x7F8D, 0x7F80],
+        )
+        with self.assertRaisesRegex(AssemblyError, "no operands"):
+            self.assembler.assemble_text("RET 1\n")
+
     def test_accumulator_branches_round_trip_targets_and_diagnostics(
         self,
     ) -> None:

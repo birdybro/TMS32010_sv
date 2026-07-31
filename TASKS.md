@@ -95,9 +95,9 @@ objective passing evidence.
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`
-- **Notes:** Fifty-two encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
+- **Notes:** Fifty-three encodings (`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
-  `PAC`, `SACL`, `SACH`, `SAR`,
+  `PAC`, `RET`, `SACL`, `SACH`, `SAR`,
   `SOVM`, `SPAC`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, `ZALS`, `SUB`,
   `SUBC`, `SUBS`) are primary-transcribed in the opcode research table. The
   twenty-four
@@ -108,8 +108,8 @@ objective passing evidence.
   IN and OUT add 2,240 legal direct/indirect port/address combinations under
   those same common indirect constraints. TBLR/TBLW add 280 legal common
   address combinations. The decoder exhaustively classifies all 65,536 words
-  against this partial set, accepting 21,582 supported words without
-  collisions; the remaining 8
+  against this partial set, accepting 21,583 supported words without
+  collisions; the remaining 7
   instructions and full reserved-region
   classification remain. `ABS` encoding `0x7f88` is primary-transcribed in
   the research notes but deliberately withheld from the supported database
@@ -234,6 +234,12 @@ objective passing evidence.
   records both mandatory reads, and preserves all architectural state but PC.
   `CALL` pushes wrapped opcode-PC+2 onto a top-first four-level stack, discards
   the old bottom, selects its canonical target, and records both reads.
+  `RET` loads PC from the old stack top, shifts all lower levels upward,
+  duplicates the old bottom, and counts the primary-defined two cycles. Its
+  logical transaction trace deliberately includes only the known opcode
+  fetch because the second external cycle remains unresolved under `OQ-007`.
+  A directed `EINT; RET` test proves RET completes before a pending request
+  schedules reentry.
   `IN` and `OUT` resolve the common internal-data address before updates,
   transfer all 16 bits between that word and one of eight distinct I/O ports,
   apply indirect AR/ARP controls at completion, record an opcode fetch plus
@@ -244,8 +250,8 @@ objective passing evidence.
   updates at completion, and count three cycles.
   Out-of-range
   original-RAM addresses and unsupported words trap. Remaining instruction
-  families, complete overlapped pipeline timing, RET, and untested interrupt
-  arrival combinations remain unimplemented.
+  families, complete overlapped pipeline timing, RTL/native RET timing, and
+  untested interrupt arrival combinations remain unimplemented.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -262,7 +268,7 @@ objective passing evidence.
 - **Documentation:** `tools/assembler/README.md`,
   `tools/disassembler/README.md`
 - **Tests:** `tests/regressions/test_toolchain.py`
-- **Notes:** Qualified slice supports the same fifty-two instructions as the
+- **Notes:** Qualified slice supports the same fifty-three instructions as the
   model, labels, expressions, `.word`, `.org`, `.include`, raw/hex/listing
   output, lossless unknown-word disassembly, and round trips. `LAC` and `SACL`
   support checked direct and indirect TI syntax, including SACL's required
@@ -272,11 +278,11 @@ objective passing evidence.
   ADDS/AND/DMOV/LDP/LST/LT/LTA/LTD/MPY/OR/SUBC/SUBS/TBLR/TBLW/XOR/ZALH/ZALS syntax without a shift operand,
   checked `IN`/`OUT` data-address plus numeric or PA0–PA7 port syntax,
   plus the complete signed 13-bit MPYK immediate range and implied
-  PAC/APAC/SPAC/DINT/EINT and two-word
+  PAC/APAC/SPAC/DINT/EINT/RET and two-word
   `B`/`BANZ`/`BIOZ`/`BV`/`CALL`/accumulator-branch targets.
   Branch-aware location accounting, label resolution, listing output,
   diagnostics, and source-binary-disassembly-binary round trips are
-  directed-tested. The remaining 8
+  directed-tested. The remaining 7
   documented instructions are rejected explicitly. A surviving
   binary tool may be cataloged but never executed outside isolation.
 
@@ -530,10 +536,12 @@ objective passing evidence.
   model/RTL/native/differential evidence for masked pulse retention, held-low
   relatching, EINT and MPY/MPYK deferral, multicycle completion, dummy return
   fetch, stack push, internal acknowledge effects, and vector-2 selection.
+  The model also verifies that EINT protects a following RET long enough to
+  pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12 resolves external fetch order, but complete fetch/execute
-  overlap, every arrival boundary, RET behavior, and provisional DINT
-  cancellation remain under `OQ-004`/`OQ-019`; no complete interrupt-cycle
-  claim is made.
+  overlap, every arrival boundary, RTL/native RET behavior, and provisional
+  DINT cancellation remain under `OQ-004`/`OQ-007`/`OQ-019`; no complete
+  interrupt-cycle claim is made.
 
 ## Milestone 14 — Every instruction family
 
@@ -679,6 +687,12 @@ objective passing evidence.
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
   no data-memory transaction. Its retirement can end generic multiply
   deferral; SPAC-specific interrupt arrivals remain future coverage.
+  `RET` now passes primary-cited exact decode, hand fixture, assembler/
+  disassembler, and directed model tests for its old-TOS PC load, four-level
+  pop with old-bottom duplication, two-cycle total, state preservation, and
+  protected execution after EINT before pending interrupt reentry. The model
+  intentionally omits the unknown second external transaction; RTL/native and
+  differential support remain deferred under `OQ-007`.
   `ADDH` remains explicitly unimplemented under `SC-006`/`OQ-011`; `ABS`
   remains explicitly unimplemented under `SC-007`/`OQ-013`. The rest of the
   arithmetic and load/store families remain. Maintain one subtask per family

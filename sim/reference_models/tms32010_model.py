@@ -3,10 +3,12 @@
 This partial slice supports ADD, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ,
 BLEZ, BLZ, BNZ, BV, BZ, CALL, DINT, DMOV, EINT, IN, LAC, LACK, LAR, LARK,
 LARP, LDP, LDPK, LST, LT, LTA, LTD, MAR, MPY, MPYK, NOP, OR, OUT, PAC,
-ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR, TBLW, XOR, ZAC,
-ZALH, and ZALS. Logical program, internal-data, and I/O transactions and
+RET, ROVM, SACH, SACL, SAR, SOVM, SPAC, SUB, SUBC, SUBS, TBLR, TBLW, XOR,
+ZAC, ZALH, and ZALS. Logical program, internal-data, and I/O transactions and
 instruction totals are modeled; pin subphases are not integrated with this
-model.
+model. RET's primary-defined state transition and cycle total are modeled,
+but its unresolved second external cycle is deliberately absent from the
+logical transaction trace under OQ-007.
 """
 
 from __future__ import annotations
@@ -245,6 +247,28 @@ class Tms32010Model:
 
         mnemonic, operands = self._decode(opcode, pc)
         operands = dict(operands)
+        if mnemonic == "RET":
+            return_address = self.state.stack[0] & PC_MASK
+            old_bottom = self.state.stack[3] & PC_MASK
+            self.state.stack = [
+                self.state.stack[1] & PC_MASK,
+                self.state.stack[2] & PC_MASK,
+                old_bottom,
+                old_bottom,
+            ]
+            self.state.pc = return_address
+            cycles = 2
+            self.cycle_count += cycles
+            self._advance_interrupt_pipeline(mnemonic)
+            return StepTrace(
+                pc=pc,
+                opcode=opcode,
+                mnemonic=mnemonic,
+                operands=operands,
+                cycles=cycles,
+                transactions=tuple(transactions),
+                state_after=self.architectural_state(),
+            )
         if mnemonic in TWO_WORD_CONTROL_FLOW:
             operand_address = (pc + 1) & PC_MASK
             operand_word = self.program[operand_address] & WORD_MASK
@@ -1190,6 +1214,7 @@ class Tms32010Model:
             0x7F89: "ZAC",
             0x7F8A: "ROVM",
             0x7F8B: "SOVM",
+            0x7F8D: "RET",
             0x7F8E: "PAC",
             0x7F8F: "APAC",
             0x7F90: "SPAC",

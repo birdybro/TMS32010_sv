@@ -139,3 +139,11 @@ opcode-PC+2 as the return address, and then loads the target into PC. A full
 stack silently discards the old bottom level
 [ti-tms32010-users-guide-spru001b, Table 3-2 and `CALL`, printed pp. 3-6 and
 3-26 (PDF pp. 56 and 76)]. **Confidence: VERIFIED_PRIMARY.**
+
+`RET` loads PC from the old top and pops the four-level stack, duplicating
+the old bottom into the vacated bottom level. It is one word and two cycles
+[ti-tms32010-users-guide-spru001b, §2.6.2 and `RET`, printed pp. 2-14 and
+3-51 (PDF pp. 38 and 101); ti-first-generation-users-guide-1987, `RET`,
+printed p. 4-57 (PDF p. 138)]. **Confidence: VERIFIED_PRIMARY for
+programmer-visible effects and cycle total; its second external bus cycle
+remains `OQ-007`.**

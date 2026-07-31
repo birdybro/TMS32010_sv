@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** bounded interrupt-entry formal foundation
+- **Current milestone:** RET architectural/model/tool qualification
 - **Completed task IDs:** REPO-001, REF-001, BUS-003
-- **Tests passing:** 89 repository/provenance/document/ISA/toolchain tests; 201
+- **Tests passing:** 91 repository/provenance/document/ISA/toolchain tests; 203
   directed model tests; 34 RTL instruction/decode tests; 3 interrupt RTL/phase
   tests; 10 native bus/phase tests; one 512-instruction seeded
   37-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
@@ -158,9 +158,15 @@
   program space under MEN or write it under WE in cycle 3; completion mutates
   the selected RAM or program word, applies indirect AR/ARP changes, duplicates
   old stack level 2 into the bottom after the documented temporary push/pop,
-  and leaves PC at PC+1 so the following word is fetched again
+  and leaves PC at PC+1 so the following word is fetched again; RET is exact
+  word `0x7f8d`, one word/two cycles, loads PC from old TOS, shifts the
+  remaining stack upward with old-bottom duplication, and is protected after
+  EINT before a pending interrupt can reenter; RET's second external address
+  and MEN behavior remain unknown, so model/tool support does not imply
+  RTL/native qualification
 - **Unresolved issues:** general pipeline overlap, interrupt execute-overlap
-  ownership and exhaustive multicycle arrival cases, RET resumption,
+  ownership and exhaustive multicycle arrival cases, RET's second external
+  cycle and native/RTL resumption,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, SST reserved bit 1, LST next-ARP precedence,
   PUSH/POP second-cycle program-bus sequencing, SUBC result availability and
@@ -171,8 +177,9 @@
   Hard Drivin' INT net, and safe phase adaptation without READY
 - **Next task:** expand `FORMAL-001` to data-memory MPY and repeated multiply
   chains, then continue `CTRL-002` with an exhaustive supported-multicycle
-  arrival matrix and research for
-  `OQ-019` plus RET-based resumption; preserve the distinction between the
+  arrival matrix and research for `OQ-019` plus RET's unresolved external
+  cycle under `OQ-007`; preserve the distinction between model-qualified RET
+  state/cycle behavior and absent native/RTL timing, and between the
   verified Figure 2-12 external address order and the still-collapsed
   fetch/execute pipeline;
   keep PUSH/POP RTL outside the boundary until `OQ-016` supplies the
@@ -184,4 +191,4 @@
   DMOV/LTD source-`0x8f` behavior provisional under `OQ-014` and
   `ADDH`/`ABS` outside the supported boundary pending `OQ-011`/`OQ-013`
 - **Latest committed baseline before this cycle:**
-  `3650a5c`
+  `b813e7a`

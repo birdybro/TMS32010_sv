@@ -17,7 +17,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
 - Partial machine-readable ISA database that enumerates all 60 documented
-  mnemonics and fully describes the first fifty-two model/tool encodings.
+  mnemonics and fully describes the first fifty-three model/tool encodings.
 - Structurally independent executable model with explicit-width state, raw
   image loading, logical fetch traces, deterministic JSON, and trap-on-unknown
   behavior for the initial eight-instruction slice.
@@ -232,6 +232,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A second actual-core formal harness with a 14-step BMC and cover for MPYK
   extending an armed interrupt through its following instruction, followed by
   held-low request relatching after acknowledge.
+- Primary-cited exact `RET=0x7f8d` database/fixture support, assembler and
+  disassembler round trips, and directed model tests for the old-TOS PC load,
+  four-level pop with old-bottom duplication, two-cycle total, state
+  preservation, and protected `EINT; RET` pending-interrupt reentry.
 
 ### Changed
 
@@ -266,6 +270,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
+- The model/tool boundary now contains 53 instructions while RTL/differential
+  remains at 52. RET's second external cycle is not fabricated in the model
+  transaction trace and remains outside RTL under `OQ-007`.
 
 ### Fixed
 
@@ -565,7 +572,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   reaches completed vector execution at step 6.
 - The same formal stack passes a 14-step MPYK-extension/held-low-relatch BMC;
   its separate cover reaches the final masked-pending state at step 8.
-- The complete current regression passes 89 repository/ISA/tool tests, 201
+- The complete current regression passes 91 repository/ISA/tool tests, 203
   directed model tests, 34 exhaustive/directed instruction RTL tests, ten
   native bus/phase tests, three interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -574,8 +581,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- Only fifty-two of 60 documented instruction mnemonics have model, tool, and
-  RTL/differential evidence.
+- Fifty-three of 60 documented instruction mnemonics have model/tool evidence;
+  only fifty-two also have RTL/differential evidence.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).
@@ -601,7 +608,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Interrupt external fetch order and directed entry state are verified, but
   the partial core still collapses fetch and execution at sample boundaries.
   Complete Figure 2-12 execute overlap, every multicycle arrival point, and
-  RET-based resumption remain under `CTRL-002`/`OQ-004`.
+  native/RTL RET-based resumption remain under
+  `CTRL-002`/`OQ-004`/`OQ-007`. RET's functional model behavior is qualified,
+  but TI's located instruction pages do not identify its second cycle's
+  external address or `MEN` behavior.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.

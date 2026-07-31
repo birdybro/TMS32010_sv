@@ -110,13 +110,16 @@ p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
 
 ## Current qualification boundary
 
-The executable model, local assembler/disassembler, RTL, and differential
-boundary support 52 mnemonics: `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
+The executable model and local assembler/disassembler support 53 mnemonics:
+`ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`,
 `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`,
 `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`, `LDPK`,
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
-`ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`,
-`TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. The 24 common-address
+`RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`, `SUBC`, `SUBS`,
+`TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
+differential support the same set except RET, for 52 shared mnemonics; RET's
+architectural effects and two-cycle total are model-qualified, while its
+second external cycle remains unresolved under `OQ-007`. The 24 common-address
 data/table instructions have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
@@ -128,9 +131,9 @@ also latch active-low requests while masked, apply EINT's
 previously-disabled following-instruction deferral and MPY/MPYK's protection,
 dummy-fetch the return PC, push it, mask and clear the request, and select
 vector 2. Directed native testing verifies the Figure 2-12 external address
-order. Complete fetch/execute overlap, every multicycle request arrival, RET
-resumption, and provisional DINT-at-final-boundary ordering remain outside a
-cycle-accuracy claim under `OQ-004`/`OQ-019`.
+order. Complete fetch/execute overlap, every multicycle request arrival,
+native/RTL RET resumption, and provisional DINT-at-final-boundary ordering
+remain outside a cycle-accuracy claim under `OQ-004`/`OQ-007`/`OQ-019`.
 `LST` reads through the common address path and replaces `OV`, `OVM`, `ARP`,
 and `DP` from bits 15, 14, 8, and 0 while preserving `INTM`. The original
 manuals do not state whether a simultaneously encoded indirect next-ARP

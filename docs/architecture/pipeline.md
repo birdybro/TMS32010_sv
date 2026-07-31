@@ -36,13 +36,13 @@ Normal read, table, I/O, and reset pin sequences are transcribed in
 resolved for:
 
 - B, BANZ, BIOZ, BV, CALL, and the six accumulator-tested conditions are now
-  qualified; indirect call/return sequences remain (`OQ-007`);
+  qualified;
 - IN and OUT are now qualified as one opcode-read cycle followed by one
   mutually exclusive DEN or WE I/O cycle;
 - TBLR and TBLW are now qualified as opcode read, discarded PC+1 read, and
   ACC-addressed table transfer, followed by a repeated PC+1 read;
-- `CALA` and `RET`, plus the second cycle of `PUSH`/`POP`
-  (`OQ-016`);
+- `CALA`, RET's externally unresolved second cycle, plus the second cycle of
+  `PUSH`/`POP` (`OQ-007`, `OQ-016`);
 - complete implementation of the now-transcribed interrupt fetch/execute
   overlap and exhaustive multicycle arrival matrix (`OQ-004`);
 - any external cycle stretching (`OQ-001`).

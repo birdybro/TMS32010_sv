@@ -286,6 +286,44 @@ return-address wrap, state preservation, and malformed-target
 trap-before-push. Pinned MAME independently agrees on the push, target, and
 fixed two-cycle total.
 
+## Qualified `RET` architectural/model slice
+
+`RET` is exact opcode `0x7f8d`, one word, and two cycles. It loads PC from
+the old top of the four-level, 12-bit stack, then pops the stack: old level 1
+becomes top, old level 2 becomes level 1, and the old bottom is duplicated
+into level 2 and bottom. It does not change ACC, T, P, either AR, or any status
+bit
+[ti-tms32010-users-guide-spru001b, §2.6.2, Table 3-2, and `RET`, printed
+pp. 2-14, 3-6, and 3-51 (PDF pp. 38, 56, and 101);
+ti-tms32010-assembly-guide-spru002b, `RET`, printed p. 3-51 (PDF p. 72);
+ti-first-generation-users-guide-1987, Table 4-2 and `RET`, printed
+pp. 4-10 and 4-57 (PDF pp. 89 and 138)]. **Confidence: VERIFIED_PRIMARY for
+opcode, architectural effects, and cycle total.**
+
+The instruction-boundary model, assembler, and disassembler implement those
+facts. A directed model test also places `RET` immediately after `EINT` with
+an already-pending request: RET completes and selects the saved PC before
+the next interrupt-entry dummy step. This is the use explicitly described
+by TI in §2.9
+[ti-tms32010-users-guide-spru001b, §2.9, printed pp. 2-18–2-19
+(PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
+
+Pinned MAME independently applies its stack-pop helper to PC and assigns a
+fixed two-cycle total. Its helper retains the old bottom while shifting the
+three higher entries, which is equivalent to bottom duplication in the
+project's top-first representation. This corroborates functional behavior
+only; MAME does not expose the second pin-level program cycle
+[mame-tms320c1x-core-030fefc, `POP_STACK()`/`ret()` and `s_opcode_7F`,
+lines 222–228, 676–679, and 849]. **Confidence: CORROBORATED.**
+
+The instruction pages do not identify the external address or `MEN` behavior
+of RET's second cycle. A discarded sequential prefetch follows naturally
+from TI's general pipeline description, but is only a hypothesis, not an
+instruction-specific timing statement. The RTL and native phase wrapper
+therefore still reject RET, and the model reports only the known opcode fetch
+while counting both documented cycles. `OQ-007` remains open for that
+external sequence. **Confidence: UNKNOWN for the second external cycle.**
+
 ## Qualified `IN`/`OUT` I/O slice
 
 `IN` and `OUT` are one-word, two-cycle common-address instructions. Their

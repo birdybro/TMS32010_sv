@@ -51,14 +51,20 @@ sequence `N`, `N+1`, dummy return PC, `0x002` with ordinary `MEN` phases
 [`sim/interrupt/tb_interrupt_entry.sv`,
 `sim/interrupt/tb_interrupt_phase.sv`,
 `sim/differential/test_interrupt_model_rtl.py`].
+The instruction-boundary model additionally verifies the primary-described
+`EINT; RET` sequence: RET loads the saved PC and pops the stack before a
+previously pending request can schedule another dummy entry. RET remains
+absent from the RTL because its second external cycle is unresolved under
+`OQ-007`.
 
 This is not yet a complete pipeline claim. The existing partial core maps a
 fetched word's effect to its program-sample boundary rather than maintaining
 TI's separate fetch and execute registers. It reproduces the cited external
 read order and architectural entry effects for the tested paths, but the
 full Figure 2-12 execute-overlap timeline, every arrival point inside every
-multicycle instruction, return through unimplemented `RET`, and analog input
-timing remain outside the qualified boundary (`CTRL-002`, `OQ-004`).
+multicycle instruction, native/RTL return through `RET`, and analog input
+timing remain outside the qualified boundary (`CTRL-002`, `OQ-004`,
+`OQ-007`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's

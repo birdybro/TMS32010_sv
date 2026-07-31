@@ -234,12 +234,16 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-30 the machine-readable database, independent model, local
-tools, RTL, and seeded differential boundary support fifty-two instructions:
+As of 2026-07-30 the machine-readable database, independent model, and local
+tools support fifty-three instructions:
 `ADD`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
-`IN`, `OUT`, `PAC`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
+`IN`, `OUT`, `PAC`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SUB`,
 `SUBC`, `SUBS`, `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. This includes
+RET's primary-defined stack pop, PC load, and two-cycle model boundary.
+RTL and seeded differential support the same set except RET, for fifty-two
+shared instructions; RET's second external cycle remains `OQ-007`.
+The shared boundary includes
 `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR` writes in a 144-word internal RAM, plus SACH output shifts
 0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
@@ -275,9 +279,9 @@ retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. Complete fetch/execute
-overlap, exhaustive multicycle arrival coverage, RET resumption, and the
-provisional DINT-at-final-boundary ordering remain outside the qualified
-boundary under `OQ-004`/`OQ-019`.
+overlap, exhaustive multicycle arrival coverage, native/RTL RET resumption,
+and the provisional DINT-at-final-boundary ordering remain outside the
+qualified boundary under `OQ-004`/`OQ-007`/`OQ-019`.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

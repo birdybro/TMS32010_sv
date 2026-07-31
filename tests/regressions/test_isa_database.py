@@ -67,6 +67,7 @@ class IsaDatabaseTests(unittest.TestCase):
                 "BV",
                 "BIOZ",
                 "CALL",
+                "RET",
                 "IN",
                 "OUT",
                 "TBLR",
@@ -119,6 +120,7 @@ class IsaDatabaseTests(unittest.TestCase):
 
     def test_adjacent_unimplemented_control_opcode_does_not_decode(self) -> None:
         self.assertIsNone(decode_word(self.database, 0x7F83))
+        self.assertIsNone(decode_word(self.database, 0x7F8C))
         self.assertIsNone(decode_word(self.database, 0x6882))
         self.assertIsNone(decode_word(self.database, 0x6E02))
 
@@ -262,6 +264,20 @@ class IsaDatabaseTests(unittest.TestCase):
         self.assertIn("all four stack levels", instruction["registers_written"])
         self.assertIsNone(decode_word(self.database, 0xF801))
 
+    def test_ret_is_exact_two_cycle_stack_control_flow(self) -> None:
+        decoded = decode_word(self.database, 0x7F8D)
+        self.assertIsNotNone(decoded)
+        assert decoded is not None
+        instruction, operands = decoded
+        self.assertEqual(instruction["mnemonic"], "RET")
+        self.assertEqual(operands, {})
+        self.assertEqual(instruction.get("word_count", 1), 1)
+        self.assertEqual(instruction["documented_cycle_count"], 2)
+        self.assertEqual(instruction["status_flags_affected"], [])
+        self.assertEqual(instruction["conditional_cycle_differences"], [])
+        self.assertIn("all four stack levels", instruction["registers_read"])
+        self.assertIn("OQ-007", instruction["unresolved_questions"])
+
     def test_io_families_cover_ports_and_reject_reserved_controls(self) -> None:
         for base, mnemonic, operation in (
             (0x4000, "IN", "read"),
@@ -349,13 +365,12 @@ class IsaDatabaseTests(unittest.TestCase):
                 self.assertEqual(decoded[0]["mnemonic"], "MPYK")
                 self.assertEqual(decoded[1], {"constant": expected})
 
-    def test_pac_is_the_single_primary_documented_fixed_word(self) -> None:
+    def test_pac_is_the_primary_documented_fixed_word(self) -> None:
         decoded = decode_word(self.database, 0x7F8E)
         self.assertIsNotNone(decoded)
         assert decoded is not None
         self.assertEqual(decoded[0]["mnemonic"], "PAC")
         self.assertEqual(decoded[1], {})
-        self.assertIsNone(decode_word(self.database, 0x7F8D))
 
     def test_apac_is_the_adjacent_primary_documented_fixed_word(self) -> None:
         decoded = decode_word(self.database, 0x7F8F)
