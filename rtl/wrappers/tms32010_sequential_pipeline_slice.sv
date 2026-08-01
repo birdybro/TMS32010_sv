@@ -146,7 +146,6 @@ module tms32010_sequential_pipeline_slice (
   pipeline_state_t pipeline_state;
   logic [11:0] program_bus_address;
   logic [11:0] next_fetch_address;
-  logic [15:0] branch_operand_word;
   logic [15:0] core_program_data;
   logic        bus_clock_enable;
   logic        pipeline_boundary;
@@ -185,8 +184,6 @@ module tms32010_sequential_pipeline_slice (
   logic        table_transfer_step;
   logic        table_transfer_active;
   logic        table_prefetch_step;
-  logic        table_is_read;
-  logic [15:0] table_read_sample;
   logic        interrupt_protected;
   logic        interrupt_vector_step;
   logic        interrupt_dummy_fetch_step;
@@ -467,21 +464,6 @@ module tms32010_sequential_pipeline_slice (
     (control_target_step && execute_is_bioz)
       ? !bioz_taken
       : bio_i;
-  always_comb begin
-    core_program_data = execute_word_o;
-    // Pipeline state already records that the nonexecutable branch operand
-    // was accepted. Table direction is retained when the transfer starts.
-    // These registered controls avoid routing the execute word through a
-    // second decode merely to select a previously sampled operand.
-    if (pipeline_state == PIPELINE_CONTROL_TARGET) begin
-      core_program_data = branch_operand_word;
-    end else if (
-      (pipeline_state == PIPELINE_TABLE_PREFETCH) &&
-      table_is_read
-    ) begin
-      core_program_data = table_read_sample;
-    end
-  end
   assign execute_ready =
     execute_valid_o &&
     core_instruction_valid &&
@@ -673,21 +655,36 @@ module tms32010_sequential_pipeline_slice (
   always_ff @(posedge clk_i) begin
     if (initialize_i) begin
       pipeline_state      <= PIPELINE_SEQUENTIAL;
-      branch_operand_word <= 16'h0000;
+      core_program_data   <= 16'h0000;
       bioz_taken          <= 1'b0;
       io_read_sample       <= 16'h0000;
-      table_read_sample    <= 16'h0000;
-      table_is_read        <= 1'b0;
       computed_target_address <= 12'h000;
       interrupt_protected  <= 1'b0;
     end else if (pipeline_boundary) begin
+      // One carrier follows core consumption rather than physical bus
+      // selection: instruction fetches replace it at ownership boundaries,
+      // while branch operands and TBLR data replace it one interval before
+      // their respective core retirement boundaries. A paused native phase
+      // cannot reach this update point, so the carrier remains stable.
+      if (rs_i) begin
+        core_program_data <= 16'h0000;
+      end else if (
+        fetched_instruction ||
+        (
+          core_execute_boundary &&
+          (
+            control_operand_step ||
+            (table_transfer_step && execute_is_tblr)
+          )
+        )
+      ) begin
+        core_program_data <= program_data_i;
+      end
+
       if (rs_i) begin
         pipeline_state      <= PIPELINE_SEQUENTIAL;
-        branch_operand_word <= 16'h0000;
         bioz_taken          <= 1'b0;
         io_read_sample       <= 16'h0000;
-        table_read_sample    <= 16'h0000;
-        table_is_read        <= 1'b0;
         computed_target_address <= 12'h000;
         interrupt_protected  <= 1'b0;
       end else if (
@@ -702,7 +699,6 @@ module tms32010_sequential_pipeline_slice (
       end else if (core_execute_boundary && computed_target_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
       end else if (core_execute_boundary && control_operand_step) begin
-        branch_operand_word <= program_data_i;
         bioz_taken <=
           (program_data_i[15:12] == 4'h0) &&
           execute_is_bioz &&
@@ -722,12 +718,8 @@ module tms32010_sequential_pipeline_slice (
       end else if (core_execute_boundary && io_prefetch_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
       end else if (core_execute_boundary && table_start_step) begin
-        table_is_read <= execute_is_tblr;
         pipeline_state <= PIPELINE_TABLE_TRANSFER;
       end else if (core_execute_boundary && table_transfer_step) begin
-        if (execute_is_tblr) begin
-          table_read_sample <= program_data_i;
-        end
         pipeline_state <= PIPELINE_TABLE_PREFETCH;
       end else if (core_execute_boundary && table_prefetch_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
@@ -788,13 +780,13 @@ module tms32010_sequential_pipeline_slice (
           assert (core_program_address == pc_o);
           assert (core_program_next_address == program_bus_address);
           if (execute_is_b) begin
-            assert (program_bus_address == branch_operand_word[11:0]);
+            assert (program_bus_address == core_program_data[11:0]);
           end else if (execute_is_banz) begin
             assert (
               program_bus_address ==
               (
                 (banz_counter != 9'h000)
-                  ? branch_operand_word[11:0]
+                  ? core_program_data[11:0]
                   : pc_o + 12'h001
               )
             );
@@ -803,7 +795,7 @@ module tms32010_sequential_pipeline_slice (
               program_bus_address ==
               (
                 accumulator_condition_taken
-                  ? branch_operand_word[11:0]
+                  ? core_program_data[11:0]
                 : pc_o + 12'h001
               )
             );
@@ -812,8 +804,8 @@ module tms32010_sequential_pipeline_slice (
               program_bus_address ==
               (
                 overflow_flag_o
-                  ? branch_operand_word[11:0]
-                : pc_o + 12'h001
+                  ? core_program_data[11:0]
+                  : pc_o + 12'h001
               )
             );
           end else if (execute_is_bioz) begin
@@ -821,13 +813,13 @@ module tms32010_sequential_pipeline_slice (
               program_bus_address ==
               (
                 bioz_taken
-                  ? branch_operand_word[11:0]
+                  ? core_program_data[11:0]
                   : pc_o + 12'h001
               )
             );
             assert (core_bio == !bioz_taken);
           end else if (execute_is_call) begin
-            assert (program_bus_address == branch_operand_word[11:0]);
+            assert (program_bus_address == core_program_data[11:0]);
           end
         end else if (io_prefetch_step) begin
           assert (pc_o == execute_address_o + 12'h001);
@@ -945,9 +937,8 @@ module tms32010_sequential_pipeline_slice (
         assert (execute_complete);
         assert (!program_write_o && !men_n_o);
         assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
-        assert (table_is_read == execute_is_tblr);
-        if (table_is_read) begin
-          assert (core_program_data == table_read_sample);
+        if (execute_is_tblr) begin
+          assert (core_data_write_data == core_program_data);
         end
       end
       if (interrupt_dummy_fetch_step && fetch_boundary) begin

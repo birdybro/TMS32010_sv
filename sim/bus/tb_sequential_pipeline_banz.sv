@@ -187,6 +187,7 @@ module tb_sequential_pipeline_banz;
       execute_address == 12'h001 &&
       execute_word == 16'hf400 &&
       program_address == 12'h003 &&
+      dut.core_program_data == 16'h0100 &&
       pc == 12'h002 &&
       cycle_count == 32'd2 &&
       auxiliary_register_0 == 16'ha400 &&
@@ -199,6 +200,7 @@ module tb_sequential_pipeline_banz;
       retired &&
       execute_address == 12'h003 &&
       execute_word == 16'h3901 &&
+      dut.core_program_data == 16'h3901 &&
       program_address == 12'h004 &&
       pc == 12'h003 &&
       cycle_count == 32'd3 &&
@@ -234,6 +236,7 @@ module tb_sequential_pipeline_banz;
       execute_address == 12'h005 &&
       execute_word == 16'hf400 &&
       program_address == 12'h008 &&
+      dut.core_program_data == 16'h0008 &&
       pc == 12'h006 &&
       cycle_count == 32'd6 &&
       auxiliary_register_1 == 16'hbe01,
@@ -256,6 +259,7 @@ module tb_sequential_pipeline_banz;
         !men_n &&
         program_address == 12'h008 &&
         execute_address == 12'h005 &&
+        dut.core_program_data == 16'h0008 &&
         pc == 12'h006 &&
         cycle_count == 32'd6 &&
         auxiliary_register_1 == 16'hbe01 &&
@@ -271,6 +275,7 @@ module tb_sequential_pipeline_banz;
       retired &&
       execute_address == 12'h008 &&
       execute_word == 16'h702a &&
+      dut.core_program_data == 16'h702a &&
       program_address == 12'h009 &&
       pc == 12'h008 &&
       cycle_count == 32'd7 &&
@@ -298,6 +303,7 @@ module tb_sequential_pipeline_banz;
       execute_address == 12'h009 &&
       execute_word == 16'hf400 &&
       program_address == 12'h00a &&
+      dut.core_program_data == 16'hf123 &&
       pc == 12'h00a &&
       cycle_count == 32'd9 &&
       auxiliary_register_1 == 16'hbe00 &&
@@ -311,6 +317,7 @@ module tb_sequential_pipeline_banz;
         phase == 2'd0 &&
         program_address == 12'h00a &&
         execute_address == 12'h009 &&
+        dut.core_program_data == 16'hf123 &&
         pc == 12'h00a &&
         cycle_count == 32'd9 &&
         auxiliary_register_1 == 16'hbe00 &&

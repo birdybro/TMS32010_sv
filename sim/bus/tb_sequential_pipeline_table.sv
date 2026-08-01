@@ -330,6 +330,7 @@ module tb_sequential_pipeline_table;
       pc == 12'h084 &&
       cycle_count == 32'd13 &&
       program_address == 12'h084 &&
+      dut.core_program_data == 16'h7e44 &&
       auxiliary_register_0 == 16'h0005 &&
       !auxiliary_register_pointer &&
       stack_bottom == 12'h002,
@@ -352,6 +353,7 @@ module tb_sequential_pipeline_table;
       require(
         program_address == 12'h084 &&
         execute_address == 12'h083 &&
+        dut.core_program_data == 16'h7e44 &&
         auxiliary_register_0 == 16'h0005 &&
         !auxiliary_register_pointer &&
         stack_bottom == 12'h002 &&
@@ -369,6 +371,7 @@ module tb_sequential_pipeline_table;
       execute_valid &&
       execute_address == 12'h084 &&
       execute_word == 16'h7e86 &&
+      dut.core_program_data == 16'h7e86 &&
       pc == 12'h084 &&
       cycle_count == 32'd14 &&
       program_address == 12'h085 &&

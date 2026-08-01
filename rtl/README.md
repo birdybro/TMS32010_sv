@@ -104,7 +104,8 @@ cover both signed products, internal-read versus program-only activity,
 stalls, dummy discard, and the post-following stacked PC.
 The explicit wrapper also retains TBLR/TBLW through Figure 2-10's discarded
 PC+1 read, ACC-addressed program transfer, and repeated PC+1 read. TBLR
-caches program data at the transfer boundary; TBLW asserts separate
+carries sampled program data from the transfer boundary to retirement; TBLW
+asserts separate
 `program_write_o`/`program_write_data_o` outputs while `we_n_o` is low.
 RAM/AR/ARP/stack effects and retirement occur only when the repeated PC+1
 word is captured. Directed stalls cover all three intervals, and a
@@ -113,6 +114,16 @@ executes. Other multicycle, reserved, or invalid-address execute words park
 the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
 mechanism, not claimed hardware behavior.
+
+One context-owned `core_program_data` register now carries ordinary executable
+words, accepted control operands, and sampled TBLR data. Each value is captured
+one ownership boundary before the core consumes it and remains stable while a
+native phase is paused. At the same retirement edge that consumes an operand
+or table word, a selected or repeated executable fetch may replace the carrier
+for the next owner. Directed BANZ and TBLR traces inspect those capture, hold,
+consume, and replacement points; the existing composed table proofs retain the
+external transaction and retirement checks. This is an FPGA pipeline carrier,
+not an original TMS32010 register or a new architectural boundary.
 
 The wrapper's internal-data observation follows ADR-0004. A newly owned
 instruction's `data_address_o` is visible immediately at phase 0, while

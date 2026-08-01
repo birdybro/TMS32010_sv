@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** qualified internal-data decode metadata and Cyclone V
+- **Current milestone:** qualified retained core-program carrier and Cyclone V
   critical-path reduction
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 131 repository/provenance/document/ISA/toolchain/program
@@ -32,8 +32,8 @@
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
   RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
-  1,414 ALMs, 417 registers, one 144-by-16 M10K, 1 DSP block, 44.84 MHz worst
-  slow-corner internal Fmax, +17.698 ns setup slack, and +0.153 ns worst hold
+  1,393 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 48.07 MHz worst
+  slow-corner internal Fmax, +19.196 ns setup slack, and +0.165 ns worst hold
   slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
   fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
   claimed. TimeQuest
@@ -41,7 +41,7 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 16,996 generic cells with 125 retained checks and lowering the
+  producing 16,574 generic cells with 124 retained checks and lowering the
   registered RAM and forwarding to generic registers/muxes; its
   technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
@@ -49,12 +49,12 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 16,949 generic cells with 125 retained checks and
+  independently passes at 16,526 generic cells with 124 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 16,998 generic cells
-  with 132 retained checks and zero structural problems, including 49 cells
+  Yosys at 16,576 generic cells
+  with 131 retained checks and zero structural problems, including 50 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
@@ -67,7 +67,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,786 abstract cells/406 checks
+  board top retains six memories and passes at 3,502 abstract cells/405 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -825,7 +825,7 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the current board reports
-  3,786 cells/406 checks with six memories. This interlock does not itself
+  3,502 cells/405 checks with six memories. This interlock does not itself
   select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
@@ -958,6 +958,13 @@
   twenty setup paths, and places the new worst 100 °C path at 21.399 ns/14
   levels from retained table state to stack-bottom enable. Worst slow-corner
   Fmax rises to 44.84 MHz.
+  One retained core-program word then replaces separate instruction/branch/
+  table carriers and the combinational state-selected mux. Directed BANZ and
+  TBLR traces inspect capture, stall hold, consumption, and next-fetch
+  replacement; both 40-step table proofs retain their prior outcomes. The
+  accepted fit uses 1,393 ALMs/400 registers, retains one M10K and one DSP, and
+  moves the worst 100 °C path to the carrier-to-ACC cone at 20.034 ns/12
+  levels. Worst slow-corner Fmax rises to 48.07 MHz.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -992,10 +999,10 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** use the new retained-table-state-to-stack path to determine
-  whether redundant wrapper/core table qualification can be simplified
-  without weakening arbitrary-stall or exact-retirement proofs; continue
-  PUSH/POP physical-ownership research independently and do not invent its
-  missing program addresses.
+- **Next task:** preserve the now-qualified carrier boundary while returning
+  to `OQ-016` PUSH/POP program-address ownership research; do not implement a
+  native sequence without new source or physical evidence. Use the current
+  carrier-to-ACC report only for later timing work because the 20 MHz board
+  objective now has ample internal margin.
 - **Latest committed baseline before this cycle:**
-  `26a5f07`
+  `a64dd2a`

@@ -33,6 +33,11 @@ qualifier. The core combines it with decoder validity and uses it to avoid
 duplicating long instruction-family predicates in two timing-sensitive cones;
 an independent exhaustive simulation check and a one-step formal proof cover
 all valid encodings.
+The explicit pipeline retains executable instruction words, control operands,
+and TBLR program data in one context-owned register. Capture occurs before the
+owning core boundary and the register holds through clock-enable stalls; this
+removes the previous combinational pipeline-state mux without moving a native
+transaction or architectural effect.
 
 After a Quartus fit, reproduce the detailed twenty-path setup report with:
 
@@ -43,12 +48,12 @@ cd synthesis/quartus
 
 The ignored `build/quartus/setup_paths.rpt` records complete register-to-
 register paths, logic levels, and routing/cell delay shares. Current measured
-figures and the scope of the retained table-direction optimization are in
+figures and the scope of the retained core-program optimization are in
 `synthesis/qualification.md`.
 
 The command runs twenty-nine checked-in scripts. The main synthesis harness
 targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 16,996 generic cells and 125 retained
+`build/yosys/tms32010.json`; it reports 16,574 generic cells and 124 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -70,9 +75,13 @@ reset boundary brought the preceding checkpoint to 15,733 generic cells and
 pipeline checkpoint to 16,280 generic cells and 124 retained checks. Retained
 table direction and its consistency assertion brought the preceding
 checkpoint to 16,506 cells and 125 checks. ADR-0004's registered array and
-forwarding plus the decoder family qualifier bring the current direct
-checkpoint to 16,949 cells, 125 checks, and zero structural-check problems.
-This generic
+forwarding plus the decoder family qualifier brought the next checkpoint to
+16,949 cells and 125 checks. Replacing the separate execute/branch/table
+carriers and direction state with one retained core-program word brings the
+current direct checkpoint to 16,526 cells, 124 checks, and zero structural-
+check problems. The obsolete direction-consistency assertion disappears with
+its state; directed carrier checks and both table formal paths retain the
+guarded behavior. This generic
 increase coexists with the lower Cyclone V ALM count recorded by the fitter;
 the two representations are not interchangeable resource estimates.
 
@@ -81,8 +90,8 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 16,998 generic cells and 132 retained checks, with zero
-structural problems; 49 cells and seven checks are local to the adapter after
+Yosys 0.67+111 reports 16,576 generic cells and 131 retained checks, with zero
+structural problems; 50 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset.
 
 The fourth script targets the storage-free A044427 Rev-A
@@ -117,8 +126,8 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, 144-word internal RAM, and the optional local SRAM's two
-byte memories plus validity metadata as six memory objects. It reports 3,786
-abstract cells, 406 checks, and zero structural problems after upper-Y5
+byte memories plus validity metadata as six memory objects. It reports 3,502
+abstract cells, 405 checks, and zero structural problems after upper-Y5
 direct-I/O, lane-valid local-SRAM, and local-reset interlock integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or

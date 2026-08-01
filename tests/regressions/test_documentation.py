@@ -89,6 +89,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "data_addressed_o",
             "every caller must combine it with `valid_o`",
             "visits all 65,536 words",
+            "core_program_data",
+            "not an original TMS32010 register",
         ):
             self.assertIn(required, rtl_boundary)
 
@@ -240,8 +242,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,786",
-            "406 checks",
+            "3,502",
+            "405 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -449,8 +451,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,786 abstract cells",
-            "406 checks",
+            "3,502 abstract cells",
+            "405 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)

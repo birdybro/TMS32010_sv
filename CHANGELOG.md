@@ -7,6 +7,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- Directed branch/table traces that inspect the retained core-program carrier
+  at operand capture, across clock-enable stalls, and after replacement by the
+  selected or repeated instruction fetch.
 - ADR-0004 defining phase-staged internal-RAM reads without another TMS32010
   machine cycle, including phase-1 operand validity, phase-0 same-address
   forwarding, standalone-core compatibility, and explicit nonclaims about the
@@ -633,6 +636,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The explicit pipeline now retains instruction words, control operands, and
+  TBLR program data in one context-owned core-program register. This replaces
+  separate branch/table registers and their combinational state-selected mux;
+  no program phase, memory effect, retirement boundary, or cycle count moves.
 - The explicit fetch/execute wrapper now selects a synchronous internal-RAM
   read while the standalone core retains its asynchronous default. The
   wrapper uses its existing FPGA subphases to capture the operand by phase 1;
@@ -843,18 +850,18 @@ Changelog, and the project follows semantic versioning once releases begin.
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 1,414 ALMs, 417 registers, one 144-by-16 M10K, and one
-  DSP block. TimeQuest closes the 25 MHz internal constraint with +17.698 ns
-  worst setup and +0.153 ns worst hold slack, 44.84 MHz worst slow-corner
+  on `5CSEBA6U23I7` in 1,393 ALMs, 400 registers, one 144-by-16 M10K, and one
+  DSP block. TimeQuest closes the 25 MHz internal constraint with +19.196 ns
+  worst setup and +0.165 ns worst hold slack, 48.07 MHz worst slow-corner
   Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
   warnings. The detailed 100 °C critical path improves from the original
-  33.464 ns/26 levels through 29.180 ns/19 levels and 24.217 ns/16 levels to
-  21.399 ns/14 levels.
-- Yosys 0.67+111 reports 16,996 cells/125 checks for the synthesis harness,
-  16,949 cells/125 checks for the direct pipeline, and 16,998 cells/132 checks
+  33.464 ns/26 levels through 29.180 ns/19 levels, 24.217 ns/16 levels, and
+  21.399 ns/14 levels to 20.034 ns/12 levels.
+- Yosys 0.67+111 reports 16,574 cells/124 checks for the synthesis harness,
+  16,526 cells/124 checks for the direct pipeline, and 16,576 cells/131 checks
   for the generic
   MiSTer adapter, all with clean structural checks. The generic count grows
   while Cyclone V ALMs fall, so neither representation is reported as a proxy
@@ -905,7 +912,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   readiness combinations, and board simulation proves an actual sequential
   scrub clamps both processor inputs until validity address `0x1fff` clears.
   Its one-step BMC and four covers pass; standalone Yosys reports 13 cells/
-  seven checks, and the six-memory board hierarchy reports 3,786 cells/406
+  seven checks, and the six-memory board hierarchy reports 3,502 cells/405
   checks with no structural problem. The updated board-routing proof passes.
 - The direct-I/O decoder passes exhaustive simulation across all 4,096 read
   aliases and all 4,096 write addresses plus a one-step symbolic BMC over
