@@ -7,6 +7,23 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `OQ-026` Driver Sound sample-ROM population audit. It transcribes the exact
+  sparse A044427 socket-to-`/SR` matrix, identifies the complete Rev-A C row as
+  not loaded, records the Race Drivin' field-upgrade population, and defines
+  board/continuity/authorized-device/firmware evidence needed to close factory
+  variants and absent-selection behavior.
+- A content-free authorized sample-ROM inventory helper and four regressions.
+  It accepts only explicit physical sockets and exact 64-KiB images, emits
+  hashes plus the sparse 12-bit wrapper presence mask, keeps `45C` at block 8,
+  rejects duplicate/unknown/wrong-size inputs, and never treats supplied data
+  as proof of physical population.
+- An integrity-pinned, non-committed Atari TM-356 first-printing upgrade-kit
+  manual. It identifies `A046491-02`, prescribes E2 for the Race Drivin'
+  deluxe-cockpit program-ROM upgrade, and places `136052-3125` at `45A` when
+  needed plus new sample `136077-1017` at `45C`.
+- `SC-044`, preserving the primary physical `45C`/block-8 wiring against
+  pinned MAME's packed Race Drivin' region, where the same file is reachable
+  as logical block 4.
 - `OQ-034` Driver Sound local-program-ROM strap audit. It proves A044427's
   alternative E1/+5-V and E2/A16 topology, separates the drawn 27256 default
   from a pin-compatible 27512 capacity option, inventories released and
@@ -743,6 +760,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-026` is now `PARTIALLY_RESOLVED_PRIMARY`: the Rev-A socket matrix and
+  TM-356 field-upgrade locations are resolved, while factory/variant
+  population, authorized firmware block writes, and absent-selection
+  electrical data remain unknown. The existing wrapper already preserves the
+  sparse physical mask, so no RTL behavior changed.
+- `OQ-034` now includes TM-356's narrow field evidence that the documented
+  Race Drivin' deluxe-cockpit upgrade requires E2. That instruction does not
+  prove factory population, successful installation, or the contents of the
+  program devices' upper halves.
 - `OQ-034` is now `PARTIALLY_RESOLVED_PRIMARY`: E1 is required by the
   drawing's 27256 configuration and E2 is the intended 27512/A16 option, but
   no reviewed assembly BOM, option table, ECO, or physical board identifies
@@ -985,6 +1011,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 59 locally acquired references pass their pinned SHA-256 checks. The
+  socket-based authorized sample-ROM analyzer passes four regressions for
+  exact physical ordering, sparse masks, fail-closed diagnostics,
+  deterministic output, and byte non-disclosure; documentation consistency
+  pins TM-356, `SC-044`, block-8 policy, and the remaining open-bus nonclaim.
 - All 58 locally acquired references pass their pinned SHA-256 checks. Focused
   regressions lock the E1/E2 short-circuit exclusion, the released-versus-
   Panorama declaration boundary, the legacy RTL-name nonclaim, deterministic
@@ -1819,6 +1850,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- TM-356 proves that one Race Drivin' field procedure places `136077-1017` at
+  physical `45C`/block 8, while pinned MAME exposes that file at packed block
+  4. An authorized firmware trace is required to determine the production
+  port-6 value and any emulator consequence. Exact factory population and the
+  electrical result of selecting an empty or undecoded block remain unknown.
 - Neither `A046491-01` nor `A046491-02` has a reviewed Sound PCB assembly BOM
   or option drawing that identifies E1/E2 and installed program-EPROM types.
   Even a distinct 27512 image proves only that A16 is information-bearing for

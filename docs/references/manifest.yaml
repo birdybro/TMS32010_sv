@@ -385,7 +385,7 @@
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 /SRES decode",
         "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
         "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES J3 nibble with J3-1/J3-2 ground, four 1-kOhm series/two-capacitor networks and no discrete DC input pull, /IRQCLR decode, program-RAM controls, two 27256D20 program EPROMs, and alternative E1=+5V/E2=A16 links to their common pin 1",
-        "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
+        "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and exact sample-ROM socket/select mapping: 65A through 5A are /SR0 through /SR5, while 65C through 5C are /SR6 through /SR11 and the complete C row is marked NOT LOADED",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
       ],
       "status": "acquired",
@@ -713,6 +713,8 @@
         "Hard Drivin', Hard Drivin' Compact, and Race Drivin' released-set soundcpu declarations: 0x8000-byte program-ROM lane images and socket-labelled filenames",
         "Race Drivin' Panorama prototype soundcpu declaration: 0x10000-byte rdps1032/rdps1033 lane images without a Sound PCB assembly revision or mirror analysis",
         "Hard Drivin' serialroms region size, four 0x10000-byte loads, and physical socket labels",
+        "Hard Drivin' Compact serialroms declarations: the same four packed logical blocks with 136052-3125 substituted at physical label 45A",
+        "Race Drivin' serialroms declarations: a five-file 0x50000-byte packed region that places physical-label 136077-1017.45c at logical offset 0x40000 despite A044427 and TM-356 assigning socket 45C to /SR8/block 8; adjacent source comment says 10*128k but does not match the region or loads",
         "driver_68k_map around lines 562-566: canonical GSP, MSP, DUART, ZRAM, and main RAM software-facing address ranges",
         "Machine configuration around lines 1500-1501: main MC68681 and 3.6864 MHz clock"
       ],
@@ -1032,6 +1034,36 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Cabinet-mounted assemblies parts list, printed p. 4-5 (PDF p. 79): A046491-02 Sound PCB Assembly and A046326-01 PCB Interconnect Harness Assembly identities"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-race-drivin-upgrade-kit-tm356-first",
+      "title": "Race Drivin' Kit Installation Instructions for Hard Drivin' Deluxe Cockpit",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "TM-356",
+      "publication_date": "1990-10",
+      "revision": "1st printing",
+      "source_url": "https://arcarc.xmission.com/PDF_Arcade_Atari_Kee/Race_Drivin%27/Race_Drivin%27_Kit_for_Hard_Drivin%27_Deluxe_Cockpit_TM-356_1st_Printing.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/TM-356_Race_Drivin_Kit_for_Hard_Drivin_Deluxe_Cockpit_1st_Printing.pdf",
+      "sha256": "e78bc12af5d9b8fe33c95bafb0d9d0c01d1c355d9e5351c1d3a12c4de8f13c47",
+      "document_type": "primary game upgrade-kit installation manual scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
+      "relevance": "Primary field-installation evidence for Race Drivin' Driver Sound program and sample-ROM labels, sockets, and board changes",
+      "authority_level": 2,
+      "notes": "Lawfully public arcade-document archive copy. Keep only in the ignored cache. The scan has no text layer; page claims were visually checked against the rendered source.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Copyright page, printed p. ii (PDF p. 4): Atari Games publication, copyright 1989/1990, and 10/90 print date",
+        "Figure 1-3, printed p. 1-5 (PDF p. 13): kit board stack identifies A046491-02 Driver Sound PCB Assembly",
+        "Installing the EPROM Chips, printed p. 1-6 (PDF p. 14): the update devices are supplied in the Race Drivin' kit and Figures 1-4 through 1-7 determine their sockets",
+        "Figure 1-7, printed p. 1-10 (PDF p. 18): install 136077-1033 at 45N, 136077-1032 at 70N, 136052-3125 at 45A as needed, and 136077-1017 at 45C; move the Driver Sound program-ROM jumper to E2; preserve the shown 256K/512K selection note without inferring its uncited circuit"
       ],
       "status": "acquired",
       "download": {

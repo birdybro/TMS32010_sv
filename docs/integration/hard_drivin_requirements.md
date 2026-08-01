@@ -419,11 +419,14 @@ The ROM byte `SD14:SD7` reaches TMS input bits as a signed left shift:
 PDF pp. 9-12; ti-sn74ls138-datasheet, printed pp. 1-2;
 ti-snx4ls24x-datasheet, printed pp. 11-13]. **Confidence: VERIFIED_PRIMARY.**
 
-Pinned MAME's byte/block address composition agrees with the board topology,
-but its unsigned `byte << 7` omits the duplicated sign bit at TDI15. `SC-026`
-records the conflict, and `OQ-026` tracks unpopulated-block behavior and exact
-population by revision. Complete details and FPGA requirements are in
-`docs/integration/hard_drivin_sound_rom.md`.
+Pinned MAME's unsigned `byte << 7` omits the duplicated sign bit at TDI15
+(`SC-026`). It also compacts Race Drivin' sample `136077-1017.45c` at logical
+block 4. A044427 maps physical socket `45C` to `/SR8`, and Atari TM-356
+explicitly installs that part there on the `A046491-02` upgrade path
+(`SC-044`). `OQ-026` therefore tracks remaining factory population and
+absent-block behavior, not an unresolved socket number. Complete details and
+FPGA requirements are in `docs/integration/hard_drivin_sound_rom.md` and
+`docs/research/hard_drivin_sample_rom_population_audit.md`.
 
 The storage-free FPGA adapter now accepts an explicit twelve-bit population
 mask and authorized byte callback, reports every invalid or absent selection,

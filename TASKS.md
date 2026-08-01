@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 58 pinned
+  until permission is demonstrated. The ignored cache now verifies 59 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -73,6 +73,11 @@ objective passing evidence.
   A contemporaneous AMD memory data book now establishes the 27256 pin-1
   VPP/read requirement and pin-compatible 27512 A15 option used by A044427's
   E1/E2 footprint, without asserting an installed EPROM vendor or population.
+  Atari TM-356 first printing now provides primary field-installation evidence
+  that Race Drivin' deluxe-cockpit upgrades used `A046491-02`, moved the
+  program-ROM link to E2, retained/replaced `45A` sample block 2 as needed,
+  and added `136077-1017` at physical `45C`/block 8. The manual remains only
+  in the ignored cache because redistribution permission is not established.
   The exact TI
   LS20, AS00, combined ALS32/AS32,
   F04, F11, and F74 component documents now support SP-327 main-bus Boolean
@@ -1599,6 +1604,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
   `docs/integration/hard_drivin_host_mailboxes.md`,
+  `docs/research/hard_drivin_sample_rom_population_audit.md`,
   `docs/research/hard_drivin_dac_code_audit.md`,
   `docs/research/hard_drivin_switch_input_audit.md`,
   `docs/research/hard_drivin_program_rom_strap_audit.md`
@@ -1642,6 +1648,7 @@ objective passing evidence.
   `formal/hard_drivin_sound_host_routing.sby`,
   `tests/regressions/test_hard_drivin_dac_codes.py`,
   `tests/regressions/test_hard_drivin_program_roms.py`,
+  `tests/regressions/test_hard_drivin_sample_roms.py`,
   `tests/regressions/test_documentation.py`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1768,6 +1775,17 @@ objective passing evidence.
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
   reports 2,966 abstract cells/257 checks and retains the same three memories.
+  A044427's exact socket matrix is now fixed as A-row blocks 0–5 and C-row
+  blocks 6–11. TM-356 identifies `A046491-02` and prescribes
+  `136052-3125` at `45A`/block 2 when needed plus `136077-1017` at
+  `45C`/block 8. Pinned MAME instead places the 45C file at packed logical
+  block 4; this unresolved firmware/emulator conflict is `SC-044`. The
+  content-free authorized-image helper accepts only explicit physical sockets,
+  produces a sparse 12-bit presence mask, and never promotes a file into
+  board-population proof. Exact factory population, firmware block writes,
+  and absent-selection electrical data remain `OQ-026`; no RTL behavior
+  changed because the existing wrapper already exposes the primary sparse
+  physical mask.
   Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.

@@ -1141,6 +1141,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Race Drivin' Panorama prototype",
             "Distinct halves in either 64 KiB lane",
             "always leaves `physical_strap_proven` false",
+            "prescribed Race Drivin' deluxe-cockpit field-upgrade configuration",
             "No RTL behavior changes",
         ):
             self.assertIn(required, audit)
@@ -1151,7 +1152,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "hard_drivin_program_rom_strap_audit.md",
         ):
             self.assertIn(required, local_memory)
-        self.assertIn("PARTIALLY RESOLVED_PRIMARY (`SC-034`)", questions)
+        self.assertIn("PARTIALLY_RESOLVED_PRIMARY (`SC-034`)", questions)
         self.assertIn("EPROM-option refinement", conflicts)
 
     def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
@@ -1234,9 +1235,24 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("OQ-035", questions)
 
     def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        tm356 = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "atari-race-drivin-upgrade-kit-tm356-first"
+        )
         sound_rom = (
             DOCS / "integration" / "hard_drivin_sound_rom.md"
         ).read_text(encoding="utf-8")
+        population = re.sub(
+            r"\s+",
+            " ",
+            (
+                DOCS / "research" / "hard_drivin_sample_rom_population_audit.md"
+            ).read_text(encoding="utf-8"),
+        )
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
@@ -1254,10 +1270,26 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "65,536 pre-increment addresses",
             "is never acknowledged",
             "18 abstract combinational cells",
+            "physical `45C` is block 8",
         ):
             self.assertIn(required, sound_rom)
         self.assertIn("SC-026 — Sound-ROM sign extension", conflicts)
-        self.assertIn("| OQ-026 |", questions)
+        self.assertIn(
+            "SC-044 — Physical sample-ROM block 8 versus packed MAME block 4",
+            conflicts,
+        )
+        self.assertIn("PARTIALLY_RESOLVED_PRIMARY (`SC-044`)", questions)
+        self.assertEqual(tm356["publication_number"], "TM-356")
+        self.assertEqual(tm356["status"], "acquired")
+        self.assertFalse(tm356["may_commit"])
+        self.assertRegex(tm356["sha256"], r"^[0-9a-f]{64}$")
+        for required in (
+            "new Race Drivin' sample `136077-1017` is installed at `45C`",
+            "MAME offset `0x40000` is logical block 4",
+            "`physical_population_proven` false",
+            "No open-bus value is established",
+        ):
+            self.assertIn(required, population)
 
 
 if __name__ == "__main__":

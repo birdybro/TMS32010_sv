@@ -50,17 +50,20 @@ Consequences for the drawing's 27256 configuration are:
 
 With E2 and a 27512 pair, CPU `A16:A1` would address a 128 KiB combined image.
 The schematic does not mark the fitted link, and the reviewed assembly parts
-sections provide no Sound PCB BOM. Pinned released-game declarations are
-27256-sized; the Race Drivin' Panorama prototype instead declares a
-27512-sized pair, without a board revision or half-mirror result. The complete
-comparison and authorized audit workflow are in
+sections provide no Sound PCB BOM. TM-356 nevertheless prescribes E2 while
+installing Race Drivin' parts `136077-1032`/`1033` on `A046491-02`; it does
+not identify unused image halves or prove the state of a surviving board.
+Pinned released-game declarations remain 27256-sized, while the Race Drivin'
+Panorama prototype declares a 27512-sized pair. The complete comparison and
+authorized audit workflow are in
 `docs/research/hard_drivin_program_rom_strap_audit.md`.
 
 The exact installed strap remains `OQ-034`. RTL therefore exports only the
 drawing's 27256 address and explicitly does not implement a larger-EPROM mode.
 The legacy name `populated_rom_word_address_o` is retained for interface
 stability; it is not a physical-population claim. **Confidence:
-VERIFIED_PRIMARY for the Rev-A option topology and device-family behavior;
+VERIFIED_PRIMARY for the Rev-A option topology, device-family behavior, and
+the TM-356 E2 field instruction;
 CORROBORATED for declared ROM sizes; UNKNOWN for production strap/variant
 coverage.**
 

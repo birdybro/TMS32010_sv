@@ -109,3 +109,22 @@ Equal halves remain ambiguous between a repeated 27512 image and a mirrored
 not print data bytes, download images, compare against copyrighted game hashes,
 or execute/disassemble supplied content. Keep all input images and generated
 reports outside Git.
+
+## Authorized Driver Sound sample-ROM inventory
+
+`hard_drivin_sample_roms.py` maps explicit A044427 physical sockets to the
+twelve sparse `/SR` block numbers and produces a wrapper presence mask:
+
+```sh
+python3 -m tools.reference.hard_drivin_sample_roms \
+  --socket 65A=/authorized/path/136052-1123.bin \
+  --socket 45C=/authorized/path/136077-1017.bin \
+  --pretty
+```
+
+Each supplied image must be exactly 64 KiB. Physical `45C` maps to block 8,
+not MAME's packed offset block 4. The JSON includes only socket names, block
+numbers, sizes, hashes, presence metadata, and the fixed undecoded values
+12-15; it never emits ROM bytes. User-supplied files do not prove board
+population, so `physical_population_proven` is always false. Keep images and
+reports outside Git.

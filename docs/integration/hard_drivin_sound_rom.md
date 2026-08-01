@@ -33,15 +33,31 @@ ti-sn74ls138-datasheet, description and function table, printed pp. 1-2].
 Every drawn ROM receives all sixteen `SA15:SA0` lines and exposes eight data
 outputs named `SD14:SD7`; output enable is grounded active while the decoded
 `/SRn` drives chip enable. The circuit therefore defines a 64K-byte address
-window per selected block and up to twelve block positions. Sheet 6 marks the
-six `C`-row positions not loaded. Pinned Hard Drivin' ROM declarations
-independently list four 0x10000-byte files in positions `65A`, `55A`, `45A`,
-and `30A`, mapped consecutively at software blocks 0-3
-[atari-driver-sound-board-schematic, sheet 6 of 10, PDF pp. 11-12;
-mame-harddriv-driver-030fefc, Hard Drivin' `serialroms` region].
-**Confidence: VERIFIED_PRIMARY for board capacity/wiring; CORROBORATED for the
-four-file game population.** Exact population across board/game revisions and
-an out-of-population read remain `OQ-026`.
+window per selected block and up to twelve sparse block positions:
+
+| blocks | sockets in increasing block order | Rev-A drawing note |
+|---|---|---|
+| 0-5 | `65A`, `55A`, `45A`, `30A`, `20A`, `5A` | drawn |
+| 6-11 | `65C`, `55C`, `45C`, `30C`, `20C`, `5C` | complete row `NOT LOADED` |
+| 12-15 | none | no connected select |
+
+TM-356 provides primary field-upgrade evidence beyond the Rev-A drawing. Its
+Figure 1-7 installs `136052-3125` at `45A`/block 2 when needed and adds
+`136077-1017` at `45C`/block 8 on the identified `A046491-02` Driver Sound
+assembly. Pinned MAME declares the same physical filenames, but packs the
+`45C` file at logical offset `0x40000`/block 4. This is `SC-044`, not an
+alternate board map [atari-driver-sound-board-schematic, sheet 6 of 10, PDF
+pp. 11-12; atari-race-drivin-upgrade-kit-tm356-first, Figure 1-3 and Figure
+1-7, printed pp. 1-5 and 1-10, PDF pp. 13 and 18;
+mame-harddriv-driver-030fefc, Hard Drivin', Hard Drivin' Compact, and Race
+Drivin' `serialroms` regions].
+
+**Confidence: VERIFIED_PRIMARY for board capacity/wiring and the documented
+Race Drivin' upgrade sockets; CORROBORATED for MAME's four-file Hard Drivin'
+declarations; UNKNOWN for every factory/variant population.** The complete
+matrix, conflict, authorized inventory, and closure procedure are in
+`docs/research/hard_drivin_sample_rom_population_audit.md`. An absent-socket
+read remains `OQ-026`.
 
 ## TMS input-word mapping
 
@@ -88,6 +104,9 @@ not verified hardware behavior. A digital adapter must report or hold an
 invalid/unpopulated selection unless its integration configuration explicitly
 declares that block present.
 
+Do not compact sparse C-row sockets. In particular, physical `45C` is block 8,
+not the next packed block after the four Hard Drivin' images.
+
 ## FPGA adaptation requirements
 
 A same-clock FPGA adapter may expose a byte-wide ROM callback or infer storage
@@ -106,6 +125,12 @@ behind the board wrapper. It must:
 
 These are digital wiring requirements, not ROM access-time, LS244 propagation,
 or complete MiSTer memory-system timing claims.
+
+Authorized integrations can derive a sparse presence mask without committing
+content by running `python3 -m tools.reference.hard_drivin_sample_roms` with
+one or more `--socket SOCKET=PATH` arguments. The tool accepts only the exact
+64-KiB block size, emits hashes and physical block numbers, and never treats a
+provided file as proof of an installed device.
 
 ## Implemented FPGA boundary
 

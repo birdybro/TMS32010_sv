@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-034` Driver Sound local-program-ROM E1/E2 and
-  device-capacity audit
+- **Current milestone:** `OQ-026` Driver Sound sparse sample-ROM population
+  and block-selection audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 160 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 58 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 59 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -1121,6 +1121,18 @@
   halves, and always leaves `physical_strap_proven` false. The new AMD source
   brings the verified ignored cache to 58. `OQ-034` is
   `PARTIALLY_RESOLVED_PRIMARY`; no RTL/model behavior changed.
+- **New sample-ROM population evidence:** A044427 Rev A maps A-row sockets
+  `65A..5A` to blocks 0–5 and C-row sockets `65C..5C` to blocks 6–11, with
+  the complete C row marked `NOT LOADED`. Atari TM-356 identifies the Race
+  Drivin' deluxe-cockpit upgrade board as `A046491-02`, requires
+  `136052-3125` at `45A`/block 2 when needed, and installs
+  `136077-1017` at `45C`/block 8. Pinned MAME instead packs the 45C file at
+  logical block 4; `SC-044` preserves that unresolved conflict. A new
+  content-free helper hashes authorized 64-KiB images by physical socket and
+  emits the exact sparse presence mask while always leaving
+  `physical_population_proven` false. The verified cache now contains 59
+  sources. `OQ-026` is `PARTIALLY_RESOLVED_PRIMARY`; no RTL changed because
+  the existing wrapper already represents sparse physical blocks.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1137,8 +1149,10 @@
   `OQ-012`/`SC-042` despite CORROBORATED EVM recoverability,
   DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
   and firmware compliance,
-  communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
-  population and absent-block behavior,
+  communication-RAM byte behavior and CRAMEN firmware discipline, exact
+  sample-ROM factory/variant population, authorized Race Drivin' port-6 block
+  writes, the `SC-044` physical-block-8 versus MAME-packed-block-4 conflict,
+  and absent-block electrical behavior,
   BIO power-up/reset-release phase and independent-clock coincidence,
   production Rev-A port-2 `TDI15:TDI0` electrical value,
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
@@ -1164,9 +1178,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-026` by reconciling A044427's twelve drawn
-  sample-ROM blocks with board-identified assembly/ROM-label evidence and an
-  authorized missing-block audit, without assigning a value to an undriven
-  selection.
+- **Next task:** investigate `OQ-031` mailbox byte writes and coincident
+  strobes from the primary A044425/A044427 gate network and 68000 bus contract,
+  preserving explicit conflict signaling if the physical ordering remains
+  undocumented.
 - **Latest committed baseline before this cycle:**
-  `772d2c3`
+  `bc166da`

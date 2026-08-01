@@ -22,10 +22,12 @@ read table requires `VPP=VCC`. Therefore:
   configuration.
 
 This is **VERIFIED_PRIMARY for the option topology and device-family
-requirements**. It is **UNKNOWN for the actual E1/E2 population and EPROM
-manufacturer/capacity on any specific `A046491-01` or `A046491-02` assembly**.
-The schematic symbols show the designed 27256 configuration but are not an
-assembly BOM or physical inspection.
+requirements**. Atari TM-356 additionally makes E2 the prescribed
+Race Drivin' deluxe-cockpit field-upgrade configuration on an identified
+`A046491-02` assembly. Actual factory population, other variants, correct
+field execution, and EPROM manufacturer/capacity on a surviving board remain
+**UNKNOWN**. The schematic symbols and installation instruction are not a
+physical inspection.
 
 ## Primary circuit and device evidence
 
@@ -63,6 +65,15 @@ without an assembly drawing, BOM, ECO, or physical evidence
 [atari-hard-drivin-manual-tm327-third, printed pp. 4-4 to 4-5, PDF pp. 78-79;
 atari-hard-drivin-compact-manual-tm329-second, printed p. 4-3, PDF p. 67;
 atari-race-drivin-cockpit-manual-tm351-second, printed p. 4-5, PDF p. 79].
+
+TM-356 closes one narrower field configuration. Figure 1-3 identifies
+`A046491-02`, while Figure 1-7 installs Race Drivin' program parts
+`136077-1032` at `70N` and `136077-1033` at `45N` and explicitly says to move
+the jumper to `E2`. The same figure does not characterize unused program-ROM
+halves, and pinned MAME still declares only `0x8000` bytes per lane. Thus it
+proves the prescribed E2 upgrade but not complete device contents or every
+production assembly [atari-race-drivin-upgrade-kit-tm356-first, Figure 1-3
+and Figure 1-7, printed pp. 1-5 and 1-10, PDF pp. 13 and 18].
 
 ## Pinned MAME inventory
 
@@ -138,6 +149,8 @@ The report consequently always leaves `physical_strap_proven` false.
 
 - Retain the current `A15:A1` ROM callback as the A044427 drawn-27256 default
   needed by released Hard Drivin' integration.
+- Treat TM-356's E2 requirement as an explicit Race Drivin' upgrade-wrapper
+  configuration, never as a silent change to the Hard Drivin' default.
 - Do not describe the RTL signal name `populated_rom_word_address_o` as proof
   of a physically inspected population; it is a legacy name for the drawing's
   27256 address projection.
@@ -145,5 +158,5 @@ The report consequently always leaves `physical_strap_proven` false.
   board-wrapper selection, have a 16-bit word address, and be tested for both
   E1/64-KiB mirroring and E2/128-KiB distinct-half cases.
 - Keep authorized images and generated reports untracked.
-- `OQ-034` remains `PARTIALLY RESOLVED_PRIMARY`. No RTL behavior changes are
+- `OQ-034` remains `PARTIALLY_RESOLVED_PRIMARY`. No RTL behavior changes are
   justified by this research cycle.

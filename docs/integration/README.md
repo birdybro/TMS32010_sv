@@ -8,7 +8,9 @@
   512-word communication RAM, shared sound-address counter, and source
   conflicts around ports 1–3.
 - `hard_drivin_sound_rom.md`: primary-transcribed parallel sample-ROM block,
-  address, population, port-0 word alignment, and MAME sign-bit conflict.
+  address, population, port-0 word alignment, and MAME conflicts; the sparse
+  population audit is in
+  `docs/research/hard_drivin_sample_rom_population_audit.md`.
 - `hard_drivin_sound_control.md`: primary-transcribed raw MUTE and 68000 IRQ
   latch behavior for ports 4 and 5.
 - `hard_drivin_bio.md`: primary-transcribed divide-by-50 source and CLKOUT

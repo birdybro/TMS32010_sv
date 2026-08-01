@@ -579,8 +579,12 @@ of twelve drawn 64K-byte blocks, `SA15:SA0` supplies the pre-increment byte
 address, and port 0 returns
 `{{2{rom_byte[7]}}, rom_byte[6:0], 7'b0}`. A block must be explicitly declared
 present; blocks 12–15 select no drawn ROM, and an absent block is electrically
-undefined under `OQ-026`. Pinned MAME's unsigned left shift omits TDI15 and is
-only a named secondary-oracle difference (`SC-026`). Read
+undefined under `OQ-026`. The physical socket order is sparse: A-row
+`65A..5A` is blocks 0–5 and C-row `65C..5C` is blocks 6–11. Atari TM-356
+requires Race Drivin' sample `136077-1017` at physical `45C`/block 8. Never
+compact it into MAME's packed block 4; that primary/secondary conflict is
+`SC-044`. Pinned MAME's unsigned left shift also omits TDI15 and is only a
+named secondary-oracle difference (`SC-026`). Read
 `docs/integration/hard_drivin_sound_rom.md` before implementing this path.
 The storage-free `hard_drivin_sound_rom_path` now enforces that contract. It
 issues a byte callback only for explicit present/valid block and address state,

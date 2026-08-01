@@ -1209,3 +1209,38 @@ electrical result of an out-of-range access.
   evidence rules; `OQ-008` remains open.
 - **Confidence:** VERIFIED_PRIMARY for the document/product-list timeline;
   UNKNOWN for original-NMOS mask identities, behavior changes, and invariance.
+
+## SC-044 — Physical sample-ROM block 8 versus packed MAME block 4
+
+- **Primary board map:** A044427 sheet 6 assigns A-row sockets `65A`, `55A`,
+  `45A`, `30A`, `20A`, and `5A` to `/SR0` through `/SR5`. C-row sockets
+  `65C`, `55C`, `45C`, `30C`, `20C`, and `5C` receive `/SR6` through `/SR11`.
+  Thus `45C` is physical block 8; the complete C row is marked `NOT LOADED` on
+  the Rev-A drawing [atari-driver-sound-board-schematic, drawing A044427 Rev
+  A, sheet 6 of 10, PDF pp. 11-12].
+- **Primary upgrade population:** Atari TM-356 identifies an `A046491-02`
+  Driver Sound PCB Assembly and instructs the technician to install
+  `136077-1017` at `45C`. It also requires `136052-3125` at `45A` when not
+  already present [atari-race-drivin-upgrade-kit-tm356-first, Figure 1-3 and
+  Figure 1-7, printed pp. 1-5 and 1-10, PDF pp. 13 and 18].
+- **Secondary packed map:** pinned MAME allocates a `0x50000`-byte Race Drivin'
+  region, loads the four A-row files at offsets `0x00000` through `0x30000`,
+  and appends `136077-1017.45c` at `0x40000`. Its port-6 handler uses the block
+  nibble as address bits 19:16, so those bytes are selected as block 4. The
+  adjacent `10*128k` comment matches neither the five 64-KiB files nor the
+  declared region [mame-harddriv-driver-030fefc, Race Drivin' `serialroms`
+  declarations; mame-harddriv-audio-030fefc, `hdsnddsp_soundaddr_w` and
+  `hdsnddsp_rom_r`].
+- **Conflict:** no reviewed primary source remaps 45C to `/SR4`. Correcting the
+  physical wrapper to packed block 4 would contradict both the schematic and
+  Atari's installation figure. Whether current Race Drivin' firmware selects
+  block 8, and which sounds MAME loses or substitutes if it does, require an
+  authorized trace.
+- **Current treatment:** `sound_rom_present_i[11:0]` follows physical selects;
+  45C sets bit 8. The content-free socket analyzer enforces the same sparse
+  matrix. MAME remains a named secondary oracle for content hashes, not block
+  placement. See `OQ-026` and
+  `docs/research/hard_drivin_sample_rom_population_audit.md`.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A block/socket wiring and the
+  TM-356 upgrade socket; CORROBORATED for MAME's packed behavior; UNKNOWN for
+  factory populations, authorized firmware use, and absent-bus values.
