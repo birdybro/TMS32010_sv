@@ -794,6 +794,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Upper-Y5 direct DSP I/O is deliberately distinct",
             "host_timing_partial_program_write_o",
             "host_timing_partial_communication_write_o",
+            "reports an accepted byte transfer",
             "use_internal_local_ram_i",
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
@@ -925,13 +926,17 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "hard_drivin_sound_320_port_latch",
             "loads every one of the 512 words",
             "now connected",
+            "Original-MC68000 Table 3-1",
+            "byte cycle writes `{byte, byte}`",
+            "7-step",
+            "both symbolic lane covers",
             "physical HM6116 timing",
         ):
             self.assertIn(required, communication)
         for required in (
             "SC-023 — CRAMEN ownership",
             "SC-024 — Global input-read address increment",
-            "SC-025 — Physical whole-word communication RAM",
+            "SC-025 — Unqualified communication RAM",
         ):
             self.assertIn(required, conflicts)
 
@@ -1058,7 +1063,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "12-step bounded composition",
             "Seven covers span all six classes",
             "lower-Y5 program-RAM storage",
-            "Y6 communication-RAM storage under CRAMEN",
+            "Y6 word plus normalized-byte communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
             "3,773 abstract cells",
             "409 checks",

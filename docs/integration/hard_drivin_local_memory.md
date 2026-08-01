@@ -189,7 +189,7 @@ The bridge remains storage-free and exposes these callbacks:
 | local 6264 pair | complete-word read request with `A13:A1` | upper/lower write commits independently at S7 |
 | Y5 lower half | program-RAM read/write level with `A12:A1` | whole-word write commit at S7 |
 | Y5 upper half | direct `/PDEN` or `/PWE` level with `A12:A1` | direct `/PWE` callback is sampled at the S6 rising boundary |
-| Y6 | communication-RAM read/write level with `A9:A1` | whole-word write commit at S7 |
+| Y6 | communication-RAM read/write level with `A9:A1` | word or normalized original-MC68000 byte write commit at S7 |
 
 The S6 `/PWE` distinction is externally relevant. `/PWE` is generated from
 `RVA`, so its rising edge occurs when `RVA` ends at S6. The SRAM write controls
@@ -223,11 +223,12 @@ RAM adapter. Y6 similarly drives the existing communication-RAM host port at
 `A9:A1`; CRAMEN remains the independent ownership qualification. The explicit
 program/communication callbacks remain selected unchanged when timing mode is
 off, so the integration does not silently replace the older same-clock API.
-The physical bridge still exposes the unqualified whole-bank write level, but
-the FPGA storage mux accepts its commit only when both host byte strobes are
-active. Partial lower-Y5/Y6 writes emit separate diagnostic pulses and leave
-the FPGA memories unchanged under `OQ-022`/`OQ-024`; this is an explicit
-protective boundary, not a claim that the physical board suppresses the write.
+The physical bridge still exposes both unqualified whole-bank write levels.
+The lower-Y5 program-RAM mux continues to accept only cycles with both byte
+strobes under `OQ-022`. The Y6 communication path now uses the documented
+original-MC68000 bus value: either selected byte is duplicated before both
+HM6116 banks commit. The two partial-write outputs remain separate; the Y5
+one reports rejection, while the Y6 one reports an accepted byte write.
 
 The board top forwards the complete ROM callback, local-RAM callback, byte-
 specific local-RAM commits, read carrier masks, and missing-response event to

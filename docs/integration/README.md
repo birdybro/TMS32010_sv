@@ -116,8 +116,9 @@ CDC, and electrical timing remain outside the hierarchy.
 512-by-16 communication-RAM adapter with the primary-defined shared-address
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every
 word. `hard_drivin_sound_mister` now routes processor port 1 to that adapter
-and exposes its whole-word host callback, but still does not implement a 68000
-bus/latch decode or physical HM6116 timing.
+and exposes its complete-word host callback. The timing-derived Y6 path reuses
+the original-MC68000 write normalizer for duplicated-byte capture, but still
+does not implement raw-pin CDC or physical HM6116 timing.
 `hard_drivin_sound_rom.md` records the parallel selected-ROM mapping. The new
 storage-free adapter routes processor port 0 to an explicit authorized-byte
 callback, rejects absent/invalid selections instead of inventing a bus value,

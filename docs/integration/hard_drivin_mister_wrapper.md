@@ -124,7 +124,7 @@ unqualified full word.
 
 The selected CRAMEN is either default external
 `communication_host_enable_i` or opt-in LS259 Q3. When high, the
-`host_communication_*` whole-word callback owns the 512-word
+`host_communication_*` complete-word callback owns the 512-word
 memory and processor port 1 is blocked. The host may pulse
 `host_communication_commit_i` once for a selected write accepted with
 `host_communication_ready_o=1`. When CRAMEN returns low, the host callback is
@@ -132,17 +132,20 @@ disabled and processor port 1 reads the word at `sound_address_o[8:0]`.
 
 CRAMEN is deliberately not derived from `/320RES`: the drawing shows it as a
 separate host LS259 output cleared by board `/RESET`. The opt-in path updates
-that output only from an explicit decoded completion. Host byte lanes,
-`/RVAS`, address decode, and DTACK remain unresolved integration work under
-`SC-025`/`OQ-024`.
+that output only from an explicit decoded completion. The external callback
+carries an already captured complete word; it is not a raw 68000 byte-lane
+interface. Raw-pin CDC and HM6116 electrical timing remain unresolved
+integration work under `SC-025`/`OQ-024`.
 
 With timing mode selected, Y6 supplies the communication select, direction,
-`A9:A1`, raw write word, and S7 commit. The explicit communication callback is
-retained only for timing-disabled operation. CRAMEN remains the sole ownership
-choice in both modes; the timing bridge does not grant the host implicitly.
-For the analogous whole-bank Y6 strobe, a byte cycle reports
-`host_timing_partial_communication_write_o` and cannot modify the FPGA memory
-under `OQ-024`.
+`A9:A1`, bus data, and S7 commit. The original-MC68000 write normalizer
+preserves a word or duplicates the selected byte before the complete-word RAM
+callback. The explicit communication callback is retained only for timing-
+disabled operation. CRAMEN remains the sole ownership choice in both modes;
+the timing bridge does not grant the host implicitly.
+`host_timing_partial_communication_write_o` reports an accepted byte transfer,
+not a rejected write. This behavior is original-MC68000-specific; substitute
+68k cores must reproduce or explicitly adapt the duplicated inactive lane.
 
 ## Local-68000 memory callback boundary
 

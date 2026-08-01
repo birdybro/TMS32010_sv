@@ -1647,6 +1647,7 @@ objective passing evidence.
   `formal/hard_drivin_sound_direct_io.sby`,
   `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
+  `formal/hard_drivin_sound_communication_byte.sby`,
   `formal/hard_drivin_sound_host_routing.sby`,
   `tests/regressions/test_hard_drivin_dac_codes.py`,
   `tests/regressions/test_hard_drivin_program_roms.py`,
@@ -1919,9 +1920,10 @@ objective passing evidence.
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
   Integrated Yosys retains six memories and reports 3,773 abstract cells/409
-  checks with no structural problem. Partial lower-Y5 and Y6 writes are
-  reported and rejected because their unselected physical data lane remains
-  unresolved under `OQ-022`/`OQ-024`.
+  checks with no structural problem. At that checkpoint, partial lower-Y5 and
+  Y6 writes were reported and rejected pending inactive-lane evidence under
+  `OQ-022`/`OQ-024`; the later original-MC68000 audit below supersedes the Y6
+  policy while leaving Y5 open.
   A044427 sheet 5 now qualifies upper-Y5's asymmetric downstream decode:
   LS139 reads ignore `RA11:RA2` and alias modulo four, while LS138 writes
   require `RA11:RA3=0` and select no target above canonical word 7. A
@@ -2041,6 +2043,17 @@ objective passing evidence.
   opposite-read-clock coincidence and authorized-firmware byte-write use
   remain open. The external main callback still expects an already captured
   complete word; no raw main bus or CDC bridge is claimed.
+  OQ-024 is now `PARTIALLY_RESOLVED_PRIMARY`: the same original-MC68000 Table
+  3-1 rule and A044427's common `/CRWE` prove that a communication-RAM byte
+  write clocks `{byte, byte}` into the two HM6116 banks. The timing-derived Y6
+  path now reuses `hard_drivin_mc68000_write_word`; directed board readback
+  checks lower `0xef -> 0xefef` and upper `0xbc -> 0xbcbc`. A new 7-step BMC
+  proves arbitrary address/data capture and reaches both symbolic lane covers.
+  Pinned MAME's retained-other-byte `COMBINE_DATA` remains `SC-025` conflict,
+  while authorized-firmware access widths, raw CDC, HM6116 electrical timing,
+  and substitute-68k inactive lanes remain open. The timing-disabled callback
+  stays an already captured complete-word contract. Integrated Yosys remains
+  3,773 cells/409 checks/six memories with zero structural problems.
 
 ## Milestone 22 — Release qualification
 

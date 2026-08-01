@@ -567,7 +567,7 @@ electrical/storage boundary are resolved.
 The storage-free `hard_drivin_sound_local_memory_bridge` consumes the
 same-clock host-timing adapter's captured address/direction/strobes and emits
 ROM/local-RAM read requests, lane-specific local-RAM S7 write commits,
-whole-word program/communication S7 commits, and the distinct direct-TMS
+complete-word program/communication S7 commits, and the distinct direct-TMS
 `/PWE` trailing event at S6. Its ROM/local-RAM carrier preserves driven and
 valid masks and reports a missing response at fixed S7 rather than adding
 READY or an open-bus value. Keep memory contents and platform storage outside
@@ -577,10 +577,13 @@ The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys
 script qualify the isolated adapter. `hard_drivin_sound_mister` now routes
-processor port 1 to that path and exposes its whole-word host callback; the
-synthetic execution test qualifies the handoff, data source, global read
-increments, and reset retention. Do not infer a 68000 bridge/latch decode,
-physical HM6116 latency, or completed board integration.
+processor port 1 to that path and exposes its complete-word host callback; the
+timing-derived Y6 path first normalizes original-MC68000 words or duplicated
+bytes. Directed readback and a bounded symbolic composition proof qualify both
+byte orientations. The synthetic execution test qualifies the handoff, data
+source, global read increments, and reset retention. Do not generalize the
+inactive-lane rule to substitute 68k cores or infer raw-pin CDC, physical
+HM6116 latency, or completed board integration.
 A044427's sample-ROM path is parallel, not serial: a port-6 LS374 selects one
 of twelve drawn 64K-byte blocks, `SA15:SA0` supplies the pre-increment byte
 address, and port 0 returns

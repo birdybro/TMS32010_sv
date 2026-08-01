@@ -1,7 +1,7 @@
 # Progress summary
 
-- **Current milestone:** `OQ-031` Driver Sound original-MC68000 mailbox byte
-  capture and flag-collision audit
+- **Current milestone:** `OQ-024` Driver Sound original-MC68000 communication-
+  RAM byte capture
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -131,7 +131,7 @@
   A thirtieth target checks the storage-free original-MC68000 write-word
   normalizer at 39 mapped cells/three retained checks, with no memory, latch,
   generated clock, or structural problem.
-- **Formal status:** all 46 tasks from 23 SymbiYosys configurations pass with
+- **Formal status:** all 48 tasks from 24 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -214,6 +214,12 @@
   host-event spacing, running-DSP interaction,
   raw-pin CDC, preset-release collision behavior, and electrical timing remain
   outside this proof.
+  A fifteenth 7-step communication-byte composition BMC leaves the nine-bit
+  address, sixteen-bit bus data, and selected byte lane arbitrary. It proves
+  the original-MC68000 normalizer result is committed and returned by the
+  owner-qualified 512-word RAM; both upper- and lower-byte covers are
+  reachable at solver step 6. HM6116 electrical timing, raw-pin CDC, and
+  firmware access widths remain outside this proof.
   A nineteenth standalone main-held-strobe configuration passes a 12-step BMC
   against an independent transition model under event-exclusivity and
   phase-level/edge-consistency assumptions. Its 16-step cover reaches seven
@@ -1152,6 +1158,15 @@
   mailbox flag, and passes both symbolic routing covers. TI's LS74 function
   table verifies preset dominance while asserted, but not the exact read edge
   at preset release. `OQ-031` is `PARTIALLY_RESOLVED_PRIMARY`.
+- **New communication-RAM byte evidence:** A044427's common `/CRWE` and absent
+  `/HEU`/`/HEL` RAM qualification combine with original-MC68000 Table 3-1 to
+  establish `{byte, byte}` capture in both HM6116 banks. The timing-derived Y6
+  path now reuses the write normalizer and reads back lower `0xef -> 0xefef`
+  and upper `0xbc -> 0xbcbc` under CRAMEN ownership. A 7-step BMC proves the
+  same write/read relationship for arbitrary addresses/data and reaches both
+  symbolic byte orientations. Pinned MAME's retained-other-byte merge remains
+  `SC-025`; authorized-firmware access widths and electrical/substitute-CPU
+  qualification remain open. `OQ-024` is `PARTIALLY_RESOLVED_PRIMARY`.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1168,7 +1183,8 @@
   `OQ-012`/`SC-042` despite CORROBORATED EVM recoverability,
   DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
   and firmware compliance,
-  communication-RAM byte behavior and CRAMEN firmware discipline, exact
+  communication-RAM firmware access widths, CRAMEN firmware discipline,
+  HM6116 electrical timing, and substitute-68k inactive lanes, exact
   sample-ROM factory/variant population, authorized Race Drivin' port-6 block
   writes, the `SC-044` physical-block-8 versus MAME-packed-block-4 conflict,
   and absent-block electrical behavior,
@@ -1199,7 +1215,7 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** apply the now-qualified original-MC68000 duplicated-byte bus
-  contract to `OQ-024` communication-RAM host writes, while preserving
-  firmware-use and HM6116 timing boundaries.
+  contract to `OQ-022` lower-Y5 program-RAM host writes, while preserving
+  firmware-use and SRAM electrical-timing boundaries.
 - **Latest committed baseline before this cycle:**
-  `56b67bc`
+  `dada638`

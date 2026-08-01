@@ -7,6 +7,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 7-step bounded communication-byte composition check. It proves arbitrary
+  address/data upper- and lower-byte writes through the original-MC68000
+  normalizer into the 512-word FPGA RAM and reaches both lane covers.
 - `OQ-031` primary-source mailbox byte audit. It traces A044427 LS138 `20P`
   `/MAINWR` generation and physical `0x840000..0x843fff` alias, SP-327's
   exported `/EWEU`/`/EWEL`, both unqualified LS374 latch pairs, the
@@ -768,6 +771,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-024` is now `PARTIALLY_RESOLVED_PRIMARY`: A044427's common `/CRWE`
+  combined with original-MC68000 Table 3-1 establishes `{byte, byte}` capture
+  for communication-RAM byte writes. Pinned MAME's retained-other-byte merge
+  remains a documented `SC-025` conflict.
+- The timing-derived Y6 path now accepts byte writes after original-MC68000
+  normalization. `host_timing_partial_communication_write_o` is an accepted-
+  event diagnostic; the timing-disabled callback remains a complete-word
+  contract.
 - The timing-derived local `/SOUNDWR` path now accepts original-MC68000 byte
   transfers and clocks `{byte, byte}` into the complete mailbox word. Its
   existing partial-write output is now an accepted-event diagnostic rather
@@ -964,6 +975,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Replaced the provisional Y6 byte-write rejection with the primary-backed
+  duplicated-byte result while leaving lower-Y5 program-RAM rejection intact.
 - Replaced the provisional local-mailbox byte-write rejection with the
   documented original-MC68000 duplicated-byte result; both upper and lower
   byte transfers now set `SOUNDFLAG` and expose the captured word.
@@ -1030,6 +1043,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Integrated Y6 readback checks lower byte `0xef -> 0xefef` and upper byte
+  `0xbc -> 0xbcbc` under CRAMEN ownership. The new BMC proves all symbolic
+  addresses and data values through write/read completion; both covers are
+  reachable. Integrated Yosys remains 3,773 cells, 409 checks, and six
+  memories with zero structural problems.
 - The MC68000 write normalizer passes exhaustive simulation and Yosys
   0.67+111 synthesis at 39 mapped cells/three retained checks with no memory,
   latch, or structural problem. The integrated board test checks `0xab ->
@@ -1928,7 +1946,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   its host cycles. CRAMEN remains an explicit ownership input unless the
   separate host-control opt-in supplies Q3; no raw-pin/CDC 68000 boundary
   exists. Its registered response is an FPGA convention, not physical HM6116
-  timing.
+  timing. Original-MC68000 byte capture is resolved as `{byte, byte}`, but
+  authorized-firmware access widths and substitute-68k inactive lanes remain
+  unresolved under `OQ-024`.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
   its undriven host low byte remains a distinct open-bus question (`OQ-030`).

@@ -24,8 +24,14 @@ host-control half of LS244 `20K` drives `CRA8` from `A9`, `/CROE` from
 join all sixteen host data bits to `CRD15:CRD0`
 [atari-driver-sound-board-schematic, sheets 3 and 5 of 10, PDF pp. 5-6 and
 9-10]. This is a 16-bit host path with a nine-bit word address. The drawing
-does not route `/HEU` or `/HEL` to either RAM byte; byte-write behavior remains
-`SC-025`/`OQ-024` rather than an inferred merge.
+does not route `/HEU` or `/HEL` to either RAM byte. Original-MC68000 Table 3-1
+establishes that a selected byte appears on both `D15:D8` and `D7:D0`, so a
+byte cycle writes `{byte, byte}` into the two banks. This current-
+implementation behavior is not promised for later 68k devices
+[motorola-m68000-users-manual-ninth, Table 3-1 and footnote, printed pp. 3-5
+through 3-6]. Pinned MAME's retained-other-byte merge remains the conflict in
+`SC-025`. **Confidence: VERIFIED_PRIMARY for original-MC68000 capture;
+UNKNOWN for firmware byte-write use.**
 
 When `CRAMEN=0`, LS244 `25E` instead drives `CRA7:CRA0` from `SA7:SA0`; the
 other half of `20K` drives `CRA8` from `SA8`, forces chip select and output
@@ -142,7 +148,7 @@ communication-RAM effect; `hard_drivin_sound_320_port_latch` consumes the
 same committed transaction separately at the board-top boundary.
 
 `tb_hard_drivin_sound_communication_path` loads every one of the 512 words
-through whole-word host writes and reads every word through the DSP port-1
+through complete-word host callbacks and reads every word through the DSP port-1
 path at the exact low-nine address. It also checks both CRAMEN ownership
 states, blocked accesses, synchronous response ownership, exactly-once
 increments including port 2, 16-bit wrap, port-7 load, port-6 low-nibble
@@ -155,6 +161,11 @@ The pre-technology Yosys target retains one `$mem_v2` in an 82-cell hierarchy
 with seven checks and zero structural problems. This is portable memory-shape
 evidence only; it is not a Quartus block-RAM mapping, physical HM6116 timing
 result, or completed board top. The communication path is now connected to
-`hard_drivin_sound_mister` for processor port 1 and a whole-word host callback,
-but there is still no 68000 byte-lane/DTACK adapter or parallel sound-ROM data
-implementation.
+`hard_drivin_sound_mister` for processor port 1 and a complete-word external
+callback. In timing mode, the board top reuses
+`hard_drivin_mc68000_write_word` to preserve full words or duplicate either
+selected byte before the Y6 S7 commit. The integrated regression reads back
+`0xefef` and `0xbcbc` for lower/upper byte writes, respectively. A 7-step
+bounded composition proof checks arbitrary address/data values and reaches
+both symbolic lane covers. Raw-pin CDC, HM6116 electrical timing, and
+authorized-firmware access widths remain outside this evidence.

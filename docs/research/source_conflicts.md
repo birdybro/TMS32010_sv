@@ -605,21 +605,32 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A counter clocking;
   documented secondary-source abstraction.
 
-## SC-025 — Physical whole-word communication RAM versus byte-combined MAME writes
+## SC-025 — Unqualified communication RAM versus byte-combined MAME writes
 
 - **Primary board evidence:** host `D15:D0` reaches two HM6116 devices through
   LS245 transceivers, and one `/CRWE` controls both devices. Host byte enables
   `/HEU` and `/HEL` do not enter this path
   [atari-driver-sound-board-schematic, sheets 3 and 5 of 10, PDF pp. 5-6 and
   9-10].
+- **Primary CPU evidence:** original-MC68000 Table 3-1 says a byte write drives
+  the selected byte on both `D15:D8` and `D7:D0`. Both unqualified HM6116
+  banks therefore capture `{byte, byte}`; a word write preserves its two
+  independent bytes. The manual limits this inactive-lane behavior to the
+  current implementation rather than all future devices
+  [motorola-m68000-users-manual-ninth, Table 3-1 and footnote, printed pp.
+  3-5 through 3-6].
 - **Secondary abstraction:** pinned MAME accepts `mem_mask` and applies
   `COMBINE_DATA` in `hdsnd68k_320com_w`.
-- **Conflict:** the byte-preserving merge is not shown by the physical RAM
-  controls, and the inactive host data lane during a byte access is unqualified.
-- **Current treatment:** a first FPGA adapter exposes only complete 16-bit host
-  writes. `OQ-024` tracks firmware use and physical out-of-contract behavior.
-- **Confidence:** VERIFIED_PRIMARY for Rev-A whole-word wiring;
-  CORROBORATED for MAME's abstraction; UNKNOWN for byte accesses on hardware.
+- **Conflict:** MAME retains the unselected byte, while the physical original-
+  MC68000 bus and common `/CRWE` require both banks to receive the selected
+  byte.
+- **Current treatment:** the timing-derived Y6 path uses
+  `hard_drivin_mc68000_write_word` before the complete-word storage callback.
+  The external callback remains an already captured word contract. `OQ-024`
+  tracks firmware access widths and electrical/substitute-CPU qualification.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A word and original-MC68000 byte
+  capture; CONFLICT for MAME's merge; UNKNOWN for firmware byte-write use and
+  later/substitute-68k inactive lanes.
 
 ## SC-026 — Sound-ROM sign extension versus unsigned MAME shift
 

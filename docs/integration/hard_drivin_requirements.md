@@ -121,10 +121,10 @@ graphics-ready polarity, and the generic MC68681 acknowledge contract;
 VERIFIED_SIMULATION/FORMAL for the three standalone RTL blocks; UNKNOWN for
 system reset origin, per-cycle cross-clock response phase,
 acknowledgement-path electrical timing, and raw-pin CDC.**
-Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
-FPGA memories because the physical whole-bank strobe does not qualify the
-other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
-physical byte merge or a known full word.
+Partial lower-Y5 writes remain exposed and rejected under `OQ-022`. Y6 byte
+writes are exposed and accepted after the original-MC68000 selected byte is
+duplicated onto both halves, matching the common `/CRWE` hardware rather than
+MAME's retained-other-byte merge (`SC-025`/`OQ-024`).
 
 The DSP exposes `TA0..TA11`, `TD0..TD15`, `/MEN`, `/DEN`, and `/TWE` to board
 logic. The drawings show four 20-pin `8168D45`-labeled SRAM slices. Every
@@ -417,9 +417,11 @@ increment, wrap, validity, ownership, and port-3 address-control-isolation
 cases; its
 pre-technology Yosys target retains one memory with zero structural problems.
 The processor/program-RAM board top now routes port 1 to this path, preloads a
-synthetic word through the whole-word host callback, and verifies execution,
-global read increments, and reset retention. A 68000 host latch/bus adapter,
-sample-ROM data callback, and physical timing remain acceptance work.
+synthetic word through the complete-word host callback, and verifies execution,
+global read increments, and reset retention. Its timing-derived Y6 path also
+normalizes original-MC68000 upper/lower byte writes and has a bounded symbolic
+write/read proof. Raw-pin CDC, authorized-firmware access widths, and physical
+HM6116 timing remain acceptance work.
 
 ### Parallel sample ROM
 
