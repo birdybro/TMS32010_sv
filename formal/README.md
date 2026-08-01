@@ -304,7 +304,38 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
-The twelve harnesses leave DINT ordering, formal coverage of the represented
+## Driver Sound same-clock host-timing harness
+
+`hard_drivin_sound_host_timing.sby` checks the isolated A044427 logical timing
+adapter with a 16-step BMC and cover. Address, function code, read/write
+direction, and both byte strobes remain arbitrary. The same-clock environment
+assumes only the adapter's legal event contract:
+
+- rising and falling 8 MHz enables are mutually exclusive and alternate when
+  present, with arbitrary idle clocks between them;
+- `/AS` assertion is separate from either phase edge and begins only while no
+  cycle is active;
+- an ordinary `/AS` release occurs at its S7 completion event or after the
+  registered completion indication; and
+- a CPU-space/VPA release is separate from a phase edge and occurs only after
+  the complete `RVA` pulse and following falling-edge settle sequence.
+
+Within that environment, the harness checks deterministic FPGA initialization,
+complete address/function/direction/strobe capture, exact `/VPA`, `/DTACK`,
+`/RVF`, global write-enable, read/write select, one-hot target, and pre-edge
+completion equations. It also checks the registered pulse delay, stable
+captured fields, rising-edge `RVA` ownership, VPA suppression, and absence of
+a second ordinary completion while `/AS` remains asserted. Separate covers
+reach a qualified whole-word read and write at step 8 and a fully settled
+CPU-space/VPA cycle at step 9.
+
+This is bounded digital evidence for a common-clock enable adapter. It does
+not prove a raw-pin CDC, analog TTL propagation/loading margin, MC68000
+electrical setup/hold, physical unreset power-up state, open-bus values,
+mailbox partial-byte behavior, or the board-top side effects driven by the
+completion events.
+
+The thirteen harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

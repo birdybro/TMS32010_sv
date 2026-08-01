@@ -1248,10 +1248,20 @@ objective passing evidence.
   and MPYK-extreme words at step 0. This does not prove mnemonic identity,
   execution, timing, unsupported silicon behavior, or the four deferred native
   cycles.
+  A thirteenth 16-step standalone configuration leaves the Driver Sound host
+  address, function code, direction, byte strobes, and legal event spacing
+  arbitrary. Under explicit alternating-edge, idle-only assertion,
+  completion-owned ordinary release, and fully settled VPA-release assumptions,
+  it proves captured controls, exact `/VPA`/`/DTACK`/`/RVF`/write-enable/select
+  equations, one-hot target routing, pre-edge and registered completion
+  ownership, VPA suppression, stable held state, and no held-`/AS` retry.
+  Whole-word read/write covers reach step 8 and the complete VPA path reaches
+  step 9. This is bounded common-clock adapter evidence, not raw-pin CDC,
+  electrical timing, open-bus, byte-policy, or board-side-effect proof.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, RET, general
-  general FSM and remaining integrated decode/RAM/arithmetic properties, and
+  FSM and remaining integrated decode/RAM/arithmetic properties, and
   liveness
   assumptions remain.
   Never describe bounded checks as complete proof.
@@ -1522,8 +1532,10 @@ objective passing evidence.
   2,962 cells/257 checks. It does not claim raw-pin CDC, open-bus policy, or
   electrical closure. The current
   126/231/38/40/5/10 regression split, strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
-  pass; the adapter has no dedicated formal harness yet. Atari TM-327 is now
+  eighteen Yosys targets, all 32 hashes, and all 26 formal tasks from thirteen
+  configurations pass. The host adapter's new 16-step proof uses an explicit
+  legal same-clock event contract and reaches read, write, and VPA covers.
+  Atari TM-327 is now
   pinned and records local-68000 program/program-RAM tests plus TMS32010
   communication-RAM, IRQ, DAC, tune/sweep, and block-latch diagnostics as
   future synthetic qualification targets. The new standalone
@@ -1583,9 +1595,10 @@ objective passing evidence.
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
   and exposes `/SPEECH` without a side effect. The complete current
   126/231/38/40/5/10 regression split and strict lint across 28 modules pass;
-  all eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
-  also pass at the latest verified checkpoint. The adapter still has no
-  dedicated formal harness.
+  all eighteen Yosys targets, all 32 hashes, and all 26 tasks from thirteen
+  formal configurations also pass at the latest verified checkpoint. The
+  standalone adapter proof is bounded to 16 steps and does not include the
+  board-top routing side effects.
 
 ## Milestone 22 — Release qualification
 

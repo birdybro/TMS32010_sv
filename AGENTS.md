@@ -433,7 +433,11 @@ FPGA-only idle initialization. The board top now selects it only behind
 whole-word `/SOUNDWR`, `/SOUNDRD`, `/LATCHES`, and `/IRQCLR`; partial mailbox
 writes are disclosed and rejected under `OQ-031`, while `/SPEECH` remains an
 observable unimplemented completion. Read the timing document before changing
-or integrating it.
+or integrating it. Its dedicated 16-step formal harness assumes alternating
+physical-edge enables and a fully settled VPA-owned release, proves the
+common-clock logical equations and no-retry behavior, and reaches read, write,
+and VPA covers. Do not extend that bounded claim to board-top side effects,
+raw-pin CDC, or electrical timing.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
@@ -574,6 +578,9 @@ A complementary 40-step direct-TBLW harness uses a verification-only RAM
 preload and a phase-3 synchronous program-memory model to prove one exact
 write, repeated-fetch replacement, and execution of the rewritten LACK word;
 its complete self-modifying path is reachable at step 35.
+The standalone Driver Sound host-timing adapter also has a 16-step bounded
+proof under documented legal same-clock event assumptions. Whole-word read
+and write covers reach step 8, and the settled VPA path reaches step 9.
 This is not a complete formal proof; no general pipeline, formally exhaustive
 interrupt entry matrix, indirect table proof, general external-memory proof,
 or complete pin timing

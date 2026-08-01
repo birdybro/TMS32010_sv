@@ -234,6 +234,16 @@ read/write pulses. Directed cases additionally check all `/UDS`/`/LDS`
 combinations, CPU-space `/VPA` suppression, delayed `/AS` release, absence of
 a held-`/AS` retry, and deterministic mid-cycle FPGA reinitialization.
 
+`formal/hard_drivin_sound_host_timing.sby` adds a 16-step bounded check with
+arbitrary captured address/control values and arbitrary stalls. Its explicit
+same-clock assumptions require mutually exclusive alternating phase edges,
+idle-only `/AS` assertion, ordinary release at/after completion, and VPA
+release only after the complete `RVA`/falling-edge settle sequence. Assertions
+check exact external decode/strobe/completion equations, captured-state
+stability, VPA suppression, registered pulse delay, and absence of a held-`/AS`
+retry. Whole-word read/write covers reach step 8; the fully settled VPA cover
+reaches step 9. This does not prove raw-pin CDC or electrical timing.
+
 Twenty-four retained assertions cover legal event combinations, exact Boolean
 outputs and pre-edge completion events, target uniqueness, state capture,
 rising/falling transition state, ordinary completion qualification, and

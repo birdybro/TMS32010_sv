@@ -82,7 +82,7 @@
   An eighteenth target checks the standalone explicit-enable local-68000 host
   timing adapter at 142 abstract cells, 24 retained checks, no memory/latch,
   and zero structural problems.
-- **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
+- **Formal status:** all 26 tasks from 13 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -140,7 +140,13 @@
   primary-reserved, simultaneous-update, pattern-mismatch, primary-unlisted,
   model-only CALA, and upper-MPYK cases. Mnemonic authority remains with the
   database/fixtures; execution, timing, and unsupported-silicon behavior are
-  excluded.
+  excluded. A thirteenth 16-step standalone host-timing BMC checks arbitrary
+  address/control values and stalls under explicit alternating-edge and
+  completed-release assumptions. It proves exact external equations, captured
+  state, VPA suppression, completion timing, and held-`/AS` no-retry behavior;
+  whole-word read/write covers reach step 8 and the fully settled VPA cover
+  reaches step 9. Raw-pin CDC, board-top side effects, and electrical timing
+  remain outside this proof.
 - **Phase-pause evidence:** the original part has no READY/WAIT pin. The
   platform `clock_enable_i` adaptation is now directed-tested across ordinary
   MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases. Sixteen inserted host
@@ -666,9 +672,10 @@
   not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
   126/231/38/40/5/10 regression split, strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
-  pass. The adapter itself has exhaustive simulation but no dedicated formal
-  harness yet.
+  eighteen Yosys targets, all 32 hashes, and all 26 tasks from thirteen formal
+  configurations pass. The adapter's dedicated 16-step bounded harness uses
+  the documented legal same-clock event contract and reaches read, write, and
+  VPA paths.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -697,9 +704,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** add a bounded formal harness for the same-clock host-timing
-  adapter and board-routing contract under legal event assumptions, then
-  investigate the local-68000 program ROM/RAM decode needed for TM-327's
-  synthetic program-memory diagnostics without assigning an open-bus value.
+- **Next task:** add bounded board-top formal checks for the completion-driven
+  host-routing side effects, then investigate the local-68000 program ROM/RAM
+  decode needed for TM-327's synthetic program-memory diagnostics without
+  assigning an open-bus value.
 - **Latest committed baseline before this cycle:**
-  `b512ef1`
+  `68020f4`

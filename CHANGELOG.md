@@ -174,6 +174,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/VPA`/`RVA`/`/DTACK`/`/RVAS`/`/RVF` outputs, global byte-write strobes,
   one-hot low-I/O selection, and qualified completion pulses. It deliberately
   has no READY input and labels deterministic initialization as FPGA-only.
+- A dedicated 16-step bounded host-timing proof with explicit legal
+  alternating-edge and VPA-release assumptions, exact external-equation and
+  captured-state assertions, and reachable whole-word read, whole-word write,
+  and fully settled CPU-space covers.
 - An opt-in board-top composition of that timing path: all four masked read
   quadrants are driven during the held selection interval, and pre-edge S7
   events route `/SOUNDRD`, complete-word `/SOUNDWR`, `/LATCHES`, and
@@ -1254,8 +1258,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   memories at 2,962 cells/257 checks. The complete current regression passes 126
   repository/tool, 231 model/unit, 38 instruction RTL, 40 bus/wrapper, 5
   interrupt, and 10 differential tests; strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 reference hashes, and the existing 24 formal
-  tasks pass. The adapter itself does not yet have a dedicated formal harness.
+  eighteen Yosys targets, all 32 reference hashes, and all 26 tasks from
+  thirteen formal configurations pass. The new adapter BMC passes through 16
+  steps; its whole-word read/write covers reach step 8 and the fully settled
+  VPA cover reaches step 9. The proof remains scoped to common-clock digital
+  behavior, not raw-pin CDC, board-top side effects, or electrical timing.
 - The complete current regression passes 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase/wrapper tests including the exhaustive mailbox test and
