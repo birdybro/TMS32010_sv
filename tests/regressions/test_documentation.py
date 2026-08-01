@@ -150,6 +150,48 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("PROVISIONAL safety policy", conflicts)
         self.assertIn("UNKNOWN outside that range", memory)
 
+    def test_subc_pipeline_evidence_stays_provisional_and_reproducible(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        patent = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-dsp-microcomputer-patent-us4577282a"
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "subc_pipeline_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        used_pages = " ".join(patent["sections_or_pages_used"])
+        for required in (
+            "patent columns 13-14 and 21-24",
+            "PDF pages 33 and 37-38",
+            "Figure 5c",
+        ):
+            self.assertIn(required, used_pages)
+        for required in (
+            "first word intentionally has no repository expected result",
+            "intermediate-only OV stage remains **PROVISIONAL**",
+            "**CORROBORATED RELATED-EMBODIMENT**",
+            "cannot set `OV`",
+            "final-stage hypothesis",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("RESEARCHING/CORROBORATED RELATED-EMBODIMENT", questions)
+        self.assertIn("PROVISIONAL, NARROWED", questions)
+        self.assertIn("## SC-010", conflicts)
+        self.assertIn("physical probe", conflicts)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

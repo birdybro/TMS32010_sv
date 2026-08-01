@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-014` original 144-word RAM-edge research and
-  reproducible DMOV/LTD physical probes
+- **Current milestone:** `OQ-017`/`OQ-018` SUBC pipeline/overflow research and
+  reproducible original-device probes
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 135 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 137 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -989,6 +989,17 @@
   clear/scan all 144 valid cells, expose the `0x90` read, and preserve DMOV/LTD
   registers for an original-NMOS capture; `OQ-014` remains RESEARCHING and the
   RTL policy remains PROVISIONAL.
+- **New SUBC evidence:** original production guides document one cycle and
+  prohibit the following instruction from consuming ACC. Related TI patent
+  US4577282A exposes a Q4/Q1/Q2 unshifted-ALU path, following-state Q3
+  accumulator-local quotient shift, and ALU-derived overflow input, but calls
+  SUBC two-state and therefore remains related-embodiment corroboration only.
+  Pinned IKA agrees on delayed availability but flags its later result; pinned
+  MAME commits immediately and its apparent intermediate-overflow expression
+  cannot set OV. Exact 26-word dependency and 34-word overflow-stage probes
+  now distinguish these hypotheses on original NMOS hardware without assigning
+  a result to the forbidden sequence. `OQ-017` remains RESEARCHING and
+  `OQ-018` remains PROVISIONAL, NARROWED.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1024,9 +1035,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** inspect primary/later TI arithmetic-control material and the
-  related patent only as scoped background for `OQ-017`/`OQ-018` SUBC result
-  availability and overflow-stage behavior; retain both physical experiments
-  as blockers only for their respective silicon questions.
+- **Next task:** investigate `OQ-019` DINT versus already-active interrupt-entry
+  ordering in original TI control/timing material, compare independent
+  implementations only as secondary hypotheses, and define the smallest
+  original-device capture if production documentation remains silent.
 - **Latest committed baseline before this cycle:**
-  `29e474e`
+  `317187b`

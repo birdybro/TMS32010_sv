@@ -142,6 +142,15 @@ printed pp. 2-5 and 3-61 (PDF pp. 29 and 111)]. **Confidence:
 VERIFIED_PRIMARY for affected status and OVM independence; PROVISIONAL for
 the overflow stage.**
 
+Related-embodiment patent circuitry supports the intermediate-stage choice,
+while pinned IKA32010 assigns its flag to the delayed final result and pinned
+MAME's intermediate check is ineffective. The project therefore retains the
+reversible policy and supplies a two-vector original-device probe rather than
+promoting it to verified silicon behavior; see
+`docs/research/subc_pipeline_experiment.md`
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 21-24 (PDF pp. 37-38),
+Figure 5c].
+
 The qualified functional slice writes `INTM=1` for exact opcode `DINT`
 (`0x7f81`) and `INTM=0` for exact opcode `EINT` (`0x7f82`). DINT takes effect
 immediately. EINT's architectural bit write is immediate, but interrupt

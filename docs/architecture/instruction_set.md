@@ -159,6 +159,17 @@ that violates TI's scheduling rule; exact availability remains `OQ-017`
 (PDF pp. 98–100); ti-first-generation-users-guide-1987, `SUBC` and §5.7.2,
 printed pp. 4-67–4-68 and 5-37 (PDF pp. 148–149 and 194)].
 
+A contemporary TI patent for a related DSP embodiment provides a plausible
+mechanism: it retains the unshifted ALU result through Q4/Q1/Q2 and performs
+the final quotient shift in the accumulator at Q3 of a following non-ALU/NOP
+state. It calls SUBC two-state rather than the production part's documented
+one cycle and does not define a violating successor, so it narrows but does
+not resolve `OQ-017`
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 13-14 and 21-24 (PDF
+pp. 33 and 37-38), Figure 5c]. **Confidence: CORROBORATED
+RELATED-EMBODIMENT for the mechanism; UNKNOWN for production violation
+behavior.**
+
 The later first-generation TI guide says SUBC affects sticky `OV`, is not
 affected by `OVM`, and never saturates. The original per-instruction pages
 omit the flag sentence, although SPRU001B's generic accumulator-status rule
@@ -173,6 +184,11 @@ overflow, which provisionally leaves OV clear
 3-61 (PDF pp. 29 and 111); ti-first-generation-users-guide-1987, `SUBC`,
 printed p. 4-67 (PDF p. 148)]. **Confidence: CORROBORATED that SUBC affects
 OV and ignores OVM; PROVISIONAL for the exact overflow-producing stage.**
+The related patent's ALU-derived status path supports the intermediate-only
+hypothesis, but pinned IKA32010 instead flags its delayed final result and
+pinned MAME's apparent intermediate check cannot set OV. The physical
+two-vector capture in `docs/research/subc_pipeline_experiment.md` is therefore
+required before raising confidence.
 
 ## Qualified `BANZ` control-flow slice
 

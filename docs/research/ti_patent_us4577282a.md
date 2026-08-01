@@ -69,6 +69,32 @@ cannot decide whether original-part `DMOV`/`LTD` source `0x8f` suppresses,
 aliases, or otherwise performs the requested write to `0x90`. See
 `docs/research/ram_boundary_experiment.md` and `SC-038`.
 
+## SUBC staging background and its limit
+
+The disclosed accumulator gives a concrete reason for the production
+programming restriction after `SUBC`. Its unshifted ALU result is accepted at
+Q4, passes the accumulator input stage at Q1, and recirculates at Q2. A
+separate accumulator path then shifts that value and inserts the quotient bit
+at Q3 of the following state. The prose assumes that following state is a
+non-ALU instruction or NOP. Overflow status is sourced from the ALU
+output/carry path, whereas the final shift is local to the accumulator
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 21-24 (PDF pp. 37-38),
+Figure 5c]. This is **CORROBORATED RELATED-EMBODIMENT** evidence for a delayed
+final shift and an intermediate-ALU overflow hypothesis.
+
+It is not production TMS32010 timing proof. Table A and the instruction prose
+call SUBC a two-state instruction, while both original production guides call
+it one cycle; the accounting or implementation differs
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 13-14 and 34-36 (PDF
+pp. 33 and 43-44)]. The patent also does not define what a violating successor
+actually samples. Pinned IKA32010 independently stages its result but assigns
+overflow from the later shifted/add result, while pinned MAME commits the
+final result immediately and contains an intermediate-overflow expression
+that cannot set `OV`. Those conflicts prevent either secondary implementation
+from upgrading the patent hypothesis. The physical probes in
+`docs/research/subc_pipeline_experiment.md` remain necessary for `OQ-017` and
+`OQ-018`.
+
 ## Why PUSH/POP remains unresolved
 
 The patent's Table A contains `CALLA` and `RET`, but it does not contain the
@@ -103,7 +129,9 @@ the smallest evidence needed to choose among those hypotheses.
   not establish the original production 144-word decoder or its array edge.
 - The prose's general one-state statement and Table A's two-state `SUBC` entry
   are internally awkward and differ from the production TMS32010's documented
-  one-cycle SUBC. This is further reason not to merge the embodiments silently.
+  one-cycle SUBC. Its Q3 following-state shift and ALU-derived overflow path
+  are useful hypotheses, but this is further reason not to merge the
+  embodiments silently.
 - `RCLK-` is the patent embodiment's name. Repository native-interface claims
   continue to use the production TMS32010 manual's `MEN` terminology.
 

@@ -238,7 +238,9 @@ corroboration because the original-part manuals do not state the precedence.
 common data-address path. Tests use the documented requirement that its next
 instruction not consume ACC; the exact illegal-scheduling result availability
 and the precise arithmetic stage that sets sticky `OV` remain explicitly
-provisional under `OQ-017` and `OQ-018`.
+provisional under `OQ-017` and `OQ-018`. Stable noncopyrighted physical probes
+now distinguish old/intermediate/final dependency visibility and
+intermediate-only/final-only OV; they have no captured hardware result.
 `SUBH` subtracts the selected word aligned to `ACC[31:16]`. Directed
 model/RTL/native and seeded differential tests cover low-half retention,
 sticky OV, both wrapped overflow directions, full-accumulator OVM

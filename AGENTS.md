@@ -585,7 +585,10 @@ provisional behavior under `OQ-015`.
 one cycle and is tested only with the required ACC-free following
 instruction. Its exact result availability after a scheduling violation and
 the exact intermediate that sets sticky `OV` remain provisional under
-`OQ-017`/`OQ-018`.
+`OQ-017`/`OQ-018`. A related TI patent narrows those questions through a
+Q4/Q1/Q2 intermediate path, following-state Q3 accumulator shift, and
+ALU-derived status, but differs from production cycle wording. Read
+`docs/research/subc_pipeline_experiment.md` before changing SUBC timing or OV.
 `BANZ` is an exact two-word, two-cycle control-flow instruction. The second
 normal program read obtains a canonical 12-bit target; the old selected
 low-nine AR counter selects target versus fallthrough before a modulo-512

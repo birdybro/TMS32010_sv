@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- Two stable, noncopyrighted original-NMOS SUBC probe images and a physical
+  capture protocol. One distinguishes old, unshifted-intermediate, and final
+  ACC visibility in TI-prohibited successor scheduling; the other isolates
+  intermediate-only and final-shift-only overflow while checking OVM is
+  ignored. Undefined observations deliberately have no expected result.
+- Scoped US4577282A SUBC research showing a related Q4/Q1/Q2 unshifted-ALU
+  path, following-state Q3 accumulator-local shift, and ALU-derived status.
+  Its two-state wording and conflicts with pinned IKA/MAME keep production
+  `OQ-017`/`OQ-018` unresolved.
 - Two stable, noncopyrighted original-NMOS RAM-boundary probe images and a
   physical-capture protocol for `DMOV`/`LTD` source `0x8f`. The programs clear
   and scan all 144 valid words through port 7, expose an `0x90` read, preserve
@@ -870,11 +879,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The SUBC dependency and overflow-stage probes assemble deterministically to
+  exact 26- and 34-word images with fixed observation points and symbols.
+  Documentation regressions require the related-patent claim boundary, the
+  MAME/IKA conflicts, and unresolved `OQ-017`/`OQ-018` labels.
 - The DMOV and LTD RAM-edge probes assemble deterministically to 26-word
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 133 provenance/document/tool tests,
+- The complete repository gates pass with 137 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
@@ -1768,9 +1781,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   the smallest resolving evidence.
 - TI requires the instruction after SUBC not to use ACC but does not establish
   observable behavior for a violation; current same-boundary result commit is
-  an implementation convenience under `OQ-017`. TI also says SUBC affects OV
-  without identifying the producing arithmetic stage; intermediate-subtraction
-  sticky OV is PROVISIONAL under `OQ-018`.
+  an implementation convenience under `OQ-017`. Related-patent staging
+  explains the prohibition but is not a production waveform. TI also says
+  SUBC affects OV without identifying the producing arithmetic stage;
+  related-patent ALU-derived status supports intermediate subtraction, pinned
+  IKA flags its final stage, and MAME's intended intermediate check is
+  ineffective. Sticky OV remains PROVISIONAL under `OQ-018`.
 - Interrupt external fetch order and directed entry state are verified, but
   the partial core still collapses fetch and execution at sample boundaries.
   The 32 represented multicycle arrival intervals are independently qualified

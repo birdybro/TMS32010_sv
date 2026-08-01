@@ -176,6 +176,15 @@ electrical result of an out-of-range access.
 - **Later family source:** SPRU013 `SUBC`, printed p. 4-67, explicitly says
   the instruction affects `OV`, ignores `OVM`, and never saturates, but still
   does not identify the flag-producing stage.
+- **Related TI embodiment:** US4577282A stages the unshifted ALU result through
+  Q4/Q1/Q2 and performs the quotient shift in an accumulator-local path at Q3
+  of a following non-ALU/NOP state. Its status input comes from the earlier
+  ALU/carry path. This explains the dependency prohibition and supports an
+  intermediate-overflow hypothesis, but the patent calls SUBC two-state while
+  the production guides call it one cycle. It is **CORROBORATED
+  RELATED-EMBODIMENT**, not original-part proof
+  [ti-dsp-microcomputer-patent-us4577282a, patent cols. 13-14 and 21-24 (PDF
+  pp. 33 and 37-38), Figure 5c].
 - **Independent oracle:** pinned MAME commit
   `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` computes the documented
   conditional result immediately. Its handler appears intended to detect
@@ -183,12 +192,19 @@ electrical result of an out-of-range access.
   expression compares the old accumulator with an unchanged accumulator and
   therefore cannot set `OV`
   [mame-tms320c1x-core-030fefc, `subc()`, lines 732–742].
+- **Conflicting FPGA implementation:** pinned IKA32010 retains a `prev_subc`
+  stage, loads final ACC on the next FPGA cycle, and derives V from that later
+  shifted/add result. It corroborates delayed availability but supports the
+  opposite overflow-stage hypothesis; it cannot settle original silicon.
 - **Current treatment:** the model and RTL provisionally set sticky `OV` on
   signed overflow of the intermediate subtract, ignore `OVM`, and never
   saturate. Directed tests distinguish intermediate-only and final-shift-only
   overflow vectors and label that boundary provisional.
   Tests place an ACC-free instruction after every SUBC; behavior of a
-  violating dependent sequence is not claimed. See `OQ-017` and `OQ-018`.
+  violating dependent sequence is not claimed. Stable assembler fixtures now
+  provide an original-device dependency probe and a two-vector physical probe
+  that isolates the overflow stages; neither has a captured result. See
+  `docs/research/subc_pipeline_experiment.md`, `OQ-017`, and `OQ-018`.
 - **Confidence:** VERIFIED_PRIMARY for encoding, conditional ACC transform,
   scheduling prohibition, word count, and cycle count; PROVISIONAL for the
   overflow-producing stage; UNKNOWN for a prohibited dependent sequence.

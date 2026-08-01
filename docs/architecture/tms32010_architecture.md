@@ -224,6 +224,11 @@ instruction after every SUBC as TI requires. The partial implementation
 commits ACC at the SUBC retirement boundary and sets sticky OV from signed
 overflow in the intermediate subtraction; those two details are explicitly
 PROVISIONAL under `OQ-017`/`OQ-018` rather than silicon timing claims.
+A contemporary TI patent corroborates a related Q4/Q1/Q2 intermediate path,
+following-state Q3 accumulator shift, and earlier ALU-derived status path,
+but differs in its two-state count. The stable physical probes in
+`docs/research/subc_pipeline_experiment.md` therefore narrow rather than
+resolve those claims.
 LAR verifies 16-bit loads to either auxiliary register, including suppression
 of an indirect counter update when the destination also supplied the address.
 SAR verifies 16-bit stores from either auxiliary register, including its

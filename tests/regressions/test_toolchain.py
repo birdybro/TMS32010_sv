@@ -87,6 +87,48 @@ class ToolchainSliceTests(unittest.TestCase):
                 },
             )
 
+    def test_subc_physical_probe_images_are_stable(self) -> None:
+        cases = (
+            (
+                "subc_dependency_probe.asm",
+                [
+                    0x6E00, 0x7E02, 0x5000, 0x7E05, 0x5001, 0x7E03,
+                    0x5002, 0x7F89, 0x5003, 0x5004, 0x6500, 0x6101,
+                    0x6402, 0x5003, 0x7F80, 0x6500, 0x6101, 0x6402,
+                    0x7F80, 0x5004, 0x4F03, 0x7F80, 0x4F04, 0x7F80,
+                    0xF900, 0x0018,
+                ],
+                {
+                    "HOLD": 0x018,
+                    "LEGAL_SUBC": 0x011,
+                    "VIOLATING_SUBC": 0x00C,
+                },
+            ),
+            (
+                "subc_overflow_stage_probe.asm",
+                [
+                    0x6E00, 0x7F89, 0x5000, 0x7E01, 0x5001, 0x7F89,
+                    0x6301, 0x5002, 0x7E80, 0x5003, 0x2803, 0x5004,
+                    0x7E40, 0x5005, 0x2805, 0x5006, 0x6504, 0x7F8B,
+                    0x6402, 0x7F80, 0x7C00, 0x7B00, 0x6506, 0x7F8B,
+                    0x6400, 0x7F80, 0x7C01, 0x6E01, 0x4F00, 0x7F80,
+                    0x4F01, 0x7F80, 0xF900, 0x0020,
+                ],
+                {
+                    "FINAL_SHIFT_ONLY": 0x018,
+                    "HOLD": 0x020,
+                    "INTERMEDIATE_ONLY": 0x012,
+                },
+            ),
+        )
+        for source_name, expected_words, expected_symbols in cases:
+            with self.subTest(source_name=source_name):
+                result = self.assembler.assemble_file(
+                    ROOT / "tests" / "asm" / source_name
+                )
+                self.assertEqual(result.words, dict(enumerate(expected_words)))
+                self.assertEqual(result.symbols, expected_symbols)
+
     def test_mame_stack_control_smoke_image_is_stable(self) -> None:
         result = self.assembler.assemble_file(
             ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"

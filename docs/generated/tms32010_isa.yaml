@@ -1551,8 +1551,8 @@
       "arithmetic_width_bits": 32,
       "sign_extension_behavior": "suppressed; the 16-bit data word is zero-extended and left-shifted 15 bits",
       "shift_behavior": "subtract data_word times 2^15; when the wrapped intermediate result is nonnegative, left-shift it and insert quotient bit 1, otherwise left-shift the old ACC and insert quotient bit 0",
-      "overflow_behavior": "OV is sticky; provisionally it observes signed overflow of ACC - (zero_extend(data_word) << 15); OVM is ignored and no result saturation occurs; whether the original part observes that intermediate or the final shift remains OQ-018",
-      "result_behavior": "intermediate = wrap32(ACC - (zero_extend(data_word) << 15)); ACC receives wrap32((intermediate << 1) + 1) when intermediate is nonnegative, otherwise wrap32(ACC << 1)",
+      "overflow_behavior": "OV is sticky; provisionally it observes signed overflow of ACC - (zero_extend(data_word) << 15); OVM is ignored and no result saturation occurs. Related-patent ALU-derived status supports the intermediate hypothesis, pinned IKA instead flags its delayed final result, and production behavior remains OQ-018",
+      "result_behavior": "intermediate = wrap32(ACC - (zero_extend(data_word) << 15)); ACC receives wrap32((intermediate << 1) + 1) when intermediate is nonnegative, otherwise wrap32(ACC << 1). A related patent stages an unshifted ALU result then shifts locally in the following state, but does not define production violating-successor behavior",
       "branch_behavior": "none; the conditional data selection is internal and PC advances normally",
       "interrupt_interaction": "TI forbids the immediately following instruction from using ACC; exact result-availability and interrupt interaction remain unresolved under OQ-017",
       "documented_cycle_count": 1,
@@ -1563,7 +1563,8 @@
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3 and SUBC instruction description", "printed_page": "3-2 through 3-3 and 3-61", "pdf_page": "52-53 and 111"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "SUBC instruction description and 4.6 divide discussion", "printed_page": "3-61 and 4-5 through 4-7", "pdf_page": "82 and 98-100"},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "SUBC instruction description and 5.7.2", "printed_page": "4-67 through 4-68 and 5-37", "pdf_page": "148-149 and 194"}
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "SUBC instruction description and 5.7.2", "printed_page": "4-67 through 4-68 and 5-37", "pdf_page": "148-149 and 194"},
+        {"source_id": "ti-dsp-microcomputer-patent-us4577282a", "section": "related-embodiment SUBC accumulator/status staging only", "printed_page": "patent columns 13-14 and 21-24", "pdf_page": "33 and 37-38"}
       ],
       "confidence_level": "PROVISIONAL",
       "unresolved_questions": ["OQ-002", "OQ-010", "OQ-017", "OQ-018"]

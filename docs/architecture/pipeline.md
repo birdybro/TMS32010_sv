@@ -407,6 +407,16 @@ tracked as `OQ-017`
 **Confidence: VERIFIED_PRIMARY for the scheduling restriction; UNKNOWN for
 violation behavior.**
 
+US4577282A's related embodiment retains the unshifted result through Q4/Q1/Q2
+and applies an accumulator-local final shift at Q3 of the following
+non-ALU/NOP state. That is a concrete explanation for the restriction, not a
+production waveform: its two-state SUBC accounting differs from the original
+manual's one cycle. The exact probe and interpretation boundary are in
+`docs/research/subc_pipeline_experiment.md`
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 13-14 and 21-24 (PDF
+pp. 33 and 37-38), Figure 5c]. **Confidence: CORROBORATED
+RELATED-EMBODIMENT only.**
+
 `PUSH` and `POP` are primary-defined one-word, two-cycle instructions. Their
 architectural stack transformations and numeric cycle totals are now
 model/tool-qualified, but the located original documentation contains no

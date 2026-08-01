@@ -185,6 +185,14 @@ ACC paths, logical data read, and 16 legally spaced iterations of TI's
 the next instruction cannot use ACC. Exact result availability for a
 violating schedule and the arithmetic stage responsible for OV remain
 `OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
+The related TI patent's Q4/Q1/Q2 staging and following-state Q3 accumulator
+shift explain how internal work can overlap that documented count, but its
+own two-state wording prevents treating it as a production timing diagram.
+The dependency and overflow captures in
+`docs/research/subc_pipeline_experiment.md` are stable physical probes, not
+passing expectations
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 13-14 and 21-24 (PDF
+pp. 33 and 37-38), Figure 5c].
 
 Directed legacy `TBLR`/`TBLW` tests assert three sampled transactions before
 retirement: opcode prefetch, discarded PC+1 prefetch, and transfer at

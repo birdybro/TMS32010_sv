@@ -950,7 +950,11 @@ objective passing evidence.
   differential adds 16 legal direct/indirect SUBC/NOP pairs; all program tests
   obey the documented ACC-free following instruction. Same-boundary ACC commit
   and intermediate-subtraction sticky OV remain explicitly PROVISIONAL under
-  `OQ-017`/`OQ-018`.
+  `OQ-017`/`OQ-018`. Contemporary patent evidence narrows the mechanism to a
+  related Q4/Q1/Q2 intermediate path, following-state Q3 shift, and earlier
+  ALU-derived status, but differs in cycle accounting. Two exact assembler
+  fixtures now define the required original-NMOS dependency and overflow-stage
+  captures without assigning an expected result.
   `LAR` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests, including its documented
   suppression of indirect post-modification when the target is the selected
@@ -1125,7 +1129,9 @@ objective passing evidence.
   resolving original-device trace.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
-  behavior remains `OQ-017`. The original TMS32010-20 clock envelope is now
+  behavior remains `OQ-017`. The related-patent timing and two stable physical
+  probes are documented in `docs/research/subc_pipeline_experiment.md`; no
+  production capture exists. The original TMS32010-20 clock envelope is now
   primary-qualified as 48.78–150 ns per master period and 47.5–52.5% pulse
   duration; electrical delays are wrapper constraints, not RTL delays.
 
