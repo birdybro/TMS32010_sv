@@ -553,6 +553,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   standalone same-clock event model. It captures `/AS`, emits the one-period
   `RVA`, asserts `/RVAS` from `/RVA`, and releases only after `/DTACK` has
   sampled low then high; a missing low sample deliberately holds the bus.
+- Primary qualification of the complete SP-327 sheet-4 combinational
+  `/DTACK` cone: function-code-7 `/VPA`, ordinary `RVA`, qualified HSBUS wait,
+  DUART acknowledgement, and final three-way active-low merge. The
+  storage-free RTL exposes every intermediate term and adds a synthetic
+  end-to-end reset-write timing composition.
+- Five newly acquired and hash-pinned official TI component data sheets for
+  LS20, AS00, F04, F11, and F74. The existing SDAS113B source was confirmed
+  byte-identical at TI's AS32 URL and reused instead of duplicated.
 
 ### Changed
 
@@ -563,9 +571,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   oracle for the paired physical source.
 - `SC-036` separates the physical 16 KiB `/SRES` alias window from pinned
   MAME's canonical `0x84c000..0x84c001` handler. `OQ-036` retains the unknown
-  system `/RESET` driver, complete main `/DTACK` acknowledgement tree,
-  electrical timing, unreset power-up state, and raw CDC boundary; the
-  discrete `/RVAS` hold dependency itself is now primary-resolved.
+  system `/RESET` driver, `/RVAS0` event adaptation, specialized peripheral
+  timing, electrical timing, unreset power-up state, and raw CDC boundary; the
+  discrete `/RVAS` hold dependency and complete combinational `/DTACK` cone
+  are now primary-resolved. `/RVAS0` event adaptation and the specialized
+  peripheral timing contracts remain open.
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
@@ -714,6 +724,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The complete repository gates pass with 129 provenance/document/tool tests,
+  231 model/unit tests, 38 instruction/decode RTL tests, 50 bus/integration
+  tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
+  checks 37 modules; all 40 formal jobs from 20 configurations pass; all 27
+  Yosys targets synthesize; and all 39 acquired reference hashes verify.
+- The `/DTACK` decode regression exhausts all 4,096 raw input combinations;
+  its one-step BMC proves every intermediate/final equation and six covers
+  reach ordinary ACK, CPU-space VPA, both HSBUS wait states, and both DUART
+  acknowledgement states. The composed bus test checks `/AS` capture,
+  `RVA`/`/DTACK` assertion, held `/RVAS`/`/SRES`, and sampled release. Yosys
+  reports 21 cells/eight checks with no storage or structural problem.
 - The main `/RVAS` timing regression covers normal request/assert/sample/
   release, continued hold across the exercised edges when `/DTACK` never
   samples low, later low/high recovery, and FPGA reinitialization. Its

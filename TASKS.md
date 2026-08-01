@@ -57,13 +57,16 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 33 pinned
+  until permission is demonstrated. The ignored cache now verifies 39 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
   manufacturer data book needed to interpret A044427's Am6012 path, and the
   pinned MAME DAC support sources needed to distinguish emulator sample
-  mapping from board wiring.
+  mapping from board wiring. The exact TI LS20, AS00, combined ALS32/AS32,
+  F04, F11, and F74 component documents now support SP-327 main-bus Boolean
+  and future propagation analysis without treating a gate symbol as an
+  electrical specification.
 
 ## Milestone 3 — Architecture specification
 
@@ -1411,10 +1414,13 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `sim/bus/tb_hard_drivin_main_dtack_decode.sv`,
   `sim/bus/tb_hard_drivin_main_rvas_timing.sv`,
   `sim/bus/tb_hard_drivin_main_sound_reset_decode.sv`,
+  `sim/bus/tb_hard_drivin_main_sound_reset_timing.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_source.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_interlock.sv`,
+  `formal/hard_drivin_main_dtack_decode.sby`,
   `formal/hard_drivin_main_sound_reset_decode.sby`,
   `formal/hard_drivin_main_rvas_timing.sby`,
   `formal/hard_drivin_sound_direct_io.sby`,
@@ -1698,9 +1704,14 @@ objective passing evidence.
   transition alone releases it. The standalone event-domain RTL covers normal
   release, missed-low continued hold, late recovery, and deterministic FPGA
   reinitialization; its 12-step BMC and 16-step three-class cover pass, and
-  Yosys reports 48 cells/twelve checks. The original system `/RESET` driver,
-  complete main `/DTACK` tree, raw CDC, and electrical timing remain
-  `OQ-036`.
+  Yosys reports 48 cells/twelve checks. The complete sheet-4 combinational
+  `/DTACK` cone is also transcribed: `/VPA`, ordinary-RVA, HSBUS wait, DUART,
+  and final F11 terms are exhaustively tested over all 4,096 raw inputs,
+  proved in one step with six covers, and synthesize to 21 cells/eight checks.
+  A composed test checks the synthetic sound-reset write from `/AS` capture
+  through `/SRES` release. The original system `/RESET` driver, `/RVAS0`
+  event model, specialized peripheral protocols, raw CDC, and electrical
+  timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.

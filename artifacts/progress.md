@@ -1,19 +1,19 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board `/RVAS` hold qualification
+- **Current milestone:** Hard Drivin' main-board `/DTACK` cone qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 48 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 50 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 34 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 39 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -105,7 +105,10 @@
   A twenty-sixth target checks the standalone main-board request/`RVA`/
   sampled-`/DTACK`/`/RVAS` state chain at 48 cells/twelve retained checks,
   with no memory, latch, generated clock, or structural problem.
-- **Formal status:** all 38 tasks from 19 SymbiYosys configurations pass with
+  A twenty-seventh target checks the complete storage-free main `/VPA`/
+  ordinary-RVA/HSBUS-wait/DUART `/DTACK` cone at 21 cells/eight retained
+  checks, with no memory, latch, generated clock, or structural problem.
+- **Formal status:** all 40 tasks from 20 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -186,6 +189,11 @@
   `/DTACK` sample, and the release event. The proof excludes the upstream
   acknowledgement equation, raw-pin CDC, electrical timing, and physical
   power-up state.
+  A twentieth standalone main-`/DTACK` configuration proves all intermediate
+  and final Boolean equations in one step across arbitrary raw inputs. Its
+  one-step cover reaches ordinary ACK, CPU-space `/VPA`, HSBUS ACK and wait,
+  and DUART ACK and wait. Legal bus combinations, external peripheral
+  protocols, propagation delay, and raw-pin CDC are outside this proof.
 - **Phase-pause evidence:** the original part has no READY/WAIT pin. The
   platform `clock_enable_i` adaptation is now directed-tested across ordinary
   MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases. Sixteen inserted host
@@ -822,9 +830,20 @@
   `/DTACK` must transition low-to-high before `/RVAS` releases. The standalone
   same-clock event model preserves continued hold if the low sample is
   missed, passes directed simulation and 12/16-step BMC/cover, and synthesizes
-  to 48 cells/twelve checks. The original system `/RESET` source, complete
-  `/DTACK` tree, raw CDC, electrical margin, and physical power-up state remain
-  `OQ-036`.
+  to 48 cells/twelve checks. The original system `/RESET` source, `/RVAS0`
+  event adaptation, specialized source timing, raw CDC, electrical margin,
+  and physical power-up state remain `OQ-036`.
+- **New main acknowledgement evidence:** the full sheet-4 gate cone is now
+  pinned to TI's LS20, AS00, combined ALS32/AS32, F11, F04, and F74 data.
+  `/VPA` blocks the ordinary term for function-code-7 CPU space; ordinary
+  cycles acknowledge from `RVA`; `/RHSBUS` plus the GSP/MSP wait NAND form the
+  HSBUS term; `/RDUART` plus MC68681 `/DUDTACK` form the DUART term; and F11
+  ANDs all three active-low results. Exhaustive 4,096-case simulation,
+  one-step BMC/six covers, a complete synthetic sound-reset cycle, and
+  21-cell/eight-check synthesis pass. Five new cached TI files bring the
+  pinned total to 39; TI's AS32 URL is byte-identical to the existing combined
+  SDAS113B source. `/RVAS0` event adaptation and specialized peripheral/AC
+  timing remain open rather than inferred.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -848,8 +867,9 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
-  local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin and
-  complete `/DTACK`/raw-CDC/electrical timing, platform tick calibration, and
+  local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
+  `/RVAS0` event adaptation, specialized main-bus peripheral protocols and
+  raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
@@ -859,8 +879,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** trace the complete SP-327 main `/DTACK` acknowledgement tree
-  and continue locating the system `/RESET` driver without inventing a timeout
-  or conflating either with MAME's functional reset callback.
+- **Next task:** reconstruct the SP-327 `/RVAS0` phase contract or locate the
+  system `/RESET` driver, keeping specialized HSBUS/DUART protocols and raw
+  CDC explicit rather than inferred from the now-complete Boolean cone.
 - **Latest committed baseline before this cycle:**
-  `dd7d5a4`
+  `ea5030a`

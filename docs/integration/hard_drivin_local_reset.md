@@ -91,8 +91,10 @@ combinational boundary. Its address port contains only `A23:A14`, making the
 physical lower-bit alias explicit. Raw `/AS`, `/RVAS`, address, and direction
 must already obey a platform's same-clock or CDC policy. The standalone
 `hard_drivin_main_rvas_timing` reconstructs the verified upstream hold state,
-but does not provide the complete `/DTACK` acknowledgement tree or raw-pin
-CDC. **Confidence: VERIFIED_PRIMARY
+and `hard_drivin_main_dtack_decode` provides the verified complete
+combinational acknowledgement cone. The standalone boundary still does not
+provide `/RVAS0`, external wait-source protocols, or raw-pin CDC.
+**Confidence: VERIFIED_PRIMARY
 for connectivity, address mirror, direction, and logical qualifiers;
 VERIFIED_SIMULATION/FORMAL for the combinational RTL; UNKNOWN for propagation
 margin, the original system `/RESET` source, and raw-pin CDC.**
@@ -180,8 +182,16 @@ when `/DTACK` never samples low, late recovery, and FPGA reinitialization. Its
 12-step BMC and 16-step cover prove the event-domain state contract and reach
 normal release, missed-low hold, and release-event paths. Standalone Yosys
 reports 48 cells and twelve retained checks with no memory, latch, generated
-clock, or structural problem. This does not resolve the main `/DTACK` logic
-cone, electrical margin, or system `/RESET` source.
+clock, or structural problem.
+
+The main `/DTACK` test exhausts all 4,096 raw combinations and explicitly
+checks ordinary, CPU-space, high-speed-wait, and DUART paths. A one-step BMC
+proves every gate equation and one-step cover reaches all six path classes.
+Yosys reports 21 cells/eight checks. A composed test joins the timing, DTACK,
+and reset-decode blocks and verifies `/AS` capture, ordinary-RVA
+acknowledgement, held `/RVAS`/`/SRES`, and sampled release. These results do
+not resolve `/RVAS0` event adaptation, peripheral protocols, electrical
+margin, raw CDC, or the system `/RESET` source.
 
 The interlock test exhausts all 32 combinations of initialization, raw RESET,
 raw HALT, storage selection, and readiness. The board regression additionally

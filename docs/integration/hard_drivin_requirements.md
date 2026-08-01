@@ -74,11 +74,17 @@ reconstructed: `/AS` creates a pending request, the next rising 8 MHz edge
 asserts one-period `RVA` and asynchronously presets `/RVAS` active, and only a
 falling-edge-sampled `/DTACK` low-to-high transition releases `/RVAS`. The
 standalone event-domain model intentionally holds forever if `/DTACK` never
-samples low; the complete main acknowledgement tree and raw CDC remain
-external. See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
+samples low. The complete SP-327 combinational acknowledgement cone is now
+separately transcribed, including CPU-space `/VPA`, ordinary RVA, selected
+high-speed-bus wait, and selected-DUART paths. The sound-reset write selects
+neither specialized path and therefore drives `/DTACK` directly from `RVA`;
+a composed test checks the complete synthetic reset-write sequence. `/RVAS0`
+generation, external wait/peripheral protocols, and raw CDC remain external.
+See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
 for decode, transport, and the logical hold chain; VERIFIED_SIMULATION/FORMAL
-for the two standalone RTL blocks; UNKNOWN for system reset origin,
-acknowledgement-path electrical timing, and raw-pin CDC.**
+for the three standalone RTL blocks; UNKNOWN for system reset origin,
+specialized-source protocols, acknowledgement-path electrical timing, and
+raw-pin CDC.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a

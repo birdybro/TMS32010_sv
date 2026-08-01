@@ -1,11 +1,12 @@
-# Hard Drivin' main-board `/RVAS` hold timing
+# Hard Drivin' main-board `/DTACK` and `/RVAS` timing
 
 This note covers only the SP-327 main-board logic that converts an asserted
 main-processor `/AS` into `RVA` and holds expansion-bus `/RVAS` until the
 main-board `/DTACK` path has completed. It is distinct from the A044427 local
-sound-68000 timing in `hard_drivin_host_timing.md`. The complete main-board
-`/DTACK` acknowledgement tree, raw-pin clock-domain crossing, and nanosecond
-timing margin remain outside the implemented block.
+sound-68000 timing in `hard_drivin_host_timing.md`. The complete combinational
+`/DTACK` cone is now transcribed separately from the sequential hold state;
+raw source timing, clock-domain crossing, and nanosecond timing margin remain
+outside the implemented blocks.
 
 ## Primary logic trace
 
@@ -29,14 +30,62 @@ The request latch, `RVA` latch, sampled-`/DTACK` latch, and `/RVAS` latch all
 show their asynchronous preset/clear inputs tied inactive through `PR7`; the
 drawing does not connect them to board `/RESET`
 [atari-hard-drivin-schematic-package-sp327, sheet 4, PDF p. 5]. TI specifies
-the F74 as a positive-edge-triggered D flip-flop with asynchronous active-low
-preset and clear [ti-sn74ls74a-datasheet-sdls119, description, pinout, and
-function table, printed pp. 1-3]. **Confidence: VERIFIED_PRIMARY for this
-logical signal chain and polarity.**
+the populated F74 as a positive-edge-triggered D flip-flop with asynchronous
+active-low preset and clear [ti-sn74f74-datasheet-sdfs046a, description,
+pinout, and function table, printed p. 1]. **Confidence: VERIFIED_PRIMARY for
+this logical signal chain and polarity.**
 
-The neighboring F74 `135H` output `/RVAS0` belongs to a separate local
-main-board strobe path. It is not the J7 expansion-bus `/RVAS` output and is
-not represented by the standalone adapter.
+The neighboring F74 `135H` output `/RVAS0` is a distinct early held-valid
+strobe. `8MHZ OR /S4` drives its asynchronous preset and the sampled-`/DTACK`
+Q clocks its D=0 release. `/RVAS0` qualifies the `/HSBUS` acknowledgement
+path; it is not the J7 expansion-bus `/RVAS` output and is not yet generated
+by the standalone state adapter. **Confidence: VERIFIED_PRIMARY for the
+connectivity; UNKNOWN for the phase/CDC contract needed by an FPGA model.**
+
+## Complete combinational `/DTACK` cone
+
+SP-327 sheet 4 uses three active-low acknowledgement terms. Written as direct
+Boolean equations, with every slash retained from the drawing:
+
+```text
+AS_ASSERTED     = NOT /AS
+/VPA            = NAND(AS_ASSERTED, FC2, FC1, FC0)
+DEFAULT_TERM_N  = NAND(/VPA, RVA, /HSBUS, /DUART)
+
+/RHSBUS         = /HSBUS OR /RVAS0
+WAIT_NAND       = NAND(/GSPWAIT, /MSPWAIT)
+HSBUS_TERM_N    = /RHSBUS OR WAIT_NAND
+
+/RDUART         = /DUART OR /RVAS
+DUART_TERM_N    = /RDUART OR /DUDTACK
+
+/DTACK          = DEFAULT_TERM_N AND HSBUS_TERM_N AND DUART_TERM_N
+```
+
+LS20 `150K` creates `/VPA` for an asserted function-code-7 CPU-space cycle and
+the ordinary `RVA` acknowledgement. ALS32 `160H` creates `/RHSBUS` and
+`/RDUART`. AS00 `190E` combines the two processor-wait inputs, two AS32 gates
+make the specialized acknowledgement terms, and F11 `140K` ANDs the three
+active-low results. The F11 `2A/2B/2C/2Y` pins are 3/4/5/6, exactly matching
+TI's three-input positive-AND pinout; it is not an inferred OR despite the
+scan's compact gate outline [atari-hard-drivin-schematic-package-sp327,
+sheet 4, PDF p. 5; ti-sn74ls20-datasheet-sdls079, printed pp. 1 and 3;
+ti-sn74as00-datasheet-sdas187a, printed pp. 1 and 4;
+ti-sn74als32-datasheet-sdas113b, printed pp. 1 and 4;
+ti-sn74f11-datasheet-sdfs040a, printed pp. 1 and 4]. SP-327 sheet 6 identifies
+`/DUDTACK` as the MC68681 acknowledgement output; the UART's internal timing
+is not modeled here [atari-hard-drivin-schematic-package-sp327, sheet 6,
+PDF p. 7]. **Confidence: VERIFIED_PRIMARY for the full Boolean cone;
+UNKNOWN for the external wait-source protocols and electrical propagation
+margin.**
+
+For the sound-reset expansion write, the LS138 decode selects `/EXTBUS`, not
+`/HSBUS` or `/DUART`. A non-CPU-space cycle therefore uses the ordinary term:
+`RVA=1` asserts `/DTACK`, and the next `RVA=0` releases `/DTACK`. The
+specialized terms remain inactive-high. A synthetic composed test fixes a
+representative non-CPU function code and proves that sequence through
+`/RVAS` and `/SRES`; it does not claim the main processor's software mode or
+raw pin delays.
 
 ## Logical event sequence
 
@@ -57,8 +106,9 @@ from elapsed clocks or an abstract transaction commit. If `/DTACK` never
 samples low, the final F74 receives no later rising clock transition and
 `/RVAS` remains asserted. The new RTL deliberately preserves that stuck-hold
 case instead of adding a timeout. The equations that decide when the physical
-main-board `/DTACK` signal goes low and high remain unresolved integration
-work. **Confidence: VERIFIED_PRIMARY for the state dependency;
+main-board `/DTACK` signal goes low and high are now implemented, while the
+specialized external wait inputs and their propagation remain unresolved
+integration work. **Confidence: VERIFIED_PRIMARY for the state dependency;
 VERIFIED_SIMULATION/FORMAL for the discrete event model; UNKNOWN for the
 complete acknowledgement-path delay and fault behavior.**
 
@@ -76,20 +126,36 @@ schematic's propagation ordering cannot be represented by simultaneous
 same-clock enables. `initialize_i` chooses idle request, `RVA=0`, sampled
 `/DTACK=1`, and `/RVAS=1`; this deterministic state is an FPGA convention,
 not physical power-up behavior. The block remains standalone from
-`hard_drivin_main_sound_reset_decode` until a complete main-bus composition
-defines the acknowledgement tree and CDC contract.
+`hard_drivin_main_sound_reset_decode`; the directed test composition is not a
+new wrapper. A platform still must define `/RVAS0`, external wait sources,
+raw levels/events, and the CDC contract.
+
+`hard_drivin_main_dtack_decode` is combinational and storage-free. It exposes
+`/VPA`, `/RHSBUS`, `/RDUART`, all three acknowledgement terms, and final
+`/DTACK` for traceability. It imposes no legal-cycle assumptions and therefore
+preserves even contradictory raw input combinations for exhaustive checking.
 
 ## Verification evidence
 
-The directed test covers the normal assertion/low-sample/RVA-end/release
-sequence, indefinite hold when `/DTACK` never samples low, a later low/high
-recovery sequence, and deterministic reinitialization. A 12-step bounded
+The hold-state test covers the normal assertion/low-sample/RVA-end/release
+sequence, continued hold across repeated edges when `/DTACK` never samples
+low, a later low/high recovery sequence, and deterministic reinitialization.
+A 12-step bounded
 proof compares all state and event outputs against an independent transition
 model under only mutually exclusive event assumptions. A 16-step cover
 reaches the normal release chain, the missed-low stuck-hold state, and the
 release pulse.
 
-Yosys 0.67+111 reports 48 cells and twelve retained checks, with no memory,
+The decode test exhausts all 4,096 raw input combinations and separately
+checks ordinary, CPU-space, high-speed-wait, and DUART paths. A one-step BMC
+proves every output equation and a one-step cover reaches ordinary ACK,
+CPU-space VPA, both high-speed wait states, and both DUART acknowledgement
+states. A composed bus test connects the timing, `/DTACK`, and sound-reset
+decode blocks and checks the complete synthetic `/AS` capture through `/SRES`
+release sequence.
+
+Yosys 0.67+111 reports 48 cells/twelve retained checks for the hold state and
+21 cells/eight retained checks for the combinational decode, with no memory,
 latch, generated clock, or structural problem. This is not a Cyclone V fit,
-raw-pin CDC proof, electrical timing calculation, or complete main-board bus
-model.
+raw-pin CDC proof, electrical timing calculation, specialized-peripheral
+model, or complete main-processor bus wrapper.

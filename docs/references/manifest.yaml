@@ -332,13 +332,14 @@
       "document_type": "primary schematic package scan",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
-      "relevance": "System-level reset, board interconnect, and main-board context; driver sound board is a separate schematic target",
+      "relevance": "System-level reset, main-board acknowledgement timing, expansion-bus interconnect, and Driver Sound reset-write context; the sound board itself is a separate schematic target",
       "authority_level": 2,
       "notes": "Hosted by original Atari board engineer Jed Margolin.",
       "may_commit": false,
       "sections_or_pages_used": [
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
-        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; /AS request latch; rising-8-MHz RVA pulse; /RVA-preset and sampled-/DTACK-release /RVAS flip-flop chain",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; distinct /RVAS0 and /RVA-preset plus sampled-/DTACK-release /RVAS flip-flop chains",
+        "SP-327 sheet 6, PDF page 7: MC68681 /DUDTACK output and /RDUART selection endpoint",
         "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
       ],
       "status": "acquired",
@@ -923,12 +924,13 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for A044427's local-68000 ROM chip select and qualified upper/lower SRAM write-enable gates",
+      "relevance": "Primary component behavior for A044427's local-68000 ROM/write gates and SP-327's main /DTACK/read-write timing terms; TI serves ALS32 and AS32 in this combined data sheet",
       "authority_level": 2,
-      "notes": "Keep only in ignored cache; use Atari A044427 as authority for actual board wiring and signal names.",
+      "notes": "Keep only in ignored cache; use the Atari drawings as authority for actual board wiring, selected logic family, and signal names. The official sn74as32.pdf URL resolves to this identical SDAS113B file and hash.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Description, pinout, and positive-OR function table, printed page 1"
+        "Description, pinout, and positive-OR function table for ALS32 and AS32, printed page 1",
+        "AS32 switching characteristics, printed page 4"
       ],
       "status": "acquired",
       "download": {
@@ -958,6 +960,146 @@
         "Description, retrigger and clear waveforms, and 123/LS123 function table, printed pages 1-2",
         "SN54LS122/SN54LS123/SN74LS122/SN74LS123 recommended operating conditions, printed page 6",
         "Typical application data for LS122/LS123, pulse-width equations and component connection, printed pages 8-9"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74ls20-datasheet-sdls079",
+      "title": "Dual 4-Input Positive-NAND Gates",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS079",
+      "publication_date": "1983-12; revised 1988-03",
+      "revision": "March 1988 data sheet with later package addenda",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls20.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDLS079_SN74LS20_Dual_4-Input_NAND_Gates.pdf",
+      "sha256": "3c0210217f97b2c4e5bde872a980a6493f5d5134cff78caccd7f2b1778b58e23",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component Boolean and propagation behavior for SP-327's CPU-space/default main /DTACK terms",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari SP-327 as authority for actual board wiring, selected family, and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, four-input positive-NAND function table, and logic diagram, printed page 1",
+        "SN74LS20 switching characteristics, printed page 3"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74as00-datasheet-sdas187a",
+      "title": "Quadruple 2-Input Positive-NAND Gates",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDAS187A",
+      "publication_date": "1982-04; revised 1994-12",
+      "revision": "A",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74as00.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDAS187A_SN74AS00_Quadruple_NAND_Gates.pdf",
+      "sha256": "520373ff563c1224a97e553941395d3c0cffe7145cb9cdfc5d973abc4db9acf7",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component Boolean and propagation behavior for SP-327's paired graphics/sound wait term",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari SP-327 as authority for actual board wiring, selected family, and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, two-input positive-NAND function table, and logic diagram, printed page 1",
+        "SN74AS00 switching characteristics, printed page 4"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74f04-datasheet-sdfs037a",
+      "title": "Hex Inverters",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDFS037A",
+      "publication_date": "1987-03; revised 1993-10",
+      "revision": "A",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74f04.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SN74F04_Hex_Inverters.pdf",
+      "sha256": "5bbd8913bbd47aadff3895d83c3e3d54d0ad2a7cd19eb76734d0660dafba8553",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for SP-327's /AS and 8 MHz polarity conversion in the main bus sequencer",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari SP-327 as authority for actual board wiring, selected family, and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, inverter function table, and logic diagram, printed page 1",
+        "SN74F04 switching characteristics, printed page 3"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74f11-datasheet-sdfs040a",
+      "title": "Triple 3-Input Positive-AND Gates",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDFS040A",
+      "publication_date": "1987-03; revised 1993-10",
+      "revision": "A",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74f11.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDFS040A_SN74F11_Triple_3-Input_AND_Gates.pdf",
+      "sha256": "e44ee9d33ca03fe1167ec46daa2c74ba3eb459fbf6919dfcb84d806828263034",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component Boolean and propagation behavior for SP-327's final three-way active-low /DTACK merger",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari SP-327 as authority for actual board wiring, selected family, and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, three-input positive-AND function table, and logic diagram, printed page 1",
+        "SN74F11 switching characteristics, printed page 4"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74f74-datasheet-sdfs046a",
+      "title": "Dual Positive-Edge-Triggered D-Type Flip-Flops With Clear and Preset",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDFS046A",
+      "publication_date": "1987-03; revised 1993-10",
+      "revision": "A",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74f74.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDFS046A_SN74F74_Dual_D_Flip-Flops.pdf",
+      "sha256": "a344e73d1e6c821fe987fe3bd54730ca6987a1ab37e312070477d559d11ceeac",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component edge, asynchronous-control, and propagation behavior for SP-327's main RVA, sampled-/DTACK, /RVAS, and read/write timing state",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari SP-327 as authority for actual board wiring, selected family, and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, active-low preset/clear function table, and positive-edge behavior, printed page 1",
+        "Setup, hold, pulse-duration, and switching characteristics, printed pages 3-4"
       ],
       "status": "acquired",
       "download": {
