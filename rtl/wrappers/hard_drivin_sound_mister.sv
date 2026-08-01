@@ -97,6 +97,18 @@ module hard_drivin_sound_mister (
   output logic        host_timing_program_io_write_o,
   output logic        host_timing_program_io_write_commit_o,
   output logic [11:0] host_timing_program_io_word_address_o,
+  output logic [15:0] host_direct_io_read_data_o,
+  output logic [15:0] host_direct_io_read_driven_mask_o,
+  output logic [15:0] host_direct_io_read_valid_mask_o,
+  output logic [3:0]  host_direct_io_read_target_select_o,
+  output logic [3:0]  host_direct_io_read_complete_select_o,
+  output logic        host_direct_io_read_alias_o,
+  output logic [7:0]  host_direct_io_write_target_select_o,
+  output logic [7:0]  host_direct_io_write_commit_select_o,
+  output logic [15:0] host_direct_io_write_data_o,
+  output logic        host_direct_io_write_unselected_o,
+  output logic        host_direct_io_write_commit_unselected_o,
+  output logic        direct_io_ownership_conflict_o,
 
   input  logic        host_program_select_n_i,
   input  logic        host_write_i,
@@ -260,6 +272,17 @@ module hard_drivin_sound_mister (
   logic        sound_rom_port_0_ready;
   logic [15:0] selected_io_read_data;
   logic        selected_io_ready;
+  logic [2:0]  physical_io_port;
+  logic        physical_io_read;
+  logic        physical_io_write;
+  logic [15:0] physical_io_write_data;
+  logic        physical_io_commit;
+  logic        host_direct_io_read_active;
+  logic        host_direct_io_write_active;
+  logic [1:0]  host_direct_io_read_port;
+  logic [2:0]  host_direct_io_write_port;
+  logic [15:0] direct_port_1_driven_mask;
+  logic [15:0] direct_port_1_valid_mask;
   logic        bio_clkout_rise;
   logic [15:0] sound_cpu_mailbox_read_driven_mask;
   logic [15:0] sound_cpu_mailbox_read_valid_mask;
@@ -445,6 +468,50 @@ module hard_drivin_sound_mister (
     bridge_local_ram_lower_write_commit && !use_internal_local_ram_i;
   assign host_local_ram_write_data_o = bridge_local_ram_write_data;
 
+  assign direct_io_ownership_conflict_o =
+    (host_timing_program_io_read_o || host_timing_program_io_write_o) &&
+    (io_read_o || io_write_o);
+  assign host_direct_io_read_active =
+    host_timing_program_io_read_o && !direct_io_ownership_conflict_o;
+  assign host_direct_io_write_active =
+    host_timing_program_io_write_o && !direct_io_ownership_conflict_o &&
+    (host_timing_program_io_word_address_o[11:3] == 9'h000);
+  assign direct_port_1_driven_mask =
+    selected_communication_host_enable_o ? 16'h0000 : 16'hffff;
+  assign direct_port_1_valid_mask =
+    {16{communication_port_1_ready}};
+
+  // The physical TMS I/O data/control nodes are shared by processor cycles
+  // and the upper-Y5 host transceivers. No priority is assigned when both are
+  // active: the transaction is suppressed and reported as contention.
+  always_comb begin
+    physical_io_port       = io_port_o;
+    physical_io_read       = io_read_o && !direct_io_ownership_conflict_o;
+    physical_io_write      = io_write_o && !direct_io_ownership_conflict_o;
+    physical_io_write_data = io_write_data_o;
+
+    if (host_direct_io_read_active) begin
+      physical_io_port       = {
+        1'b0, host_timing_program_io_word_address_o[1:0]
+      };
+      physical_io_read       = 1'b1;
+      physical_io_write      = 1'b0;
+      physical_io_write_data = host_direct_io_write_data_o;
+    end else if (host_direct_io_write_active) begin
+      physical_io_port       = host_timing_program_io_word_address_o[2:0];
+      physical_io_read       = 1'b0;
+      physical_io_write      = 1'b1;
+      physical_io_write_data = host_direct_io_write_data_o;
+    end
+  end
+
+  assign physical_io_commit =
+    !direct_io_ownership_conflict_o && (
+      io_commit_o ||
+      (|host_direct_io_read_complete_select_o) ||
+      (|host_direct_io_write_commit_select_o)
+    );
+
   assign native_write_data =
     logical_program_write
       ? logical_program_write_data
@@ -489,6 +556,9 @@ module hard_drivin_sound_mister (
       // state/commit outputs replace external callback backpressure.
       selected_io_ready = 1'b1;
     end
+    if (direct_io_ownership_conflict_o) begin
+      selected_io_ready = 1'b0;
+    end
   end
 
   assign io_write_data_o = native_write_data;
@@ -501,6 +571,59 @@ module hard_drivin_sound_mister (
     phase_advance_o &&
     (phase_o == 2'd3) &&
     ram_tms_program_ready;
+
+  hard_drivin_sound_direct_io direct_io (
+    .host_read_i                    (
+      host_timing_program_io_read_o && !direct_io_ownership_conflict_o
+    ),
+    .host_read_complete_i           (
+      host_timing_cycle_complete_event && host_timing_program_io_read_o &&
+      !direct_io_ownership_conflict_o
+    ),
+    .host_write_i                   (
+      host_timing_program_io_write_o && !direct_io_ownership_conflict_o
+    ),
+    .host_write_commit_i            (
+      host_timing_program_io_write_commit_o &&
+      !direct_io_ownership_conflict_o
+    ),
+    .host_word_address_i            (
+      host_timing_program_io_word_address_o
+    ),
+    .host_write_data_i              (host_bus_write_data_i),
+    .port_0_read_data_i             (sound_rom_port_0_read_data),
+    .port_0_read_driven_mask_i      (16'hffff),
+    .port_0_read_valid_mask_i       ({16{sound_rom_port_0_ready}}),
+    .port_1_read_data_i             (communication_port_1_read_data),
+    .port_1_read_driven_mask_i      (direct_port_1_driven_mask),
+    .port_1_read_valid_mask_i       (direct_port_1_valid_mask),
+    .port_2_read_data_i             ({io_read_data_i[15], 15'h0000}),
+    .port_2_read_driven_mask_i      (16'h8000),
+    .port_2_read_valid_mask_i       ({io_ready_i, 15'h0000}),
+    .read_port_o                    (host_direct_io_read_port),
+    .read_target_select_o           (
+      host_direct_io_read_target_select_o
+    ),
+    .read_complete_select_o         (
+      host_direct_io_read_complete_select_o
+    ),
+    .read_data_o                    (host_direct_io_read_data_o),
+    .read_driven_mask_o             (host_direct_io_read_driven_mask_o),
+    .read_valid_mask_o              (host_direct_io_read_valid_mask_o),
+    .read_alias_o                   (host_direct_io_read_alias_o),
+    .write_port_o                   (host_direct_io_write_port),
+    .write_target_select_o          (
+      host_direct_io_write_target_select_o
+    ),
+    .write_commit_select_o          (
+      host_direct_io_write_commit_select_o
+    ),
+    .write_data_o                   (host_direct_io_write_data_o),
+    .write_unselected_o             (host_direct_io_write_unselected_o),
+    .write_commit_unselected_o      (
+      host_direct_io_write_commit_unselected_o
+    )
+  );
 
   hard_drivin_sound_program_ram program_ram_adapter (
     .clk_i                         (clk_i),
@@ -546,11 +669,11 @@ module hard_drivin_sound_mister (
     .host_ready_o                  (host_communication_ready_o),
     .host_access_permitted_o       (host_communication_access_permitted_o),
     .host_blocked_o                (host_communication_blocked_o),
-    .io_port_i                     (io_port_o),
-    .io_read_i                     (io_read_o),
-    .io_write_i                    (io_write_o),
-    .io_write_data_i               (io_write_data_o),
-    .io_commit_i                   (io_commit_o),
+    .io_port_i                     (physical_io_port),
+    .io_read_i                     (physical_io_read),
+    .io_write_i                    (physical_io_write),
+    .io_write_data_i               (physical_io_write_data),
+    .io_commit_i                   (physical_io_commit),
     .port_1_read_data_o            (communication_port_1_read_data),
     .port_1_ready_o                (communication_port_1_ready),
     .port_1_blocked_o              (port_1_blocked_o),
@@ -562,8 +685,8 @@ module hard_drivin_sound_mister (
   );
 
   hard_drivin_sound_rom_path sound_rom_path (
-    .io_port_i                     (io_port_o),
-    .io_read_i                     (io_read_o),
+    .io_port_i                     (physical_io_port),
+    .io_read_i                     (physical_io_read),
     .sound_address_i               (sound_address_o),
     .sound_address_valid_i         (sound_address_valid_o),
     .sound_rom_block_i             (sound_rom_block_o),
@@ -582,10 +705,10 @@ module hard_drivin_sound_mister (
   hard_drivin_sound_dac_latch dac_latch (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
-    .io_port_i                     (io_port_o),
-    .io_write_i                    (io_write_o),
-    .io_write_data_i               (io_write_data_o),
-    .io_commit_i                   (io_commit_o),
+    .io_port_i                     (physical_io_port),
+    .io_write_i                    (physical_io_write),
+    .io_write_data_i               (physical_io_write_data),
+    .io_commit_i                   (physical_io_commit),
     .dac_code_o                    (dac_code_o),
     .dac_code_valid_o              (dac_code_valid_o),
     .dac_commit_o                  (dac_commit_o)
@@ -594,10 +717,10 @@ module hard_drivin_sound_mister (
   hard_drivin_sound_320_port_latch cport_latch (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
-    .io_port_i                     (io_port_o),
-    .io_write_i                    (io_write_o),
-    .io_write_data_i               (io_write_data_o),
-    .io_commit_i                   (io_commit_o),
+    .io_port_i                     (physical_io_port),
+    .io_write_i                    (physical_io_write),
+    .io_write_data_i               (physical_io_write_data),
+    .io_commit_i                   (physical_io_commit),
     .latch_data_o                  (cport_latch_data_o),
     .latch_data_valid_o            (cport_latch_data_valid_o),
     .latch_commit_o                (cport_latch_commit_o),
@@ -610,10 +733,10 @@ module hard_drivin_sound_mister (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .dsp_reset_n_i                 (selected_dsp_reset_n_o),
-    .io_port_i                     (io_port_o),
-    .io_write_i                    (io_write_o),
-    .io_write_data_i               (io_write_data_o),
-    .io_commit_i                   (io_commit_o),
+    .io_port_i                     (physical_io_port),
+    .io_write_i                    (physical_io_write),
+    .io_write_data_i               (physical_io_write_data),
+    .io_commit_i                   (physical_io_commit),
     .host_irq_clear_commit_i       (selected_host_irq_clear_commit),
     .mute_net_o                    (mute_net_o),
     .mute_commit_o                 (mute_commit_o),
@@ -997,6 +1120,17 @@ module hard_drivin_sound_mister (
               !bridge_host_program_select_n);
       assert (!host_timing_program_io_write_o ||
               !bridge_host_program_select_n);
+      assert (host_direct_io_read_port ==
+              host_timing_program_io_word_address_o[1:0]);
+      assert (host_direct_io_write_port ==
+              host_timing_program_io_word_address_o[2:0]);
+      assert (!direct_io_ownership_conflict_o ||
+              (!physical_io_read && !physical_io_write &&
+               !physical_io_commit && !selected_io_ready));
+      assert ((host_direct_io_read_valid_mask_o &
+               ~host_direct_io_read_driven_mask_o) == 16'h0000);
+      assert ((host_direct_io_read_data_o &
+               ~host_direct_io_read_valid_mask_o) == 16'h0000);
       assert ((host_local_memory_read_valid_mask_o &
                ~host_local_memory_read_driven_mask_o) == 16'h0000);
       assert ((host_local_memory_read_data_o &

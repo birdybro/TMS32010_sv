@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' lane-valid local SRAM integration
+- **Current milestone:** Hard Drivin' upper-Y5 direct TMS I/O integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 127 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 128 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 43 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 44 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,424 abstract cells/362 checks
+  board top retains six memories and passes at 3,560 abstract cells/374 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -91,7 +91,10 @@
   A twenty-first target retains the optional local 8K-by-16 SRAM as separate
   upper-byte, lower-byte, and two-bit validity memories at 88 abstract cells,
   nine retained checks, no latch, and zero structural problems.
-- **Formal status:** all 28 tasks from 14 SymbiYosys configurations pass with
+  A twenty-second target checks the storage-free upper-Y5 direct-I/O decoder
+  and carrier at 336 abstract cells, seven retained checks, no storage/latch,
+  and zero structural problems.
+- **Formal status:** all 30 tasks from 15 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -745,6 +748,20 @@
   compose `0x5aa7`. Standalone Yosys reports 88 cells/nine checks/three
   memories; the board top reports 3,424 cells/362 checks/six memories. This
   initialization contract is an FPGA policy, not physical 6264 reset evidence.
+- **New upper-Y5 direct-I/O evidence:** A044427 sheet 5 establishes an
+  asymmetric decoder: reads ignore `RA11:RA2` and alias modulo four, while
+  writes require `RA11:RA3=0` and select no target above canonical word 7.
+  The storage-free adapter exhausts all 4,096 addresses in both directions,
+  preserves separate driven/valid masks, limits comparator reads to bit 15,
+  and leaves port 3 undriven. Board regression proves canonical address,
+  block, DAC, and CPORT commits at S6; sample-ROM and comparator reads;
+  shared-address increment at S7; a high port-3 alias; and a noncanonical
+  write with `/PWE` timing but no target. Simultaneous host/TMS I/O ownership
+  is suppressed and reported under `OQ-021`. Standalone formal proves the
+  combinational decode/carrier contract and reaches all four target classes;
+  the full regression is 128/231/38/44/5/10, strict lint covers 32 modules,
+  all 22 Yosys targets pass, and all 30 formal tasks from 15 configurations
+  pass. Pinned MAME's symmetric `offset & 7` behavior remains `SC-034`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -768,15 +785,15 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
-  exact local-68000 E1/E2 EPROM strap/variant population and noncanonical
-  direct-TMS-I/O aliases,
+  exact local-68000 E1/E2 EPROM strap/variant population,
+  optional `/DACR`/unlabeled write-target loading and direct-read open-bus
+  policy,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** compose upper-Y5 direct DSP I/O into a complete host read/write
-  data path without inventing noncanonical aliases, then add a platform reset-
-  release interlock for the optional local-SRAM validity scrub.
+- **Next task:** add a platform reset-release interlock for the optional local-
+  SRAM validity scrub without changing the portable processor reset contract.
 - **Latest committed baseline before this cycle:**
-  `211f6f6`
+  `b45f9db`

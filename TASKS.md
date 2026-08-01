@@ -1384,6 +1384,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_bio.md`,
   `docs/integration/hard_drivin_compare.md`,
   `docs/integration/hard_drivin_local_memory.md`,
+  `docs/integration/hard_drivin_direct_io.md`,
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
@@ -1407,6 +1408,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
+  `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `formal/hard_drivin_sound_direct_io.sby`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1637,12 +1640,23 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,424 abstract cells/362
+  Integrated Yosys retains six memories and reports 3,560 abstract cells/374
   checks with no structural problem. Partial lower-Y5 and Y6 writes are
   reported and rejected because their unselected physical data lane remains
-  unresolved under `OQ-022`/`OQ-024`. Complete direct-I/O data-bus composition,
-  raw-pin CDC, authorized ROM storage, a platform reset-release interlock for
-  the SRAM scrub, and open-bus policy remain acceptance work.
+  unresolved under `OQ-022`/`OQ-024`.
+  A044427 sheet 5 now qualifies upper-Y5's asymmetric downstream decode:
+  LS139 reads ignore `RA11:RA2` and alias modulo four, while LS138 writes
+  require `RA11:RA3=0` and select no target above canonical word 7. A
+  storage-free adapter exhausts all 4,096 addresses in both directions,
+  masks port-2 to the sole drawn bit 15, leaves port 3 undriven, and formally
+  proves the full combinational contract. The board top routes canonical host
+  writes into the existing address/block/DAC/CPORT/control consumers at S6,
+  composes masked port-0/1/2/3 reads, increments the shared address at S7, and
+  suppresses/reports active host/TMS I/O overlap under `OQ-021`. Pinned MAME's
+  symmetric `offset & 7` alias remains `SC-034`. Standalone Yosys reports 336
+  cells/seven checks. Raw-pin CDC, authorized ROM storage, a platform reset-
+  release interlock for the SRAM scrub, and open-bus policy remain acceptance
+  work.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
   local-68000 ROM and high-bank decode. The populated 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`

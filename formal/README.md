@@ -364,7 +364,19 @@ arbitrary event spacing, raw-pin CDC, physical LS374/LS74 collision behavior,
 partial-byte electrical behavior, an implemented speech peripheral, open-bus
 values, or TTL/MC68000 electrical timing.
 
-The fourteen harnesses leave DINT ordering, formal coverage of the represented
+## Driver Sound direct-I/O decode harness
+
+`hard_drivin_sound_direct_io.sby` is a one-step symbolic BMC and cover over all
+twelve host word-address bits, all control combinations, and arbitrary data,
+driven-mask, and valid-mask inputs for the three populated/read callback
+classes. It proves modulo-four read selection, canonical-only word-0-through-7
+write selection, completion qualification, alias/unselected diagnostics, raw
+write data, and clamping of every unqualified read bit. Four step-0 covers
+reach the highest read alias, undriven port 3, canonical port-7 write, and the
+first noncanonical write. This is exhaustive combinational evidence, not a
+host-cycle, peripheral-state, or electrical contention proof.
+
+The fifteen harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

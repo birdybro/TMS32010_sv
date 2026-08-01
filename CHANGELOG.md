@@ -526,14 +526,24 @@ Changelog, and the project follows semantic versioning once releases begin.
   per-lane validity metadata. Its 8,192-clock FPGA initialization scrub never
   resets the data arrays, exposes readiness/progress, and rejects pre-ready
   writes instead of inventing known physical power-up contents.
+- Primary-qualified upper-Y5 direct-I/O research and a storage-free adapter
+  preserving the board's asymmetric decode: reads alias modulo four throughout
+  the window, while writes select only canonical words 0-7. The adapter
+  carries one-hot targets, exact S6/S7 completion classes, raw write data, and
+  read driven/valid masks without assigning open-bus values.
+- A one-step symbolic proof of every direct-I/O address/control/data/mask
+  combination, with covers for the highest read alias, undriven port 3,
+  canonical port-7 writes, and the first unselected write.
 
 ### Changed
 
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
-  the original explicit callbacks. Upper-Y5 direct DSP I/O remains separate
-  and externally visible instead of aliasing program RAM.
+  the original explicit callbacks. Upper-Y5 direct DSP I/O now shares the
+  existing physical sample-ROM, communication, DAC, CPORT, output-control,
+  block, and address consumers; active host/TMS overlap is suppressed and
+  explicitly reported rather than arbitrated.
 - Local Y7 storage remains an external callback by default and can now select
   the internal lane-valid SRAM explicitly. Internal selection suppresses the
   external request and write commits while retaining raw address/data
@@ -673,6 +683,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The direct-I/O decoder passes exhaustive simulation across all 4,096 read
+  aliases and all 4,096 write addresses plus a one-step symbolic BMC over
+  arbitrary masks and data. Board simulation proves canonical address/block,
+  DAC, and CPORT writes at S6; complete sample-ROM and one-bit comparator read
+  carriers; the undriven port-3 alias; noncanonical-write isolation; and the
+  shared-address S7 increment. Standalone Yosys reports 336 cells/seven checks,
+  while the six-memory board hierarchy reports 3,560 cells/374 checks with no
+  structural problem. The updated 12-step board-routing BMC/cover also passes.
 - The standalone local SRAM checks exactly 8,192 metadata-scrub clocks,
   blocked pre-ready writes, every invalid word, independent upper/lower byte
   validity, all 8,192 complete-word writes and reads, and reinitialization.
@@ -1354,6 +1372,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   Y5 direct-I/O, Y6 communication, and isolated Y4 transactions. Yosys reports
   305 combinational hierarchy cells, 40 retained checks, no storage/latch,
   and zero structural problems.
+- The upper-Y5 direct-I/O regression exhausts all 4,096 read and 4,096 write
+  addresses, and the integrated board regression verifies canonical S6 write
+  commits, S7 read completions, physical read aliases, unselected writes,
+  masked read carriers, and ownership-conflict suppression. The complete
+  regression split is 128/231/38/44/5/10; strict lint covers 32 modules, all
+  22 Yosys targets pass, all 33 pinned hashes verify, and all 30 formal tasks
+  from 15 configurations pass.
 
 ### Known Issues
 

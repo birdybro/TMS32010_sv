@@ -15,6 +15,11 @@
   resampler, with explicit independent-clock uncertainty.
 - `hard_drivin_compare.md`: primary port-2 `/CMPRD`/`CMPOUT` trace, explicit
   Rev-A nonpopulation, and MAME zero-stub boundary.
+- `hard_drivin_local_memory.md`: physical local-68000 ROM, SRAM, and high-bank
+  decode plus the same-clock storage callback bridge.
+- `hard_drivin_direct_io.md`: upper-Y5 host/TMS transceivers, asymmetric
+  modulo-four read and canonical-only write decode, masked carriers, side
+  effects, and MAME conflict.
 - `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
   state, board-reset effects, and standalone FPGA callback boundary.
 - `hard_drivin_host_timing.md`: primary-transcribed local 68000 `RVA`,

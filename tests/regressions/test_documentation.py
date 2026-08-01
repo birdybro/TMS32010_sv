@@ -201,8 +201,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "host_timing_partial_communication_write_o",
             "use_internal_local_ram_i",
             "8,192 clocks",
-            "3,424",
-            "362 checks",
+            "3,560",
+            "374 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -486,6 +486,34 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "SC-031 — Physical whole-word mailboxes", conflicts
         )
         self.assertIn("OQ-031", questions)
+
+    def test_hard_drivin_direct_io_preserves_asymmetric_decode(self) -> None:
+        direct_io = (
+            DOCS / "integration" / "hard_drivin_direct_io.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "LS139 95K is enabled directly by `/PDEN`",
+            "alias modulo four",
+            "`RA11:RA3`",
+            "no labeled connection",
+            "no drawn data-source enable",
+            "no READY input",
+            "only `TD15`",
+            "`offset & 7` for both reads and writes",
+            "all 4,096 addresses in both directions",
+            "direct_io_ownership_conflict_o",
+        ):
+            self.assertIn(required, direct_io)
+        self.assertIn("LS139 95K instead ignores `RA11:RA2`", conflicts)
+        self.assertIn("OQ-021", questions)
+        self.assertIn("OQ-029", questions)
+        self.assertIn("OQ-030", questions)
 
     def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
         sound_rom = (

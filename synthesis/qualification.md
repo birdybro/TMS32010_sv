@@ -166,10 +166,11 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,966 abstract cells, 257
-retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
-program RAM, synchronous 512-by-16 communication RAM, and the core's existing
-asynchronous-read 144-by-16 internal RAM.
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,560 abstract cells, 374
+retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
+program RAM, synchronous 512-by-16 communication RAM, the core's existing
+asynchronous-read 144-by-16 internal RAM, and the optional local SRAM's upper,
+lower, and validity arrays.
 Both structural checks pass with zero problems. This proves hierarchy and
 memory retention plus the opt-in BIO/host-control/host-timing selection and
 whole-word mailbox/raw-status boundaries only; it is not a
@@ -251,6 +252,19 @@ abstract combinational cells with 40 retained checks, no memory or latch, and
 zero structural problems. This qualifies callback decode, exact S6/S7 event
 selection, and validity-mask carriers only; it does not qualify storage,
 raw-pin timing, a 68000 implementation, or a Cyclone V fit.
+
+The twenty-first checked-in script targets `hard_drivin_sound_local_ram`.
+Yosys 0.67+111 retains its two 8K-by-8 data arrays and two-bit validity array
+as three `$mem_v2` objects and reports 88 abstract cells with nine checks, no
+latch, and zero structural problems. This is an FPGA storage-structure check,
+not physical 6264 initialization or AC timing evidence.
+
+The twenty-second checked-in script targets the storage-free
+`hard_drivin_sound_direct_io`. Yosys 0.67+111 reports 336 abstract
+combinational cells with seven retained checks, no memory or latch, and zero
+structural problems. Together with exhaustive simulation and the one-step
+symbolic proof, this qualifies exact address decode and mask composition only;
+it is not an electrical host/TMS arbitration or open-bus result.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.

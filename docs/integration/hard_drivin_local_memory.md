@@ -86,12 +86,11 @@ Here `/RWNB=NOT RWN`, `RWNB=RWN`, and `RVAS` is the active-high complement of
 - neither upper/lower host data strobe enters these whole-word program/direct-
   I/O controls.
 
-The final direct-I/O target still depends on the TMS-side `RA` decode. In
-particular, this section does not claim that every upper-half address is a
-verified eight-way I/O alias merely because MAME masks its handler offset with
-seven. **Confidence: VERIFIED_PRIMARY for the raw controls and canonical
-split; direct-I/O alias behavior outside canonical low offsets is not yet
-qualified.**
+The final direct-I/O target depends on the TMS-side `RA` decode. A044427 sheet
+5 resolves it asymmetrically: reads use only `RA1:RA0` and alias modulo four,
+while writes require `RA11:RA3=0` before decoding `RA2:RA0`. MAME's symmetric
+mask-by-seven handler is therefore not pin-equivalent. See
+`hard_drivin_direct_io.md`. **Confidence: VERIFIED_PRIMARY.**
 
 ## Local SRAM and byte lanes
 
@@ -121,9 +120,12 @@ Pinned MAME declares canonical windows at `0x000000-0x01ffff`,
 region. The 64 KiB populated payload corroborates the two drawn 27256 devices,
 but the emulator's 128 KiB declared ROM window and omission of the broad
 `A23=0`/high-bank aliases do not reproduce the physical gates. Its direct-I/O
-handlers also use `offset & 7`, which is not by itself proof of every physical
-upper-Y5 alias. These differences are recorded as `SC-034`; canonical
-software behavior remains useful but cannot replace the schematic decode.
+handlers also use `offset & 7` in both directions. A044427 sheet 5 instead
+proves that direct reads ignore `RA11:RA2` and alias modulo four, while direct
+writes require `RA11:RA3=0` and select no target outside canonical word
+addresses 0-7. These differences are recorded as `SC-034`; canonical software
+behavior remains useful but cannot replace the schematic decode. See
+`hard_drivin_direct_io.md`.
 
 ## RTL, verification, and synthesis
 
@@ -206,11 +208,16 @@ protective boundary, not a claim that the physical board suppresses the write.
 
 The board top forwards the complete ROM callback, local-RAM callback, byte-
 specific local-RAM commits, read carrier masks, and missing-response event to
-its caller. It also forwards the upper-Y5 `/PDEN` level and `/PWE` S6 commit,
-but does not yet connect that direct path to a complete MC68000/TMS data-bus
-multiplexer. ROM bytes remain external. The local-SRAM callback remains the
-default, while `use_internal_local_ram_i` explicitly selects the optional
-storage described below. No copyrighted image or open-bus value is embedded.
+its caller. The upper-Y5 path now applies the downstream sheet-5 decode:
+reads alias modulo four, writes select only canonical words 0-7, and the
+existing physical port consumers receive the same shared I/O transaction.
+Read data carries separate driven and valid masks; an undriven read port 3 and
+noncanonical writes remain explicit. Simultaneous host/TMS I/O is suppressed
+and reported, not arbitrated. ROM bytes remain external. The local-SRAM
+callback remains the default, while `use_internal_local_ram_i` explicitly
+selects the optional storage described below. No copyrighted image or
+open-bus value is embedded. Complete evidence is in
+`hard_drivin_direct_io.md`.
 
 ### Optional lane-valid FPGA SRAM
 
@@ -248,12 +255,14 @@ checks, no latch, and zero structural problems.
 ROM and external lane-valid local-SRAM responses, then opts into the internal
 SRAM, proves an external all-valid sentinel is ignored, writes the two byte
 lanes independently, and reads one fully valid combined word. It also checks
-lower-Y5 program-RAM write/readback, upper-Y5 direct-I/O isolation and S6
-commit, and Y6 communication-RAM write/readback under CRAMEN. Opposite explicit
-callback sentinels prove timing-mode ownership, and later board tests prove the
-explicit-callback fallback still operates with timing mode disabled.
+lower-Y5 program-RAM write/readback; canonical upper-Y5 address/block, DAC,
+and CPORT S6 commits; port-0/2 and aliased-undriven-port-3 reads with S7 shared
+address increments; noncanonical-write isolation; and Y6 communication-RAM
+write/readback under CRAMEN. Opposite explicit callback sentinels prove
+timing-mode ownership, and later board tests prove the explicit-callback
+fallback still operates with timing mode disabled.
 
-The composed board hierarchy retains six memories and reports 3,424 abstract
-cells with 362 checks and zero structural problems in Yosys
-0.67+111. This remains pre-technology synthesis, not raw-pin CDC, a complete
-MC68000 data-bus mux, a Cyclone V fit, or electrical timing closure.
+The composed board hierarchy retains six memories and reports 3,560 abstract
+cells with 374 checks and zero structural problems in Yosys 0.67+111. This
+remains pre-technology synthesis, not raw-pin CDC, a complete MC68000 data-bus
+mux, a Cyclone V fit, or electrical timing closure.

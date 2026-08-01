@@ -160,11 +160,15 @@ Internal selection suppresses the external request and write commits so two
 storage owners cannot consume one transaction.
 
 Upper-Y5 direct DSP I/O is deliberately distinct from program RAM. The top
-exports `/PDEN` read level, `/PWE` write level, the S6 write commit, and
-`A12:A1`, but a complete host/TMS data-bus composition policy is still absent.
-Authorized local ROM storage, raw-pin CDC, and open-bus combination remain
-integration responsibilities. The optional local SRAM is an FPGA storage
-policy and is not physical-power-up evidence.
+exports raw `/PDEN`/`/PWE` timing and now applies the downstream physical
+decode: reads alias `A12:A1` modulo four, while writes select a target only
+when the projected word address is 0-7. Canonical transactions share the
+existing sample-ROM, communication, DAC, CPORT, output-control, block, and
+address consumers. Read results retain independent driven/valid masks, and
+host/TMS I/O overlap is suppressed and reported without arbitration. See
+`hard_drivin_direct_io.md`. Authorized local ROM storage, raw-pin CDC, and
+open-bus combination remain integration responsibilities. The optional local
+SRAM is an FPGA storage policy and is not physical-power-up evidence.
 
 ## Parallel sample-ROM callback
 
@@ -332,8 +336,9 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains six memories and reports 3,424
-abstract cells with 362 checks and zero structural problems after opt-in
-same-clock local-host timing and storage-callback integration. This is not a
+The pre-technology Yosys target retains six memories and reports 3,560
+abstract cells with 374 checks and zero structural problems after opt-in
+same-clock local-host timing, storage-callback, and direct-I/O integration.
+This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

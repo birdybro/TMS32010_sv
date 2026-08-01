@@ -752,14 +752,18 @@ electrical result of an out-of-range access.
 - **Conflict:** the 64 KiB populated payload corroborates two 27256 devices,
   but a 128 KiB emulator region does not reproduce the populated pair's A16
   mirror. MAME also omits the broad physical `A23=0` and `A22:A17` aliases.
-  Its `offset & 7` direct-I/O alias is a software convenience unless the
-  complete downstream physical TMS address decode independently selects that
-  target.
+  For upper-Y5 I/O, MAME applies `offset & 7` to both directions. Physical
+  LS139 95K instead ignores `RA11:RA2` and aliases every read modulo four;
+  physical write predecode `PORT` requires `RA11:RA3=0`, so noncanonical
+  writes select no LS138 100K output at all.
 - **Current treatment:** the storage-free board decoder exposes raw selects,
-  the exact populated word addresses, and the Y5 control split. Higher-level
-  software maps may retain canonical windows, but cannot describe omitted
-  aliases or padding as pin-equivalent. See `OQ-034` and
-  `docs/integration/hard_drivin_local_memory.md`.
+  the exact populated word addresses, and the Y5 control split. The separate
+  direct-I/O adapter implements the primary downstream asymmetry, masks
+  undriven read lanes, and reports noncanonical writes without aliasing them.
+  Higher-level software maps may retain canonical windows, but cannot describe
+  omitted aliases or padding as pin-equivalent. See `OQ-034`,
+  `docs/integration/hard_drivin_local_memory.md`, and
+  `docs/integration/hard_drivin_direct_io.md`.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A decode; CORROBORATED for the
   canonical software ranges and 64 KiB payload; UNKNOWN for installed jumper
   and later board variants.

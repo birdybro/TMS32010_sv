@@ -38,8 +38,9 @@ program RAM and Y6 to the existing communication RAM, and retains the explicit
 storage callbacks when timing mode is disabled. Local SRAM may remain an
 external callback or explicitly select the lane-valid 8K-by-16 FPGA storage;
 that storage invalidates metadata over 8,192 initialization clocks without
-resetting its data arrays. Authorized ROM storage and upper-Y5 direct-I/O
-data-bus composition remain external.
+resetting its data arrays. The upper-Y5 path now applies the asymmetric
+downstream direct-I/O decode and shares the existing physical port consumers;
+authorized ROM storage and platform open-bus composition remain external.
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
@@ -241,6 +242,16 @@ secondary adapter behavior:
 
 Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 4–7,
 PDF pp. 7–14; mame-harddriv-audio-030fefc, `driversnd_dsp_io_map` and handlers].
+
+The local host's upper-Y5 path reaches these same physical targets, but its
+read and write aliases are asymmetric. LS139 95K decodes reads from only
+`RA1:RA0`, so all 4K upper-Y5 words alias ports 0-3 modulo four. For writes,
+`PORT` requires `RA11:RA3=0` before LS138 100K decodes ports 0-7; higher word
+addresses have `/PWE` timing but no output target. Pinned MAME's shared
+`offset & 7` rule does not reproduce either distinction. The exact carrier,
+completion edges, masked unknowns, RTL, and verification are in
+`hard_drivin_direct_io.md` and `SC-034`. **Confidence: VERIFIED_PRIMARY for
+the Rev-A decode; CORROBORATED only for MAME's canonical software window.**
 
 The A044427 output decode uses the physical bus, not the CPU's logical
 instruction class. Three LS27 groups and an ALS11 generate `PORT` when

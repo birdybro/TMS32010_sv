@@ -88,6 +88,18 @@ module tb_hard_drivin_sound_mister;
   logic        host_timing_program_io_write;
   logic        host_timing_program_io_write_commit;
   logic [11:0] host_timing_program_io_word_address;
+  logic [15:0] host_direct_io_read_data;
+  logic [15:0] host_direct_io_read_driven_mask;
+  logic [15:0] host_direct_io_read_valid_mask;
+  logic [3:0]  host_direct_io_read_target_select;
+  logic [3:0]  host_direct_io_read_complete_select;
+  logic        host_direct_io_read_alias;
+  logic [7:0]  host_direct_io_write_target_select;
+  logic [7:0]  host_direct_io_write_commit_select;
+  logic [15:0] host_direct_io_write_data;
+  logic        host_direct_io_write_unselected;
+  logic        host_direct_io_write_commit_unselected;
+  logic        direct_io_ownership_conflict;
   logic        host_program_select_n;
   logic        host_write;
   logic        host_commit;
@@ -160,6 +172,7 @@ module tb_hard_drivin_sound_mister;
   logic [15:0] sound_rom_request_address;
   logic [7:0]  sound_rom_byte;
   logic        sound_rom_byte_ready;
+  logic        sound_rom_delayed_ready;
   logic        sound_rom_selection_invalid;
   logic [11:0] dac_code;
   logic        dac_code_valid;
@@ -209,6 +222,9 @@ module tb_hard_drivin_sound_mister;
   integer      host_local_ram_upper_write_count;
   integer      host_local_ram_lower_write_count;
   integer      host_program_io_write_count;
+  integer      host_direct_selected_write_commit_count;
+  integer      host_direct_unselected_write_commit_count;
+  integer      host_direct_read_complete_count;
   logic        sound_rom_request_seen;
 
   hard_drivin_sound_mister dut (
@@ -341,6 +357,32 @@ module tb_hard_drivin_sound_mister;
     .host_timing_program_io_word_address_o(
       host_timing_program_io_word_address
     ),
+    .host_direct_io_read_data_o    (host_direct_io_read_data),
+    .host_direct_io_read_driven_mask_o(
+      host_direct_io_read_driven_mask
+    ),
+    .host_direct_io_read_valid_mask_o(host_direct_io_read_valid_mask),
+    .host_direct_io_read_target_select_o(
+      host_direct_io_read_target_select
+    ),
+    .host_direct_io_read_complete_select_o(
+      host_direct_io_read_complete_select
+    ),
+    .host_direct_io_read_alias_o   (host_direct_io_read_alias),
+    .host_direct_io_write_target_select_o(
+      host_direct_io_write_target_select
+    ),
+    .host_direct_io_write_commit_select_o(
+      host_direct_io_write_commit_select
+    ),
+    .host_direct_io_write_data_o   (host_direct_io_write_data),
+    .host_direct_io_write_unselected_o(
+      host_direct_io_write_unselected
+    ),
+    .host_direct_io_write_commit_unselected_o(
+      host_direct_io_write_commit_unselected
+    ),
+    .direct_io_ownership_conflict_o(direct_io_ownership_conflict),
     .host_program_select_n_i       (host_program_select_n),
     .host_write_i                  (host_write),
     .host_commit_i                 (host_commit),
@@ -489,6 +531,10 @@ module tb_hard_drivin_sound_mister;
   always #5 clk = ~clk;
 
   always_comb begin
+    // The fixed-timing local host path is given a same-cycle combinational ROM
+    // response. Native DSP reads retain the separate three-clock stall below.
+    sound_rom_byte_ready =
+      host_direct_io_read_target_select[0] || sound_rom_delayed_ready;
     // Prove that internal port-0/3/4/5 latch targets do not inherit downstream
     // callback backpressure. Other still-external targets remain ready.
     external_io_ready = !(
@@ -499,12 +545,18 @@ module tb_hard_drivin_sound_mister;
         (io_port == 3'd5)
       )
     );
-    case (io_port)
-      3'd0: io_read_data = 16'h6a80;
-      3'd1: io_read_data = 16'hdead;
-      3'd2: io_read_data = 16'h0000;
-      default: io_read_data = 16'hffff;
-    endcase
+    if (host_direct_io_read_target_select[2]) begin
+      // Rev-A qualifies only comparator bit TD15; lower bits are deliberately
+      // nonzero nowhere so the direct-path mask remains observable.
+      io_read_data = 16'h8000;
+    end else begin
+      case (io_port)
+        3'd0: io_read_data = 16'h6a80;
+        3'd1: io_read_data = 16'hdead;
+        3'd2: io_read_data = 16'h0000;
+        default: io_read_data = 16'hffff;
+      endcase
+    end
   end
 
   always_ff @(posedge clk) begin
@@ -546,6 +598,9 @@ module tb_hard_drivin_sound_mister;
       host_local_ram_upper_write_count <= 0;
       host_local_ram_lower_write_count <= 0;
       host_program_io_write_count <= 0;
+      host_direct_selected_write_commit_count <= 0;
+      host_direct_unselected_write_commit_count <= 0;
+      host_direct_read_complete_count <= 0;
     end else begin
       if (host_local_ram_upper_write_commit) begin
         host_local_ram_upper_write_count <=
@@ -557,6 +612,18 @@ module tb_hard_drivin_sound_mister;
       end
       if (host_timing_program_io_write_commit) begin
         host_program_io_write_count <= host_program_io_write_count + 1;
+      end
+      if (|host_direct_io_write_commit_select) begin
+        host_direct_selected_write_commit_count <=
+          host_direct_selected_write_commit_count + 1;
+      end
+      if (host_direct_io_write_commit_unselected) begin
+        host_direct_unselected_write_commit_count <=
+          host_direct_unselected_write_commit_count + 1;
+      end
+      if (|host_direct_io_read_complete_select) begin
+        host_direct_read_complete_count <=
+          host_direct_read_complete_count + 1;
       end
     end
   end
@@ -579,7 +646,7 @@ module tb_hard_drivin_sound_mister;
   // pre-increment address must remain owned until the response is accepted.
   always_ff @(posedge clk) begin
     if (initialize) begin
-      sound_rom_byte_ready   <= 1'b0;
+      sound_rom_delayed_ready <= 1'b0;
       sound_rom_wait_cycles  <= 0;
       sound_rom_request_seen <= 1'b0;
     end else if (sound_rom_request && !sound_rom_byte_ready) begin
@@ -591,10 +658,11 @@ module tb_hard_drivin_sound_mister;
       sound_rom_request_seen <= 1'b1;
       sound_rom_wait_cycles  <= sound_rom_wait_cycles + 1;
       if (sound_rom_wait_cycles == 2) begin
-        sound_rom_byte_ready <= 1'b1;
+        sound_rom_delayed_ready <= 1'b1;
       end
-    end else if (io_commit && io_read && (io_port == 3'd0)) begin
-      sound_rom_byte_ready <= 1'b0;
+    end else if ((io_commit && io_read && (io_port == 3'd0)) ||
+                 host_direct_io_read_complete_select[0]) begin
+      sound_rom_delayed_ready <= 1'b0;
     end
   end
 
@@ -1426,27 +1494,126 @@ module tb_hard_drivin_sound_mister;
     local_host_complete_s7(1'b0, 1'b0);
     tick();
 
+    // Upper-Y5 host writes reach LS138 100K only at canonical RA11:RA3=0
+    // addresses. Use the same physical targets as native TMS I/O to load the
+    // shared sound address and block latch, then exercise the DAC and CPORT.
+    local_host_start_address(
+      23'h7fb007, 1'b0, 1'b0, 1'b0, 16'h3457
+    );
+    local_host_rising_edge();
+    require(host_direct_io_write_target_select == 8'h80 &&
+            host_direct_io_write_data == 16'h3457 &&
+            !host_direct_io_write_unselected &&
+            !direct_io_ownership_conflict,
+            "canonical direct port-7 write selects shared address load");
+    local_host_finish(1'b0, 1'b0);
+    require(sound_address == 16'h3457 && sound_address_valid,
+            "direct port-7 S6 commit loads the physical sound address");
+    tick();
+
+    local_host_start_address(
+      23'h7fb006, 1'b0, 1'b0, 1'b0, 16'h0003
+    );
+    local_host_rising_edge();
+    require(host_direct_io_write_target_select == 8'h40,
+            "canonical direct port-6 write selects the ROM block latch");
+    local_host_finish(1'b0, 1'b0);
+    require(sound_rom_block == 4'h3 && sound_rom_block_valid,
+            "direct port-6 S6 commit loads the physical ROM block");
+    tick();
+
+    local_host_start_address(
+      23'h7fb000, 1'b0, 1'b0, 1'b0, 16'hbcde
+    );
+    local_host_rising_edge();
+    require(host_direct_io_write_target_select == 8'h01,
+            "canonical direct port-0 write selects DACL");
+    local_host_finish(1'b0, 1'b0);
+    require(dac_code == 12'hbcd && dac_code_valid,
+            "direct port-0 S6 commit reaches the raw DAC latch");
+    tick();
+
+    local_host_start_address(
+      23'h7fb003, 1'b0, 1'b0, 1'b0, 16'h12a5
+    );
+    local_host_rising_edge();
+    require(host_direct_io_write_target_select == 8'h08,
+            "canonical direct port-3 write selects CPORT");
+    local_host_finish(1'b0, 1'b0);
+    require(cport_latch_data == 8'ha5 && cport_latch_data_valid,
+            "direct port-3 S6 commit reaches the physical LS374");
+    tick();
+
+    // LS139 95K ignores RA11:RA2 on reads. Canonical port 0 returns the full
+    // signed-byte carrier and completes the shared-address increment at S7.
+    local_host_start_address(
+      23'h7fb000, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    require(host_direct_io_read_target_select == 4'h1 &&
+            !host_direct_io_read_alias && sound_rom_request &&
+            sound_rom_request_block == 4'h3 &&
+            sound_rom_request_address == 16'h3457,
+            "canonical direct port-0 read owns the sample-ROM callback");
+    local_host_advance_to_s6();
+    require(host_direct_io_read_data == 16'hea80 &&
+            host_direct_io_read_driven_mask == 16'hffff &&
+            host_direct_io_read_valid_mask == 16'hffff,
+            "direct port-0 read carries the complete qualified ROM word");
+    local_host_complete_s7(1'b0, 1'b0);
+    require(sound_address == 16'h3458,
+            "direct input-read S7 completion increments shared address");
+    tick();
+
+    // The unloaded comparator source remains only a one-bit physical carrier.
+    local_host_start_address(
+      23'h7fb002, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    require(host_direct_io_read_target_select == 4'h4 &&
+            host_direct_io_read_data == 16'h8000 &&
+            host_direct_io_read_driven_mask == 16'h8000 &&
+            host_direct_io_read_valid_mask == 16'h8000,
+            "direct port-2 read exposes only externally qualified TD15");
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    // A noncanonical write has /PWE timing but no LS138 output target.
     local_host_start_address(
       23'h7fb123, 1'b0, 1'b0, 1'b0, 16'hbcde
     );
     local_host_rising_edge();
     require(host_timing_program_io_write &&
-            !host_timing_program_io_read && !host_access_permitted,
-            "timed upper-Y5 write selects direct DSP I/O, not program RAM");
+            !host_timing_program_io_read && !host_access_permitted &&
+            host_direct_io_write_target_select == 8'h00 &&
+            host_direct_io_write_unselected &&
+            host_direct_io_write_data == 16'hbcde,
+            "noncanonical upper-Y5 write has /PWE but no output target");
     local_host_advance_to_s6();
-    require(host_program_io_write_count == 1,
-            "timed direct DSP I/O write commits at the S6 /PWE edge");
+    require(host_program_io_write_count == 5 &&
+            host_direct_selected_write_commit_count == 4 &&
+            host_direct_unselected_write_commit_count == 1,
+            "S6 distinguishes four selected writes from one raw /PWE edge");
     local_host_complete_s7(1'b0, 1'b0);
     tick();
 
+    // The same noncanonical address aliases read port 3 because the read
+    // decoder sees only RA1:RA0. Y3 has no drawn Rev-A data-source enable.
     local_host_start_address(
       23'h7fb123, 1'b1, 1'b0, 1'b0, 16'h0000
     );
     local_host_rising_edge();
     require(host_timing_program_io_read &&
-            !host_timing_program_io_write && !host_access_permitted,
-            "timed upper-Y5 read exposes only the direct /PDEN callback");
+            !host_timing_program_io_write && !host_access_permitted &&
+            host_direct_io_read_target_select == 4'h8 &&
+            host_direct_io_read_alias &&
+            host_direct_io_read_data == 16'h0000 &&
+            host_direct_io_read_driven_mask == 16'h0000 &&
+            host_direct_io_read_valid_mask == 16'h0000,
+            "noncanonical read aliases undriven LS139 port 3 without filler");
     local_host_finish(1'b0, 1'b0);
+    require(host_direct_read_complete_count == 3,
+            "every direct input-read completion emits one S7 callback");
     tick();
 
     local_host_start_address(
@@ -1632,7 +1799,7 @@ module tb_hard_drivin_sound_mister;
     require(output_ports[0] == 16'hf230,
             "port zero receives the raw primary-backed DAC word");
     require(dac_code_valid && dac_code == 12'hf23 &&
-            dac_commit_count == 1,
+            dac_commit_count == 2,
             "internal DAC latch commits one uncomplemented raw code");
     require(!mute_net && mute_commit_count == 1,
             "port-4 TD0=1 commits the primary raw complementary MUTE net");
@@ -1640,7 +1807,7 @@ module tb_hard_drivin_sound_mister;
             "data-independent port-5 request leaves 320IRQ asserted");
     require(
       cport_latch_data_valid && cport_latch_data == 8'ha5 &&
-      cport_latch_commit_count == 1 &&
+      cport_latch_commit_count == 2 &&
       host_320_port_read_data == 16'ha500 &&
       host_320_port_driven_mask == 16'hff00 &&
       host_320_port_valid_mask == 16'hff00,
@@ -1734,7 +1901,7 @@ module tb_hard_drivin_sound_mister;
     require(io_write_count == 7 && output_ports[3] == 16'hf230,
             "low-address TBLW commits exactly once through output port three");
     require(
-      cport_latch_commit_count == 2 && cport_latch_data == 8'h30 &&
+      cport_latch_commit_count == 3 && cport_latch_data == 8'h30 &&
       host_320_port_read_data == 16'h3000 &&
       host_320_port_valid_mask == 16'hff00,
       "low-address TBLW clocks its low byte through the physical /CPORT path"
@@ -1777,7 +1944,7 @@ module tb_hard_drivin_sound_mister;
     run_until_retired(3);
     require(io_write_count == 8 && output_ports[0] == 16'h00a5,
             "address-zero TBLW commits once through the DAC output target");
-    require(dac_commit_count == 2 && dac_code == 12'h00a,
+    require(dac_commit_count == 3 && dac_code == 12'h00a,
             "TBLW captures the raw upper twelve bits without callback wait");
     require(cycle_count == 32'd5,
             "LACK/TBLW/NOP retains five cycles at the internal DAC target");

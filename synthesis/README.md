@@ -88,10 +88,10 @@ logic, not an effective analog mute or 68000 bus decoder.
 
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
-communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,966 abstract cells, 257 checks, and zero structural problems after
-the opt-in host-control, host-timing, port-3 latch, mailbox, raw-source, and
-masked-selector integration.
+communication RAM, 144-word internal RAM, and the optional local SRAM's two
+byte memories plus validity metadata as six memory objects. It reports 3,560
+abstract cells, 374 checks, and zero structural problems after upper-Y5
+direct-I/O and lane-valid local-SRAM integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
@@ -163,6 +163,18 @@ combinational cells, 40 retained checks, no memory or latch, and zero
 structural problems. This qualifies fixed-phase callback selection, masks,
 and write-event routing only; it is not storage, a raw-pin bridge, a Cyclone V
 fit, or electrical timing closure.
+
+The twenty-first script targets `hard_drivin_sound_local_ram`. It retains
+independent 8K-by-8 upper/lower data arrays and one two-bit validity array as
+three `$mem_v2` objects, with 88 abstract cells, nine checks, no latch, and
+zero structural problems. This qualifies the tested metadata scrub and lane-
+valid storage structure only; it is not physical 6264 power-up or timing.
+
+The twenty-second script targets the storage-free
+`hard_drivin_sound_direct_io`. It reports 336 abstract combinational cells,
+seven retained checks, no memory or latch, and zero structural problems. This
+qualifies the primary asymmetric read/write decode and mask composition only;
+it is not host/TMS electrical contention or open-bus timing evidence.
 
 ## Quartus
 
