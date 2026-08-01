@@ -25,6 +25,22 @@ This is bounded same-clock FPGA composition evidence. It does not prove raw-
 pin CDC, HM6116 setup/hold or access time, substitute-68k inactive-lane
 behavior, or that authorized firmware performs byte writes.
 
+## Driver Sound program-byte composition harness
+
+`hard_drivin_sound_program_byte.sby` uses a 7-step BMC and cover over the
+original-MC68000 write normalizer plus the reset-qualified 4,096-word program
+RAM. The twelve-bit address, complete bus word, and selected byte orientation
+remain arbitrary. A fixed legal host-ownership write/read sequence proves the
+selected byte is duplicated, committed to the addressed word, and returned by
+the synchronous FPGA read boundary. Separate covers reach upper- and lower-
+byte transfers at solver step 6.
+
+This is bounded same-clock FPGA composition evidence. It holds `/320RES`
+asserted throughout host ownership and does not prove firmware handoff
+discipline, raw-pin CDC, asynchronous SRAM setup/hold or access time,
+substitute-68k inactive-lane behavior, or that authorized firmware performs
+byte writes.
+
 ## Exhaustive decoder-safety harness
 
 `tms32010_decode.sby` leaves the complete 16-bit instruction word

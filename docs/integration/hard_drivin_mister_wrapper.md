@@ -96,29 +96,29 @@ The required same-clock sequence is:
 1. hold the selected `/320RES` low, using `dsp_reset_n_i=0` in the default
    mode or board-reset-cleared/Q4-low state in host-control mode;
 2. assert `host_program_select_n_i=0` only after the host begins its RAM access;
-3. supply a complete 12-bit word address and 16-bit write word;
+3. supply a complete 12-bit word address and already captured 16-bit word;
 4. pulse `host_commit_i` once for each write accepted with `host_ready_o=1`;
 5. release `host_program_select_n_i=1`;
 6. verify `ownership_conflict_o=0`; and
 7. release the selected `/320RES`, using `dsp_reset_n_i=1` or a decoded Q4
    write as selected.
 
-The host callback is whole-word only because A044427 routes A12:A1, D15:D0,
-and one RAM write strobe without UDS/LDS lane enables. `SC-022`/`OQ-022`
-govern byte accesses. If host selection overlaps released DSP reset,
+The external host callback accepts an already captured complete word. A044427
+routes A12:A1, D15:D0, and one RAM write strobe without UDS/LDS lane enables.
+Original-MC68000 byte capture is separately qualified under `SC-022`/`OQ-022`.
+If host selection overlaps released DSP reset,
 `ownership_conflict_o` asserts and neither storage path is acknowledged. The
 wrapper does not choose a protective winner and call that physical behavior.
 
 With `use_host_timing_i=1`, the explicit `host_program_*` inputs are ignored.
-The captured lower-Y5 cycle supplies the select, direction, word address, raw
-write word, and S7 commit instead. The same reset/ownership truth table still
-applies; selecting lower Y5 while `/320RES` is released remains an observable
-contention error rather than arbitration.
-Because the physical program-RAM write strobe is not lane-qualified, a byte
-cycle leaves the other data byte electrically unresolved. The FPGA storage
-adapter therefore reports `host_timing_partial_program_write_o` and rejects
-that commit under `OQ-022`; it does not invent a byte merge or store an
-unqualified full word.
+The captured lower-Y5 cycle supplies the select, direction, word address, bus
+data, and S7 commit instead. The original-MC68000 write normalizer preserves a
+word or duplicates the selected byte before the complete-word RAM callback.
+The same reset/ownership truth table still applies; selecting lower Y5 while
+`/320RES` is released remains an observable contention error rather than
+arbitration. `host_timing_partial_program_write_o` reports an accepted byte
+transfer, not a rejected write. Substitute 68k cores must reproduce or
+explicitly adapt the duplicated inactive lane.
 
 ## Communication-RAM host sequence
 
@@ -352,7 +352,7 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains six memories and reports 3,773
+The pre-technology Yosys target retains six memories and reports 3,767
 abstract cells with 409 checks and zero structural problems after opt-in
 same-clock local-host timing, storage-callback, direct-I/O, and local-reset
 interlock integration.

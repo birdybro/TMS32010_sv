@@ -55,8 +55,10 @@ host/DSP overlap rather than inventing arbitration.
 `rtl/wrappers/hard_drivin_sound_program_ram.sv` adds an FPGA-oriented,
 same-clock 4K-by-16 storage adapter around that decoder. It uses synchronous
 reads and explicit commit inputs, does not clear program contents, and grants
-neither side during invalid overlap. Its whole-word host callback is not a
-68000 byte-lane or DTACK implementation.
+neither side during invalid overlap. Its external host callback accepts an
+already captured complete word. The timing-derived lower-Y5 path normalizes
+original-MC68000 words or duplicated bytes before that callback; it is still
+not a raw-pin byte-lane, CDC, or DTACK implementation.
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` connects those pieces to the
 generic processor callback wrapper. It can execute a host-loaded synthetic

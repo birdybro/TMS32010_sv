@@ -261,9 +261,10 @@ upper/lower byte duplication, and visible side-effect-free `/SPEECH`
 completion. It now also
 checks fixed-cycle ROM/local-SRAM callbacks, byte-specific local-SRAM commits,
 the optional lane-valid SRAM's internal/external callback isolation,
-lower-Y5 program-RAM storage, upper-Y5 direct-I/O S6 timing and isolation, and
+lower-Y5 word plus normalized-byte program-RAM storage, upper-Y5 direct-I/O
+S6 timing and isolation, and
 Y6 word plus normalized-byte communication-RAM storage under CRAMEN.
-Integrated Yosys retains six memories and reports 3,773 abstract cells,
+Integrated Yosys retains six memories and reports 3,767 abstract cells,
 409 checks, and zero structural problems.
 
 `formal/hard_drivin_sound_host_routing.sby` adds a 12-step bounded composition

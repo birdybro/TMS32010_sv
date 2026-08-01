@@ -431,10 +431,12 @@ The board-specific `hard_drivin_sound_program_ram` now implements a
 same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
 access only while `/320RES` is asserted, permits TMS access only after host
 selection is released, grants neither side during overlap, and never clears
-program contents on reset. Its whole-word host port follows the shown
-A12:A1/D15:D0 path; byte-access compatibility is unresolved under
-`SC-022`/`OQ-022`. This is an integration convention, not a claim that the
-physical asynchronous SRAM has ready signaling or registered reads.
+program contents on reset. Its external host port accepts an already captured
+complete word. The timing-derived lower-Y5 path normalizes original-MC68000
+words or duplicated bytes before that callback; directed readback and a
+bounded composition proof qualify both byte orientations. Do not generalize
+that inactive-lane rule to substitute 68k cores or infer raw-pin CDC or
+physical SRAM timing under `SC-022`/`OQ-022`.
 The standalone `hard_drivin_sound_host_control` transcribes LS259 `80R` only.
 A decoded `/LATCHES` completion uses host `A3:A1` to select Q and `A4` as the
 new value; `D15:D0` is irrelevant. Board `/RESET` clears all eight outputs,

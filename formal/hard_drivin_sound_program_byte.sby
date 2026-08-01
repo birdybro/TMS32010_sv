@@ -1,0 +1,25 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 7
+cover: mode cover
+cover: depth 7
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv hard_drivin_mc68000_write_word.sv
+read -formal -sv hard_drivin_sound_bus_decode.sv
+read -formal -sv hard_drivin_sound_program_ram.sv
+read -formal -sv hard_drivin_sound_program_byte_formal.sv
+prep -top hard_drivin_sound_program_byte_formal
+
+[files]
+rtl/wrappers/hard_drivin_mc68000_write_word.sv
+rtl/wrappers/hard_drivin_sound_bus_decode.sv
+rtl/wrappers/hard_drivin_sound_program_ram.sv
+formal/hard_drivin_sound_program_byte_formal.sv

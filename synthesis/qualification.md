@@ -282,7 +282,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,773 abstract cells, 409
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,767 abstract cells, 409
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,

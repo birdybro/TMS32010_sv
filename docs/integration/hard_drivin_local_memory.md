@@ -187,7 +187,7 @@ The bridge remains storage-free and exposes these callbacks:
 |---|---|---|
 | drawn/default 27256 pair | complete-word read request with `A15:A1` | data must be valid by fixed S7; no READY exists |
 | local 6264 pair | complete-word read request with `A13:A1` | upper/lower write commits independently at S7 |
-| Y5 lower half | program-RAM read/write level with `A12:A1` | whole-word write commit at S7 |
+| Y5 lower half | program-RAM read/write level with `A12:A1` | word or normalized original-MC68000 byte write commit at S7 |
 | Y5 upper half | direct `/PDEN` or `/PWE` level with `A12:A1` | direct `/PWE` callback is sampled at the S6 rising boundary |
 | Y6 | communication-RAM read/write level with `A9:A1` | word or normalized original-MC68000 byte write commit at S7 |
 
@@ -224,11 +224,11 @@ RAM adapter. Y6 similarly drives the existing communication-RAM host port at
 program/communication callbacks remain selected unchanged when timing mode is
 off, so the integration does not silently replace the older same-clock API.
 The physical bridge still exposes both unqualified whole-bank write levels.
-The lower-Y5 program-RAM mux continues to accept only cycles with both byte
-strobes under `OQ-022`. The Y6 communication path now uses the documented
-original-MC68000 bus value: either selected byte is duplicated before both
-HM6116 banks commit. The two partial-write outputs remain separate; the Y5
-one reports rejection, while the Y6 one reports an accepted byte write.
+The lower-Y5 program and Y6 communication paths now use the documented
+original-MC68000 bus value: either selected byte is duplicated before all
+unqualified memory slices commit. The two partial-write outputs remain
+separate target diagnostics, and both report an accepted byte write. The
+external callbacks remain already captured complete-word contracts.
 
 The board top forwards the complete ROM callback, local-RAM callback, byte-
 specific local-RAM commits, read carrier masks, and missing-response event to
@@ -290,7 +290,7 @@ pass-through, selected-scrub RESET/HALT blocking, and release only after the
 timing-mode ownership, and later board tests prove the explicit-callback
 fallback still operates with timing mode disabled.
 
-The composed board hierarchy retains six memories and reports 3,773 abstract
+The composed board hierarchy retains six memories and reports 3,767 abstract
 cells with 409 checks and zero structural problems in Yosys 0.67+111. This
 remains pre-technology synthesis, not raw-pin CDC, a complete MC68000 data-bus
 mux, a Cyclone V fit, or electrical timing closure.

@@ -1,7 +1,7 @@
 # Progress summary
 
-- **Current milestone:** `OQ-024` Driver Sound original-MC68000 communication-
-  RAM byte capture
+- **Current milestone:** `OQ-022` Driver Sound original-MC68000 program-RAM
+  byte capture
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -69,7 +69,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,773 abstract cells/409 checks
+  board top retains six memories and passes at 3,767 abstract cells/409 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -131,7 +131,7 @@
   A thirtieth target checks the storage-free original-MC68000 write-word
   normalizer at 39 mapped cells/three retained checks, with no memory, latch,
   generated clock, or structural problem.
-- **Formal status:** all 48 tasks from 24 SymbiYosys configurations pass with
+- **Formal status:** all 50 tasks from 25 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -220,6 +220,13 @@
   owner-qualified 512-word RAM; both upper- and lower-byte covers are
   reachable at solver step 6. HM6116 electrical timing, raw-pin CDC, and
   firmware access widths remain outside this proof.
+  A sixteenth 7-step program-byte composition BMC leaves the twelve-bit
+  address, sixteen-bit bus data, and selected byte lane arbitrary. It proves
+  the original-MC68000 normalizer result is committed and returned by the
+  reset-qualified 4,096-word program RAM; both upper- and lower-byte covers
+  are reachable at solver step 6. Firmware reset-handoff compliance,
+  asynchronous SRAM electrical timing, raw-pin CDC, and access widths remain
+  outside this proof.
   A nineteenth standalone main-held-strobe configuration passes a 12-step BMC
   against an independent transition model under event-exclusivity and
   phase-level/edge-consistency assumptions. Its 16-step cover reaches seven
@@ -548,8 +555,10 @@
   path. It preserves memory across adapter initialization, commits safe
   high-address TMS writes, diverts low-eight writes to I/O, and disables both
   writers during invalid overlap. Yosys retains the array as one `$mem_v2`;
-  Quartus block-RAM mapping remains unclaimed. A044427's whole-word host path
-  conflicts with MAME byte merging under `SC-022`/`OQ-022`.
+  Quartus block-RAM mapping remains unclaimed. At that checkpoint, A044427's
+  unqualified host path conflicted with MAME byte merging under
+  `SC-022`/`OQ-022`; the later original-MC68000 audit below resolves the
+  physical captured value.
 - **New integration evidence:** the processor-connected wrapper host-loads the
   corrected ROM-free smoke, preloads communication word `0x056`, performs
   conflict-free `/320RES` and CRAMEN handoffs, and
@@ -800,9 +809,10 @@
   still pass through the original explicit callbacks. Integrated Yosys retains
   the three then-existing memories at 3,294 cells/338 checks with zero
   structural problems.
-  Partial lower-Y5/Y6 writes produce distinct trace pulses and are rejected at
-  the FPGA storage boundary, preserving `OQ-022`/`OQ-024` rather than assigning
-  the physically unqualified byte.
+  At that checkpoint, partial lower-Y5/Y6 writes produced distinct trace
+  pulses and were rejected pending inactive-lane evidence. Later original-
+  MC68000 audits supersede both protective policies with duplicated-byte
+  capture while retaining the diagnostics.
 - **New local-SRAM evidence:** `hard_drivin_sound_local_ram` preserves the two
   physical byte lanes as independent 8K-by-8 data memories and tracks known
   FPGA contents in a separate two-bit validity memory. Its exact 8,192-clock
@@ -838,7 +848,7 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the current board reports
-  3,773 cells/409 checks with six memories. This interlock does not itself
+  3,767 cells/409 checks with six memories. This interlock does not itself
   select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
@@ -1167,6 +1177,16 @@
   symbolic byte orientations. Pinned MAME's retained-other-byte merge remains
   `SC-025`; authorized-firmware access widths and electrical/substitute-CPU
   qualification remain open. `OQ-024` is `PARTIALLY_RESOLVED_PRIMARY`.
+- **New program-RAM byte evidence:** A044427's common `/RAMWR` and absent
+  `/UDS`/`/LDS` slice qualification combine with original-MC68000 Table 3-1 to
+  establish `{byte, byte}` capture in all four program-SRAM slices. The
+  timing-derived lower-Y5 path reuses the write normalizer and reads back upper
+  `0xde -> 0xdede` and lower `0xef -> 0xefef` under reset-qualified host
+  ownership. A 7-step BMC proves the same write/read relationship for arbitrary
+  addresses/data and reaches both symbolic byte orientations. Pinned MAME's
+  retained-other-byte merge remains `SC-022`; authorized-firmware access
+  widths, reset-handoff compliance, and electrical/substitute-CPU qualification
+  remain open. `OQ-022` is `PARTIALLY_RESOLVED_PRIMARY`.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1183,6 +1203,7 @@
   `OQ-012`/`SC-042` despite CORROBORATED EVM recoverability,
   DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
   and firmware compliance,
+  program-RAM firmware access widths and reset-handoff discipline,
   communication-RAM firmware access widths, CRAMEN firmware discipline,
   HM6116 electrical timing, and substitute-68k inactive lanes, exact
   sample-ROM factory/variant population, authorized Race Drivin' port-6 block
@@ -1214,8 +1235,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** apply the now-qualified original-MC68000 duplicated-byte bus
-  contract to `OQ-022` lower-Y5 program-RAM host writes, while preserving
-  firmware-use and SRAM electrical-timing boundaries.
+- **Next task:** audit `OQ-032` Driver Sound `/SWITCHES` cabinet-pin functions
+  against the pinned Atari service and schematic corpus without assigning
+  inactive levels not shown by primary wiring.
 - **Latest committed baseline before this cycle:**
-  `dada638`
+  `b273e06`

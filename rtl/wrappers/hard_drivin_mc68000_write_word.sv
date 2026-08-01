@@ -1,10 +1,10 @@
 `default_nettype none
 
 // Convert one original-MC68000 write-cycle bus value into the complete word
-// clocked by an unqualified pair of LS374s. Motorola Table 3-1 documents that
-// the selected byte is driven on both halves of D15:D0 for a byte write on the
-// MC68000 implementation. A044427 does not route UDS/LDS-derived byte enables
-// into either mailbox latch clock, so both halves capture that duplicated byte.
+// captured by an unqualified 16-bit board target. Motorola Table 3-1 documents
+// that the selected byte is driven on both halves of D15:D0 for a byte write on
+// the MC68000 implementation. Board-specific documentation separately proves
+// which A044427 targets lack UDS/LDS-derived lane enables.
 module hard_drivin_mc68000_write_word (
   input  logic [15:0] bus_data_i,
   input  logic        upper_data_strobe_n_i,

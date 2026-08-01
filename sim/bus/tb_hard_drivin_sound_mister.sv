@@ -1547,7 +1547,7 @@ module tb_hard_drivin_sound_mister;
     local_host_finish(1'b0, 1'b0);
     require(host_timing_partial_program_write &&
             !host_timing_partial_communication_write,
-            "partial lower-Y5 write is reported and rejected at S7");
+            "upper-byte lower-Y5 write is reported and accepted at S7");
     tick();
 
     local_host_start_address(
@@ -1555,8 +1555,30 @@ module tb_hard_drivin_sound_mister;
     );
     local_host_rising_edge();
     local_host_advance_to_s6();
-    require(host_ready && host_read_data == 16'h3456,
-            "rejected partial lower-Y5 write preserves program RAM");
+    require(host_ready && host_read_data == 16'hdede,
+            "upper-byte lower-Y5 write duplicates D15:D8 across program RAM");
+    local_host_complete_s7(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b0, 1'b1, 1'b0, 16'hbeef
+    );
+    local_host_rising_edge();
+    require(host_access_permitted && host_ready,
+            "physical lower-Y5 write level remains visible for lower byte");
+    local_host_finish(1'b0, 1'b0);
+    require(host_timing_partial_program_write &&
+            !host_timing_partial_communication_write,
+            "lower-byte lower-Y5 write is reported and accepted at S7");
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    local_host_advance_to_s6();
+    require(host_ready && host_read_data == 16'hefef,
+            "lower-byte lower-Y5 write duplicates D7:D0 across program RAM");
     local_host_complete_s7(1'b0, 1'b0);
     tick();
 
@@ -1687,7 +1709,7 @@ module tb_hard_drivin_sound_mister;
     );
     local_host_rising_edge();
     local_host_advance_to_s6();
-    require(host_ready && host_read_data == 16'h3456,
+    require(host_ready && host_read_data == 16'hefef,
             "direct upper-Y5 activity cannot modify lower-Y5 program RAM");
     local_host_complete_s7(1'b0, 1'b0);
     host_program_select_n = 1'b1;

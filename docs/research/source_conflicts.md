@@ -547,25 +547,33 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for A044427 Rev A; documented
   secondary-source mismatch.
 
-## SC-022 — Physical whole-word program RAM versus byte-combined MAME writes
+## SC-022 — Unqualified program RAM versus byte-combined MAME writes
 
 - **Primary board evidence:** A044427 connects host `A12:A1` to RAM
   `RA11:RA0`, connects all `D15:D0` through two LS245 devices, and supplies a
   single `/RAMWR` to all four 4-bit SRAM slices. The drawing's `/UDS` and
   `/LDS` logic serves other memory, not the DSP program-RAM controls
   [atari-driver-sound-board-schematic, sheets 3–4 of 10, PDF pp. 5–8].
+- **Primary CPU evidence:** original-MC68000 Table 3-1 says a byte write drives
+  the selected byte on both `D15:D8` and `D7:D0`. All four unqualified SRAM
+  slices therefore capture `{byte, byte}`; a word write preserves its two
+  independent bytes. The manual limits this inactive-lane behavior to the
+  current implementation rather than all future devices
+  [motorola-m68000-users-manual-ninth, Table 3-1 and footnote, printed pp.
+  3-5 through 3-6].
 - **Secondary abstraction:** pinned MAME's host handler accepts `mem_mask` and
   uses `COMBINE_DATA`, retaining whichever byte lane was not selected
   [mame-harddriv-audio-030fefc, `hdsnd68k_320ram_w` and host address map].
-- **Conflict:** byte-preserving merge is useful emulator behavior but is not
-  shown by the physical SRAM wiring. The actual value of the nominally
-  inactive 68000 data lane during a byte transaction has not been qualified.
-- **Current treatment:** `hard_drivin_sound_program_ram` exposes only a
-  complete 16-bit host write. A future 68000 adapter must not add a byte merge
-  and label it physical behavior without resolving `OQ-022`.
-- **Confidence:** VERIFIED_PRIMARY for the Rev-A whole-word wiring;
-  CORROBORATED for MAME's abstraction; UNKNOWN for an out-of-contract byte
-  access on hardware.
+- **Conflict:** MAME retains the unselected byte, while the physical original-
+  MC68000 bus and common `/RAMWR` require every slice to receive the selected
+  byte.
+- **Current treatment:** the timing-derived lower-Y5 path uses
+  `hard_drivin_mc68000_write_word` before the complete-word storage callback.
+  The external callback remains an already captured word contract. `OQ-022`
+  tracks firmware access widths and electrical/substitute-CPU qualification.
+- **Confidence:** VERIFIED_PRIMARY for Rev-A word and original-MC68000 byte
+  capture; CONFLICT for MAME's merge; UNKNOWN for firmware byte-write use and
+  later/substitute-68k inactive lanes.
 
 ## SC-023 — CRAMEN ownership versus unconditional MAME DSP reads
 

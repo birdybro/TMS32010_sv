@@ -121,10 +121,10 @@ graphics-ready polarity, and the generic MC68681 acknowledge contract;
 VERIFIED_SIMULATION/FORMAL for the three standalone RTL blocks; UNKNOWN for
 system reset origin, per-cycle cross-clock response phase,
 acknowledgement-path electrical timing, and raw-pin CDC.**
-Partial lower-Y5 writes remain exposed and rejected under `OQ-022`. Y6 byte
-writes are exposed and accepted after the original-MC68000 selected byte is
-duplicated onto both halves, matching the common `/CRWE` hardware rather than
-MAME's retained-other-byte merge (`SC-025`/`OQ-024`).
+Lower-Y5 and Y6 byte writes are separately exposed and accepted after the
+original-MC68000 selected byte is duplicated onto both halves. This matches
+the common `/RAMWR` and `/CRWE` hardware rather than MAME's retained-other-
+byte merges (`SC-022`/`OQ-022`, `SC-025`/`OQ-024`).
 
 The DSP exposes `TA0..TA11`, `TD0..TD15`, `/MEN`, `/DEN`, and `/TWE` to board
 logic. The drawings show four 20-pin `8168D45`-labeled SRAM slices. Every
@@ -277,10 +277,13 @@ sixteen `D15:D0` bits through two LS245 devices. The host-side LS244 drives the
 single `/RAMCE` and `/RAMWR` controls. The 68000 `/UDS` and `/LDS` signals are
 used elsewhere on the drawing but do not enter this program-RAM control path
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3–4 of 10,
-PDF pp. 5–8]. **Confidence: VERIFIED_PRIMARY for the shown whole-word path.**
-The electrical result of an attempted byte write and whether production
-firmware ever performs one remain `SC-022`/`OQ-022`; a wrapper must not silently
-call byte-preserving merge behavior verified hardware.
+PDF pp. 5–8]. Original-MC68000 Table 3-1 establishes that a selected byte is
+driven on both bus halves, so all four unqualified slices capture
+`{byte, byte}` [motorola-m68000-users-manual-ninth, Table 3-1 and footnote,
+printed pp. 3-5 through 3-6]. **Confidence: VERIFIED_PRIMARY for the shown
+word path and original-MC68000 byte capture; UNKNOWN for production-firmware
+byte-write use and substitute-68k behavior.** Pinned MAME's retained-other-
+byte merge remains the conflict in `SC-022`/`OQ-022`.
 
 ### Same-clock FPGA storage adaptation
 
@@ -312,6 +315,13 @@ low-TBLW program and reads the unchanged target RAM word back through the host.
 A second focused sequence proves address-zero TBLW uses the internal DAC
 target's always-ready contract, captures data word `0x00a5` as raw code `0x00a`,
 retains the documented five-cycle total, and leaves program word zero unchanged.
+The timing-derived lower-Y5 path additionally normalizes original-MC68000 word
+and byte transfers before the complete-word storage callback. Directed
+readback checks `0xdede` and `0xefef` for upper/lower selected bytes at one
+address. A 7-step bounded composition proof covers both orientations and
+proves arbitrary address/data write-read behavior while `/320RES` grants host
+ownership. This is not firmware handoff, raw-pin CDC, or asynchronous SRAM
+electrical-timing evidence.
 See `docs/integration/hard_drivin_mister_wrapper.md` for the interface contract.
 **Confidence: VERIFIED_SIMULATION; not a 68000 or peripheral implementation.**
 

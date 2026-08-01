@@ -1648,6 +1648,7 @@ objective passing evidence.
   `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
   `formal/hard_drivin_sound_communication_byte.sby`,
+  `formal/hard_drivin_sound_program_byte.sby`,
   `formal/hard_drivin_sound_host_routing.sby`,
   `tests/regressions/test_hard_drivin_dac_codes.py`,
   `tests/regressions/test_hard_drivin_program_roms.py`,
@@ -1666,7 +1667,8 @@ objective passing evidence.
   4,096 16-bit words, preserves contents across adapter reset, commits safe
   high-address TMS writes, diverts low writes to I/O, and grants neither side
   during invalid overlap. Firmware compliance/release timing remains
-  `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
+  `OQ-021`. The later original-MC68000 audit below resolves the physical byte
+  capture value under `SC-022`/`OQ-022` while leaving firmware use open.
   A physical coincident-edge policy, signed-audio DAC interpretation,
   effective mute semantics, board-variant audit, 68000 bus adaptation, and
   complete peripheral integration remain.
@@ -1919,11 +1921,11 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,773 abstract cells/409
+  Integrated Yosys retains six memories and reports 3,767 abstract cells/409
   checks with no structural problem. At that checkpoint, partial lower-Y5 and
   Y6 writes were reported and rejected pending inactive-lane evidence under
-  `OQ-022`/`OQ-024`; the later original-MC68000 audit below supersedes the Y6
-  policy while leaving Y5 open.
+  `OQ-022`/`OQ-024`; the later original-MC68000 audits below supersede both
+  protective policies with target-specific duplicated-byte evidence.
   A044427 sheet 5 now qualifies upper-Y5's asymmetric downstream decode:
   LS139 reads ignore `RA11:RA2` and alias modulo four, while LS138 writes
   require `RA11:RA3=0` and select no target above canonical word 7. A
@@ -1940,7 +1942,7 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,773 cells/
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,767 cells/
   409 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
@@ -2038,7 +2040,7 @@ objective passing evidence.
   reports 39 mapped cells/three checks. Timed local writes now accept both
   byte orientations, set `SOUNDFLAG`, and retain a one-event byte-transfer
   diagnostic. The board routing BMC proves both symbolic orientations, and
-  integrated Yosys reports 3,773 cells/409 checks/six memories. LS74 preset
+  integrated Yosys reports 3,767 cells/409 checks/six memories. LS74 preset
   dominance is primary-verified while asserted, but exact preset-release/
   opposite-read-clock coincidence and authorized-firmware byte-write use
   remain open. The external main callback still expects an already captured
@@ -2053,7 +2055,18 @@ objective passing evidence.
   while authorized-firmware access widths, raw CDC, HM6116 electrical timing,
   and substitute-68k inactive lanes remain open. The timing-disabled callback
   stays an already captured complete-word contract. Integrated Yosys remains
-  3,773 cells/409 checks/six memories with zero structural problems.
+  3,767 cells/409 checks/six memories with zero structural problems.
+  OQ-022 is now `PARTIALLY_RESOLVED_PRIMARY`: original-MC68000 Table 3-1 and
+  A044427's common `/RAMWR` prove that a lower-Y5 program-RAM byte write clocks
+  `{byte, byte}` into all four SRAM slices. The timing-derived lower-Y5 path
+  reuses `hard_drivin_mc68000_write_word`; directed board readback checks upper
+  `0xde -> 0xdede` and lower `0xef -> 0xefef`. A new 7-step BMC proves arbitrary
+  address/data capture under legal reset-qualified host ownership and reaches
+  both symbolic lane covers. Pinned MAME's retained-other-byte `COMBINE_DATA`
+  remains `SC-022` conflict, while authorized-firmware access widths, reset-
+  handoff compliance, raw CDC, asynchronous SRAM electrical timing, and
+  substitute-68k inactive lanes remain open. The timing-disabled callback
+  stays an already captured complete-word contract.
 
 ## Milestone 22 — Release qualification
 

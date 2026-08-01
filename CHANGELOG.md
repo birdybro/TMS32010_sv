@@ -7,6 +7,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 7-step bounded program-byte composition check. It proves arbitrary
+  address/data upper- and lower-byte writes through the original-MC68000
+  normalizer into reset-qualified 4K program RAM and reaches both lane covers.
 - A 7-step bounded communication-byte composition check. It proves arbitrary
   address/data upper- and lower-byte writes through the original-MC68000
   normalizer into the 512-word FPGA RAM and reaches both lane covers.
@@ -771,6 +774,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-022` is now `PARTIALLY_RESOLVED_PRIMARY`: A044427's common `/RAMWR`
+  combined with original-MC68000 Table 3-1 establishes `{byte, byte}` capture
+  for program-RAM byte writes. Pinned MAME's retained-other-byte merge remains
+  a documented `SC-022` conflict.
+- The timing-derived lower-Y5 path now accepts byte writes after original-
+  MC68000 normalization. `host_timing_partial_program_write_o` is an accepted-
+  event diagnostic; the timing-disabled callback remains a complete-word
+  contract.
 - `OQ-024` is now `PARTIALLY_RESOLVED_PRIMARY`: A044427's common `/CRWE`
   combined with original-MC68000 Table 3-1 establishes `{byte, byte}` capture
   for communication-RAM byte writes. Pinned MAME's retained-other-byte merge
@@ -975,8 +986,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Replaced the provisional lower-Y5 byte-write rejection with the primary-
+  backed duplicated-byte result while preserving the reset-qualified ownership
+  contract.
 - Replaced the provisional Y6 byte-write rejection with the primary-backed
-  duplicated-byte result while leaving lower-Y5 program-RAM rejection intact.
+  duplicated-byte result; lower-Y5 remained protected at that checkpoint and
+  is superseded by the later program-RAM result above.
 - Replaced the provisional local-mailbox byte-write rejection with the
   documented original-MC68000 duplicated-byte result; both upper and lower
   byte transfers now set `SOUNDFLAG` and expose the captured word.
@@ -1043,17 +1058,22 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Integrated lower-Y5 readback checks upper byte `0xde -> 0xdede` and lower
+  byte `0xef -> 0xefef` while `/320RES` grants host ownership. The new BMC
+  proves all symbolic addresses and data values through write/read completion;
+  both covers are reachable. Integrated Yosys reports 3,767 cells, 409 checks,
+  and six memories with zero structural problems.
 - Integrated Y6 readback checks lower byte `0xef -> 0xefef` and upper byte
   `0xbc -> 0xbcbc` under CRAMEN ownership. The new BMC proves all symbolic
   addresses and data values through write/read completion; both covers are
-  reachable. Integrated Yosys remains 3,773 cells, 409 checks, and six
+  reachable. Integrated Yosys now reports 3,767 cells, 409 checks, and six
   memories with zero structural problems.
 - The MC68000 write normalizer passes exhaustive simulation and Yosys
   0.67+111 synthesis at 39 mapped cells/three retained checks with no memory,
   latch, or structural problem. The integrated board test checks `0xab ->
   0xabab` and `0x34 -> 0x3434`, flag set/read-clear, and callback isolation;
   the board-routing BMC proves and covers both symbolic byte orientations.
-  Integrated pre-technology Yosys reports 3,773 cells, 409 checks, six
+  Integrated pre-technology Yosys reports 3,767 cells, 409 checks, six
   memories, and zero structural problems.
 - All 59 locally acquired references pass their pinned SHA-256 checks. The
   socket-based authorized sample-ROM analyzer passes four regressions for
@@ -1977,8 +1997,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   do not establish effective audio semantics or the host address decoder;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
-  and the future 68000 bridge must resolve or reject byte accesses under
-  `SC-022`/`OQ-022`.
+  and the future raw 68000 bridge must reproduce the qualified original-
+  MC68000 duplicated inactive lane or explicitly adapt substitute-CPU behavior
+  under `SC-022`/`OQ-022`.
 - The BIO divider/resampler is primary-transcribed and connected as an opt-in,
   but the physical counters and CLKOUT resampler have no board-reset
   initialization, and their 1 MHz/CLKOUT clocks derive from independent

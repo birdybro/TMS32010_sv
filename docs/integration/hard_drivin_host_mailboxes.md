@@ -196,6 +196,6 @@ requalification, raw peripheral validity masks, and board-reset flag clear
 with both word latches retained. The board-routing BMC proves the two symbolic
 byte orientations and reaches both covers.
 
-The complete board hierarchy reports 3,773 abstract cells, 409 retained
+The complete board hierarchy reports 3,767 abstract cells, 409 retained
 checks, six memories, and zero structural problems. This is not a raw-pin
 68000, asynchronous collision, or Cyclone V timing qualification.

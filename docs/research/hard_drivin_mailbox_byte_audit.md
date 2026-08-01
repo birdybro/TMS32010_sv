@@ -111,7 +111,7 @@ reaches both covers.
 
 Yosys 0.67+111 reports 39 mapped cells with three retained checks and zero
 structural problems for the standalone adapter. The integrated pre-technology
-hierarchy reports 3,773 abstract cells, 409 retained checks, six memories, and
+hierarchy reports 3,767 abstract cells, 409 retained checks, six memories, and
 zero structural problems. These results qualify only the synchronous FPGA
 logic; they are not physical MC68000, LS374, LS74, or CDC timing closure.
 

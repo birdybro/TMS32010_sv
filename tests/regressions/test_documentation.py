@@ -766,7 +766,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Quartus block-RAM mapping",
         ):
             self.assertIn(required, integration)
-        self.assertIn("Physical whole-word program RAM", conflicts)
+        self.assertIn("Unqualified program RAM", conflicts)
         self.assertIn("`OQ-022`", conflicts)
 
     def test_hard_drivin_mister_wrapper_remains_partial_and_physical(self) -> None:
@@ -799,7 +799,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,773",
+            "3,767",
             "409 checks",
             "Cyclone V",
         ):
@@ -1062,10 +1062,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "hard_drivin_sound_host_routing.sby",
             "12-step bounded composition",
             "Seven covers span all six classes",
-            "lower-Y5 program-RAM storage",
+            "lower-Y5 word plus normalized-byte program-RAM storage",
             "Y6 word plus normalized-byte communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,773 abstract cells",
+            "3,767 abstract cells",
             "409 checks",
         ):
             self.assertIn(required, host_timing)
@@ -1191,7 +1191,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Ten retained RTL checks",
             "`hard_drivin_sound_mister` instantiates the standalone adapter",
             "both coincident write/read",
-            "3,773 abstract cells",
+            "3,767 abstract cells",
             "409 retained\nchecks",
         ):
             self.assertIn(required, mailboxes)
