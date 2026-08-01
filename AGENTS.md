@@ -378,6 +378,12 @@ simultaneous host/running-DSP ownership is invalid (`SC-020`/`OQ-021`). The
 board's physical WE decode also routes addresses `0x000`–`0x007` to output
 ports, so low-address TBLW aliases OUT on Rev A (`SC-021`). Keep all of this
 outside the generic core.
+The board-only `hard_drivin_sound_dac_latch` now captures exactly
+`io_write_data[15:4]` on a committed port-0 write, retains the raw code across
+processor reset, and reports a one-clock commit pulse. Its deterministic
+initialization validity is an FPGA convention. Never add MAME's bit-11 XOR,
+signed-sample conversion, or analog filtering to this module without resolving
+`SC-019`/`OQ-020` from stronger evidence.
 The board-specific `hard_drivin_sound_program_ram` now implements a
 same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
 access only while `/320RES` is asserted, permits TMS access only after host

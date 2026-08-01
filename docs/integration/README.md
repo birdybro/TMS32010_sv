@@ -38,6 +38,10 @@ bus/latch decode or physical HM6116 timing.
 storage-free adapter routes processor port 0 to an explicit authorized-byte
 callback, rejects absent/invalid selections instead of inventing a bus value,
 and contains neither ROM images nor physical access-time behavior.
+`rtl/wrappers/hard_drivin_sound_dac_latch.sv` captures the independently
+qualified raw port-0 output code `TD15:TD4` and emits a one-clock commit pulse.
+It implements no MAME bit-11 transform, signed-sample interpretation, DAC
+analog model, or filter.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

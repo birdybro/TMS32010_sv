@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs eight checked-in scripts. The main synthesis harness targets
+The command runs nine checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -76,15 +76,20 @@ memory or latch, and zero structural problems. This is only the exact digital
 selection/data-mapping boundary; it contains no ROM and proves no device access
 time.
 
-The seventh script stops before technology mapping for the partial
+The seventh script targets `hard_drivin_sound_dac_latch`. It reports 14 cells,
+including two retained checks, with no memory, latch, or structural problem.
+It qualifies only raw `TD15:TD4` capture and an FPGA commit pulse, not an
+analog or signed-sample model.
+
+The eighth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,290 abstract cells, 137 checks, and zero structural problems. This
+reports 2,309 abstract cells, 140 checks, and zero structural problems. This
 is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
 
-The eighth script applies the same boundary to the standalone
+The ninth script applies the same boundary to the standalone
 `hard_drivin_sound_communication_path`. It retains the 512-by-16 communication
 RAM as one `$mem_v2` and reports 82 abstract cells, seven checks, and zero
 structural problems. This supports portable memory inference and control-path

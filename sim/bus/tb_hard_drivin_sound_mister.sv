@@ -43,6 +43,10 @@ module tb_hard_drivin_sound_mister;
   logic [7:0]  sound_rom_byte;
   logic        sound_rom_byte_ready;
   logic        sound_rom_selection_invalid;
+  logic [11:0] dac_code;
+  logic        dac_code_valid;
+  logic        dac_commit;
+  logic        external_io_ready;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -72,6 +76,7 @@ module tb_hard_drivin_sound_mister;
   integer      io_write_count;
   integer      sound_rom_commit_count;
   integer      sound_rom_wait_cycles;
+  integer      dac_commit_count;
   logic        sound_rom_request_seen;
 
   hard_drivin_sound_mister dut (
@@ -107,7 +112,7 @@ module tb_hard_drivin_sound_mister;
     .io_write_data_o               (io_write_data),
     .io_commit_o                   (io_commit),
     .io_read_data_i                (io_read_data),
-    .io_ready_i                    (1'b1),
+    .io_ready_i                    (external_io_ready),
     .port_1_blocked_o              (port_1_blocked),
     .port_1_address_invalid_o      (port_1_address_invalid),
     .sound_address_o               (sound_address),
@@ -121,6 +126,9 @@ module tb_hard_drivin_sound_mister;
     .sound_rom_byte_i              (sound_rom_byte),
     .sound_rom_byte_ready_i        (sound_rom_byte_ready),
     .sound_rom_selection_invalid_o (sound_rom_selection_invalid),
+    .dac_code_o                    (dac_code),
+    .dac_code_valid_o              (dac_code_valid),
+    .dac_commit_o                  (dac_commit),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
     .debug_data_i                  (debug_data),
@@ -173,6 +181,9 @@ module tb_hard_drivin_sound_mister;
   always #5 clk = ~clk;
 
   always_comb begin
+    // Prove that the physical port-0 DAC latch does not inherit downstream
+    // callback backpressure. Other still-external targets remain ready.
+    external_io_ready = !(io_write && (io_port == 3'd0));
     case (io_port)
       3'd0: io_read_data = 16'h6a80;
       3'd1: io_read_data = 16'hdead;
@@ -203,9 +214,20 @@ module tb_hard_drivin_sound_mister;
         end
       end
       if (io_write) begin
+        if ((io_port == 3'd0) && external_io_ready) begin
+          $fatal(1, "DAC commit unexpectedly relied on external readiness");
+        end
         io_write_count <= io_write_count + 1;
         output_ports[io_port] <= io_write_data;
       end
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (initialize) begin
+      dac_commit_count <= 0;
+    end else if (dac_commit) begin
+      dac_commit_count <= dac_commit_count + 1;
     end
   end
 
@@ -424,6 +446,9 @@ module tb_hard_drivin_sound_mister;
             "board smoke completes six physical writes and three reads");
     require(output_ports[0] == 16'hf230,
             "port zero receives the raw primary-backed DAC word");
+    require(dac_code_valid && dac_code == 12'hf23 &&
+            dac_commit_count == 1,
+            "internal DAC latch commits one uncomplemented raw code");
     require(output_ports[3] == 16'h00a5 &&
             output_ports[4] == 16'h0001 &&
             output_ports[5] == 16'h0000 &&
@@ -507,6 +532,34 @@ module tb_hard_drivin_sound_mister;
     tick();
     require(host_ready && host_read_data == 16'h7f83,
             "host reads the unchanged low-address park word after reset");
+
+    // Reload a second focused alias program. TBLW at program address zero is
+    // physically the same /DACL target as OUT PA0 and must not wait on the
+    // deliberately unready external callback or modify program RAM word zero.
+    host_write_word(12'h000, 16'h7e00);  // LACK 0
+    host_write_word(12'h001, 16'h7d11);  // TBLW 0x11 -> address ACC=0
+    host_write_word(12'h002, 16'h7f80);  // repeated NOP
+    host_write_word(12'h003, 16'h7f83);  // conservative park word
+
+    release_and_check_reset();
+    run_until_retired(3);
+    require(io_write_count == 8 && output_ports[0] == 16'h00a5,
+            "address-zero TBLW commits once through the DAC output target");
+    require(dac_commit_count == 2 && dac_code == 12'h00a,
+            "TBLW captures the raw upper twelve bits without callback wait");
+    require(cycle_count == 32'd5,
+            "LACK/TBLW/NOP retains five cycles at the internal DAC target");
+
+    dsp_reset_n = 1'b0;
+    tick();
+    host_program_select_n = 1'b0;
+    host_write = 1'b0;
+    host_address = 12'h000;
+    #1;
+    require(!host_ready, "final host read remains synchronous");
+    tick();
+    require(host_ready && host_read_data == 16'h7e00,
+            "address-zero TBLW leaves its program word unchanged");
 
     $display("PASS tb_hard_drivin_sound_mister");
     $finish;

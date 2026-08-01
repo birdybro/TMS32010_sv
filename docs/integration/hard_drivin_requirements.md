@@ -97,6 +97,9 @@ routes physical I/O readiness back to a low-address TBLW, and exports one
 phase-3 commit pulse for both ordinary I/O and that alias. Its RTL test executes
 the project-authored smoke program after host loading, then executes a focused
 low-TBLW program and reads the unchanged target RAM word back through the host.
+A second focused sequence proves address-zero TBLW uses the internal DAC
+target's always-ready contract, captures data word `0x00a5` as raw code `0x00a`,
+retains the documented five-cycle total, and leaves program word zero unchanged.
 See `docs/integration/hard_drivin_mister_wrapper.md` for the interface contract.
 **Confidence: VERIFIED_SIMULATION; not a 68000 or peripheral implementation.**
 
@@ -255,6 +258,22 @@ disagreement is `SC-019`/`OQ-020`. A board adapter may expose raw
 an ECO, another board revision, original firmware trace, or hardware
 measurement resolves the coding.
 
+`rtl/wrappers/hard_drivin_sound_dac_latch.sv` now implements only that safe
+digital boundary. A committed port-0 write captures `io_write_data[15:4]`,
+sets explicit validity, and emits one same-clock `dac_commit_o` pulse. It has
+no processor-reset input because the drawn LS374 path has no clear; only
+FPGA-specific `initialize_i` resets its validity. The standalone test exhausts
+all 65,536 input words, proves every low-nibble alias, isolates ports 1-7 and
+input-side commits, and checks retention without a commit. Yosys reports
+14 cells, two retained checks, and no memory/latch or structural problem.
+
+`hard_drivin_sound_mister` acknowledges the physical port-0 output latch
+without using external callback readiness and exposes the uncomplemented raw
+code to downstream audio logic. The integrated smoke commits `0xf230` once as
+`0xf23`; it does not emit MAME's `0x723`. This is VERIFIED_SIMULATION for the
+primary-backed digital latch only, not the analog voltage, sample encoding, or
+sound reproduction.
+
 ## Reset, BIO, and interrupt
 
 The board supplies `/320RES` to DSP pin 4. MAME starts the DSP halted and
@@ -322,8 +341,9 @@ the skipped sentinel address, all RAM/output results, and a 22-cycle total.
 
 The fixture separately records the primary-backed physical DAC input code,
 the pinned MAME adapter's different derived DAC value, and sound-ROM
-bank/address fields. It does not implement either DAC interpretation in the
-processor model or use MAME to promote hardware facts. In particular, port 2
+bank/address fields. The processor model records the raw output word, and the
+board RTL now captures only the primary-backed raw DAC code; neither interprets
+it as audio or uses MAME to promote hardware facts. In particular, port 2
 remains PROVISIONAL because the pinned handler returns zero without modeling
 the compare circuit. This is **VERIFIED_SIMULATION for the project-local
 model/tool workflow, CORROBORATED for the MAME-facing port roles, and not a

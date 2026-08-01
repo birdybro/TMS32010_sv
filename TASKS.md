@@ -1285,10 +1285,11 @@ objective passing evidence.
   one synchronous-read, single-write-port abstract memory with 85 total cells
   and zero structural problems. A sixth pre-technology script checks the
   standalone storage-free sample-ROM adapter as 18 abstract cells with three
-  checks and zero structural problems. A seventh pre-technology script checks
-  the partial processor/program/communication/sample-ROM board top as 2,290
-  abstract cells, 137 checks, and three retained memories with zero structural
-  problems. An eighth
+  checks and zero structural problems. A seventh script checks the raw DAC
+  latch as 14 cells/two checks with no memory, latch, or structural problem. An
+  eighth pre-technology script checks the partial processor/program/
+  communication/sample-ROM/DAC board top as 2,309 abstract cells, 140 checks,
+  and three retained memories with zero structural problems. A ninth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. This is not a
@@ -1344,7 +1345,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_mister.sv`,
   `sim/bus/tb_hard_drivin_sound_communication_path.sv`,
-  `sim/bus/tb_hard_drivin_sound_rom_path.sv`
+  `sim/bus/tb_hard_drivin_sound_rom_path.sv`,
+  `sim/bus/tb_hard_drivin_sound_dac_latch.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1366,7 +1368,12 @@ objective passing evidence.
   the fixed ROM-free smoke and a synthetic communication word,
   performs the safe reset handoff, verifies its 12 retirements/22 cycles and
   nine physical I/O transfers, then reloads a focused low-TBLW sequence and
-  proves one I/O commit with unchanged RAM word 3.
+  proves one I/O commit with unchanged RAM word 3. A second five-cycle
+  `LACK 0; TBLW 0x11; NOP` sequence deliberately holds external port-0
+  readiness low, captures internal data `0x00a5` once as raw DAC code `0x00a`,
+  and proves by host readback that program word zero remains `0x7e00`. This
+  regression exposed and fixed board-top logical readiness incorrectly using
+  the external callback instead of the selected internal DAC target.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
@@ -1408,9 +1415,15 @@ objective passing evidence.
   port 0 internally, ignores the external unsigned-MAME sentinel, holds
   block 3/address `0x3457` through three unready clocks, commits synthetic byte
   `0xd5` exactly once as `0xea80`, and advances the shared counter only on that
-  commit. Integrated Yosys reports 2,290 abstract cells/137 checks and retains
-  the same three memories. Host latch/68000 bus adaptation, authorized sample
-  storage, compare/DAC/control peripherals, and physical timing remain
+  commit. The raw DAC adapter exhausts all 65,536 input words and captures only
+  `data[15:4]`; the board top acknowledges port-0 output independently of the
+  external callback and commits smoke word `0xf230` once as uncomplemented code
+  `0xf23`, never MAME's `0x723`. Address-zero TBLW is separately executed under
+  forced external backpressure and captures raw code `0x00a` without changing
+  shared program word zero. Standalone Yosys reports 14 cells/two checks;
+  integrated Yosys reports 2,309 abstract cells/140 checks and retains the same
+  three memories. Host latch/68000 bus adaptation, authorized sample storage,
+  compare/DAC-analog/control peripherals, and physical timing remain
   acceptance work.
 
 ## Milestone 22 — Release qualification

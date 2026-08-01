@@ -102,6 +102,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "There is no inverter",
             "`data[15:4]`",
             "`SC-019`/`OQ-020`",
+            "hard_drivin_sound_dac_latch.sv",
+            "all 65,536 input words",
+            "does not emit MAME's `0x723`",
+            "14 cells, two retained checks",
         ):
             self.assertIn(required, integration)
         self.assertIn(
@@ -161,7 +165,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "A TBLW to address 0–7 arrives as `io_write_o`",
             "No Atari ROM data is used",
             "`0x3456` to `0x3459`",
-            "2,290",
+            "2,309",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)

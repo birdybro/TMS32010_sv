@@ -41,11 +41,12 @@ are exhaustive-tested and synthesizable. They remain usable independently of
 the partial processor/RAM top and are not a 68000 bus bridge or complete
 sound-board wrapper.
 A partial board top now connects the processor, native decoder, shared program
-RAM, communication path, and a storage-free parallel sample-ROM callback.
+RAM, communication path, a storage-free parallel sample-ROM callback, and the
+raw twelve-bit DAC latch.
 It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
-bridge/latch decode, actual sample storage, BIO generator, and audio/control
-peripherals remain absent.
+bridge/latch decode, actual sample storage, BIO generator, analog audio path,
+and remaining control peripherals remain absent.
 A separate synthesizable communication-path adapter now implements the
 primary-transcribed 512-by-16, CRAMEN-selected host/DSP storage relationship,
 read-only DSP port-1 access, shared 16-bit sound-address counter, port-7 load,
@@ -67,6 +68,10 @@ adapter now routes port 0 to an authorized byte callback only for explicitly
 present blocks and stalls/reports invalid otherwise. Exhaustive standalone and
 integrated tests prove the exact mapping without embedding ROM content;
 unpopulated-block electrical values remain unknown under `OQ-026`.
+The same top now captures every committed port-0 output as the uncomplemented
+`data[15:4]` DAC code and exposes an exact-once pulse. This implements only the
+primary digital latch boundary; analog conversion and MAME's disputed bit-11
+XOR remain outside RTL under `SC-019`/`OQ-020`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

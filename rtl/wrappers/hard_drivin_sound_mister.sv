@@ -2,8 +2,8 @@
 
 // Same-clock FPGA integration of the generic MiSTer callback wrapper with the
 // qualified A044427 Rev-A program/communication RAM ownership, parallel
-// sample-ROM callback, and native target decode. Remaining peripherals and the
-// 68000 bus bridge are external.
+// sample-ROM callback, raw DAC latch, and native target decode. Remaining
+// peripherals and the 68000 bus bridge are external.
 module hard_drivin_sound_mister (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -53,6 +53,9 @@ module hard_drivin_sound_mister (
   input  logic [7:0]  sound_rom_byte_i,
   input  logic        sound_rom_byte_ready_i,
   output logic        sound_rom_selection_invalid_o,
+  output logic [11:0] dac_code_o,
+  output logic        dac_code_valid_o,
+  output logic        dac_commit_o,
 
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
@@ -142,7 +145,7 @@ module hard_drivin_sound_mister (
       if (ram_tms_program_write) begin
         logical_program_ready = ram_tms_program_ready;
       end else if (io_write_o) begin
-        logical_program_ready = io_ready_i;
+        logical_program_ready = selected_io_ready;
       end
     end
   end
@@ -160,6 +163,10 @@ module hard_drivin_sound_mister (
     end else if (io_read_o && (io_port_o == 3'd1)) begin
       selected_io_read_data = communication_port_1_read_data;
       selected_io_ready     = communication_port_1_ready;
+    end else if (io_write_o && (io_port_o == 3'd0)) begin
+      // The physical /DACL target is an edge-triggered latch with no wait
+      // input. Downstream audio observes dac_commit_o instead of stalling it.
+      selected_io_ready = 1'b1;
     end
   end
 
@@ -251,6 +258,18 @@ module hard_drivin_sound_mister (
     .sound_rom_selection_invalid_o (sound_rom_selection_invalid_o)
   );
 
+  hard_drivin_sound_dac_latch dac_latch (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .io_port_i                     (io_port_o),
+    .io_write_i                    (io_write_o),
+    .io_write_data_i               (io_write_data_o),
+    .io_commit_i                   (io_commit_o),
+    .dac_code_o                    (dac_code_o),
+    .dac_code_valid_o              (dac_code_valid_o),
+    .dac_commit_o                  (dac_commit_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
@@ -340,6 +359,9 @@ module hard_drivin_sound_mister (
         assert (selected_io_ready == sound_rom_port_0_ready);
         assert (selected_io_read_data == sound_rom_port_0_read_data);
         assert (!io_commit_o || sound_rom_request_o);
+      end
+      if (io_write_o && (io_port_o == 3'd0)) begin
+        assert (selected_io_ready);
       end
     end
   end

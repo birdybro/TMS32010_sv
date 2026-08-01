@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' integrated parallel sample-ROM callback
+- **Current milestone:** Hard Drivin' integrated raw DAC latch
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 118 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 30 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 31 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -50,9 +50,11 @@
   85-cell hierarchy with five checks and zero structural problems.
   A sixth standalone target checks the storage-free parallel sample-ROM
   adapter at 18 abstract cells/three checks with no latch or structural
-  problem. The partial processor/program/communication/sample-ROM board top
-  retains all three memories and passes at 2,290 abstract cells/137 checks
-  with zero structural problems before technology mapping. An eighth target retains the
+  problem. A seventh target checks the raw DAC latch at 14 cells/two checks
+  with no memory, latch, or structural problem. The partial processor/program/
+  communication/sample-ROM/DAC board top retains all three memories and passes
+  at 2,309 abstract cells/140 checks with zero structural problems before
+  technology mapping. A ninth target retains the
   standalone 512-by-16 communication memory as one `$mem_v2` in an 82-cell
   hierarchy with seven checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -470,6 +472,16 @@
   block 3/address `0x3457` across three unready clocks, returns synthetic byte
   `0xd5` as `0xea80`, commits once, and advances only through the shared
   physical I/O pulse. No ROM image is stored or distributed.
+- **New raw-DAC implementation evidence:** the board-only latch exhausts all
+  65,536 input words and proves `TD3:TD0` aliases, port isolation, one-clock
+  commit, persistence, and explicit FPGA validity. The integrated smoke ignores
+  deliberately low external readiness for port-0 output and captures `0xf230`
+  exactly once as uncomplemented `0xf23`; MAME's `0x723` stays outside RTL.
+  A separate five-cycle address-zero TBLW run captures internal word `0x00a5`
+  once as raw code `0x00a` despite that external backpressure, then reads
+  program word zero back unchanged as `0x7e00`. This test exposed and corrected
+  board-top readiness selection for low-address TBLW.
+  Analog voltage and signed-sample interpretation remain `OQ-020`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -494,7 +506,7 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** transcribe and implement the primary-defined raw DAC latch
-  boundary while leaving analog/sample-format interpretation under `OQ-020`.
+- **Next task:** qualify the port-4 mute and port-5 68000-interrupt latch paths
+  before implementing any remaining board control state.
 - **Latest committed baseline before this cycle:**
-  `e0f513c`
+  `c778e92`

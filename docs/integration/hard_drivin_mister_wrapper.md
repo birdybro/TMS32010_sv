@@ -4,7 +4,7 @@
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
-communication-memory and sample-ROM paths.
+communication-memory, sample-ROM, and raw DAC-latch paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
@@ -85,6 +85,21 @@ unmeasured electrical value of those out-of-contract reads.
 This callback is same-clock and storage-free. It does not establish ROM access
 time, contain copyrighted bytes, or permit a ROM image to be committed.
 
+## Raw DAC latch
+
+Processor port-0 writes are acknowledged internally because A044427's `/DACL`
+target is an edge-triggered latch with no wait input. A committed write captures
+only `io_write_data_o[15:4]` into `dac_code_o`, sets `dac_code_valid_o`, and
+pulses `dac_commit_o` for one FPGA clock. The external `io_ready_i` cannot
+delay this target, although the physical I/O request and general commit remain
+visible for tracing.
+
+The latch has no processor-reset input, matching the absence of a clear on the
+drawn LS374 path. `initialize_i` starts its FPGA validity false without claiming
+a physical power-up code. `dac_code_o` is the uncomplemented Am6012 input code;
+the analog transfer, signed PCM interpretation, and pinned MAME bit-11 XOR are
+deliberately absent under `SC-019`/`OQ-020`.
+
 ## Physical I/O callback
 
 `io_port_o`, `io_read_o`, `io_write_o`, `io_write_data_o`, `io_ready_i`, and
@@ -102,10 +117,11 @@ shared address control, so every committed input read—including internal ports
 loads that address and port 6 latches the separate low block nibble.
 
 This physical callback intentionally differs from the generic logical split.
-A TBLW to address 0–7 arrives as `io_write_o`, receives readiness from
-`io_ready_i`, and never acknowledges or writes program RAM. TBLW at address 8
-or above receives readiness from the shared RAM. IN/OUT use the same physical
-callback. This is the A044427 alias documented by `SC-021`.
+A TBLW to address 0–7 arrives as `io_write_o` and never writes program RAM.
+Address 0 receives internal DAC-latch readiness, while addresses 1–7 still
+receive `io_ready_i`; TBLW at address 8 or above receives readiness from the
+shared RAM. IN/OUT use the same physical callback. This is the A044427 alias
+documented by `SC-021`.
 
 The production Rev-A TMS interrupt input is tied internally inactive-high.
 `bio_i` remains an external active-low input because the board-specific divider
@@ -122,7 +138,12 @@ writes, three input reads, the BIOZ branch, final accumulator, and raw DAC word.
 The test then reasserts only processor reset, reloads a LACK/TBLW/NOP program,
 and proves a low-address TBLW commits once through output port 3 while shared
 RAM word 3 retains the unsupported park word. A final host read verifies the
-unchanged word. No Atari ROM data is used.
+unchanged word. It then reloads a second five-cycle sequence targeting address
+zero while the external port-0 callback remains unready. `TBLW` captures
+internal word `0x00a5` once as raw DAC code `0x00a`, and a host readback proves
+program word zero remains the original `LACK 0` opcode `0x7e00`. This directly
+tests that the physical alias uses internal `/DACL` readiness rather than the
+external callback. No Atari ROM data is used.
 
 Before the first execution, the test also uses CRAMEN host ownership to load
 communication word `0x056` with `0x55aa`, releases that ownership, and runs a
@@ -134,9 +155,11 @@ retains populated block nibble `0x3`. A processor-reset/host-read handoff then
 proves the communication word survived execution and reset. Port 0 also
 ignores an external unsigned-MAME sentinel, holds block 3/address `0x3457`
 stable through three unready clocks, maps synthetic byte `0xd5` to `0xea80`,
-and commits once.
+and commits once. The port-0 output ignores a deliberately unready external
+callback, captures raw word `0xf230` once as code `0xf23`, and never emits the
+distinct MAME-derived `0x723` value.
 
-The pre-technology Yosys target retains three memories and reports 2,290
-abstract cells with 137 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,309
+abstract cells with 140 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

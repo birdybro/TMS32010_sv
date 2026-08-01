@@ -87,6 +87,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   reporting, response stalls, and schematic-accurate duplicated-sign mapping.
   The board top now routes processor port 0 internally without embedding or
   accepting any copyrighted image in the repository.
+- A synthesizable raw Driver Sound DAC latch that captures uncomplemented
+  `TD15:TD4` on committed port-0 writes, retains explicit validity, and emits a
+  one-clock downstream commit without modeling analog conversion or promoting
+  MAME's disputed bit-11 XOR into hardware.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -484,6 +488,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Board-top low-address `TBLW` completion now uses the selected physical I/O
+  target's readiness instead of the external callback unconditionally. This
+  prevents address-zero `/DACL` writes from stalling when the external port-0
+  callback is unready and keeps the internal DAC latch and ordinary `OUT PA0`
+  on the same qualified path.
 - Corrected the synthetic Hard Drivin' port-0 response for byte `0xd5` from
   MAME's unsigned `0x6a80` to the physical schematic value `0xea80`, where
   `SD14` drives both `TDI15` and `TDI14`. The fixture now selects populated
@@ -517,6 +526,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Exhaustive raw-DAC coverage across all 65,536 TMS output words, every
+  low-nibble alias, ports 1-7, input-side commits, no-commit retention, and
+  FPGA validity. Yosys reports 14 cells, two checks, no memory/latch, and zero
+  structural problems.
+- Integrated port-0 output readiness independent of the external callback,
+  exactly one `0xf230` to raw `0xf23` capture, and no `0x723` MAME transform.
+  A separate five-cycle `LACK 0; TBLW 0x11; NOP` execution captures internal
+  word `0x00a5` as raw code `0x00a` through the same target while a host
+  readback proves program word zero remains `0x7e00`.
+  The board hierarchy passes Yosys at 2,309 abstract cells/140 checks with its
+  same three memories.
 - Exhaustive standalone sample-ROM coverage across all sixteen block values,
   all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
   response readiness, and non-port-0 isolation. Yosys reports 18 abstract
@@ -524,8 +544,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Integrated port-0 ownership through a three-clock byte-response stall at
   block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
   commit, external-sentinel rejection, and shared-counter advance. The board
-  hierarchy retains three memories and passes Yosys at 2,290 abstract cells
-  with 137 checks and zero structural problems.
+  hierarchy retains three memories and, with the raw DAC latch, passes Yosys
+  at 2,309 abstract cells with 140 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
@@ -547,8 +567,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,290 abstract
-  cells, 137 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,309 abstract
+  cells, 140 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -1019,7 +1039,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 118 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 30
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 31
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -1041,7 +1061,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   unresolved decoded strobe (`OQ-023`–`OQ-025`).
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback and physical-I/O boundary. It lacks the 68000 bridge,
-  actual sample storage, and compare/DAC/mute/IRQ/BIO peripheral implementations;
+  actual sample storage, and compare/DAC-analog/mute/IRQ/BIO implementations;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under
@@ -1056,7 +1076,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   schematic inversion. No inverter is present in the reviewed drawing.
   `SC-019`/`OQ-020` therefore keep the signed PCM conversion and possible
   production ECO/variant difference unresolved; only raw `data[15:4]` is
-  primary-qualified.
+  primary-qualified and implemented. Analog/sample interpretation remains
+  unresolved.
 - All 60 documented instruction mnemonics have model/tool evidence; fifty-six
   also have RTL/differential evidence. CALA, RET, PUSH, and POP remain outside
   RTL/native qualification because their second external cycles are unresolved.
