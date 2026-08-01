@@ -142,6 +142,6 @@ The integrated board regression additionally verifies nominal traffic in
 both directions, exact flag-to-status mapping, both coincident write/read
 conflicts, independent flag invalidity and requalification, raw peripheral
 validity masks, and board-reset flag clear with both word latches retained.
-The complete board hierarchy reports 2,644 abstract cells, 194 retained
+The complete board hierarchy reports 2,737 abstract cells, 216 retained
 checks, three memories, and zero structural problems. It is not a 68000 bus
 or Cyclone V timing qualification.

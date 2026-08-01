@@ -722,9 +722,10 @@ electrical result of an out-of-range access.
 - **Conflict:** the handler names disagree with the physical read-quadrant
   wiring, and both stubs omit populated raw sources plus the selected
   targets' undriven lanes. Their equal zero results conceal the swap.
-- **Current treatment:** future host-read selection follows LS138 `30N`.
+- **Current treatment:** host-read selection follows LS138 `30N`.
   `hard_drivin_sound_320_port_latch` and
-  `hard_drivin_sound_switches` remain distinct masked source adapters; no
+  `hard_drivin_sound_switches` remain distinct masked source adapters, and
+  `hard_drivin_sound_host_read_mux` composes them in the physical order. No
   emulator zero or handler order is promoted into the board wrapper. See
   `OQ-030` and `OQ-032`.
 - **Confidence:** VERIFIED_PRIMARY for the physical decode and lane maps;

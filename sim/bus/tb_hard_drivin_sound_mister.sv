@@ -71,6 +71,17 @@ module tb_hard_drivin_sound_mister;
   logic [15:0] sound_cpu_read_status_data;
   logic [15:0] sound_cpu_read_status_driven_mask;
   logic [15:0] sound_cpu_read_status_valid_mask;
+  logic [3:0]  j3_switch;
+  logic [3:0]  j3_switch_valid;
+  logic [15:0] sound_cpu_switches_data;
+  logic [15:0] sound_cpu_switches_driven_mask;
+  logic [15:0] sound_cpu_switches_valid_mask;
+  logic        sound_cpu_low_read_select_valid;
+  logic [1:0]  sound_cpu_low_read_quadrant;
+  logic [15:0] sound_cpu_low_read_data;
+  logic [15:0] sound_cpu_low_read_driven_mask;
+  logic [15:0] sound_cpu_low_read_valid_mask;
+  logic [3:0]  sound_cpu_low_read_target_select;
   logic [2:0]  io_port;
   logic        io_read;
   logic        io_write;
@@ -220,6 +231,19 @@ module tb_hard_drivin_sound_mister;
     .sound_cpu_read_status_valid_mask_o(
       sound_cpu_read_status_valid_mask
     ),
+    .j3_switch_i                   (j3_switch),
+    .j3_switch_valid_i             (j3_switch_valid),
+    .sound_cpu_switches_data_o     (sound_cpu_switches_data),
+    .sound_cpu_switches_driven_mask_o(
+      sound_cpu_switches_driven_mask
+    ),
+    .sound_cpu_switches_valid_mask_o(sound_cpu_switches_valid_mask),
+    .sound_cpu_low_read_select_valid_i(sound_cpu_low_read_select_valid),
+    .sound_cpu_low_read_quadrant_i (sound_cpu_low_read_quadrant),
+    .sound_cpu_low_read_data_o     (sound_cpu_low_read_data),
+    .sound_cpu_low_read_driven_mask_o(sound_cpu_low_read_driven_mask),
+    .sound_cpu_low_read_valid_mask_o(sound_cpu_low_read_valid_mask),
+    .sound_cpu_low_read_target_select_o(sound_cpu_low_read_target_select),
     .io_port_o                     (io_port),
     .io_read_o                     (io_read),
     .io_write_o                    (io_write),
@@ -599,6 +623,10 @@ module tb_hard_drivin_sound_mister;
     sound_test_valid = 1'b1;
     tirdy_n = 1'b0;
     tirdy_n_valid = 1'b1;
+    j3_switch = 4'b1010;
+    j3_switch_valid = 4'b1111;
+    sound_cpu_low_read_select_valid = 1'b0;
+    sound_cpu_low_read_quadrant = 2'b00;
     sound_rom_present = 12'h008;
     sound_rom_byte = 8'hd5;
     debug_data_write = 1'b0;
@@ -628,6 +656,16 @@ module tb_hard_drivin_sound_mister;
       sound_cpu_read_status_valid_mask == 16'h3000,
       "mailbox power-up remains invalid while raw test/ready lanes are valid"
     );
+    require(
+      sound_cpu_switches_data == 16'ha000 &&
+      sound_cpu_switches_driven_mask == 16'hf000 &&
+      sound_cpu_switches_valid_mask == 16'hf000 &&
+      sound_cpu_low_read_data == 16'h0000 &&
+      sound_cpu_low_read_driven_mask == 16'h0000 &&
+      sound_cpu_low_read_valid_mask == 16'h0000 &&
+      sound_cpu_low_read_target_select == 4'b0000,
+      "raw switches are live while an unqualified mux claims no read target"
+    );
 
     // Opposite-side reads qualify the independent LS74 flags without
     // fabricating LS374 word data or changing the separate board-BIO reset
@@ -648,6 +686,61 @@ module tb_hard_drivin_sound_mister;
     main_mailbox_read_commit = 1'b0;
     tick();
 
+    // This is only combinational LS138 target composition. It proves the
+    // primary Atari order, including the two read names swapped by MAME, but
+    // neither generates /RVAS nor clears MAINFLAG.
+    sound_cpu_low_read_select_valid = 1'b1;
+    sound_cpu_low_read_quadrant = 2'b00;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'h0000 &&
+      sound_cpu_low_read_driven_mask == 16'hffff &&
+      sound_cpu_low_read_valid_mask == 16'h0000 &&
+      sound_cpu_low_read_target_select == 4'b0001,
+      "quadrant 00 selects invalid-startup /SOUNDRD without inventing data"
+    );
+    sound_cpu_low_read_quadrant = 2'b01;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'h0000 &&
+      sound_cpu_low_read_driven_mask == 16'hff00 &&
+      sound_cpu_low_read_valid_mask == 16'h0000 &&
+      sound_cpu_low_read_target_select == 4'b0010,
+      "quadrant 01 follows Atari /320PORT rather than MAME's switch name"
+    );
+    sound_cpu_low_read_quadrant = 2'b10;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'ha000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'hf000 &&
+      sound_cpu_low_read_target_select == 4'b0100,
+      "quadrant 10 follows Atari /SWITCHES rather than MAME's port name"
+    );
+    sound_cpu_low_read_quadrant = 2'b11;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'h2000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'hf000 &&
+      sound_cpu_low_read_target_select == 4'b1000,
+      "quadrant 11 selects the qualified raw status nibble"
+    );
+
+    j3_switch = 4'b1100;
+    j3_switch_valid = 4'b0101;
+    sound_cpu_low_read_quadrant = 2'b10;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'h4000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'h5000,
+      "switch validity remains per lane through board-top composition"
+    );
+    j3_switch = 4'b1010;
+    j3_switch_valid = 4'b1111;
+    sound_cpu_low_read_quadrant = 2'b00;
+
     main_mailbox_write_data = 16'h5aa5;
     main_mailbox_write_commit = 1'b1;
     tick();
@@ -656,8 +749,12 @@ module tb_hard_drivin_sound_mister;
       sound_cpu_mailbox_read_data == 16'h5aa5 &&
       main_flag && main_flag_valid && !main_flag_conflict &&
       sound_cpu_read_status_data == 16'ha000 &&
-      sound_cpu_read_status_valid_mask == 16'hf000,
-      "main whole-word completion sets MAINFLAG and the live status lane"
+      sound_cpu_read_status_valid_mask == 16'hf000 &&
+      sound_cpu_low_read_data == 16'h5aa5 &&
+      sound_cpu_low_read_driven_mask == 16'hffff &&
+      sound_cpu_low_read_valid_mask == 16'hffff &&
+      sound_cpu_low_read_target_select == 4'b0001,
+      "selection exposes /SOUNDRD data but cannot clear the live MAINFLAG"
     );
     main_mailbox_write_commit = 1'b0;
     sound_cpu_mailbox_read_commit = 1'b1;
@@ -695,13 +792,17 @@ module tb_hard_drivin_sound_mister;
     main_mailbox_read_commit = 1'b0;
     tick();
 
+    sound_cpu_low_read_quadrant = 2'b11;
     sound_test_valid = 1'b0;
     tirdy_n_valid = 1'b0;
     #1;
     require(
       sound_cpu_read_status_data == 16'h0000 &&
       sound_cpu_read_status_driven_mask == 16'hf000 &&
-      sound_cpu_read_status_valid_mask == 16'hc000,
+      sound_cpu_read_status_valid_mask == 16'hc000 &&
+      sound_cpu_low_read_data == 16'h0000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'hc000,
       "raw peripheral validity never changes the physical driven-lane mask"
     );
     sound_test_valid = 1'b1;
@@ -813,6 +914,15 @@ module tb_hard_drivin_sound_mister;
       host_320_port_valid_mask == 16'hff00,
       "port three exposes TD7:TD0 on host D15:D8 with explicit lane masks"
     );
+    sound_cpu_low_read_quadrant = 2'b01;
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'ha500 &&
+      sound_cpu_low_read_driven_mask == 16'hff00 &&
+      sound_cpu_low_read_valid_mask == 16'hff00 &&
+      sound_cpu_low_read_target_select == 4'b0010,
+      "integrated quadrant 01 exposes the populated port-3 latch byte"
+    );
     require(output_ports[3] == 16'h00a5 &&
             output_ports[4] == 16'h0001 &&
             output_ports[5] == 16'h0000 &&
@@ -891,6 +1001,13 @@ module tb_hard_drivin_sound_mister;
       host_320_port_read_data == 16'h3000 &&
       host_320_port_valid_mask == 16'hff00,
       "low-address TBLW clocks its low byte through the physical /CPORT path"
+    );
+    #1;
+    require(
+      sound_cpu_low_read_data == 16'h3000 &&
+      sound_cpu_low_read_driven_mask == 16'hff00 &&
+      sound_cpu_low_read_valid_mask == 16'hff00,
+      "selected /320PORT follows the later TBLW capture without stale data"
     );
     require(cycle_count == 32'd5,
             "LACK/TBLW/NOP consumes the documented five cycles");

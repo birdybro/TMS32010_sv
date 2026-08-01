@@ -5,8 +5,8 @@
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
 communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
-board-BIO and host-control paths, plus the two main/sound mailboxes and masked
-raw `/READSTAT` high nibble.
+board-BIO and host-control paths, plus the two main/sound mailboxes, raw
+`/SWITCHES` and `/READSTAT` nibbles, and their masked low-host-read selector.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
@@ -24,7 +24,7 @@ separate from LS259 `80R` and remains the explicit
 `host_irq_clear_commit_i` callback. No `/RVAS` generator, 68000 address
 decoder, byte-lane logic, or DTACK path is implied by this opt-in selection.
 
-## Main/sound mailbox callbacks and `/READSTAT`
+## Main/sound mailbox callbacks and masked host reads
 
 Four independent same-clock completion inputs represent a decoded main-system
 write/read and a decoded local sound-CPU write/read. The two write inputs each
@@ -41,6 +41,15 @@ valid mask are not physical board values. `SC-031`/`OQ-031` retain byte and
 coincident-strobe uncertainty; `SC-032`/`OQ-030` retain MAME constant and
 open-bus differences. These callbacks do not constitute a `/RVAS` decoder,
 DTACK path, or either physical bus.
+
+Raw `{J3-11,J3-9,J3-8,J3-7}` inputs with per-bit validity feed the separate
+`/SWITCHES` mapper. A storage-free selector then composes `/SOUNDRD`,
+`/320PORT`, `/SWITCHES`, and `/READSTAT` from a caller-qualified two-bit
+quadrant in exact Atari LS138 `30N` order. The top exports source data/masks,
+the selected data/masks, and one-hot target visibility. Selection has no side
+effects: `sound_cpu_mailbox_read_commit_i` remains the only callback that
+clears `MAINFLAG`. No `/RVAS`, DTACK, byte-lane, or open-bus behavior is
+inferred from this combinational boundary.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -265,7 +274,12 @@ coincident write/read conflicts, later flag requalification, and board-reset
 flag clear with both data latches preserved. It never supplies byte writes or
 combines the masked status carrier with an open-bus value.
 
-The pre-technology Yosys target retains three memories and reports 2,644
-abstract cells with 194 checks and zero structural problems. This is not a
+The regression also checks an invalid selector, all four live source
+quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
+MAME's handler names, partial connector validity, `/SOUNDRD` selection without
+flag clear, and both later port-latch values through the composed masks.
+
+The pre-technology Yosys target retains three memories and reports 2,737
+abstract cells with 216 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

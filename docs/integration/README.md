@@ -82,9 +82,11 @@ it still does not implement either physical bus.
 and `/READSTAT` mappers. Each exports only `D15:D12` as driven and preserves
 one validity bit per raw source. The switch mapper retains exact
 `J3-11/J3-9/J3-8/J3-7` order without assigning cabinet meanings; the board top
-does not yet connect it. The status mapper is board-top connected to the
-mailbox flags plus explicit raw `SOUND.TEST` and `/TIRDY` inputs. Both leave
-the complete-word open-bus policy to a future host bridge.
+connects it alongside the status mapper, whose flag inputs come from the
+mailboxes and whose other inputs remain raw `SOUND.TEST` and `/TIRDY`. A
+storage-free selector forwards the four low read sources and their masks in
+Atari LS138 order without generating a read cycle or side effect. All paths
+leave the complete-word open-bus policy to a future host bridge.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

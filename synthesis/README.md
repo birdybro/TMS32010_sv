@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs sixteen checked-in scripts. The main synthesis harness targets
+The command runs seventeen checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -89,8 +89,9 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,644 abstract cells, 194 checks, and zero structural problems after
-the opt-in host-control, port-3 latch, mailbox, and raw-status integration.
+reports 2,737 abstract cells, 216 checks, and zero structural problems after
+the opt-in host-control, port-3 latch, mailbox, raw-source, and masked-selector
+integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
@@ -135,6 +136,12 @@ The sixteenth script targets the storage-free
 checks, no storage or latch, and zero structural problems. This qualifies only
 the raw connector-to-high-nibble mapping and masked carrier, not cabinet
 semantics, connector idle levels, undriven low lanes, or a 68000 read cycle.
+
+The seventeenth script targets the storage-free
+`hard_drivin_sound_host_read_mux`. It reports 68 abstract cells, 13 retained
+checks, no storage or latch, and zero structural problems. This qualifies the
+Atari quadrant order and exact mask forwarding only; it is not `/RVAS`, DTACK,
+side-effect, open-bus, or physical cycle evidence.
 
 ## Quartus
 

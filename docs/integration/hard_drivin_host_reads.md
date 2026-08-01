@@ -169,6 +169,33 @@ an internal no-wait target. It still exposes the physical I/O request and
 commit for trace checking. The top does not yet decode a 68000 `/320PORT`
 transaction or combine the masked value with a platform open-bus policy.
 
+## FPGA low-host-read composition
+
+`rtl/wrappers/hard_drivin_sound_host_read_mux.sv` composes the four already
+qualified masked sources in Atari LS138 `30N` order:
+
+| `read_quadrant_i` | `target_select_o` | selected source |
+|---:|---:|---|
+| `00` | `0001` | `/SOUNDRD` complete mailbox word |
+| `01` | `0010` | `/320PORT` partial byte |
+| `10` | `0100` | `/SWITCHES` raw nibble |
+| `11` | `1000` | `/READSTAT` raw nibble |
+
+`read_select_valid_i` means only that an external bridge has qualified one of
+these source selections. When it is false, the output data and masks are all
+zero and no target is claimed. When true, the mux forwards the selected
+source's data, driven mask, and valid mask without widening any physical lane.
+It does not generate `/RVAS`, sample 68000 strobes, produce DTACK, choose an
+open-bus value, or cause any side effect. In particular, selecting
+`/SOUNDRD` does not clear `MAINFLAG`; only the separate completed-read callback
+does so. **Confidence: VERIFIED_PRIMARY for target order and lane maps;
+VERIFIED_SIMULATION for storage-free masked composition.**
+
+`hard_drivin_sound_mister` now instantiates the raw switch mapper and this
+selector alongside the existing mailbox, port latch, and status mapper. It
+exports each source separately plus the composed result and one-hot target.
+This is a board source-selection boundary, not a 68000 cycle implementation.
+
 ## Verification and synthesis
 
 `tb_hard_drivin_sound_320_port_latch` exhausts all 65,536 TMS words, every
@@ -182,7 +209,7 @@ later low-address TBLW captures `0x30` from word `0xf230` and exposes
 `0x3000`, exactly once, without modifying program RAM. This verifies the
 same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
 Standalone Yosys reports 19 abstract cells and five retained checks; the
-integrated board hierarchy reports 2,644 cells, 194 checks, three memories,
+integrated board hierarchy reports 2,737 cells, 216 checks, three memories,
 and zero structural problems. Neither result is a Cyclone V fit.
 
 `tb_hard_drivin_sound_read_status` exhausts all sixteen raw source nibbles
@@ -203,5 +230,14 @@ nibbles against all sixteen connector-validity masks. It checks the exact
 `J3-11/J3-9/J3-8/J3-7` lane order, non-inverting values, constant driven mask,
 per-lane validity, invalid-source clamping, and low-lane filler separation.
 Standalone Yosys reports 10 abstract cells, six retained checks, no storage or
-latch, and zero structural problems. The mapper is not yet connected to the
-board top and proves neither connector semantics nor a 68000 read cycle.
+latch, and zero structural problems. The board top now connects it to the
+masked selector but proves neither connector semantics nor a 68000 read cycle.
+
+`tb_hard_drivin_sound_host_read_mux` checks invalid-selection suppression,
+exact Atari quadrant/one-hot order, distinct source masks, and every physically
+driven lane of all four targets. Standalone Yosys reports 68 abstract cells,
+13 retained checks, no storage or latch, and zero structural problems. The
+integrated board regression separately proves the same order with live source
+state, including MAME's swapped quadrant names, source validity propagation,
+selection without mailbox flag clear, and both observed `/320PORT` latch
+updates.

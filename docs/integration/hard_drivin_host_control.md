@@ -38,8 +38,9 @@ separate latch-write and IRQ-clear handlers. Its writes and the endpoint read
 quadrants agree, but its named `/SWITCHES` and `/320PORT` read handlers are
 attached to `0xff1000` and `0xff2000` respectively, opposite LS138 `30N`'s
 physical `01` and `10` read outputs. Both emulator handlers return zero, so
-the difference is normally invisible; `SC-033` records it before a functional
-host-read selector is added [mame-harddriv-audio-030fefc,
+the difference is normally invisible; `SC-033` prevents a functional
+host-read selector from relying on the wrong order
+[mame-harddriv-audio-030fefc,
 `driversnd_68k_map`, `hdsnd68k_latches_w`, `hdsnd68k_switches_r`,
 `hdsnd68k_320port_r`, and `hdsnd68k_irqclr_w`]. This is not host pin-timing
 evidence.

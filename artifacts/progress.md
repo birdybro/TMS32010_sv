@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' raw `/SWITCHES` boundary qualification
+- **Current milestone:** Hard Drivin' masked low-host-read composition
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 38 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 39 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains all three memories and passes at 2,644 abstract cells/194 checks
+  board top retains all three memories and passes at 2,737 abstract cells/216 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -75,6 +75,9 @@
   structural problems.
   A sixteenth target checks the storage-free raw `/SWITCHES` mapper at 10
   combinational cells, six retained checks, no storage/latch, and zero
+  structural problems.
+  A seventeenth target checks the storage-free masked low-host-read selector
+  at 68 abstract cells, 13 retained checks, no storage/latch, and zero
   structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
@@ -598,7 +601,7 @@
   `/TIRDY` inputs. The integrated regression verifies both nominal directions,
   both coincident conflicts, exact status data/masks, later requalification,
   external-source invalidity, and board-reset flag clear with data retention.
-  Pre-technology board synthesis retains three memories at 2,644 cells/194
+  Pre-technology board synthesis retains three memories at 2,737 cells/216
   checks with zero structural problems. No byte policy, `/RVAS`, DTACK,
   physical collision priority, or open-bus value is inferred.
 - **New `/SWITCHES` evidence:** A044427 sheet 3 and TI's LS244 function table
@@ -613,6 +616,18 @@
   conflict, and `OQ-032` retains connector semantics. The complete
   125/231/38/38/5/10 regression split, strict lint, all sixteen Yosys targets,
   all 30 hashes, and all 24 formal tasks pass at this checkpoint.
+- **New masked-read evidence:** `hard_drivin_sound_host_read_mux` selects
+  `/SOUNDRD`, `/320PORT`, `/SWITCHES`, and `/READSTAT` in A044427 LS138
+  `30N` order and forwards each source's exact data/driven/valid masks. Its
+  standalone regression checks invalid selection, every driven lane, distinct
+  source masks, and exact one-hot state; Yosys reports 68 cells/13 checks.
+  The board top now composes live sources and verifies the Atari order that
+  conflicts with MAME's handler names, switch validity, `/SOUNDRD` selection
+  without flag clear, and both `/320PORT` captures. Integrated synthesis
+  retains three memories at 2,737 cells/216 checks. No `/RVAS`, DTACK,
+  completed-read, byte, or open-bus behavior is inferred. The complete
+  125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
+  targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -640,8 +655,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** compose a storage-free masked low-host-read target selector
-  using Atari LS138 `30N` order, while retaining each source's driven/valid
-  masks and leaving `/RVAS`, DTACK, byte lanes, and open-bus policy external.
+- **Next task:** qualify the A044427 68000 `/RVAS` and DTACK read-cycle
+  boundary before adding any transaction wrapper; preserve masked sources and
+  keep electrical timing distinct from same-clock FPGA completion policy.
 - **Latest committed baseline before this cycle:**
-  `27d35df`
+  `9db238a`

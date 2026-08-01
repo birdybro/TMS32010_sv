@@ -460,8 +460,12 @@ driven mask `0xf000`, and preserves one validity bit per connector source.
 It assigns no cabinet meanings or idle levels under `OQ-032`, and its low
 twelve zero carrier bits remain outside both masks under `OQ-030`. Pinned
 MAME's swapped `/320PORT`/`/SWITCHES` handler names and equal zero stubs are
-`SC-033`, not board decode evidence. The mapper is not yet board-top
-connected; future selection follows Atari LS138 `30N`.
+`SC-033`, not board decode evidence. The board top connects this source to
+`hard_drivin_sound_host_read_mux`, which forwards all four low-read sources in
+Atari LS138 `30N` order with their exact driven/valid masks. Its qualified
+selection input is not `/RVAS`, DTACK, or a read completion; `/SOUNDRD` flag
+clear remains a separate callback. Do not add an open-bus value or side effect
+to this storage-free composition.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

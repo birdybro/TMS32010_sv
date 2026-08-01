@@ -1290,8 +1290,8 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control/BIO/host-control/port-3-latch/mailbox/status board top as
-  2,644 abstract cells, 194 checks, and three retained memories with zero
+  output-control/BIO/host-control/port-3-latch/mailbox/masked-read board top as
+  2,737 abstract cells, 216 checks, and three retained memories with zero
   structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
@@ -1303,7 +1303,8 @@ objective passing evidence.
   cells/five checks. A fourteenth script checks both whole-word mailboxes and
   LS74 flags as 259 cells/ten checks. A fifteenth script checks the
   storage-free `/READSTAT` mapper as 23 cells/eight checks. A sixteenth checks
-  the storage-free raw `/SWITCHES` mapper as 10 cells/six checks. All five have
+  the storage-free raw `/SWITCHES` mapper as 10 cells/six checks. A seventeenth
+  checks the masked low-host-read selector as 68 cells/13 checks. All six have
   no memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
@@ -1372,7 +1373,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`,
   `sim/bus/tb_hard_drivin_sound_mailboxes.sv`,
   `sim/bus/tb_hard_drivin_sound_read_status.sv`,
-  `sim/bus/tb_hard_drivin_sound_switches.sv`
+  `sim/bus/tb_hard_drivin_sound_switches.sv`,
+  `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1480,7 +1482,7 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,644 abstract cells/194 checks and retains the same three memories.
+  reports 2,737 abstract cells/216 checks and retains the same three memories.
   Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
@@ -1522,9 +1524,9 @@ objective passing evidence.
   MAME's fixed test/ready/low-lane values remain `SC-032`. The board top now
   drives its flag lanes from the mailboxes, retains raw external test/ready
   inputs, and passes exact data/mask checks through all integrated transitions.
-  Pre-technology board synthesis reports 2,644 cells/194 checks/three
-  memories. The complete 125/231/38/38/5/10 regression
-  split, strict lint, all sixteen Yosys targets, all 30 pinned reference
+  Pre-technology board synthesis reports 2,737 cells/216 checks/three
+  memories. The complete 125/231/38/39/5/10 regression
+  split, strict lint, all seventeen Yosys targets, all 30 pinned reference
   hashes, and all 24 tasks from twelve formal configurations pass at this
   checkpoint.
   A044427 sheet 3 plus TI's LS244 function table now establish the exact raw
@@ -1534,10 +1536,15 @@ objective passing evidence.
   `0xf000`, and assigns no cabinet meaning or idle state under `OQ-032`.
   Standalone Yosys reports 10 cells/six checks. Cross-checking pinned MAME
   exposed its swapped `/SWITCHES`/`/320PORT` handler names and two zero stubs;
-  `SC-033` requires a future selector to follow Atari LS138 `30N`. Board-top
-  and complete 68000-read integration remain separate. The full
-  125/231/38/38/5/10 regression split, strict lint, all sixteen Yosys targets,
-  all 30 hashes, and all 24 formal tasks pass at this checkpoint.
+  `SC-033` requires Atari LS138 `30N` order. The board top now connects this
+  source and composes all four low reads behind a qualified combinational
+  selector while keeping `/SOUNDRD` clear as a separate completion callback.
+  The standalone mux checks invalid selection, exact one-hot order, distinct
+  masks, and every driven lane; Yosys reports 68 cells/13 checks. Integrated
+  tests use live source state and prove selection has no side effect. Complete
+  `/RVAS`/DTACK/open-bus integration remains separate. The full
+  125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
+  targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
 
 ## Milestone 22 — Release qualification
 

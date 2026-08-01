@@ -20,6 +20,8 @@ read_verilog -sv rtl/wrappers/hard_drivin_sound_bio_generator.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_host_control.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_mailboxes.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_read_status.sv
+read_verilog -sv rtl/wrappers/hard_drivin_sound_switches.sv
+read_verilog -sv rtl/wrappers/hard_drivin_sound_host_read_mux.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_mister.sv
 
 hierarchy -check -top hard_drivin_sound_mister

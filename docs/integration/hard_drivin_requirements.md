@@ -71,7 +71,14 @@ mask `0xf000`, and independent raw-input validity. All 256 value/validity
 combinations pass; Yosys reports 10 cells and six retained checks. No
 connector function or idle level is assigned under `OQ-032`. Pinned MAME's
 swapped `/320PORT`/`/SWITCHES` handler names and two zero stubs remain isolated
-as `SC-033`; a future selector must follow Atari LS138 `30N`.
+as `SC-033`; the implemented storage-free selector follows Atari LS138 `30N`.
+
+`hard_drivin_sound_host_read_mux` now composes all four low read sources in
+that primary `00/01/10/11` order while forwarding each source's data, driven
+mask, and valid mask. An invalid selection claims no lanes. The board top
+exposes the composed values and one-hot target but keeps mailbox read-clear as
+a separate completed-read callback. This does not implement `/RVAS`, DTACK,
+byte handling, or open-bus behavior.
 
 The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in

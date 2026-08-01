@@ -166,7 +166,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,644 abstract cells, 194
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,737 abstract cells, 216
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
@@ -219,6 +219,13 @@ with six retained checks, no storage or latch, and zero structural problems.
 This proves only the exhaustive-tested raw connector order, driven mask, and
 per-source validity carrier; it is not cabinet-semantic, electrical-idle,
 open-bus, or completed 68000-read evidence.
+
+The seventeenth checked-in script targets the storage-free
+`hard_drivin_sound_host_read_mux`. Yosys 0.67+111 reports 68 abstract cells
+with 13 retained checks, no storage or latch, and zero structural problems.
+This proves only invalid-selection suppression, physical quadrant order,
+one-hot target visibility, and masked-source forwarding; it is not a 68000
+strobe/DTACK, side-effect, open-bus, or timing implementation.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.

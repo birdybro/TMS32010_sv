@@ -80,6 +80,17 @@ module hard_drivin_sound_mister (
   output logic [15:0] sound_cpu_read_status_data_o,
   output logic [15:0] sound_cpu_read_status_driven_mask_o,
   output logic [15:0] sound_cpu_read_status_valid_mask_o,
+  input  logic [3:0]  j3_switch_i,
+  input  logic [3:0]  j3_switch_valid_i,
+  output logic [15:0] sound_cpu_switches_data_o,
+  output logic [15:0] sound_cpu_switches_driven_mask_o,
+  output logic [15:0] sound_cpu_switches_valid_mask_o,
+  input  logic        sound_cpu_low_read_select_valid_i,
+  input  logic [1:0]  sound_cpu_low_read_quadrant_i,
+  output logic [15:0] sound_cpu_low_read_data_o,
+  output logic [15:0] sound_cpu_low_read_driven_mask_o,
+  output logic [15:0] sound_cpu_low_read_valid_mask_o,
+  output logic [3:0]  sound_cpu_low_read_target_select_o,
 
   output logic [2:0]  io_port_o,
   output logic        io_read_o,
@@ -187,6 +198,8 @@ module hard_drivin_sound_mister (
   logic [15:0] selected_io_read_data;
   logic        selected_io_ready;
   logic        bio_clkout_rise;
+  logic [15:0] sound_cpu_mailbox_read_driven_mask;
+  logic [15:0] sound_cpu_mailbox_read_valid_mask;
 
   assign selected_bio_n_o = use_board_bio_i ? board_bio_n_o : bio_i;
   assign selected_bio_valid_o = !use_board_bio_i || board_bio_valid_o;
@@ -203,6 +216,9 @@ module hard_drivin_sound_mister (
   // CLKOUT is low in modeled phases 0/1 and high in phases 2/3, so an
   // enabled phase-1 advance is its rising sampling boundary.
   assign bio_clkout_rise = phase_advance_o && (phase_o == 2'd1);
+  assign sound_cpu_mailbox_read_driven_mask = 16'hffff;
+  assign sound_cpu_mailbox_read_valid_mask =
+    {16{sound_cpu_mailbox_read_data_valid_o}};
 
   assign native_write_data =
     logical_program_write
@@ -441,6 +457,35 @@ module hard_drivin_sound_mister (
     .host_valid_mask_o             (sound_cpu_read_status_valid_mask_o)
   );
 
+  hard_drivin_sound_switches switches (
+    .j3_switch_i                   (j3_switch_i),
+    .j3_switch_valid_i             (j3_switch_valid_i),
+    .host_read_data_o              (sound_cpu_switches_data_o),
+    .host_driven_mask_o            (sound_cpu_switches_driven_mask_o),
+    .host_valid_mask_o             (sound_cpu_switches_valid_mask_o)
+  );
+
+  hard_drivin_sound_host_read_mux host_read_mux (
+    .read_select_valid_i           (sound_cpu_low_read_select_valid_i),
+    .read_quadrant_i               (sound_cpu_low_read_quadrant_i),
+    .sound_read_data_i             (sound_cpu_mailbox_read_data_o),
+    .sound_read_driven_mask_i      (sound_cpu_mailbox_read_driven_mask),
+    .sound_read_valid_mask_i       (sound_cpu_mailbox_read_valid_mask),
+    .port_320_data_i               (host_320_port_read_data_o),
+    .port_320_driven_mask_i        (host_320_port_driven_mask_o),
+    .port_320_valid_mask_i         (host_320_port_valid_mask_o),
+    .switches_data_i               (sound_cpu_switches_data_o),
+    .switches_driven_mask_i        (sound_cpu_switches_driven_mask_o),
+    .switches_valid_mask_i         (sound_cpu_switches_valid_mask_o),
+    .read_status_data_i            (sound_cpu_read_status_data_o),
+    .read_status_driven_mask_i     (sound_cpu_read_status_driven_mask_o),
+    .read_status_valid_mask_i      (sound_cpu_read_status_valid_mask_o),
+    .host_read_data_o              (sound_cpu_low_read_data_o),
+    .host_driven_mask_o            (sound_cpu_low_read_driven_mask_o),
+    .host_valid_mask_o             (sound_cpu_low_read_valid_mask_o),
+    .target_select_o               (sound_cpu_low_read_target_select_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
@@ -537,6 +582,11 @@ module hard_drivin_sound_mister (
               (main_flag_valid_o && main_flag_o));
       assert (sound_cpu_read_status_data_o[14] ==
               (sound_flag_valid_o && sound_flag_o));
+      assert (sound_cpu_switches_driven_mask_o == 16'hf000);
+      assert (sound_cpu_switches_valid_mask_o ==
+              {j3_switch_valid_i, 12'h000});
+      assert (!sound_cpu_low_read_select_valid_i ||
+              $onehot(sound_cpu_low_read_target_select_o));
       if (!use_board_bio_i) begin
         assert (selected_bio_valid_o);
       end
