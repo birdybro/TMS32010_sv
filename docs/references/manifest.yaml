@@ -632,7 +632,8 @@
       "sections_or_pages_used": [
         "ADDH decode/control around lines 804-820",
         "ALU input, saturation, and flag logic around lines 1760-1898",
-        "PUSH/POP two-microcycle bus and PC control around lines 690-731"
+        "PUSH/POP two-microcycle bus and PC control around lines 690-731",
+        "Bus-controller stop/read pin outputs and CALA/RET two-microcycle control around lines 166-228 and 1401-1461"
       ],
       "status": "acquired",
       "download": {

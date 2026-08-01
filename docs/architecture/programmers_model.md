@@ -200,11 +200,14 @@ printed pp. 3-30 and 3-47 plus data-sheet pp. 17–18
 Program address 0 is the reset entry and address 2 is the interrupt vector.
 Absolute branches carry their 12-bit target in the second program word.
 `CALA` obtains the target from the low 12 accumulator bits and pushes
-opcode-PC+1 before selecting that target. It is one word and two cycles; its
-second external bus cycle remains unresolved under `OQ-007`
+opcode-PC+1 before selecting that target. It is one word and two cycles.
+ADR-0003 permits a future explicit-pipeline discarded-`PC+1` then target
+fetch mapping at `INFERRED` confidence; original-pin confirmation remains
+open under `OQ-007`/`SC-037`
 [ti-tms32010-users-guide-spru001b, §2.6.1 and `CALA`, printed pp. 2-13 and
 3-25 (PDF pp. 37 and 75)]. **Confidence: VERIFIED_PRIMARY for architectural
-effects and cycle total; UNKNOWN for the second external cycle.**
+effects and cycle total; INFERRED for the combined fetch mapping; UNKNOWN for
+physical confirmation.**
 
 Direct `CALL` carries its target in the following program word, pushes
 opcode-PC+2 as the return address, and then loads the target into PC. A full
@@ -217,5 +220,6 @@ the old bottom into the vacated bottom level. It is one word and two cycles
 [ti-tms32010-users-guide-spru001b, §2.6.2 and `RET`, printed pp. 2-14 and
 3-51 (PDF pp. 38 and 101); ti-first-generation-users-guide-1987, `RET`,
 printed p. 4-57 (PDF p. 138)]. **Confidence: VERIFIED_PRIMARY for
-programmer-visible effects and cycle total; its second external bus cycle
-remains `OQ-007`.**
+programmer-visible effects and cycle total. ADR-0003 gives RET the same
+reversible discarded-`PC+1` then old-TOS-target mapping as CALA at `INFERRED`
+confidence; physical confirmation remains `OQ-007`/`SC-037`.**

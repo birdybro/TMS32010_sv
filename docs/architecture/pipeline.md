@@ -149,8 +149,10 @@ but exact pipeline ownership remains to be resolved except for sequential
 one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
 accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 
-- CALA and RET have model-qualified state/cycle behavior but externally
-  unresolved second cycles. For model-qualified `PUSH`/`POP`, TI's general
+- CALA and RET have model-qualified state/cycle behavior. ADR-0003 permits a
+  future explicit `INFERRED` discarded-`PC+1` then selected-target mapping;
+  physical confirmation and target-repeat remain open under `OQ-007` and
+  `SC-037`. For model-qualified `PUSH`/`POP`, TI's general
   pin rule requires `MEN` on both non-I/O execution cycles and its
   architecture prose says PC always addresses program memory, but no located
   waveform identifies address progression or fetched-word validity. The

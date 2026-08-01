@@ -393,10 +393,15 @@ target, and fixed two-cycle total
 [mame-tms320c1x-core-030fefc, `cala()` and `s_opcode_7F`, lines 501–505 and
 849]. **Confidence: CORROBORATED for functional behavior and total.**
 
-The instruction pages do not identify CALA's external address or `MEN`
-behavior in the second cycle. RTL/native and differential support therefore
-remain deferred under `OQ-007`; no sequential prefetch or idle phase is
-invented. **Confidence: UNKNOWN for the second external cycle.**
+The instruction pages do not provide a dedicated CALA pin waveform. TI's
+general pipeline, PC-addressing, every-cycle `/MEN`, and analogous TBL
+redirect constraints nevertheless support a reversible implementation
+hypothesis: discard `opcode-PC+1` in execution cycle 1, then fetch the
+ACC-selected target in cycle 2. ADR-0003 permits future RTL to use only that
+explicitly `INFERRED` mapping; target-repeat remains possible, and IKA's idle
+first interval conflicts with the primary `/MEN` rule under `SC-037`.
+**Confidence: INFERRED for the combined mapping; UNKNOWN for physical
+confirmation.**
 
 ## Qualified `RET` architectural/model slice
 
@@ -428,13 +433,14 @@ only; MAME does not expose the second pin-level program cycle
 [mame-tms320c1x-core-030fefc, `POP_STACK()`/`ret()` and `s_opcode_7F`,
 lines 222–228, 676–679, and 849]. **Confidence: CORROBORATED.**
 
-The instruction pages do not identify the external address or `MEN` behavior
-of RET's second cycle. A discarded sequential prefetch follows naturally
-from TI's general pipeline description, but is only a hypothesis, not an
-instruction-specific timing statement. The RTL and native phase wrapper
-therefore still reject RET, and the model reports only the known opcode fetch
-while counting both documented cycles. `OQ-007` remains open for that
-external sequence. **Confidence: UNKNOWN for the second external cycle.**
+The instruction pages do not provide a dedicated RET pin waveform. ADR-0003
+permits future explicit-pipeline RTL to map execution cycle 1 to a discarded
+`opcode-PC+1` read and cycle 2 to the old-stack-top target fetch, based on the
+same general TI constraints as CALA. The model still reports only the known
+opcode fetch until that RTL/differential increment exists. The mapping is a
+reversible hypothesis under `OQ-007`/`SC-037`, not original-pin proof.
+**Confidence: INFERRED for the combined mapping; UNKNOWN for physical
+confirmation.**
 
 ## Qualified `IN`/`OUT` I/O slice
 

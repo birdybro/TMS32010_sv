@@ -34,6 +34,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   instruction, and timing research baselines.
 - Source-precedence ADR, ambiguity/conflict registers, and an initial
   schematic-led Hard Drivin' Driver Sound Board inventory.
+- A provisional computed-control prefetch ADR that constrains CALA/RET RTL to
+  an explicitly `INFERRED` discarded-`PC+1` read followed by selected-target
+  fetch. It preserves the original every-cycle `/MEN` rule, the conflicting
+  IKA idle-first sequence, and target-repeat as separate hypotheses; physical
+  original-part confirmation remains open.
 - A reproducible original-NMOS PUSH/POP pin-trace experiment, including a
   deterministic synthetic assembly image, stable opcode regression, competing
   bus hypotheses, required analyzer signals, artifact provenance, and explicit

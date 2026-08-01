@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** MAME instruction-boundary differential adapter
+- **Current milestone:** CALA/RET computed-control cycle research
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -914,8 +914,8 @@
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
   MPY/MPYK interrupt extension; physical interrupt setup/synchronizer
-  behavior, CALA/RET
-  second external cycles and native/RTL resumption, unsupported
+  behavior, physical confirmation of the inferred CALA/RET discarded-`PC+1`
+  then target sequence and native/RTL implementation, unsupported
   CALA/RET/PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, LST next-ARP precedence,
@@ -945,8 +945,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** return to the highest-priority original-TMS32010 pipeline
-  backlog and qualify the remaining unsupported instruction ownership/timing
-  boundary before extending the partial sequential core.
+- **Next task:** implement CALA/RET decode, retirement-only stack/PC effects,
+  and explicit discarded-`PC+1`/target ownership under provisional ADR-0003,
+  with stalls, nonexecution, interrupt-boundary, and differential tests.
 - **Latest committed baseline before this cycle:**
-  `d59986a`
+  `4117efd`

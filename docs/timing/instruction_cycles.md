@@ -53,10 +53,14 @@ constraint; UNKNOWN for address and fetched-word ownership.**
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
 opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model tests assert
 that total and state transition while reporting only the known opcode fetch.
-No native second-cycle program activity is claimed under `OQ-007`
+ADR-0003 permits a future explicit-pipeline mapping of discarded `PC+1` then
+selected-target read, derived from TI's general pipeline, PC-addressing,
+every-cycle `/MEN`, and analogous TBL redirect facts. That combined mapping
+remains `INFERRED` under `OQ-007`/`SC-037`
 [ti-tms32010-users-guide-spru001b, `CALA`, printed p. 3-25 (PDF p. 75)].
 **Confidence: VERIFIED_PRIMARY for the numeric cycle count and state effects;
-UNKNOWN for the second-cycle external subphases.**
+INFERRED for the combined address/fetch sequence; UNKNOWN for physical
+confirmation.**
 
 ## Qualified timing tests
 

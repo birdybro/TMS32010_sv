@@ -829,3 +829,32 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the physical address/control decode;
   CORROBORATED for software use of the canonical word; UNKNOWN for whether
   shipped firmware ever accesses an alias.
+
+## SC-037 — CALA/RET every-cycle MEN versus secondary idle interval
+
+- **Primary constraints:** SPRU001B defines `CALA` and `RET` as one-word,
+  two-cycle instructions. Program memory is PC-addressed, Figure 2-2 requires
+  overlapped prefetch, and Table 2-4 says `/MEN` is active on every machine
+  cycle except a `WE` or `DEN` interval. Neither instruction uses those
+  exception strobes. Figure 2-10 independently demonstrates a discarded
+  sequential fetch before a one-word multicycle program redirect
+  [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.4.2, 2.8.2, Table 2-4,
+  and `CALA`/`RET`, printed pp. 2-3, 2-10, 2-17, 2-21, 3-25, and 3-51
+  (PDF pp. 27, 34, 41, 45, 75, and 101)].
+- **Independent implementation:** pinned IKA32010 performs stack/PC mutation
+  with `BUSCTRL_STOP` in its first CALA/RET microcycle, then requests an
+  opcode read at the selected target in its second. Its bus controller holds
+  `/MEN`, `/DEN`, and `/WE` inactive throughout `BUSCTRL_STOP`
+  [ika32010-rtl-51bc1f0, `IKA32010.sv`, lines 166-228 and 1401-1461].
+- **Conflict:** the idle interval is not compatible with the original TI
+  every-cycle `/MEN` rule. The primary sources still do not state whether
+  cycle 1 reads/discards `PC+1` or repeats the already selected target.
+- **Current treatment:** ADR-0003 chooses `PC+1` discard followed by selected
+  target fetch as an `INFERRED`, reversible implementation mapping. It is
+  analogous to the primary TBL redirect and preserves explicit
+  fetch/execute validity. No physical timing claim is made. MAME's functional
+  handlers and fixed totals cannot arbitrate because its instruction hook
+  exposes no bus subcycles.
+- **Confidence:** VERIFIED_PRIMARY for the state transform, two-cycle total,
+  and active `/MEN` in both intervals; INFERRED for `PC+1` then target address
+  ownership; UNKNOWN for original-silicon confirmation.
