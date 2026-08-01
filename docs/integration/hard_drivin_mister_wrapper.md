@@ -5,7 +5,8 @@
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
 communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
-board-BIO and host-control paths.
+board-BIO and host-control paths, plus the two main/sound mailboxes and masked
+raw `/READSTAT` high nibble.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
@@ -22,6 +23,24 @@ validity of both selected controls remain visible. `/IRQCLR` is electrically
 separate from LS259 `80R` and remains the explicit
 `host_irq_clear_commit_i` callback. No `/RVAS` generator, 68000 address
 decoder, byte-lane logic, or DTACK path is implied by this opt-in selection.
+
+## Main/sound mailbox callbacks and `/READSTAT`
+
+Four independent same-clock completion inputs represent a decoded main-system
+write/read and a decoded local sound-CPU write/read. The two write inputs each
+carry one complete 16-bit word. The top exports both retained words, both data
+validity bits, `MAINFLAG`/`SOUNDFLAG` with independent validity, and both
+coincidence-conflict outputs. A read completion clears only the matching
+pending flag; board reset clears the flags but never the word latches.
+
+The flag outputs feed the storage-free `/READSTAT` mapper. External raw
+`SOUND.TEST` and `/TIRDY` inputs supply bits 13 and 12 with their own validity,
+while the integrated mapper exports data, driven mask `0xf000`, and per-lane
+valid mask. No callback contains a byte mask, and zero carrier bits outside a
+valid mask are not physical board values. `SC-031`/`OQ-031` retain byte and
+coincident-strobe uncertainty; `SC-032`/`OQ-030` retain MAME constant and
+open-bus differences. These callbacks do not constitute a `/RVAS` decoder,
+DTACK path, or either physical bus.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -239,7 +258,14 @@ Q4 subsequently disables TMS ownership and reasserts processor reset, after
 which Q3 grants a synchronous host readback of the preserved word `0x1357`.
 This is an end-to-end same-clock callback test, not a physical 68000 bus test.
 
-The pre-technology Yosys target retains three memories and reports 2,495
-abstract cells with 171 checks and zero structural problems. This is not a
+Before loading the processor program, the same regression exercises both
+mailbox directions. It checks exact retained words, nominal flag set/read
+clear, flag-to-status mapping, independent raw peripheral validity, both
+coincident write/read conflicts, later flag requalification, and board-reset
+flag clear with both data latches preserved. It never supplies byte writes or
+combines the masked status carrier with an open-bus value.
+
+The pre-technology Yosys target retains three memories and reports 2,644
+abstract cells with 194 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

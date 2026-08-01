@@ -37,6 +37,8 @@ class HardDrivinSoundMisterTests(unittest.TestCase):
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_output_control.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_bio_generator.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_host_control.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_mailboxes.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_read_status.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_mister.sv",
             ROOT / "sim" / "bus" / f"{name}.sv",
         ]

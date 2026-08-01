@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' raw `/READSTAT` boundary qualification
+- **Current milestone:** Hard Drivin' mailbox and `/READSTAT` board integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains all three memories and passes at 2,495 abstract cells/171 checks
+  board top retains all three memories and passes at 2,644 abstract cells/194 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -585,8 +585,19 @@
   The storage-free mapper exhausts all sixteen source nibbles and all sixteen
   source-validity masks, exposes constant driven mask `0xf000`, and never
   promotes deterministic filler into board behavior. Standalone Yosys reports
-  23 cells/eight checks with zero structural problems; board-top and complete
-  68000 read integration remain separate.
+  23 cells/eight checks with zero structural problems. Board-top evidence is
+  recorded separately below; complete 68000 read integration remains absent.
+- **New mailbox/status integration evidence:** `hard_drivin_sound_mister` now
+  exposes distinct decoded-completion callbacks for main-system write/read and
+  local sound-CPU write/read, retains both complete words, and exports every
+  data/flag validity and conflict signal. The mailbox flags directly drive the
+  masked raw `/READSTAT` adapter alongside explicit external `SOUND.TEST` and
+  `/TIRDY` inputs. The integrated regression verifies both nominal directions,
+  both coincident conflicts, exact status data/masks, later requalification,
+  external-source invalidity, and board-reset flag clear with data retention.
+  Pre-technology board synthesis retains three memories at 2,644 cells/194
+  checks with zero structural problems. No byte policy, `/RVAS`, DTACK,
+  physical collision priority, or open-bus value is inferred.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -613,9 +624,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** integrate the qualified main/sound mailboxes and raw
-  `/READSTAT` mapper into the board top behind explicit whole-word callbacks,
-  while retaining validity masks and leaving the complete 68000 bus/open-bus
-  policy outside the adapter.
+- **Next task:** qualify and implement the raw `/SWITCHES` driven-nibble
+  boundary, then compose a masked low-host-read target selector without
+  inventing undriven-lane or 68000 timing behavior.
 - **Latest committed baseline before this cycle:**
-  `eb43fa7`
+  `3ad464c`

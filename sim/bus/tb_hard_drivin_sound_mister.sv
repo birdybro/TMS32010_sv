@@ -48,6 +48,29 @@ module tb_hard_drivin_sound_mister;
   logic        host_communication_access_permitted;
   logic        host_communication_blocked;
   logic        host_irq_clear_commit;
+  logic        main_mailbox_write_commit;
+  logic [15:0] main_mailbox_write_data;
+  logic        sound_cpu_mailbox_read_commit;
+  logic [15:0] sound_cpu_mailbox_read_data;
+  logic        sound_cpu_mailbox_read_data_valid;
+  logic        main_flag;
+  logic        main_flag_valid;
+  logic        main_flag_conflict;
+  logic        sound_cpu_mailbox_write_commit;
+  logic [15:0] sound_cpu_mailbox_write_data;
+  logic        main_mailbox_read_commit;
+  logic [15:0] main_mailbox_read_data;
+  logic        main_mailbox_read_data_valid;
+  logic        sound_flag;
+  logic        sound_flag_valid;
+  logic        sound_flag_conflict;
+  logic        sound_test;
+  logic        sound_test_valid;
+  logic        tirdy_n;
+  logic        tirdy_n_valid;
+  logic [15:0] sound_cpu_read_status_data;
+  logic [15:0] sound_cpu_read_status_driven_mask;
+  logic [15:0] sound_cpu_read_status_valid_mask;
   logic [2:0]  io_port;
   logic        io_read;
   logic        io_write;
@@ -168,6 +191,35 @@ module tb_hard_drivin_sound_mister;
     ),
     .host_communication_blocked_o  (host_communication_blocked),
     .host_irq_clear_commit_i       (host_irq_clear_commit),
+    .main_mailbox_write_commit_i   (main_mailbox_write_commit),
+    .main_mailbox_write_data_i     (main_mailbox_write_data),
+    .sound_cpu_mailbox_read_commit_i(sound_cpu_mailbox_read_commit),
+    .sound_cpu_mailbox_read_data_o (sound_cpu_mailbox_read_data),
+    .sound_cpu_mailbox_read_data_valid_o(
+      sound_cpu_mailbox_read_data_valid
+    ),
+    .main_flag_o                   (main_flag),
+    .main_flag_valid_o             (main_flag_valid),
+    .main_flag_conflict_o          (main_flag_conflict),
+    .sound_cpu_mailbox_write_commit_i(sound_cpu_mailbox_write_commit),
+    .sound_cpu_mailbox_write_data_i(sound_cpu_mailbox_write_data),
+    .main_mailbox_read_commit_i    (main_mailbox_read_commit),
+    .main_mailbox_read_data_o      (main_mailbox_read_data),
+    .main_mailbox_read_data_valid_o(main_mailbox_read_data_valid),
+    .sound_flag_o                  (sound_flag),
+    .sound_flag_valid_o            (sound_flag_valid),
+    .sound_flag_conflict_o         (sound_flag_conflict),
+    .sound_test_i                  (sound_test),
+    .sound_test_valid_i            (sound_test_valid),
+    .tirdy_n_i                     (tirdy_n),
+    .tirdy_n_valid_i               (tirdy_n_valid),
+    .sound_cpu_read_status_data_o  (sound_cpu_read_status_data),
+    .sound_cpu_read_status_driven_mask_o(
+      sound_cpu_read_status_driven_mask
+    ),
+    .sound_cpu_read_status_valid_mask_o(
+      sound_cpu_read_status_valid_mask
+    ),
     .io_port_o                     (io_port),
     .io_read_o                     (io_read),
     .io_write_o                    (io_write),
@@ -537,6 +589,16 @@ module tb_hard_drivin_sound_mister;
     host_communication_address = 9'h000;
     host_communication_write_data = 16'h0000;
     host_irq_clear_commit = 1'b0;
+    main_mailbox_write_commit = 1'b0;
+    main_mailbox_write_data = 16'h0000;
+    sound_cpu_mailbox_read_commit = 1'b0;
+    sound_cpu_mailbox_write_commit = 1'b0;
+    sound_cpu_mailbox_write_data = 16'h0000;
+    main_mailbox_read_commit = 1'b0;
+    sound_test = 1'b1;
+    sound_test_valid = 1'b1;
+    tirdy_n = 1'b0;
+    tirdy_n_valid = 1'b1;
     sound_rom_present = 12'h008;
     sound_rom_byte = 8'hd5;
     debug_data_write = 1'b0;
@@ -556,6 +618,148 @@ module tb_hard_drivin_sound_mister;
       host_320_port_driven_mask == 16'hff00 &&
       host_320_port_valid_mask == 16'h0000,
       "host D15:D8 are the only /320PORT lanes and power-up data is invalid"
+    );
+    require(
+      !sound_cpu_mailbox_read_data_valid &&
+      !main_mailbox_read_data_valid &&
+      !main_flag_valid && !sound_flag_valid &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_driven_mask == 16'hf000 &&
+      sound_cpu_read_status_valid_mask == 16'h3000,
+      "mailbox power-up remains invalid while raw test/ready lanes are valid"
+    );
+
+    // Opposite-side reads qualify the independent LS74 flags without
+    // fabricating LS374 word data or changing the separate board-BIO reset
+    // history used later in this integration test.
+    sound_cpu_mailbox_read_commit = 1'b1;
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    require(
+      !main_flag && main_flag_valid &&
+      !sound_flag && sound_flag_valid &&
+      !sound_cpu_mailbox_read_data_valid &&
+      !main_mailbox_read_data_valid &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_valid_mask == 16'hf000,
+      "read-clear completions qualify both flags without qualifying latch data"
+    );
+    sound_cpu_mailbox_read_commit = 1'b0;
+    main_mailbox_read_commit = 1'b0;
+    tick();
+
+    main_mailbox_write_data = 16'h5aa5;
+    main_mailbox_write_commit = 1'b1;
+    tick();
+    require(
+      sound_cpu_mailbox_read_data_valid &&
+      sound_cpu_mailbox_read_data == 16'h5aa5 &&
+      main_flag && main_flag_valid && !main_flag_conflict &&
+      sound_cpu_read_status_data == 16'ha000 &&
+      sound_cpu_read_status_valid_mask == 16'hf000,
+      "main whole-word completion sets MAINFLAG and the live status lane"
+    );
+    main_mailbox_write_commit = 1'b0;
+    sound_cpu_mailbox_read_commit = 1'b1;
+    tick();
+    require(
+      !main_flag && main_flag_valid &&
+      sound_cpu_mailbox_read_data == 16'h5aa5 &&
+      sound_cpu_mailbox_read_data_valid &&
+      sound_cpu_read_status_data == 16'h2000,
+      "sound-CPU read completion clears MAINFLAG but preserves latch data"
+    );
+    sound_cpu_mailbox_read_commit = 1'b0;
+    tick();
+
+    sound_cpu_mailbox_write_data = 16'ha55a;
+    sound_cpu_mailbox_write_commit = 1'b1;
+    tick();
+    require(
+      main_mailbox_read_data_valid &&
+      main_mailbox_read_data == 16'ha55a &&
+      sound_flag && sound_flag_valid && !sound_flag_conflict &&
+      sound_cpu_read_status_data == 16'h6000,
+      "sound-CPU whole-word completion sets SOUNDFLAG and status bit 14"
+    );
+    sound_cpu_mailbox_write_commit = 1'b0;
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    require(
+      !sound_flag && sound_flag_valid &&
+      main_mailbox_read_data == 16'ha55a &&
+      main_mailbox_read_data_valid &&
+      sound_cpu_read_status_data == 16'h2000,
+      "main read completion clears SOUNDFLAG but preserves latch data"
+    );
+    main_mailbox_read_commit = 1'b0;
+    tick();
+
+    sound_test_valid = 1'b0;
+    tirdy_n_valid = 1'b0;
+    #1;
+    require(
+      sound_cpu_read_status_data == 16'h0000 &&
+      sound_cpu_read_status_driven_mask == 16'hf000 &&
+      sound_cpu_read_status_valid_mask == 16'hc000,
+      "raw peripheral validity never changes the physical driven-lane mask"
+    );
+    sound_test_valid = 1'b1;
+    tirdy_n_valid = 1'b1;
+    #1;
+
+    // The integration must preserve each standalone conflict result rather
+    // than assigning a board-top priority to unrelated bus completions.
+    main_mailbox_write_data = 16'hc33c;
+    main_mailbox_write_commit = 1'b1;
+    sound_cpu_mailbox_read_commit = 1'b1;
+    #1;
+    require(main_flag_conflict,
+            "coincident main write/sound read is reported before capture");
+    tick();
+    require(
+      sound_cpu_mailbox_read_data == 16'hc33c &&
+      sound_cpu_mailbox_read_data_valid &&
+      !main_flag && !main_flag_valid && main_flag_conflict &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_valid_mask == 16'h7000,
+      "main conflict captures data but invalidates only MAINFLAG/status bit 15"
+    );
+    main_mailbox_write_commit = 1'b0;
+    sound_cpu_mailbox_read_commit = 1'b0;
+    tick();
+    sound_cpu_mailbox_read_commit = 1'b1;
+    tick();
+    sound_cpu_mailbox_read_commit = 1'b0;
+    require(!main_flag && main_flag_valid,
+            "later sound read requalifies a cleared MAINFLAG");
+
+    sound_cpu_mailbox_write_data = 16'h3cc3;
+    sound_cpu_mailbox_write_commit = 1'b1;
+    main_mailbox_read_commit = 1'b1;
+    #1;
+    require(sound_flag_conflict,
+            "coincident sound write/main read is reported before capture");
+    tick();
+    require(
+      main_mailbox_read_data == 16'h3cc3 &&
+      main_mailbox_read_data_valid &&
+      !sound_flag && !sound_flag_valid && sound_flag_conflict &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_valid_mask == 16'hb000,
+      "sound conflict captures data but invalidates only SOUNDFLAG/status bit 14"
+    );
+    sound_cpu_mailbox_write_commit = 1'b0;
+    main_mailbox_read_commit = 1'b0;
+    tick();
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    main_mailbox_read_commit = 1'b0;
+    require(
+      !sound_flag && sound_flag_valid &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_valid_mask == 16'hf000,
+      "later main read requalifies SOUNDFLAG and complete high-nibble validity"
     );
 
     // The host loads the project-authored ROM-free board smoke program while
@@ -814,6 +1018,17 @@ module tb_hard_drivin_sound_mister;
       cport_latch_data_valid && cport_latch_data == 8'h30 &&
       host_320_port_valid_mask == 16'hff00,
       "board reset does not clear the separately unreset LS374 50L"
+    );
+    require(
+      sound_cpu_mailbox_read_data_valid &&
+      sound_cpu_mailbox_read_data == 16'hc33c &&
+      main_mailbox_read_data_valid &&
+      main_mailbox_read_data == 16'h3cc3 &&
+      !main_flag && main_flag_valid &&
+      !sound_flag && sound_flag_valid &&
+      sound_cpu_read_status_data == 16'h2000 &&
+      sound_cpu_read_status_valid_mask == 16'hf000,
+      "board reset clears mailbox flags without erasing either retained word"
     );
     require(reset_active && !tms_access_permitted,
             "selected Q4 low holds the processor and TMS buffers reset");

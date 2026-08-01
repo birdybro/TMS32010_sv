@@ -1290,9 +1290,9 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control/BIO/host-control/port-3-latch board top as 2,495 abstract
-  cells, 171 checks, and three retained memories with zero structural
-  problems. A tenth
+  output-control/BIO/host-control/port-3-latch/mailbox/status board top as
+  2,644 abstract cells, 194 checks, and three retained memories with zero
+  structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. An eleventh script
@@ -1478,7 +1478,7 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,495 abstract cells/171 checks and retains the same three memories.
+  reports 2,644 abstract cells/194 checks and retains the same three memories.
   Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
@@ -1507,14 +1507,21 @@ objective passing evidence.
   opposite-side reads, and explicitly invalidates coincident preset/clear or
   preset/read-clock conditions instead of assigning an undocumented priority.
   Pinned MAME corroborates ordinary handshakes but its local byte merge is
-  isolated as `SC-031`/`OQ-031`. This adapter is not yet board-top connected.
+  isolated as `SC-031`/`OQ-031`. The board top now retains both directions
+  behind explicit whole-word main/sound-CPU completion callbacks, exports all
+  data/flag validity and conflict state, and verifies nominal traffic, both
+  conflicts, requalification, and board-reset data retention without claiming
+  a complete bus.
   The storage-free `/READSTAT` mapper separately preserves the exact raw
   `MAINFLAG`/`SOUNDFLAG`/`SOUND.TEST`/`/TIRDY` order on `D15:D12`, exports fixed
   driven mask `0xf000`, and tracks per-source validity without assigning a
   value to the physical low twelve lanes. All 256 source/value-validity
   combinations pass, and standalone Yosys reports 23 cells/eight checks.
-  MAME's fixed test/ready/low-lane values remain `SC-032`; board-top
-  integration remains separate. The complete 125/231/38/37/5/10 regression
+  MAME's fixed test/ready/low-lane values remain `SC-032`. The board top now
+  drives its flag lanes from the mailboxes, retains raw external test/ready
+  inputs, and passes exact data/mask checks through all integrated transitions.
+  Pre-technology board synthesis reports 2,644 cells/194 checks/three
+  memories. The complete 125/231/38/37/5/10 regression
   split, strict lint, all fifteen Yosys targets, all 30 pinned reference
   hashes, and all 24 tasks from twelve formal configurations pass at this
   checkpoint.

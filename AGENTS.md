@@ -440,7 +440,8 @@ complete 16-bit words through LS374 pairs; LS74 `20S` sets `MAINFLAG` and
 and clears both flags on board reset. Neither data latch has reset. The
 standalone `hard_drivin_sound_mailboxes` preserves independent data/flag
 validity and rejects coincident set/clear interpretation under `SC-031` and
-`OQ-031`; it is not yet board-top connected. Read
+`OQ-031`. The board top now connects it only behind four explicit whole-word
+completion callbacks and exports all validity/conflict state. Read
 `docs/integration/hard_drivin_host_mailboxes.md` before changing or integrating
 this path. Do not infer byte merging, LS74 collision priority, or a complete
 68000 bridge from the callback model.
@@ -448,9 +449,11 @@ The standalone storage-free `hard_drivin_sound_read_status` maps raw
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and `/TIRDY` to host `D15:D12`, with
 fixed driven mask `0xf000` and independent per-source validity. Its low twelve
 zero carrier bits are not a physical open-bus value under `OQ-030`, and MAME's
-fixed test/ready values remain a secondary conflict under `SC-032`. It is not
-yet board-top connected. Read `docs/integration/hard_drivin_host_reads.md`
-before changing or integrating the masked host-read paths.
+fixed test/ready values remain a secondary conflict under `SC-032`. The board
+top feeds it from the mailbox flags plus explicit raw external test/ready
+inputs; it still implements no 68000 read cycle. Read
+`docs/integration/hard_drivin_host_reads.md` before changing or integrating the
+masked host-read paths.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

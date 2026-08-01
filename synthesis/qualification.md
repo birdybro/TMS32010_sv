@@ -166,13 +166,13 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,495 abstract cells, 171
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,644 abstract cells, 194
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
 Both structural checks pass with zero problems. This proves hierarchy and
-memory retention plus the opt-in BIO and host-control selection boundaries
-only; it is not a technology-mapped utilization, block-RAM
+memory retention plus the opt-in BIO/host-control selection and whole-word
+mailbox/raw-status boundaries only; it is not a technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
 The tenth script applies the pre-technology boundary to

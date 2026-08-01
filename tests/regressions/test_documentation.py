@@ -102,7 +102,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "all sixteen raw source nibbles",
             "23 abstract cells",
             "eight retained checks",
-            "not yet connected",
+            "board top now connects",
         ):
             self.assertIn(required, host_reads)
         self.assertIn(
@@ -195,8 +195,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "`host_irq_clear_commit_i` callback",
             "`LACK 0x5a` and `NOP`",
-            "2,495",
-            "171 checks",
+            "2,644",
+            "194 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -246,7 +246,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "connected to `hard_drivin_sound_mister` as an explicit opt-in",
             "external platform-independent raw BIO input remains the default",
             "selected_bio_valid_o=0",
-            "2,495 abstract cells",
+            "2,644 abstract cells",
             "52 cells",
             "seven retained checks",
         ):
@@ -377,7 +377,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "whole-word only",
             "all 65,536 words in both directions",
             "Ten retained RTL checks",
-            "not yet connected to\n`hard_drivin_sound_mister`",
+            "`hard_drivin_sound_mister` instantiates the standalone adapter",
+            "both coincident write/read",
+            "2,644 abstract cells",
+            "194 retained\nchecks",
         ):
             self.assertIn(required, mailboxes)
         self.assertIn(

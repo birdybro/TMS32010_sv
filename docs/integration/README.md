@@ -75,12 +75,14 @@ selected-control validity; the full `/RVAS`/DTACK bridge remains future work.
 `hard_drivin_host_mailboxes.md` qualifies the two complete-word LS374 paths
 and LS74 `MAINFLAG`/`SOUNDFLAG` handshake. Its standalone RTL preserves
 reset-independent data, read-cleared flags, and explicit invalidity for
-unsourced coincident set/clear cases; board-top integration remains future
-work.
+unsourced coincident set/clear cases. The board top now exposes four explicit
+whole-word completion callbacks and every data/flag validity/conflict output;
+it still does not implement either physical bus.
 `hard_drivin_host_reads.md` also defines the standalone storage-free
 `/READSTAT` mapper. It exports only `D15:D12` as driven, preserves one validity
 bit per raw status source, and leaves the complete-word open-bus policy to a
-future host bridge.
+future host bridge. The board top connects its flag inputs to the mailboxes
+and leaves `SOUND.TEST` and `/TIRDY` as explicit raw inputs.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

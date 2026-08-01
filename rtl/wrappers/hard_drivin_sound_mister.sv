@@ -57,6 +57,30 @@ module hard_drivin_sound_mister (
   output logic        host_communication_blocked_o,
   input  logic        host_irq_clear_commit_i,
 
+  input  logic        main_mailbox_write_commit_i,
+  input  logic [15:0] main_mailbox_write_data_i,
+  input  logic        sound_cpu_mailbox_read_commit_i,
+  output logic [15:0] sound_cpu_mailbox_read_data_o,
+  output logic        sound_cpu_mailbox_read_data_valid_o,
+  output logic        main_flag_o,
+  output logic        main_flag_valid_o,
+  output logic        main_flag_conflict_o,
+  input  logic        sound_cpu_mailbox_write_commit_i,
+  input  logic [15:0] sound_cpu_mailbox_write_data_i,
+  input  logic        main_mailbox_read_commit_i,
+  output logic [15:0] main_mailbox_read_data_o,
+  output logic        main_mailbox_read_data_valid_o,
+  output logic        sound_flag_o,
+  output logic        sound_flag_valid_o,
+  output logic        sound_flag_conflict_o,
+  input  logic        sound_test_i,
+  input  logic        sound_test_valid_i,
+  input  logic        tirdy_n_i,
+  input  logic        tirdy_n_valid_i,
+  output logic [15:0] sound_cpu_read_status_data_o,
+  output logic [15:0] sound_cpu_read_status_driven_mask_o,
+  output logic [15:0] sound_cpu_read_status_valid_mask_o,
+
   output logic [2:0]  io_port_o,
   output logic        io_read_o,
   output logic        io_write_o,
@@ -381,6 +405,42 @@ module hard_drivin_sound_mister (
     .latch_valid_o                 (host_latch_valid_o)
   );
 
+  hard_drivin_sound_mailboxes mailboxes (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .board_reset_n_i               (board_reset_n_i),
+    .main_write_commit_i           (main_mailbox_write_commit_i),
+    .main_write_data_i             (main_mailbox_write_data_i),
+    .sound_read_commit_i           (sound_cpu_mailbox_read_commit_i),
+    .main_to_sound_data_o          (sound_cpu_mailbox_read_data_o),
+    .main_to_sound_data_valid_o    (sound_cpu_mailbox_read_data_valid_o),
+    .main_flag_o                   (main_flag_o),
+    .main_flag_valid_o             (main_flag_valid_o),
+    .main_flag_conflict_o          (main_flag_conflict_o),
+    .sound_write_commit_i          (sound_cpu_mailbox_write_commit_i),
+    .sound_write_data_i            (sound_cpu_mailbox_write_data_i),
+    .main_read_commit_i            (main_mailbox_read_commit_i),
+    .sound_to_main_data_o          (main_mailbox_read_data_o),
+    .sound_to_main_data_valid_o    (main_mailbox_read_data_valid_o),
+    .sound_flag_o                  (sound_flag_o),
+    .sound_flag_valid_o            (sound_flag_valid_o),
+    .sound_flag_conflict_o         (sound_flag_conflict_o)
+  );
+
+  hard_drivin_sound_read_status read_status (
+    .main_flag_i                   (main_flag_o),
+    .main_flag_valid_i             (main_flag_valid_o),
+    .sound_flag_i                  (sound_flag_o),
+    .sound_flag_valid_i            (sound_flag_valid_o),
+    .sound_test_i                  (sound_test_i),
+    .sound_test_valid_i            (sound_test_valid_i),
+    .tirdy_n_i                     (tirdy_n_i),
+    .tirdy_n_valid_i               (tirdy_n_valid_i),
+    .host_read_data_o              (sound_cpu_read_status_data_o),
+    .host_driven_mask_o            (sound_cpu_read_status_driven_mask_o),
+    .host_valid_mask_o             (sound_cpu_read_status_valid_mask_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
@@ -470,6 +530,13 @@ module hard_drivin_sound_mister (
                  : communication_host_enable_i));
       assert (selected_communication_host_enable_valid_o ==
               (!use_host_control_i || host_latch_valid_o[3]));
+      assert (sound_cpu_read_status_driven_mask_o == 16'hf000);
+      assert (sound_cpu_read_status_valid_mask_o[15] == main_flag_valid_o);
+      assert (sound_cpu_read_status_valid_mask_o[14] == sound_flag_valid_o);
+      assert (sound_cpu_read_status_data_o[15] ==
+              (main_flag_valid_o && main_flag_o));
+      assert (sound_cpu_read_status_data_o[14] ==
+              (sound_flag_valid_o && sound_flag_o));
       if (!use_board_bio_i) begin
         assert (selected_bio_valid_o);
       end

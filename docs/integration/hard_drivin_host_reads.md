@@ -150,7 +150,7 @@ later low-address TBLW captures `0x30` from word `0xf230` and exposes
 `0x3000`, exactly once, without modifying program RAM. This verifies the
 same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
 Standalone Yosys reports 19 abstract cells and five retained checks; the
-integrated board hierarchy reports 2,495 cells, 171 checks, three memories,
+integrated board hierarchy reports 2,644 cells, 194 checks, three memories,
 and zero structural problems. Neither result is a Cyclone V fit.
 
 `tb_hard_drivin_sound_read_status` exhausts all sixteen raw source nibbles
@@ -158,5 +158,10 @@ against all sixteen source-validity masks. It checks exact raw polarity,
 per-lane validity, constant driven mask, invalid-source clamping, and the
 separation between deterministic filler and physically driven lanes.
 Standalone Yosys reports 23 abstract cells, eight retained checks, no storage
-or latch, and zero structural problems. The mapper is not yet connected to the
-board top and does not qualify a complete 68000 read cycle.
+or latch, and zero structural problems. The board top now connects its flag
+inputs directly to the qualified mailboxes and retains raw external
+`SOUND.TEST`/`/TIRDY` inputs with their validity bits. The integrated test
+checks exact status words and masks through nominal flag changes, both
+mailbox conflicts, external-source invalidity, requalification, and board
+reset. It still does not qualify a complete 68000 read cycle or choose an
+open-bus value.

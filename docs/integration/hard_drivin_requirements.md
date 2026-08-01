@@ -71,8 +71,9 @@ The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 Its deterministic low twelve carrier bits remain outside that mask. Exhaustive
 simulation covers every source/value-validity combination; Yosys reports 23
 cells and eight retained checks. Pinned MAME's fixed test/ready/low-lane values
-remain a separate secondary abstraction under `SC-032`, and the mapper is not
-yet board-top connected.
+remain a separate secondary abstraction under `SC-032`. The board top now
+connects the live mailbox flags and retains raw external `SOUND.TEST` and
+`/TIRDY` inputs; no complete-word/open-bus policy is implied.
 
 Two pairs of LS374s separately exchange complete 16-bit words between the
 main system and the local sound 68000. LS74 `20S` asynchronously sets
@@ -82,7 +83,9 @@ Board reset clears only the flags, not either word latch. The standalone
 `hard_drivin_sound_mailboxes` callback exhaustively verifies nominal
 whole-word exchange and explicitly invalidates unsourced coincident set/clear
 conditions. Byte-write behavior remains `SC-031`/`OQ-031`, and the adapter is
-not yet connected to the board top. See
+now board-top connected only through explicit whole-word completion callbacks.
+Both retained words, data validity, flag validity, conflicts, and raw
+`/READSTAT` masks remain visible. This is not a 68000 or main-system bus. See
 `docs/integration/hard_drivin_host_mailboxes.md`.
 
 ### Program-RAM ownership is a firmware protocol

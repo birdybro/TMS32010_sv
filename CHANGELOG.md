@@ -148,6 +148,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   `MAINFLAG`/`SOUNDFLAG`/`SOUND.TEST`/`/TIRDY` order on host `D15:D12`, fixed
   driven mask `0xf000`, independent per-source validity, and deterministic
   carrier bits that do not claim an open-bus value.
+- Board-top mailbox and raw-status integration using four distinct whole-word
+  completion callbacks, complete retained data/flag validity and conflict
+  visibility, direct flag-to-status wiring, and explicit raw test/ready inputs
+  without a 68000 bus or open-bus policy.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -589,6 +593,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- Integrated nominal main-to-sound and sound-to-main word exchange, exact
+  flag set/read-clear and raw-status mapping, both coincident write/read
+  conflicts, independent flag invalidity/requalification, external
+  test/ready validity masking, and board-reset flag clear with both LS374
+  words preserved. Pre-technology board synthesis retains three memories and
+  reports 2,644 cells/194 checks with zero structural problems. The full
+  regression passes 125 repository/tool, 231 model/unit, 38 instruction RTL,
+  37 bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all
+  fifteen Yosys targets, all 30 hashes, and all 24 formal tasks pass.
 
 - All sixteen `/READSTAT` source nibbles against all sixteen source-validity
   masks, including exact raw polarity, invalid-source clamping, constant
@@ -1198,14 +1212,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
   its undriven host low byte remains a distinct open-bus question (`OQ-030`).
-- The main/sound mailbox adapter is standalone and whole-word only. Physical
+- The main/sound mailbox adapter is board-top connected but whole-word only.
+  Physical
   byte accesses and coincident LS74 preset/read-clock/reset behavior remain
-  unresolved under `SC-031`/`OQ-031`; the board top and full 68000 bridge do
-  not yet consume these callbacks.
-- The raw `/READSTAT` mapper is standalone. Its high nibble is qualified, but
-  no board-top 68000 read decode exists and physical `D11:D0` remain unresolved
-  under `OQ-030`; MAME's fixed test/ready/low-lane values are isolated as
-  `SC-032` rather than promoted to board behavior.
+  unresolved under `SC-031`/`OQ-031`; no full 68000 or main-system bridge
+  consumes these completion callbacks.
+- The raw `/READSTAT` mapper is board-top connected to the mailbox flags and
+  explicit raw test/ready inputs, but no 68000 read decode exists and physical
+  `D11:D0` remain unresolved under `OQ-030`; MAME's fixed
+  test/ready/low-lane values are isolated as `SC-032` rather than promoted to
+  board behavior.
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
   lacks the 68000 bridge, actual sample storage, compare/DAC-analog

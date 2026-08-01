@@ -105,9 +105,24 @@ software-visible handshake; not physical timing evidence.**
 
 `initialize_i` creates deterministic zero carriers with all validity false.
 Board reset clears and qualifies the flags but deliberately preserves both
-data latches. This standalone adapter is not yet connected to
-`hard_drivin_sound_mister`; integration must retain the explicit callback and
-validity boundaries until the two bus domains are defined.
+data latches.
+
+## Board-top integration
+
+`hard_drivin_sound_mister` instantiates the standalone adapter behind four
+explicit decoded-completion callbacks: main-system write/read and local
+sound-CPU write/read. Each write callback accepts one complete word; each read
+callback clears only the opposite-side pending flag. The top exports both
+retained words, both data-valid bits, both flags, both flag-valid bits, and
+both conflict indications without assigning byte-lane or collision behavior.
+
+The integrated flags directly feed `hard_drivin_sound_read_status`, so raw
+`MAINFLAG` and `SOUNDFLAG` appear only on status bits 15 and 14 when their
+individual validity is true. `SOUND.TEST` and `/TIRDY` remain external raw
+inputs. No callback is described as `/RVAS`, UDS/LDS, DTACK, or a physical
+strobe edge; the complete 68000 and main-system bridges remain outside the
+top. **Confidence: VERIFIED_SIMULATION for the same-clock integration;
+UNKNOWN for the physical bus boundaries retained by `OQ-031`.**
 
 ## Verification and synthesis
 
@@ -122,3 +137,11 @@ invalid flag carrier cannot be high.
 Standalone Yosys reports 259 abstract cells, ten retained checks, no memory or
 latch, and zero structural problems. This is a pre-technology synthesis smoke,
 not 68000 bus timing or a Cyclone V fit.
+
+The integrated board regression additionally verifies nominal traffic in
+both directions, exact flag-to-status mapping, both coincident write/read
+conflicts, independent flag invalidity and requalification, raw peripheral
+validity masks, and board-reset flag clear with both word latches retained.
+The complete board hierarchy reports 2,644 abstract cells, 194 retained
+checks, three memories, and zero structural problems. It is not a 68000 bus
+or Cyclone V timing qualification.
