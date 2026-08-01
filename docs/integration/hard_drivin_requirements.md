@@ -323,15 +323,18 @@ pin [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of
 
 ### BIO path
 
-Sheet 2 generates `/320BIO` from 1 MHz counter/divider logic and an LS74
-flip-flop cleared by `/RESET`. Sheet 4 applies `/320BIO` to the D input of
-LS74 `70S`, clocks that flip-flop with the TMS32010 `CLKOUT`, and routes its Q
-output `/BIOS` to active-low DSP `BIO` pin 9. The resynchronizer's asynchronous
-controls use pulled-high net `PR5` and are inactive in the production
-configuration [atari-driver-sound-board-schematic, drawing A044427 Rev A,
-sheet 1 of 10, PDF p. 2; sheet 2 of 10, PDF p. 4; sheet 4 of 10, PDF
-pp. 7–8]. **Confidence: VERIFIED_PRIMARY for connectivity and clock source;
-the complete divider state sequence is not yet transcribed.**
+Sheet 2 cascades two LS161 binary counters preloaded to `0xce`; they count
+through `0xff`, synchronously reload, and drive an LS74 to create a
+one-1-MHz-period active-low `/320BIO` pulse every 50 periods. `/RESET` clears
+that source LS74 but does not clear or load the counters. Sheet 4 applies
+`/320BIO` to D of LS74 `70S`, clocks it with TMS32010 `CLKOUT`, and routes Q as
+`/BIOS` to active-low DSP `BIO` pin 9. The resampler's asynchronous controls
+use pulled-high `PR5` [atari-driver-sound-board-schematic, drawing A044427 Rev
+A, sheets 1–2 and 4 of 10, PDF pp. 2, 4, and 7–8;
+ti-sn74ls161a-datasheet-sdls060, printed pp. 1–2 and 7;
+ti-sn74ls74a-datasheet-sdls119, printed p. 1]. **Confidence:
+VERIFIED_PRIMARY for connectivity, divide-by-50 sequence, source pulse width,
+and nominal cadence; physical power-up/reset-release phase remains UNKNOWN.**
 
 Pinned MAME independently models this as a periodic BIO event derived from a
 1 MHz divided-by-50 rate and binds only that callback to the DSP pin. It does
@@ -341,6 +344,10 @@ so it corroborates function and approximate cadence only
 [mame-harddriv-audio-030fefc, `BIO_FREQUENCY`,
 `hdsnddsp_get_bio`, and device configuration].
 **Confidence: CORROBORATED; not pin-timing proof.**
+
+The complete primary transcription, `SC-028` MAME abstraction boundary,
+`OQ-028` independent-clock ambiguity, validity-aware standalone RTL, and
+directed verification are in `docs/integration/hard_drivin_bio.md`.
 
 ## Integration acceptance path
 

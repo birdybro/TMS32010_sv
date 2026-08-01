@@ -181,6 +181,13 @@ retained checks. Both structural checks pass with zero problems. This proves
 standalone hierarchy and memory retention only; it is not physical HM6116
 timing, a 68000 bus, a Quartus memory mapping, or board-top timing closure.
 
+The eleventh checked-in script targets `hard_drivin_sound_bio_generator`.
+Yosys 0.67+111 reports 52 cells with seven retained checks, no memory or latch,
+and zero structural problems. This proves only the tested one-clock,
+explicit-enable representation of the divide-by-50 and CLKOUT sample state;
+it is not physical independent-clock setup/hold, metastability, or board-top
+integration evidence.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -195,7 +202,8 @@ The ignored outputs are `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and
 `build/yosys/tms32010_mister.json`; the board-specific scripts also write
 ignored JSON outputs including
-`build/yosys/hard_drivin_sound_communication_path.json`. Tool-version differences
+`build/yosys/hard_drivin_sound_communication_path.json` and
+`build/yosys/hard_drivin_sound_bio_generator.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.

@@ -46,6 +46,10 @@ analog model, or filter.
 and 5: the raw complementary `MUTE` net and latched active-high `320IRQ`. The
 corresponding RTL exposes those states without inventing a loaded mute consumer
 or embedding a 68000 bus decoder.
+`hard_drivin_bio.md` transcribes the independent-clock divide-by-50 source,
+one-period `/320BIO` pulse, reset-uninitialized counter phase, and CLKOUT
+resampler. Its standalone RTL uses explicit enables and validity instead of
+creating clocks or pretending board reset initializes the divider.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

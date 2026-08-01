@@ -1,18 +1,18 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' raw MUTE and 68000-IRQ output control
+- **Current milestone:** Hard Drivin' standalone BIO divider and resampler
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 119 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 120 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 32 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 33 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 28 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 29 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -58,7 +58,9 @@
   memories and passes at 2,346 abstract cells/144 checks with zero structural
   problems before technology mapping. A tenth target retains the standalone
   512-by-16 communication memory as one `$mem_v2` in an 82-cell hierarchy with
-  seven checks and zero structural problems.
+  seven checks and zero structural problems. An eleventh target checks the
+  standalone explicit-enable BIO divider/resampler at 52 cells/seven checks
+  with no memory, latch, or structural problem.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -495,7 +497,20 @@
   restores MUTE high on reset. The only drawn Rev-A mute consumer is marked
   `NOT LOADED`; `SC-027`/`OQ-027` therefore keep effective audio semantics
   unknown. The newly acquired TI LS74 data sheet and all 28 local reference
-  files pass pinned SHA-256 verification.
+  files passed pinned SHA-256 verification at that checkpoint.
+- **New BIO evidence:** A044427 sheets 1, 2, and 4 plus newly acquired TI
+  SDLS060 and existing SDLS119 establish a cascaded LS161 preload of `0xce`,
+  terminal `0xff` reload, and one-1-MHz-period active-low `/320BIO` pulse every
+  50 periods. LS74 70S separately samples it on nominal 5 MHz CLKOUT. Board
+  `/RESET` clears only the source LS74; the counters and resampler have no
+  reset initialization. Standalone RTL therefore uses two noncoincident clock
+  enables and exports counter, source, and pin validity. Directed simulation
+  covers all fifty states, the five-sample pulse, reset continuity, release,
+  and invalid-seed self-qualification from all 256 possible values. All 29
+  cached sources match pinned
+  hashes. MAME corroborates 20 kHz cadence but its query-driven event remains
+  `SC-028`, not pin-waveform evidence; independent-clock setup/hold is
+  `OQ-028`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -513,6 +528,7 @@
   divider state, 68000-side reset-handoff timing and firmware compliance,
   communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
   population and absent-block behavior,
+  BIO power-up/reset-release phase and independent-clock coincidence,
   loaded
   `/CPORT` purpose,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
@@ -520,8 +536,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify and implement the complete A044427 `/320BIO` divider
-  and resampling path without altering the generic core's platform-independent
-  BIO input.
+- **Next task:** connect the qualified BIO generator to the board top as an
+  explicit opt-in path with externally scheduled noncoincident enables while
+  retaining the generic core's platform-independent raw BIO input.
 - **Latest committed baseline before this cycle:**
-  `9404bb3`
+  `3eba771`

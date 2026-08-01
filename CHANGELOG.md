@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 28-source
+- Reference-provenance policy, safe acquisition/hash tools, a 29-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -101,6 +101,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   one-clock mute commit, the data-independent 68000 IRQ latch, and an explicit
   future-host clear callback. The partial board top now acknowledges ports 4
   and 5 internally without relying on an unrelated external ready callback.
+- Primary schematic qualification of the complete Driver Sound BIO path,
+  backed by TI SDLS060/SDLS119: an LS161 pair preloads `0xce`, counts through
+  `0xff`, and emits a one-1-MHz-period active-low source every 50 periods;
+  board reset clears only the source LS74, and a separate CLKOUT LS74 samples
+  the level. Counter power-up/reset phase and independent-clock coincidence
+  remain explicit rather than being assigned emulator behavior.
+- A synthesizable standalone BIO generator using two clock enables, no
+  generated clocks, caller-seeded phase validity, raw-source validity, and
+  sampled-pin validity. It is deliberately not connected to the board top
+  until the independent-clock boundary is selected under `OQ-028`.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -536,6 +546,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The complete fifty-state BIO divider sequence, one-source-period low pulse,
+  five nominal CLKOUT samples, reset-only source clear, counter continuity,
+  unchanged reset-release phase, invalid-seed self-qualification, and
+  resampler validity across all 256 possible seed values. Standalone Yosys
+  reports 52 cells, seven checks, no
+  memory/latch, and zero structural problems.
+
 - Exhaustive standalone output-control coverage across all 65,536 port-4
   words and all 65,536 port-5 words, plus reset, retention, port isolation,
   host clear, and set-over-clear priority. Integrated smoke proves raw MUTE
@@ -574,9 +591,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   preload state, and initialization-time memory retention. Pre-technology
   Yosys retains one 512-by-16 memory in an 82-cell hierarchy with seven checks
   and zero structural problems.
-- All 28 acquired reference files match their pinned SHA-256 values, including
-  the official TI-hosted LS74, LS138, LS191, LS244, LS259, and LS374 data
-  sheets.
+- All 29 acquired reference files match their pinned SHA-256 values, including
+  the official TI-hosted LS74, LS138, LS161, LS191, LS244, LS259, and LS374
+  data sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
   Sound smoke: the host preloads communication word `0x056`, port 7 first
   qualifies the address chain, internal port 1 ignores an external sentinel,
@@ -1057,8 +1074,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 119 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 32
+- The complete current regression passes 120 repository/ISA/tool tests, 231
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -1087,6 +1104,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under
   `SC-022`/`OQ-022`.
+- The standalone BIO divider/resampler is primary-transcribed but remains
+  outside `hard_drivin_sound_mister`. The physical counters and CLKOUT
+  resampler have no board-reset initialization, and their 1 MHz/CLKOUT clocks
+  derive from independent crystals. Integration must preserve exported
+  validity and contain the coincident-edge ambiguity under `OQ-028`; MAME's
+  query-driven 20 kHz event is not a pin-level replacement (`SC-028`).
 - A044427 has no program-RAM arbiter. Simultaneously selecting the host window
   while `/320RES` is released enables conflicting buffer paths; pinned MAME's
   always-accessible shared array and HALT mapping do not reproduce that

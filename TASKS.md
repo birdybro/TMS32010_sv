@@ -1294,7 +1294,10 @@ objective passing evidence.
   retained memories with zero structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
-  retained 512-by-16 memory with zero structural problems. This is not a
+  retained 512-by-16 memory with zero structural problems. An eleventh script
+  checks the standalone explicit-enable BIO divider/resampler as 52 cells,
+  seven retained checks, no memory or latch, and zero structural problems.
+  This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
 
@@ -1342,7 +1345,8 @@ objective passing evidence.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`,
   `docs/integration/hard_drivin_communication_ram.md`,
   `docs/integration/hard_drivin_sound_rom.md`,
-  `docs/integration/hard_drivin_sound_control.md`
+  `docs/integration/hard_drivin_sound_control.md`,
+  `docs/integration/hard_drivin_bio.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1350,7 +1354,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_communication_path.sv`,
   `sim/bus/tb_hard_drivin_sound_rom_path.sv`,
   `sim/bus/tb_hard_drivin_sound_dac_latch.sv`,
-  `sim/bus/tb_hard_drivin_sound_output_control.sv`
+  `sim/bus/tb_hard_drivin_sound_output_control.sv`,
+  `sim/bus/tb_hard_drivin_sound_bio_generator.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1365,9 +1370,9 @@ objective passing evidence.
   high-address TMS writes, diverts low writes to I/O, and grants neither side
   during invalid overlap. Firmware compliance/release timing remains
   `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
-  Complete BIO divider state, signed-audio DAC interpretation, effective mute
-  semantics, board-variant audit, 68000 bus adaptation, and complete
-  peripheral integration remain.
+  BIO generator integration and coincident-edge policy, signed-audio DAC
+  interpretation, effective mute semantics, board-variant audit, 68000 bus
+  adaptation, and complete peripheral integration remain.
   The partial `hard_drivin_sound_mister` now connects the core, native decoder,
   shared program RAM, and communication path. A directed RTL test host-loads
   the fixed ROM-free smoke and a synthetic communication word,
@@ -1389,6 +1394,15 @@ objective passing evidence.
   the integrated smoke forces external backpressure on both targets, captures
   raw MUTE low, asserts IRQ, clears it through the host callback, and restores
   MUTE high on reset.
+  A044427 sheets 1, 2, and 4 plus TI SDLS060/SDLS119 establish the complete
+  BIO source and resampler: cascaded LS161s preload `0xce`, count through
+  `0xff`, and produce a one-1-MHz-period active-low source every 50 periods;
+  separate LS74 70S samples that level on CLKOUT. Board `/RESET` clears only
+  the source LS74, so counter and resampler phase are not invented. Standalone
+  RTL uses two noncoincident enables, caller-seed and pin validity, and passes
+  the full fifty-state/reset/five-sample test plus self-qualification from all
+  256 possible seed values. It remains
+  outside the integrated board top until `OQ-028` clock alignment is contained.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with

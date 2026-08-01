@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs ten checked-in scripts. The main synthesis harness targets
+The command runs eleven checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -100,6 +100,12 @@ RAM as one `$mem_v2` and reports 82 abstract cells, seven checks, and zero
 structural problems. This supports portable memory inference and control-path
 elaboration only; it is not a Quartus mapping, HM6116 timing result, 68000
 bridge, or completed sound-board hierarchy.
+
+The eleventh script targets `hard_drivin_sound_bio_generator`. It reports 52
+cells, seven retained checks, no memory or latch, and zero structural problems.
+This qualifies the explicit-enable divide-by-50, reset, validity, and CLKOUT
+sample structure only; it is not independent-clock electrical timing or a
+metastability result.
 
 ## Quartus
 

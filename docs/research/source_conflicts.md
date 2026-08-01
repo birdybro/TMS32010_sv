@@ -580,3 +580,24 @@ electrical result of an out-of-range access.
   do not apply it to audio. See `OQ-027`.
 - **Confidence:** VERIFIED_PRIMARY for the LS74 state and unloaded Rev-A
   consumer; UNKNOWN for effective mute semantics on any populated variant.
+
+## SC-028 — Physical periodic BIO waveform versus MAME query event
+
+- **Primary board evidence:** cascaded LS161 counters synchronously preload
+  `0xce`, count through `0xff`, and drive LS74 50S to produce one
+  active-low 1 MHz period every 50 periods. Separate LS74 70S samples that
+  source using TMS32010 CLKOUT. `/RESET` clears only 50S; the counters and 70S
+  have inactive pulled-high controls [atari-driver-sound-board-schematic,
+  sheets 1–2 and 4 of 10, PDF pp. 2, 4, and 8;
+  ti-sn74ls161a-datasheet-sdls060, printed pp. 1–2 and 7;
+  ti-sn74ls74a-datasheet-sdls119, printed p. 1].
+- **Secondary abstraction:** pinned MAME derives a 20 kHz event and 250 DSP
+  cycles, but on a BIO query it advances the instruction budget to the event
+  and returns asserted. It models no low-pulse width, deassertion, reset phase,
+  CLKOUT sampling, or independent-clock alignment [mame-harddriv-audio-030fefc,
+  `BIO_FREQUENCY`, `CYCLES_PER_BIO`, and `hdsnddsp_get_bio`].
+- **Current treatment:** use MAME only to corroborate divide-by-50 cadence.
+  Preserve the primary level waveform and resampler as distinct FPGA state;
+  retain physical startup/coincident-edge uncertainty under `OQ-028`.
+- **Confidence:** VERIFIED_PRIMARY for board logic and nominal waveform;
+  documented secondary implementation-convenience difference.

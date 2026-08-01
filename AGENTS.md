@@ -390,6 +390,13 @@ active-high `320IRQ` independently of write data, `/320RES` clears both Q
 states, and the separate host callback clocks grounded D to clear the IRQ.
 Expose the raw mute net only: its sole Rev-A analog consumer is marked
 `NOT LOADED`, and `SC-027`/`OQ-027` prohibit inventing an audio effect.
+The standalone `hard_drivin_sound_bio_generator` transcribes the A044427
+LS161 `0xce`-through-`0xff` divide-by-50 chain, one-period active-low source,
+and CLKOUT LS74 resampler. Represent its independent clocks only through
+explicit enables; never generate internal clocks. Board `/RESET` clears the
+source LS74 but not the counters or resampler. Preserve caller-seed and pin
+validity, and do not select a coincident-edge policy or connect the module to
+the board top without resolving or explicitly containing `OQ-028`.
 The board-specific `hard_drivin_sound_program_ram` now implements a
 same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
 access only while `/320RES` is asserted, permits TMS access only after host

@@ -77,7 +77,8 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_dac_latch.ys \
 			synthesis/yosys/hard_drivin_sound_output_control.ys \
 			synthesis/yosys/hard_drivin_sound_mister.ys \
-			synthesis/yosys/hard_drivin_sound_communication_path.ys; do \
+			synthesis/yosys/hard_drivin_sound_communication_path.ys \
+			synthesis/yosys/hard_drivin_sound_bio_generator.ys; do \
 			"$(YOSYS)" -s "$$script" || exit 1; \
 		done; \
 	else \

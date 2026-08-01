@@ -785,6 +785,35 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "ti-sn74ls161a-datasheet-sdls060",
+      "title": "Synchronous 4-Bit Counters",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS060",
+      "publication_date": "1976-10; revised 1988-03",
+      "revision": "March 1988 data sheet with later package addenda",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls161a.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDLS060_SN74LS161A_Synchronous_4-Bit_Counters.pdf",
+      "sha256": "96da9cfc1d5d99bdf9f910ad7b4e1865a44eee83f71e90887276cedde084a5f3",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for A044427's cascaded preloadable divide-by-50 BIO timing chain",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use the schematic as authority for the board-specific preload values, cascade, clocks, and reset wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, synchronous load, direct clear, and rising-edge behavior, printed page 1",
+        "Carry/enable/RCO cascade description and logic symbols, printed page 2",
+        "LS161A positive-logic diagram, printed page 7"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

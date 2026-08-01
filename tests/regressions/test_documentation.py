@@ -194,6 +194,32 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("SC-027", conflicts)
         self.assertIn("OQ-027", questions)
 
+    def test_hard_drivin_bio_preserves_phase_and_clock_uncertainty(self) -> None:
+        bio = (DOCS / "integration" / "hard_drivin_bio.md").read_text(
+            encoding="utf-8"
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "counts `0xce` through `0xff`",
+            "exact divide by 50",
+            "reset neither loads `0xce`",
+            "two crystals are independent",
+            "noncoincident until",
+            "separate validity bit",
+            "all 256 explicitly invalid",
+            "not yet connected to `hard_drivin_sound_mister`",
+            "52 cells",
+            "seven retained checks",
+        ):
+            self.assertIn(required, bio)
+        self.assertIn("SC-028", conflicts)
+        self.assertIn("OQ-028", questions)
+
     def test_hard_drivin_communication_ram_remains_primary_scoped(self) -> None:
         communication = (
             DOCS / "integration" / "hard_drivin_communication_ram.md"
