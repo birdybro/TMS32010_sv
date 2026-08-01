@@ -33,6 +33,35 @@ deliberately not compared. Exactly one more MAME row than model step is
 required by default; `--allow-trailing` is an explicit escape for a longer
 captured trace.
 
+## ROM-free synthetic Hard Drivin' smoke
+
+An opt-in workflow constructs the MAME Hard Drivin' machine without any game
+content. It queries `-listxml`, creates exact-sized files containing only zero
+bytes, requires MAME to report their deliberately wrong checksums, injects the
+project-authored `tests/asm/push_pop_bus_probe.asm` words into writable DSP
+program RAM, and releases the emulated board's DSP halt latch through the
+debugger. The first LACK primes debugger focus; the next five instructions are
+compared against six strict boundary markers:
+
+```sh
+make mame-synthetic MAME=/path/to/trusted/mame
+```
+
+Generated placeholder files, debugger commands, traces, logs, and result
+metadata remain below `build/mame_synthetic/`. The generator is idempotent,
+refuses to overwrite any non-matching file, rejects path traversal and large
+metadata sizes, and places a non-passing result marker before execution so a
+failed rerun cannot leave stale passing evidence. The runner has a finite
+wall-clock timeout. Use only a trusted installed or independently built MAME
+binary; the workflow does not download one.
+
+The synthetic run exercises PUSH, NOP, LACK, POP, and NOP at instruction
+boundaries. It does not execute Atari firmware and does not provide MAME cycle
+counts, bus transactions, or pin signals. It therefore corroborates stack and
+register state only and cannot resolve `OQ-016`. The comparison model is seeded
+with MAME's observed OVM/INTM reset values after the trace-prime LACK; that is
+oracle alignment, not a physical TMS32010 reset claim.
+
 ## Evidence limits and provenance
 
 The project pins the inspected MAME source at commit
@@ -52,4 +81,4 @@ disagreement is a research item; it is not automatically resolved in favor of
 MAME or this project.
 
 No game ROMs, MAME binaries, trace files containing ROM-derived disassembly,
-or cached MAME source belong in Git.
+generated placeholder images, or cached MAME source belong in Git.

@@ -384,6 +384,7 @@
         "POP_STACK()/ret() stack-pop/PC handlers and fixed two-cycle opcode-table entry, lines 222-228, 676-679, and 849",
         "POP_STACK()/PUSH_STACK() backing-array order, lines 222-237, and debugger-visible PC/STR/ACC/P/T/AR/STK state registration, lines 900-910",
         "execute_run() interrupt service, debugger hook, opcode fetch, and PC increment ordering, lines 997-1012",
+        "pop()/push() architectural handlers, lines 665-675, and MAME-specific reset status initialization, lines 925-932",
         "in_p()/out_p() handlers, common data-address helpers, and fixed two-cycle opcode-table entries for high bytes 0x40-0x4f, lines 260-304, 530-535, 654-659, and 818-825"
       ],
       "status": "acquired",
@@ -494,6 +495,7 @@
       "sections_or_pages_used": [
         "driversnd_dsp_program_map, driversnd_dsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration",
         "driversnd_68k_map and hdsnd68k_data_r/hdsnd68k_switches_r/hdsnd68k_320port_r/hdsnd68k_status_r host read handlers",
+        "hdsnd68k_latches_w address-bit data/select mapping and Q4-inverted TMS320C10 HALT connection, lines 191-196 and 432-450",
         "hd68k_snd_data_r/hd68k_snd_data_w, hdsnd68k_data_r/hdsnd68k_data_w, hd68k_snd_status_r, and hd68k_snd_reset_w mailbox handlers and flags",
         "hdsnddsp_comport_w port-3 logging stub"
       ],

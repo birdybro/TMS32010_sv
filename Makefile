@@ -3,9 +3,11 @@ VERILATOR ?= verilator
 YOSYS ?= yosys
 QUARTUS_SH ?= quartus_sh
 SBY ?= sby
+MAME ?= mame
 
 .PHONY: help test lint unit instruction-tests bus-tests differential formal
 .PHONY: synth-yosys synth-quartus docs clean release-check
+.PHONY: mame-synthetic
 
 help:
 	@echo "tms32010-sv development targets"
@@ -15,6 +17,7 @@ help:
 	@echo "  instruction-tests  directed instruction behavior and cycle tests"
 	@echo "  bus-tests          native program/data/I/O transaction tests"
 	@echo "  differential       model/RTL/oracle trace comparisons"
+	@echo "  mame-synthetic     ROM-free opt-in MAME/model boundary smoke"
 	@echo "  formal             available bounded formal properties"
 	@echo "  synth-yosys        portable synthesis smoke test"
 	@echo "  synth-quartus      Cyclone V fitter and timing qualification"
@@ -38,6 +41,11 @@ bus-tests:
 
 differential:
 	@$(PYTHON) scripts/run_optional_unittest.py sim/differential
+
+mame-synthetic:
+	@command -v "$(MAME)" >/dev/null 2>&1 || { echo "ERROR: MAME is required"; exit 1; }
+	$(PYTHON) -m tools.reference.mame_synthetic_oracle \
+		--mame "$$(command -v "$(MAME)")" --output build/mame_synthetic
 
 lint: docs
 	$(PYTHON) -m compileall -q scripts tests tools sim/reference_models

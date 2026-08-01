@@ -16,6 +16,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   model-state validation, explicit interrupt-hook limitations, and separate
   pinned-source versus local dirty-binary provenance. It deliberately does not
   launch MAME, obtain ROMs, or claim cycle/pin evidence.
+- An opt-in ROM-free MAME execution smoke using size-limited, all-zero,
+  deliberately wrong-checksum placeholders; fail-closed debugger injection of
+  the existing PUSH/POP fixture; a finite-timeout live run; six additional
+  unit tests; and generated hash/result metadata. Five model steps match six
+  live TMS320C10 boundary rows while `/MEN`, cycle, pin, original-part, and
+  Atari-firmware claims remain explicitly excluded.
 - Reference-provenance policy, safe acquisition/hash tools, a 45-source
   integrity-pinned catalog, and living engineering backlog.
 - Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and

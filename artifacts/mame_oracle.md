@@ -66,9 +66,37 @@ interrupts before the instruction hook, so this first adapter explicitly
 requires inactive interrupts and rejects the model's separate interrupt-entry
 pseudo-step.
 
-The parser and seven synthetic comparison regressions are ROM-free and
-passing. An actual Hard Drivin' execution comparison has not been run because no
-authorized ROM set is present. Such a run must use user-supplied lawful ROMs,
-must retain the executable hash and invocation, and remains architectural
-instruction-boundary evidence only. It cannot establish bus phases, physical
-pin timing, or complete original-TMS32010 device equivalence.
+The parser's seven synthetic text regressions and the placeholder/orchestration
+tool's six unit tests are ROM-free and passing.
+
+On 2026-07-31, this exact trusted local binary also passed:
+
+```sh
+make mame-synthetic MAME=/usr/lib/mame/mame
+```
+
+The runner obtained 20 required filenames/sizes from `harddriv -listxml`,
+created 1,118,208 zero bytes across exact-sized files, verified MAME's explicit
+wrong-checksum warnings, injected `tests/asm/push_pop_bus_probe.asm` into
+writable DSP program RAM, and released the emulated board's DSP halt latch.
+No Atari ROM content was used. Five model steps (`PUSH`, `NOP`, `LACK`, `POP`,
+`NOP`) matched six live MAME instruction-boundary state rows.
+The model's OVM/INTM values are seeded to MAME's observed reset state for this
+comparison. That setup does not promote MAME initialization into original-part
+reset behavior.
+
+- MAME trace SHA-256:
+  `c3024c892e0e684a9153c854a480930cd267e03642f7526c3629be7cdda67565`
+- Model trace SHA-256:
+  `576a68310f33b43723a11ae216a12a488a0acca8eef103b61890c77c3adeaecd`
+- Generated debugger script SHA-256:
+  `5153ea834f79e5731781f156c0fff351818a4785a39912084fecfd35916da4b5`
+- Generated result: `PASS`, five steps, six MAME rows, zero trailing rows
+
+These generated files remain ignored below `build/mame_synthetic/`. The result
+is real execution of MAME's TMS320C10 device in the Hard Drivin' machine
+configuration, but it is not Atari firmware execution. It corroborates
+architectural PUSH/POP state only. MAME exposes no `/MEN`, external
+program-address cycle, or pin phase through this trace, so `OQ-016` remains
+unresolved. A firmware-oriented comparison still requires user-supplied lawful
+ROMs and must retain the exact executable hash and invocation.

@@ -21,10 +21,12 @@
   directed request-arrival cases across every represented machine cycle
   of all 15 currently supported multicycle core families; four native
   subphase arrivals with a stalled phase-2 case and falling-boundary ownership;
-  plus seven ROM-free MAME-adapter tests covering strict parsing, original-part
-  widths, state normalization, strict model-state validation, pre/post boundary
-  alignment, safe debugger command generation, and deterministic mismatch
-  reporting
+  plus thirteen ROM-free MAME-adapter/orchestration tests covering strict
+  parsing, original-part widths, state normalization, strict model-state
+  validation, pre/post boundary alignment, safe debugger command generation,
+  executable resolution, and deterministic mismatch reporting; one opt-in
+  live synthetic MAME smoke matching five model steps across six boundary rows
+  without copyrighted ROM content
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-six-instruction partial core, multiplier, 144-word RAM, and
   program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,188
@@ -903,9 +905,11 @@
   `0.287 (mame0287-dirty)`, and has SHA-256
   `e8732a07ffc6995e31e5526fbf1f72e6ce55fb92cf2a1373b6a76e27cdc7dd91`.
   It is not claimed as an exact-commit build. MAME names the 20 MHz nested
-  device TMS320C10, and no authorized Hard Drivin' ROM is present, so actual
-  execution comparison, device equivalence, cycles, and pin timing remain
-  unqualified.
+  device TMS320C10. A new opt-in live run builds the machine with 20 exact-sized
+  all-zero placeholders, requires MAME's wrong-checksum warning, injects the
+  hand-fixed PUSH/POP program, and matches five model steps across six boundary
+  rows. This is actual synthetic TMS320C10 execution but not Atari firmware;
+  device equivalence, `/MEN`, cycles, and pin timing remain unqualified.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -945,4 +949,4 @@
   backlog and qualify the remaining unsupported instruction ownership/timing
   boundary before extending the partial sequential core.
 - **Latest committed baseline before this cycle:**
-  `d0a24e0`
+  `d59986a`

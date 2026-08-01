@@ -112,9 +112,22 @@ strict model state widths/types, safe command generation, mismatch
 diagnostics, and successful CLI operation. The adapter records the exact
 pinned source commit and separately hashes the installed
 `0.287 (mame0287-dirty)` package binary. It does not claim that binary is a
-build of the pinned commit. An actual Hard Drivin' trace remains unrun because
-no authorized ROM set is present. See `tools/reference/README.md` and
-`artifacts/mame_oracle.md`.
+build of the pinned commit. An authorized-firmware Hard Drivin' trace remains
+unrun because no lawful ROM set is present. See `tools/reference/README.md`
+and `artifacts/mame_oracle.md`.
+
+The separate opt-in `make mame-synthetic` path no longer needs an authorized
+ROM set. It generates 20 all-zero, wrong-checksum placeholder files from
+MAME's own `harddriv -listxml` metadata, injects the project-authored PUSH/POP
+bus-probe fixture into the writable emulated DSP RAM, releases the emulated
+DSP halt latch, and captures six live MAME rows. Five model steps—PUSH, NOP,
+LACK, POP, and NOP—match PC/ACC/P/T/AR/stack/status state. Six standard-library
+tests cover safe metadata parsing, traversal/size rejection, idempotent
+non-overwrite behavior, executable resolution, the two-stage debugger-focus
+script, and the aligned model fixture. The run is functional TMS320C10
+emulator corroboration only:
+MAME exports neither the `/MEN` waveform nor per-cycle program addresses, so
+it does not resolve the original TMS32010 `OQ-016` bus question.
 
 The 512-instruction stream is model/RTL functional evidence only. The focused
 B/BANZ/BIOZ/BV/CALL/family/IN/OUT/TBLR/TBLW differentials supply logical

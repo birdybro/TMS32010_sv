@@ -1170,9 +1170,14 @@ objective passing evidence.
   packaged `0.287 (mame0287-dirty)` executable and does not treat that binary
   as an exact-commit build. MAME identifies Hard Drivin's device as a 20 MHz
   TMS320C10, so it remains a secondary functional oracle, not original-part
-  or timing proof. An actual trace and legal randomized full-ISA streams
-  remain; no authorized Hard Drivin' ROM is present. MAME disagreement creates
-  research work, not an automatic oracle verdict.
+  or timing proof. A ROM-free live trace now constructs the Hard Drivin'
+  machine with exact-sized all-zero placeholders, requires wrong-checksum
+  diagnostics, debugger-injects the hand-fixed PUSH/POP fixture, and matches
+  five model steps across six MAME rows. It corroborates architectural state
+  but cannot resolve `OQ-016` because the debugger exposes no bus cycles.
+  Firmware comparison and legal randomized full-ISA streams remain; no
+  authorized Hard Drivin' ROM is present. MAME disagreement creates research
+  work, not an automatic oracle verdict.
 
 ## Milestone 18 — Formal verification
 
