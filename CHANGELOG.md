@@ -109,8 +109,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   remain explicit rather than being assigned emulator behavior.
 - A synthesizable standalone BIO generator using two clock enables, no
   generated clocks, caller-seeded phase validity, raw-source validity, and
-  sampled-pin validity. It is deliberately not connected to the board top
-  until the independent-clock boundary is selected under `OQ-028`.
+  sampled-pin validity. The partial board top now offers it as an explicit
+  opt-in, derives CLKOUT sampling from the core phase, keeps external raw BIO
+  as the default, and rejects unresolved coincident 1 MHz scheduling under
+  `OQ-028`.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -546,6 +548,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Board-level BIO selection with an external-high sentinel and a generated,
+  qualified low: BIOZ takes only target `LACK 0x22`, consumes three total
+  instruction cycles with that target, and sees source release only after a
+  later modeled CLKOUT sample. The partial board hierarchy synthesizes to
+  2,408 abstract cells, 154 checks, and three retained memories with zero
+  structural problems.
+
 - The complete fifty-state BIO divider sequence, one-source-period low pulse,
   five nominal CLKOUT samples, reset-only source clear, counter continuity,
   unchanged reset-release phase, invalid-seed self-qualification, and
@@ -558,7 +567,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   host clear, and set-over-clear priority. Integrated smoke proves raw MUTE
   capture, data-independent IRQ assertion, host clear, and reset restoration
   while external readiness remains low. Yosys reports 33 cells/four checks for
-  the standalone path and 2,346 cells/144 checks/three memories for the partial
+  the standalone path and 2,408 cells/154 checks/three memories for the partial
   board hierarchy, with zero structural problems.
 
 - Exhaustive raw-DAC coverage across all 65,536 TMS output words, every
@@ -570,7 +579,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   A separate five-cycle `LACK 0; TBLW 0x11; NOP` execution captures internal
   word `0x00a5` as raw code `0x00a` through the same target while a host
   readback proves program word zero remains `0x7e00`.
-  The board hierarchy passes Yosys at 2,346 abstract cells/144 checks with its
+  The board hierarchy passes Yosys at 2,408 abstract cells/154 checks with its
   same three memories.
 - Exhaustive standalone sample-ROM coverage across all sixteen block values,
   all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
@@ -580,7 +589,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
   commit, external-sentinel rejection, and shared-counter advance. The board
   hierarchy retains three memories and, with the raw DAC latch, passes Yosys
-  at 2,346 abstract cells with 144 checks and zero structural problems.
+  at 2,408 abstract cells with 154 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
@@ -603,8 +612,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,346 abstract
-  cells, 144 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,408 abstract
+  cells, 154 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -1096,19 +1105,20 @@ Changelog, and the project follows semantic versioning once releases begin.
   omitting the global `/PDEN` increment from port 2; port 3 remains an
   unresolved decoded strobe (`OQ-023`–`OQ-025`).
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
-  sample-ROM-callback and qualified physical-I/O boundary. It lacks the 68000
-  bridge, actual sample storage, compare/DAC-analog/BIO implementations, and a
+  sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
+  lacks the 68000 bridge, actual sample storage, compare/DAC-analog
+  implementations, a board 1 MHz enable source, and a
   loaded mute consumer; raw MUTE and 68000-IRQ latch state are implemented but
   do not establish effective audio semantics or the host address decoder;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under
   `SC-022`/`OQ-022`.
-- The standalone BIO divider/resampler is primary-transcribed but remains
-  outside `hard_drivin_sound_mister`. The physical counters and CLKOUT
-  resampler have no board-reset initialization, and their 1 MHz/CLKOUT clocks
-  derive from independent crystals. Integration must preserve exported
-  validity and contain the coincident-edge ambiguity under `OQ-028`; MAME's
+- The BIO divider/resampler is primary-transcribed and connected as an opt-in,
+  but the physical counters and CLKOUT resampler have no board-reset
+  initialization, and their 1 MHz/CLKOUT clocks derive from independent
+  crystals. The current same-clock boundary preserves exported validity and
+  rejects, rather than models, coincident edges under `OQ-028`; MAME's
   query-driven 20 kHz event is not a pin-level replacement (`SC-028`).
 - A044427 has no program-RAM arbiter. Simultaneously selecting the host window
   while `/320RES` is released enables conflicting buffer paths; pinned MAME's

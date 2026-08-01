@@ -1290,7 +1290,7 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control board top as 2,346 abstract cells, 144 checks, and three
+  output-control/BIO board top as 2,408 abstract cells, 154 checks, and three
   retained memories with zero structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
@@ -1370,9 +1370,9 @@ objective passing evidence.
   high-address TMS writes, diverts low writes to I/O, and grants neither side
   during invalid overlap. Firmware compliance/release timing remains
   `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
-  BIO generator integration and coincident-edge policy, signed-audio DAC
-  interpretation, effective mute semantics, board-variant audit, 68000 bus
-  adaptation, and complete peripheral integration remain.
+  A physical coincident-edge policy, signed-audio DAC interpretation,
+  effective mute semantics, board-variant audit, 68000 bus adaptation, and
+  complete peripheral integration remain.
   The partial `hard_drivin_sound_mister` now connects the core, native decoder,
   shared program RAM, and communication path. A directed RTL test host-loads
   the fixed ROM-free smoke and a synthetic communication word,
@@ -1401,8 +1401,13 @@ objective passing evidence.
   the source LS74, so counter and resampler phase are not invented. Standalone
   RTL uses two noncoincident enables, caller-seed and pin validity, and passes
   the full fifty-state/reset/five-sample test plus self-qualification from all
-  256 possible seed values. It remains
-  outside the integrated board top until `OQ-028` clock alignment is contained.
+  256 possible seed values. The board top now connects it as an explicit
+  opt-in while leaving external raw BIO as the default, derives its CLKOUT
+  sample enable from the core's actual modeled phase, and rejects a coincident
+  1 MHz schedule by assertion under `OQ-028`. The integrated BIOZ fixture holds
+  external BIO high, selects a qualified generated low, takes only target
+  `LACK 0x22` in three cycles, and propagates release only on a later CLKOUT
+  sample.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
@@ -1451,7 +1456,7 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,346 abstract cells/144 checks and retains the same three memories.
+  reports 2,408 abstract cells/154 checks and retains the same three memories.
   Host latch/68000 bus adaptation, authorized sample storage,
   compare/DAC-analog/effective-mute peripherals, and physical timing remain
   acceptance work.

@@ -165,7 +165,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "A TBLW to address 0–7 arrives as `io_write_o`",
             "No Atari ROM data is used",
             "`0x3456` to `0x3459`",
-            "2,346",
+            "Opt-in board BIO",
+            "external active-low `bio_i` remains the default",
+            "selected_bio_valid_o",
+            "2,408",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -212,7 +215,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "noncoincident until",
             "separate validity bit",
             "all 256 explicitly invalid",
-            "not yet connected to `hard_drivin_sound_mister`",
+            "connected to `hard_drivin_sound_mister` as an explicit opt-in",
+            "external platform-independent raw BIO input remains the default",
+            "selected_bio_valid_o=0",
+            "2,408 abstract cells",
             "52 cells",
             "seven retained checks",
         ):

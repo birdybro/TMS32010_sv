@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' standalone BIO divider and resampler
+- **Current milestone:** Hard Drivin' opt-in board BIO integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 120 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
@@ -54,8 +54,8 @@
   with no memory, latch, or structural problem. An eighth target checks raw
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
-  communication/sample-ROM/DAC/output-control board top retains all three
-  memories and passes at 2,346 abstract cells/144 checks with zero structural
+  communication/sample-ROM/DAC/output-control/BIO board top retains all three
+  memories and passes at 2,408 abstract cells/154 checks with zero structural
   problems before technology mapping. A tenth target retains the standalone
   512-by-16 communication memory as one `$mem_v2` in an 82-cell hierarchy with
   seven checks and zero structural problems. An eleventh target checks the
@@ -510,7 +510,13 @@
   cached sources match pinned
   hashes. MAME corroborates 20 kHz cadence but its query-driven event remains
   `SC-028`, not pin-waveform evidence; independent-clock setup/hold is
-  `OQ-028`.
+  `OQ-028`. The partial board top now instantiates this generator as an opt-in
+  while preserving external raw BIO as the default. It derives CLKOUT sampling
+  from the actual modeled processor phase and rejects a same-FPGA-clock 1 MHz
+  coincidence. An integrated fixture holds external BIO high, selects a
+  qualified generated low, proves BIOZ reaches only `LACK 0x22` in three
+  cycles, and observes release only after a later CLKOUT sample. Board-top
+  Yosys passes at 2,408 abstract cells/154 checks/three memories.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -524,8 +530,8 @@
   OV stage, simultaneous indirect
   increment/decrement, out-of-range RAM behavior, physical-reset retention of
   unlisted state,
-  DMOV/LTD source-`0x8f` destination behavior, complete Hard Drivin' BIO
-  divider state, 68000-side reset-handoff timing and firmware compliance,
+  DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
+  and firmware compliance,
   communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
   population and absent-block behavior,
   BIO power-up/reset-release phase and independent-clock coincidence,
@@ -536,8 +542,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** connect the qualified BIO generator to the board top as an
-  explicit opt-in path with externally scheduled noncoincident enables while
-  retaining the generic core's platform-independent raw BIO input.
+- **Next task:** qualify the A044427 port-2 compare circuit from the primary
+  schematic and replace the current provisional integration behavior only
+  when its exact digital result and timing are established.
 - **Latest committed baseline before this cycle:**
-  `3eba771`
+  `10c78d2`

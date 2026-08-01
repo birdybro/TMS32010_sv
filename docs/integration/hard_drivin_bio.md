@@ -94,9 +94,26 @@ deterministic seed values.
 Pre-technology Yosys reports 52 cells, seven retained checks, no memory or
 latch, and zero structural problems. This is logical FPGA evidence, not an
 electrical setup/hold or metastability result.
-The module is not yet connected to `hard_drivin_sound_mister`; that top retains
-its externally supplied platform-independent BIO input until a board-clock
-enable generator is selected.
+
+The module is connected to `hard_drivin_sound_mister` as an explicit opt-in
+path. The external platform-independent raw BIO input remains the default
+when `use_board_bio_i=0`. A caller supplies only the 1 MHz rising-edge enable;
+the board top derives the modeled CLKOUT rising-edge enable from the core's
+actual phase advance. The generator's noncoincident-enable assertion makes a
+1 MHz event on that same FPGA clock an invalid integration schedule rather
+than silently choosing the unresolved physical coincidence result. Board
+`/RESET` remains a distinct input from processor `/320RES`.
+
+Counter, raw-source, sampled-pin, and selected-pin validity remain observable.
+Selecting the board path before it becomes qualified does not stall the DSP or
+claim a physical startup value; `selected_bio_valid_o=0` discloses that state.
+The integrated regression holds the external BIO sentinel high, generates and
+samples a qualified low board BIO, selects it, and proves that `BIOZ` takes the
+target before the next sampled release. Pre-technology synthesis of the full
+partial board top reports 2,408 abstract cells, 154 retained checks, three
+memories, and zero structural problems. The top still requires an external
+1 MHz clock-enable source and does not resolve `OQ-028` electrical phase or
+metastability behavior.
 
 ## Secondary emulator behavior
 

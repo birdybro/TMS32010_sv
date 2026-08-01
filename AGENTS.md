@@ -395,8 +395,10 @@ LS161 `0xce`-through-`0xff` divide-by-50 chain, one-period active-low source,
 and CLKOUT LS74 resampler. Represent its independent clocks only through
 explicit enables; never generate internal clocks. Board `/RESET` clears the
 source LS74 but not the counters or resampler. Preserve caller-seed and pin
-validity, and do not select a coincident-edge policy or connect the module to
-the board top without resolving or explicitly containing `OQ-028`.
+validity. Its opt-in board-top connection derives CLKOUT sampling from the
+actual modeled processor phase, keeps external raw BIO as the default, and
+rejects a coincident 1 MHz enable by assertion. Do not weaken that containment
+or select physical coincidence behavior without resolving `OQ-028`.
 The board-specific `hard_drivin_sound_program_ram` now implements a
 same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
 access only while `/320RES` is asserted, permits TMS access only after host
@@ -408,9 +410,10 @@ physical asynchronous SRAM has ready signaling or registered reads.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
-alias execution test. It ties Rev-A INT inactive and leaves BIO external. It
-is not a 68000 bridge, peripheral implementation, full MiSTer top, or board
-timing qualification.
+alias execution test. It ties Rev-A INT inactive and selects between default
+external BIO and an explicit-validity board generator. It is not a 68000
+bridge, complete peripheral implementation, full MiSTer top, or board timing
+qualification.
 A044427 communication RAM is a separate 512-by-16 resource. Host latch
 `CRAMEN` selects either host read/write access or DSP port-1 read-only access;
 the DSP address comes from the low nine bits of a shared 16-bit LS191 counter.

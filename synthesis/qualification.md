@@ -166,12 +166,13 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,346 abstract cells, 144
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,408 abstract cells, 154
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
 Both structural checks pass with zero problems. This proves hierarchy and
-memory retention only; it is not a technology-mapped utilization, block-RAM
+memory retention plus the opt-in BIO selection boundary only; it is not a
+technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
 The tenth script applies the pre-technology boundary to
@@ -185,8 +186,7 @@ The eleventh checked-in script targets `hard_drivin_sound_bio_generator`.
 Yosys 0.67+111 reports 52 cells with seven retained checks, no memory or latch,
 and zero structural problems. This proves only the tested one-clock,
 explicit-enable representation of the divide-by-50 and CLKOUT sample state;
-it is not physical independent-clock setup/hold, metastability, or board-top
-integration evidence.
+it is not physical independent-clock setup/hold or metastability evidence.
 
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.

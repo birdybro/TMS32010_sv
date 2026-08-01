@@ -46,9 +46,9 @@ raw twelve-bit DAC latch. It also exposes the primary-defined port-4
 complementary `MUTE` net and latched port-5 `320IRQ` state.
 It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
-bridge/address decode, actual sample storage, BIO generator, analog audio
-path, loaded mute consumer, and remaining peripherals remain absent from that
-integrated top.
+bridge/address decode, actual sample storage, board 1 MHz enable source, analog
+audio path, loaded mute consumer, and remaining peripherals remain absent from
+that integrated top.
 A separate synthesizable communication-path adapter now implements the
 primary-transcribed 512-by-16, CRAMEN-selected host/DSP storage relationship,
 read-only DSP port-1 access, shared 16-bit sound-address counter, port-7 load,
@@ -79,12 +79,14 @@ port 4 captures complement `TD0` onto the raw `MUTE` net, while any port-5
 write asserts `320IRQ` until a host-clear callback. Rev A's only drawn mute
 consumer is not loaded, so the raw state does not gate audio under
 `SC-027`/`OQ-027`.
-A standalone BIO adapter now models the schematic's LS161 divide-by-50 chain,
+A BIO adapter now models the schematic's LS161 divide-by-50 chain,
 one-microsecond active-low source pulse, and separate CLKOUT resampler using
 clock enables rather than generated clocks. It preserves the counters across
-board reset and exports validity for the uninitialized physical phase. It is
-not yet connected to the partial board top because the production 1 MHz and
-CLKOUT clocks are independent and coincident-edge behavior remains `OQ-028`.
+board reset and exports validity for the uninitialized physical phase. The
+partial board top connects it as an explicit opt-in while retaining external
+raw BIO as the default. The caller supplies a noncoincident 1 MHz enable and
+the top derives CLKOUT sampling from the core phase; physical independent-
+crystal coincidence remains `OQ-028` rather than receiving invented behavior.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

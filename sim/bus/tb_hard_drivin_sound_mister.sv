@@ -5,6 +5,20 @@ module tb_hard_drivin_sound_mister;
   logic        initialize;
   logic        clock_enable;
   logic        dsp_reset_n;
+  logic        external_bio_n;
+  logic        use_board_bio;
+  logic        board_reset_n;
+  logic        bio_one_mhz_rise;
+  logic [7:0]  bio_counter_seed;
+  logic        bio_counter_seed_valid;
+  logic [7:0]  bio_divider_state;
+  logic        bio_divider_phase_valid;
+  logic        raw_320bio_n;
+  logic        raw_320bio_valid;
+  logic        board_bio_n;
+  logic        board_bio_valid;
+  logic        selected_bio_n;
+  logic        selected_bio_valid;
   logic        host_program_select_n;
   logic        host_write;
   logic        host_commit;
@@ -89,7 +103,20 @@ module tb_hard_drivin_sound_mister;
     .initialize_i                  (initialize),
     .clock_enable_i                (clock_enable),
     .dsp_reset_n_i                 (dsp_reset_n),
-    .bio_i                         (1'b0),
+    .bio_i                         (external_bio_n),
+    .use_board_bio_i               (use_board_bio),
+    .board_reset_n_i               (board_reset_n),
+    .bio_one_mhz_rise_i            (bio_one_mhz_rise),
+    .bio_counter_seed_i            (bio_counter_seed),
+    .bio_counter_seed_valid_i      (bio_counter_seed_valid),
+    .bio_divider_state_o           (bio_divider_state),
+    .bio_divider_phase_valid_o     (bio_divider_phase_valid),
+    .raw_320bio_n_o                (raw_320bio_n),
+    .raw_320bio_valid_o            (raw_320bio_valid),
+    .board_bio_n_o                 (board_bio_n),
+    .board_bio_valid_o             (board_bio_valid),
+    .selected_bio_n_o              (selected_bio_n),
+    .selected_bio_valid_o          (selected_bio_valid),
     .host_program_select_n_i       (host_program_select_n),
     .host_write_i                  (host_write),
     .host_commit_i                 (host_commit),
@@ -407,6 +434,12 @@ module tb_hard_drivin_sound_mister;
     initialize = 1'b1;
     clock_enable = 1'b1;
     dsp_reset_n = 1'b0;
+    external_bio_n = 1'b0;
+    use_board_bio = 1'b0;
+    board_reset_n = 1'b1;
+    bio_one_mhz_rise = 1'b0;
+    bio_counter_seed = 8'hff;
+    bio_counter_seed_valid = 1'b1;
     host_program_select_n = 1'b1;
     host_write = 1'b0;
     host_commit = 1'b0;
@@ -430,6 +463,9 @@ module tb_hard_drivin_sound_mister;
 
     require(reset_active && !native_bus_active && men_n && den_n && we_n,
             "held physical reset keeps every TMS native strobe inactive");
+    require(selected_bio_valid && !selected_bio_n &&
+            !board_bio_valid && board_bio_n,
+            "external BIO remains selected while board BIO power-up is invalid");
 
     // The host loads the project-authored ROM-free board smoke program while
     // /320RES is asserted. Address 14 is an explicit conservative park word.
@@ -593,6 +629,62 @@ module tb_hard_drivin_sound_mister;
     tick();
     require(host_ready && host_read_data == 16'h7e00,
             "address-zero TBLW leaves its program word unchanged");
+
+    // Keep the DSP reset, load a BIOZ fixture, and qualify the opt-in board
+    // generator independently of the still-high external BIO sentinel.
+    host_write_word(12'h000, 16'hf600);  // BIOZ target operand follows
+    host_write_word(12'h001, 16'h0003);  // generated-low target
+    host_write_word(12'h002, 16'h7e11);  // untaken sentinel LACK 0x11
+    host_write_word(12'h003, 16'h7e22);  // taken target LACK 0x22
+    host_write_word(12'h004, 16'h7f80);  // following NOP
+
+    external_bio_n = 1'b1;
+    while (phase == 2'd1) begin
+      tick();
+    end
+    bio_one_mhz_rise = 1'b1;
+    tick();
+    bio_one_mhz_rise = 1'b0;
+    require(bio_divider_state == 8'hce && bio_divider_phase_valid &&
+            !raw_320bio_n && raw_320bio_valid &&
+            board_bio_n && !board_bio_valid,
+            "integrated terminal edge reloads CE before CLKOUT resampling");
+    for (int unsigned elapsed = 0; elapsed < 8; elapsed++) begin
+      if (board_bio_valid && !board_bio_n) begin
+        break;
+      end
+      tick();
+    end
+    use_board_bio = 1'b1;
+    #1;
+    require(!board_bio_n && board_bio_valid &&
+            !selected_bio_n && selected_bio_valid,
+            "opt-in board BIO selects a qualified low over external high");
+
+    release_and_check_reset();
+    run_until_retired(2);
+    require(accumulator == 32'h0000_0022 && cycle_count == 32'd3,
+            "generated low BIO takes BIOZ and executes only target LACK 0x22");
+
+    dsp_reset_n = 1'b0;
+    tick();
+    while (phase == 2'd1) begin
+      tick();
+    end
+    bio_one_mhz_rise = 1'b1;
+    tick();
+    bio_one_mhz_rise = 1'b0;
+    require(raw_320bio_n && !board_bio_n,
+            "source release waits for the independent CLKOUT enable");
+    for (int unsigned elapsed = 0; elapsed < 8; elapsed++) begin
+      if (board_bio_n && board_bio_valid) begin
+        break;
+      end
+      tick();
+    end
+    require(board_bio_n && board_bio_valid &&
+            selected_bio_n && selected_bio_valid,
+            "following CLKOUT enable propagates generated BIO release");
 
     $display("PASS tb_hard_drivin_sound_mister");
     $finish;

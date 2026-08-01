@@ -2,14 +2,28 @@
 
 // Same-clock FPGA integration of the generic MiSTer callback wrapper with the
 // qualified A044427 Rev-A program/communication RAM ownership, parallel
-// sample-ROM callback, raw DAC latch, output-control LS74s, and native target
-// decode. Remaining peripherals and the 68000 bus bridge are external.
+// sample-ROM callback, raw DAC latch, output-control LS74s, opt-in BIO path,
+// and native target decode. Remaining peripherals and the 68000 bus bridge
+// are external.
 module hard_drivin_sound_mister (
   input  logic        clk_i,
   input  logic        initialize_i,
   input  logic        clock_enable_i,
   input  logic        dsp_reset_n_i,
   input  logic        bio_i,
+  input  logic        use_board_bio_i,
+  input  logic        board_reset_n_i,
+  input  logic        bio_one_mhz_rise_i,
+  input  logic [7:0]  bio_counter_seed_i,
+  input  logic        bio_counter_seed_valid_i,
+  output logic [7:0]  bio_divider_state_o,
+  output logic        bio_divider_phase_valid_o,
+  output logic        raw_320bio_n_o,
+  output logic        raw_320bio_valid_o,
+  output logic        board_bio_n_o,
+  output logic        board_bio_valid_o,
+  output logic        selected_bio_n_o,
+  output logic        selected_bio_valid_o,
 
   input  logic        host_program_select_n_i,
   input  logic        host_write_i,
@@ -132,6 +146,13 @@ module hard_drivin_sound_mister (
   logic        sound_rom_port_0_ready;
   logic [15:0] selected_io_read_data;
   logic        selected_io_ready;
+  logic        bio_clkout_rise;
+
+  assign selected_bio_n_o = use_board_bio_i ? board_bio_n_o : bio_i;
+  assign selected_bio_valid_o = !use_board_bio_i || board_bio_valid_o;
+  // CLKOUT is low in modeled phases 0/1 and high in phases 2/3, so an
+  // enabled phase-1 advance is its rising sampling boundary.
+  assign bio_clkout_rise = phase_advance_o && (phase_o == 2'd1);
 
   assign native_write_data =
     logical_program_write
@@ -292,12 +313,28 @@ module hard_drivin_sound_mister (
     .irq_68000_o                   (irq_68000_o)
   );
 
+  hard_drivin_sound_bio_generator bio_generator (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .board_reset_n_i               (board_reset_n_i),
+    .one_mhz_rise_i                (bio_one_mhz_rise_i),
+    .clkout_rise_i                 (bio_clkout_rise),
+    .counter_seed_i                (bio_counter_seed_i),
+    .counter_seed_valid_i          (bio_counter_seed_valid_i),
+    .divider_state_o               (bio_divider_state_o),
+    .divider_phase_valid_o         (bio_divider_phase_valid_o),
+    .raw_320bio_n_o                (raw_320bio_n_o),
+    .raw_320bio_valid_o            (raw_320bio_valid_o),
+    .bio_n_o                       (board_bio_n_o),
+    .bio_valid_o                   (board_bio_valid_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
     .processor_reset_i             (!dsp_reset_n_i),
     .clock_enable_i                (clock_enable_i),
-    .bio_i                         (bio_i),
+    .bio_i                         (selected_bio_n_o),
     .int_i                         (1'b1),
     .program_address_o             (native_address_o),
     .program_read_o                (logical_program_read),
@@ -367,6 +404,13 @@ module hard_drivin_sound_mister (
       assert (!logical_program_read || ram_tms_program_read);
       assert (!io_write_o || (logical_io_write || logical_program_write));
       assert (!logical_io_read || io_read_o);
+      assert (selected_bio_n_o ==
+              (use_board_bio_i ? board_bio_n_o : bio_i));
+      assert (selected_bio_valid_o ==
+              (!use_board_bio_i || board_bio_valid_o));
+      if (!use_board_bio_i) begin
+        assert (selected_bio_valid_o);
+      end
       if (io_read_o || io_write_o) begin
         assert (logical_io_port == io_port_o || logical_program_write);
       end

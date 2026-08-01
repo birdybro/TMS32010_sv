@@ -4,14 +4,15 @@
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
-communication-memory, sample-ROM, raw DAC-latch, and output-control paths.
+communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
+board-BIO paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
 1 and routes port 0 through a present-block-aware byte callback.
-It does not implement the 68000 bus/address decoder, actual sample storage, compare
-circuit, DAC analog path, a loaded mute consumer, BIO divider, or a MiSTer
-framework top level.
+It does not implement the 68000 bus/address decoder, actual sample storage,
+compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
+clock-enable source, or a MiSTer framework top level.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -117,6 +118,27 @@ asserted until `host_irq_clear_commit_i` clocks the grounded D input or
 boundary, not a 68000 address decoder or physical `/IRQCLR` pulse model. See
 `hard_drivin_sound_control.md` for the pin-level provenance and confidence.
 
+## Opt-in board BIO
+
+The external active-low `bio_i` remains the default portable callback when
+`use_board_bio_i=0`. When explicitly selected, the integrated
+`hard_drivin_sound_bio_generator` supplies the processor BIO level and exposes
+the divider state, raw `/320BIO`, CLKOUT-sampled board BIO, and validity of
+each stage. `selected_bio_valid_o` is always true for the external callback
+contract and otherwise follows the board resampler validity; selecting an
+unqualified deterministic FPGA bit does not turn it into a known physical
+power-up value.
+
+`bio_one_mhz_rise_i` is a same-clock event enable supplied by the surrounding
+board implementation. The top derives the CLKOUT rising event internally from
+the processor's modeled phase advance, so software cannot sample a separately
+invented CLKOUT schedule. The generator asserts that these two enables do not
+coincide. This explicitly contains `OQ-028`: a future clock adapter must avoid
+the unresolved same-edge case or replace that contract only after stronger
+evidence establishes its behavior. `board_reset_n_i` represents global board
+`/RESET` and is deliberately distinct from `dsp_reset_n_i` (`/320RES`). See
+`hard_drivin_bio.md` for the primary divider/resampler provenance.
+
 ## Physical I/O callback
 
 `io_port_o`, `io_read_o`, `io_write_o`, `io_write_data_o`, `io_ready_i`, and
@@ -141,8 +163,8 @@ readiness from the shared RAM. IN/OUT use the same physical callback. This is
 the A044427 alias documented by `SC-021`.
 
 The production Rev-A TMS interrupt input is tied internally inactive-high.
-`bio_i` remains an external active-low input because the board-specific divider
-and CLKOUT resynchronizer are not implemented yet.
+The active-low BIO input is selected between the default external callback and
+the explicit board generator described above.
 
 ## Verification and synthesis
 
@@ -162,6 +184,15 @@ program word zero remains the original `LACK 0` opcode `0x7e00`. This directly
 tests that the physical alias uses internal `/DACL` readiness rather than the
 external callback. No Atari ROM data is used.
 
+Finally, the test loads a synthetic `BIOZ` fixture while holding the external
+BIO high. A scheduled 1 MHz terminal edge reloads the divider to `0xce`; the
+internally derived following CLKOUT edge samples the generated low level. The
+test opts into that qualified board path, proves `BIOZ` takes only the
+`LACK 0x22` target in three total instruction cycles, then proves the later
+source release reaches the selected input only on another modeled CLKOUT
+sample. This is same-clock FPGA integration evidence, not physical
+independent-crystal timing.
+
 Before the first execution, the test also uses CRAMEN host ownership to load
 communication word `0x056` with `0x55aa`, releases that ownership, and runs a
 corrected synthetic sequence that loads port 7 before the first input read.
@@ -179,7 +210,7 @@ unready external callbacks: TD0=1 drives raw `MUTE` low exactly once, the
 data-independent IRQ latch asserts, a host-clear pulse clears only the IRQ,
 and the following `/320RES` returns raw `MUTE` high.
 
-The pre-technology Yosys target retains three memories and reports 2,346
-abstract cells with 144 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,408
+abstract cells with 154 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.
