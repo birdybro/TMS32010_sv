@@ -1,9 +1,10 @@
-# Hard Drivin' main-board `/DTACK` and `/RVAS` timing
+# Hard Drivin' main-board `/DTACK`, `/RVAS0`, and `/RVAS` timing
 
 This note covers only the SP-327 main-board logic that converts an asserted
-main-processor `/AS` into `RVA` and holds expansion-bus `/RVAS` until the
-main-board `/DTACK` path has completed. It is distinct from the A044427 local
-sound-68000 timing in `hard_drivin_host_timing.md`. The complete combinational
+main-processor `/AS` into early `/RVAS0`, `RVA`, and held expansion-bus
+`/RVAS` strobes until the main-board `/DTACK` path has completed. It is
+distinct from the A044427 local sound-68000 timing in
+`hard_drivin_host_timing.md`. The complete combinational
 `/DTACK` cone is now transcribed separately from the sequential hold state;
 raw source timing, clock-domain crossing, and nanosecond timing margin remain
 outside the implemented blocks.
@@ -36,11 +37,39 @@ pinout, and function table, printed p. 1]. **Confidence: VERIFIED_PRIMARY for
 this logical signal chain and polarity.**
 
 The neighboring F74 `135H` output `/RVAS0` is a distinct early held-valid
-strobe. `8MHZ OR /S4` drives its asynchronous preset and the sampled-`/DTACK`
-Q clocks its D=0 release. `/RVAS0` qualifies the `/HSBUS` acknowledgement
-path; it is not the J7 expansion-bus `/RVAS` output and is not yet generated
-by the standalone state adapter. **Confidence: VERIFIED_PRIMARY for the
-connectivity; UNKNOWN for the phase/CDC contract needed by an FPGA model.**
+strobe. Its D and ground pin are tied low, `/CLR` is pulled high, and AS32
+`135K` drives `/PRE` from `8MHZ OR /S4`. The sampled-`/DTACK` Q clocks its
+D=0 release. Active `/S4` therefore presets `/RVAS0` immediately during an
+8 MHz low phase and at the next falling edge after a high-phase assertion.
+The active-low preset dominates a coincident release clock, per the F74
+function table. `/RVAS0` qualifies the `/HSBUS` acknowledgement path; it is
+not the J7 expansion-bus `/RVAS` output
+[atari-hard-drivin-schematic-package-sp327, sheet 4, PDF p. 5;
+ti-sn74als32-datasheet-sdas113b, printed pp. 1 and 4;
+ti-sn74f74-datasheet-sdfs046a, printed p. 1]. **Confidence:
+VERIFIED_PRIMARY for connectivity, polarity, phase equation, and priority.**
+
+## Normal MC68000 phase contract
+
+The main MC68000 asserts `/AS` after the rising edge entering S2. The next
+falling edge enters S3; `8MHZ` then goes low, making the `/RVAS0` preset
+active before the next rising edge enters S4. S4 transfers the captured
+request into `RVA` and presets `/RVAS`. For a selected no-wait HSBUS cycle,
+the early `/RVAS0` term has already asserted `/DTACK` before the processor's
+S4 completion sample at the following falling edge. That falling edge also
+records `/DTACK=0` in F74 `135C` [motorola-m68000-users-manual-ninth,
+§4.1.1 and MC68000 timing table on printed pp. 10-24 through 10-26;
+atari-hard-drivin-schematic-package-sp327, sheet 4, PDF p. 5].
+**Confidence: VERIFIED_PRIMARY for the individual edges and gates;
+INFERRED from their composition for the named no-wait HSBUS intent.**
+
+After the S7 falling edge, the MC68000 begins negating `/AS`. That releases
+the raw `/HSBUS` address decode and hence `/DTACK`; the following falling
+8 MHz edge samples the resulting high level and releases `/RVAS0` and
+`/RVAS`. An asserted `/GSPWAIT` or `/MSPWAIT` holds `/DTACK` high after
+`/RVAS0` assertion until both inputs return high. Which devices own those
+wait nets, their complete protocols, and their electrical timing remain
+unresolved; the RTL accepts the raw levels without assigning semantics.
 
 ## Complete combinational `/DTACK` cone
 
@@ -92,14 +121,15 @@ raw pin delays.
 For a transaction whose main-board acknowledgement logic first asserts and
 then releases `/DTACK`, the event-level sequence is:
 
-| event | `RVA` | sampled `/DTACK` | `/RVAS` | effect |
-|---|---:|---:|---:|---|
-| FPGA initialization convention | 0 | 1 | 1 | deterministic idle only |
-| `/AS` assertion captured | 0 | unchanged | unchanged | request pending |
-| next rising 8 MHz | 1 | unchanged | 0 | expansion access begins |
-| falling 8 MHz with `/DTACK=0` | 1 | 0 | 0 | completion transition armed |
-| next rising 8 MHz | 0 | 0 | 0 | `RVA` ends; `/RVAS` remains held |
-| falling 8 MHz with `/DTACK=1` | 0 | 1 | 1 | sampled low-to-high edge releases hold |
+| event | `RVA` | `/RVAS0` | sampled `/DTACK` | `/RVAS` | effect |
+|---|---:|---:|---:|---:|---|
+| FPGA initialization convention | 0 | 1 | 1 | 1 | deterministic idle only |
+| S2 high-phase `/AS` assertion | 0 | 1 | unchanged | 1 | request pending |
+| S3 falling 8 MHz | 0 | 0 | previous level | 1 | early HSBUS valid |
+| S4 rising 8 MHz | 1 | 0 | unchanged | 0 | ordinary/expansion access begins |
+| S5 falling with `/DTACK=0` | 1 | 0 | 0 | 0 | completion transition armed |
+| S6 rising 8 MHz | 0 | 0 | 0 | 0 | `RVA` ends; held strobes remain |
+| later falling with `/DTACK=1` | 0 | 1 | 1 | 1 | sampled low-to-high edge releases both holds |
 
 `/RVAS` is therefore not a fixed-duration pulse and cannot be reconstructed
 from elapsed clocks or an abstract transaction commit. If `/DTACK` never
@@ -116,19 +146,22 @@ complete acknowledgement-path delay and fault behavior.**
 
 `hard_drivin_main_rvas_timing` uses one FPGA clock and caller-supplied,
 mutually exclusive `main_8mhz_rise_i`, `main_8mhz_fall_i`, and
-`address_strobe_assert_i` events. It samples the physical logical level
-`dtack_n_i` only on falling-8-MHz events and exposes `RVA`, sampled `/DTACK`,
-`/RVAS`, and one-clock assertion/release diagnostics. It creates no clock.
+`address_strobe_assert_i` events plus `main_8mhz_high_i`. It requires every
+phase-level change to carry its corresponding edge event. It samples the
+physical logical level `dtack_n_i` only on falling-8-MHz events and exposes
+`RVA`, sampled `/DTACK`, `/RVAS0`, `/RVAS`, and one-clock assertion/release
+diagnostics. It creates no clock.
 
 The caller must resolve raw `/AS`, `8MHZ`, and `/DTACK` into that event domain.
-Coincident event pulses are rejected by assertions because the source
+Coincident event pulses and inconsistent level/edge pairs are rejected by
+assertions because the source
 schematic's propagation ordering cannot be represented by simultaneous
 same-clock enables. `initialize_i` chooses idle request, `RVA=0`, sampled
-`/DTACK=1`, and `/RVAS=1`; this deterministic state is an FPGA convention,
-not physical power-up behavior. The block remains standalone from
+`/DTACK=1`, `/RVAS0=1`, and `/RVAS=1`; this deterministic state is an FPGA
+convention, not physical power-up behavior. The block remains standalone from
 `hard_drivin_main_sound_reset_decode`; the directed test composition is not a
-new wrapper. A platform still must define `/RVAS0`, external wait sources,
-raw levels/events, and the CDC contract.
+new wrapper. A platform still must define external wait sources, raw
+levels/events, and the CDC contract.
 
 `hard_drivin_main_dtack_decode` is combinational and storage-free. It exposes
 `/VPA`, `/RHSBUS`, `/RDUART`, all three acknowledgement terms, and final
@@ -137,14 +170,16 @@ preserves even contradictory raw input combinations for exhaustive checking.
 
 ## Verification evidence
 
-The hold-state test covers the normal assertion/low-sample/RVA-end/release
-sequence, continued hold across repeated edges when `/DTACK` never samples
-low, a later low/high recovery sequence, and deterministic reinitialization.
-A 12-step bounded
-proof compares all state and event outputs against an independent transition
-model under only mutually exclusive event assumptions. A 16-step cover
-reaches the normal release chain, the missed-low stuck-hold state, and the
-release pulse.
+The hold-state test covers the normal S2 high-phase request, S3 `/RVAS0`
+assertion, S4 `RVA`/`/RVAS`, low-sample/end/release sequence, low-phase
+immediate `/RVAS0` assertion, asynchronous-preset priority, continued hold
+across repeated edges when `/DTACK` never samples low, later recovery, and
+deterministic reinitialization. A 12-step bounded proof compares all state and
+event outputs against an independent transition model under event-exclusivity
+and phase-level/edge-consistency assumptions. A 16-step cover
+reaches seven classes: the normal release chain, missed-low stuck hold,
+`/RVAS` release, early `/RVAS0`, low-phase assertion, preset priority, and
+`/RVAS0` release.
 
 The decode test exhausts all 4,096 raw input combinations and separately
 checks ordinary, CPU-space, high-speed-wait, and DUART paths. A one-step BMC
@@ -152,10 +187,12 @@ proves every output equation and a one-step cover reaches ordinary ACK,
 CPU-space VPA, both high-speed wait states, and both DUART acknowledgement
 states. A composed bus test connects the timing, `/DTACK`, and sound-reset
 decode blocks and checks the complete synthetic `/AS` capture through `/SRES`
-release sequence.
+release sequence. A separate HSBUS composition checks S3 early
+acknowledgement, GSP wait extension, S7 raw-select release, and the following
+sampled release edge.
 
-Yosys 0.67+111 reports 48 cells/twelve retained checks for the hold state and
-21 cells/eight retained checks for the combinational decode, with no memory,
+Yosys 0.67+111 reports 93 cells/25 retained checks for the two-strobe hold
+state and 21 cells/eight retained checks for the combinational decode, with no memory,
 latch, generated clock, or structural problem. This is not a Cyclone V fit,
 raw-pin CDC proof, electrical timing calculation, specialized-peripheral
 model, or complete main-processor bus wrapper.

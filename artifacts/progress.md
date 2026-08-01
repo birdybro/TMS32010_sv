@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board `/DTACK` cone qualification
+- **Current milestone:** Hard Drivin' main-board `/RVAS0` phase qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 50 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 51 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -102,9 +102,9 @@
   clock, and zero structural problems.
   A twenty-fifth target checks the storage-free main `/SRES` decode at 16
   cells/four retained checks, no memory/latch, and zero structural problems.
-  A twenty-sixth target checks the standalone main-board request/`RVA`/
-  sampled-`/DTACK`/`/RVAS` state chain at 48 cells/twelve retained checks,
-  with no memory, latch, generated clock, or structural problem.
+  A twenty-sixth target checks the standalone main-board request/early-
+  `/RVAS0`/`RVA`/sampled-`/DTACK`/`/RVAS` state chain at 93 cells/25 retained
+  checks, with no memory, latch, generated clock, or structural problem.
   A twenty-seventh target checks the complete storage-free main `/VPA`/
   ordinary-RVA/HSBUS-wait/DUART `/DTACK` cone at 21 cells/eight retained
   checks, with no memory, latch, generated clock, or structural problem.
@@ -182,13 +182,14 @@
   host-event spacing, running-DSP interaction,
   raw-pin CDC, collision/byte behavior, and electrical timing remain outside
   this proof.
-  A nineteenth standalone main-`/RVAS` configuration passes a 12-step BMC
-  against an independent transition model under mutually exclusive event
-  assumptions. Its 16-step cover reaches the complete request/assert/
-  low-sample/RVA-end/release chain, a held `/RVAS` after missing the low
-  `/DTACK` sample, and the release event. The proof excludes the upstream
-  acknowledgement equation, raw-pin CDC, electrical timing, and physical
-  power-up state.
+  A nineteenth standalone main-held-strobe configuration passes a 12-step BMC
+  against an independent transition model under event-exclusivity and
+  phase-level/edge-consistency assumptions. Its 16-step cover reaches seven
+  classes: the complete request/assert/low-sample/RVA-end/release chain, held
+  `/RVAS` after a missed low sample, `/RVAS` release, early `/RVAS0`,
+  low-phase immediate assertion, asynchronous-preset priority, and `/RVAS0`
+  release. The proof excludes the upstream acknowledgement equation, raw-pin
+  CDC, electrical timing, and physical power-up state.
   A twentieth standalone main-`/DTACK` configuration proves all intermediate
   and final Boolean equations in one step across arbitrary raw inputs. Its
   one-step cover reaches ordinary ACK, CPU-space `/VPA`, HSBUS ACK and wait,
@@ -825,14 +826,17 @@
   covers, and synthesizes to 16 cells/four checks. Pinned MAME exposes only
   `0x84c000..0x84c001` (`SC-036`).
 - **New main-bus hold evidence:** SP-327 sheet 4 proves that `/AS` clocks a
-  request latch, the next rising 8 MHz edge produces one-period `RVA`, active
-  `/RVA` asynchronously presets `/RVAS` low, and a falling-edge sample of
-  `/DTACK` must transition low-to-high before `/RVAS` releases. The standalone
-  same-clock event model preserves continued hold if the low sample is
-  missed, passes directed simulation and 12/16-step BMC/cover, and synthesizes
-  to 48 cells/twelve checks. The original system `/RESET` source, `/RVAS0`
-  event adaptation, specialized source timing, raw CDC, electrical margin,
-  and physical power-up state remain `OQ-036`.
+  request latch, normal high-phase S2 assertion presets `/RVAS0` on S3
+  falling, S4 rising produces one-period `RVA` and presets `/RVAS`, and a
+  falling-edge sample of `/DTACK` must transition low-to-high before either
+  D=0 hold releases. Low-phase immediate assertion and active-preset priority
+  are also represented. The same-clock event model preserves continued hold
+  if the low sample is missed, passes directed simulation and 12/16-step
+  BMC/cover, and synthesizes to 93 cells/25 checks. A composed HSBUS test
+  verifies zero-wait ACK, GSP wait extension, raw-select release, and the
+  later sampled release. The original system `/RESET` source, specialized
+  source protocols, raw CDC, electrical margin, and physical power-up state
+  remain `OQ-036`.
 - **New main acknowledgement evidence:** the full sheet-4 gate cone is now
   pinned to TI's LS20, AS00, combined ALS32/AS32, F11, F04, and F74 data.
   `/VPA` blocks the ordinary term for function-code-7 CPU space; ordinary
@@ -842,8 +846,8 @@
   one-step BMC/six covers, a complete synthetic sound-reset cycle, and
   21-cell/eight-check synthesis pass. Five new cached TI files bring the
   pinned total to 39; TI's AS32 URL is byte-identical to the existing combined
-  SDAS113B source. `/RVAS0` event adaptation and specialized peripheral/AC
-  timing remain open rather than inferred.
+  SDAS113B source. Specialized peripheral/AC timing remains open rather than
+  inferred.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -868,7 +872,7 @@
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
-  `/RVAS0` event adaptation, specialized main-bus peripheral protocols and
+  specialized main-bus peripheral protocols and
   raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
@@ -879,8 +883,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** reconstruct the SP-327 `/RVAS0` phase contract or locate the
-  system `/RESET` driver, keeping specialized HSBUS/DUART protocols and raw
-  CDC explicit rather than inferred from the now-complete Boolean cone.
+- **Next task:** trace the SP-327 GSP/MSP wait-source protocols or locate the
+  system `/RESET` driver, keeping DUART timing and raw CDC/electrical behavior
+  explicit rather than inferred from the qualified digital phase model.
 - **Latest committed baseline before this cycle:**
-  `ea5030a`
+  `feae0a0`

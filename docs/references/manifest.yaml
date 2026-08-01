@@ -338,7 +338,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
-        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; distinct /RVAS0 and /RVA-preset plus sampled-/DTACK-release /RVAS flip-flop chains",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; and separate /RVA-preset /RVAS chain",
         "SP-327 sheet 6, PDF page 7: MC68681 /DUDTACK output and /RDUART selection endpoint",
         "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
       ],

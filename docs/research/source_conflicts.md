@@ -816,8 +816,10 @@ electrical result of an out-of-range access.
   expose the lower-address-bit aliases created by the TTL decode.
 - **Current treatment:** `hard_drivin_main_sound_reset_decode` implements the
   complete primary-backed high-address/control equation and omits A13:A0 from
-  its interface. It remains standalone from the main-board bus sequencer and
-  local one-shot until raw timing and CDC are qualified.
+  its interface. Directed compositions now connect it to the independently
+  qualified `/RVAS0`/`RVA`/`/RVAS` timing and complete `/DTACK` equation, but
+  no raw-pin main-board wrapper or local one-shot connection is claimed until
+  CDC and electrical timing are qualified.
 - **Confidence:** VERIFIED_PRIMARY for the physical address/control decode;
   CORROBORATED for software use of the canonical word; UNKNOWN for whether
   shipped firmware ever accesses an alias.

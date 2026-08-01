@@ -1415,6 +1415,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
   `sim/bus/tb_hard_drivin_main_dtack_decode.sv`,
+  `sim/bus/tb_hard_drivin_main_hsbus_timing.sv`,
   `sim/bus/tb_hard_drivin_main_rvas_timing.sv`,
   `sim/bus/tb_hard_drivin_main_sound_reset_decode.sv`,
   `sim/bus/tb_hard_drivin_main_sound_reset_timing.sv`,
@@ -1698,20 +1699,23 @@ objective passing evidence.
   from the decode. The standalone high-address module exhausts 8,192
   address/control cases, passes a one-step proof with four covers, and
   synthesizes to 16 cells/four checks. MAME's canonical-only mapping is
-  `SC-036`. SP-327 sheet 4 now also resolves the raw logical `/RVAS` hold:
-  `/AS` is captured, rising 8 MHz creates one-period `RVA`, active `/RVA`
-  presets `/RVAS` low, and a falling-edge-sampled `/DTACK` low-to-high
-  transition alone releases it. The standalone event-domain RTL covers normal
-  release, missed-low continued hold, late recovery, and deterministic FPGA
-  reinitialization; its 12-step BMC and 16-step three-class cover pass, and
-  Yosys reports 48 cells/twelve checks. The complete sheet-4 combinational
+  `SC-036`. SP-327 sheet 4 now also resolves both logical hold chains. Normal
+  S2 high-phase `/AS` assertion asynchronously presets early `/RVAS0` on S3
+  falling; S4 rising creates one-period `RVA` and presets `/RVAS`; and the
+  falling-edge-sampled `/DTACK` low-to-high clock releases both D=0 F74s
+  unless the `/RVAS0` preset is active. The standalone event-domain RTL
+  covers normal and low-phase assertion, preset priority, missed-low continued
+  hold, late recovery, and deterministic FPGA reinitialization; its 12-step
+  BMC and 16-step seven-class cover pass, and Yosys reports 93 cells/25
+  checks. The complete sheet-4 combinational
   `/DTACK` cone is also transcribed: `/VPA`, ordinary-RVA, HSBUS wait, DUART,
   and final F11 terms are exhaustively tested over all 4,096 raw inputs,
   proved in one step with six covers, and synthesize to 21 cells/eight checks.
   A composed test checks the synthetic sound-reset write from `/AS` capture
-  through `/SRES` release. The original system `/RESET` driver, `/RVAS0`
-  event model, specialized peripheral protocols, raw CDC, and electrical
-  timing remain `OQ-036`.
+  through `/SRES` release. A second composition checks the S2/S3 early HSBUS
+  path, zero-wait acknowledgement, GSP wait extension, raw-select deassertion,
+  and later sampled release. The original system `/RESET` driver, specialized
+  peripheral protocols, raw CDC, and electrical timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.

@@ -77,15 +77,16 @@ direction. Its reduced address port intentionally exposes the physical
 acknowledgement tree remain external.
 
 `rtl/wrappers/hard_drivin_main_rvas_timing.sv` separately reconstructs the
-SP-327 request latch, one-period `RVA`, asynchronous `/RVAS` assertion, and
-sampled-`/DTACK` release in a same-clock event domain. It intentionally has no
-timeout and remains standalone until a wrapper qualifies raw-pin CDC and the
-raw input/event contract.
+SP-327 request latch, phase-sensitive early `/RVAS0`, one-period `RVA`,
+asynchronous `/RVAS` assertion, and common sampled-`/DTACK` release in a
+same-clock event domain. It intentionally has no timeout and remains
+standalone until a wrapper qualifies raw-pin CDC and the raw input/event
+contract.
 
 `rtl/wrappers/hard_drivin_main_dtack_decode.sv` transcribes the complete
 SP-327 sheet-4 combinational `/VPA`, ordinary-RVA, high-speed-wait, DUART, and
-final `/DTACK` equations. It exposes every term and leaves `/RVAS0`, external
-wait sources, and peripheral behavior outside the storage-free block.
+final `/DTACK` equations. It exposes every term and leaves external wait
+sources and peripheral behavior outside the storage-free block.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address

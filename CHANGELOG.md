@@ -553,6 +553,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   standalone same-clock event model. It captures `/AS`, emits the one-period
   `RVA`, asserts `/RVAS` from `/RVA`, and releases only after `/DTACK` has
   sampled low then high; a missing low sample deliberately holds the bus.
+- Primary qualification of SP-327's early `/RVAS0` F74 and its normal
+  MC68000 phase contract. The timing adapter now represents S2 high-phase
+  `/AS`, S3 asynchronous preset, common sampled-`/DTACK` release, low-phase
+  immediate assertion, and active-preset priority. A composed HSBUS test adds
+  zero-wait and GSP-wait traces without assigning undocumented peripheral
+  semantics to the raw wait inputs.
 - Primary qualification of the complete SP-327 sheet-4 combinational
   `/DTACK` cone: function-code-7 `/VPA`, ordinary `RVA`, qualified HSBUS wait,
   DUART acknowledgement, and final three-way active-low merge. The
@@ -571,11 +577,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   oracle for the paired physical source.
 - `SC-036` separates the physical 16 KiB `/SRES` alias window from pinned
   MAME's canonical `0x84c000..0x84c001` handler. `OQ-036` retains the unknown
-  system `/RESET` driver, `/RVAS0` event adaptation, specialized peripheral
-  timing, electrical timing, unreset power-up state, and raw CDC boundary; the
-  discrete `/RVAS` hold dependency and complete combinational `/DTACK` cone
-  are now primary-resolved. `/RVAS0` event adaptation and the specialized
-  peripheral timing contracts remain open.
+  system `/RESET` driver, specialized peripheral timing, electrical timing,
+  unreset power-up state, and raw CDC boundary; both discrete held-strobe
+  dependencies and the complete combinational `/DTACK` cone are now
+  primary-resolved. The GSP/MSP/DUART protocol contracts remain open.
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
@@ -725,7 +730,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 ### Verified
 
 - The complete repository gates pass with 129 provenance/document/tool tests,
-  231 model/unit tests, 38 instruction/decode RTL tests, 50 bus/integration
+  231 model/unit tests, 38 instruction/decode RTL tests, 51 bus/integration
   tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
   checks 37 modules; all 40 formal jobs from 20 configurations pass; all 27
   Yosys targets synthesize; and all 39 acquired reference hashes verify.
@@ -735,13 +740,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   acknowledgement states. The composed bus test checks `/AS` capture,
   `RVA`/`/DTACK` assertion, held `/RVAS`/`/SRES`, and sampled release. Yosys
   reports 21 cells/eight checks with no storage or structural problem.
-- The main `/RVAS` timing regression covers normal request/assert/sample/
-  release, continued hold across the exercised edges when `/DTACK` never
-  samples low, later low/high recovery, and FPGA reinitialization. Its
-  independent 12-step BMC passes;
-  16-step cover reaches the normal chain, missed-low hold, and release event.
-  Yosys reports 48 cells/twelve retained checks with no memory, latch,
-  generated clock, or structural problem.
+- The main held-strobe timing regression covers normal S2/S3 `/RVAS0`, S4
+  `RVA`/`/RVAS`, low-phase immediate preset, preset-over-release priority,
+  continued hold when `/DTACK` never samples low, later recovery, and FPGA
+  reinitialization. Its independent 12-step BMC passes; 16-step cover reaches
+  seven timing classes. The HSBUS composition additionally checks early
+  zero-wait ACK, active-low GSP wait extension, raw-select deassertion, and
+  delayed sampled release. Yosys reports 93 cells/25 retained checks with no
+  memory, latch, generated clock, or structural problem.
 - The main sound-reset decode regression exhausts all 1,024 `A23:A14` values
   across eight strobe/direction combinations. Its one-step BMC passes and four
   covers reach a canonical write, read isolation, inactive `/RVAS`, and a

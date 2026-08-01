@@ -78,10 +78,14 @@ samples low. The complete SP-327 combinational acknowledgement cone is now
 separately transcribed, including CPU-space `/VPA`, ordinary RVA, selected
 high-speed-bus wait, and selected-DUART paths. The sound-reset write selects
 neither specialized path and therefore drives `/DTACK` directly from `RVA`;
-a composed test checks the complete synthetic reset-write sequence. `/RVAS0`
-generation, external wait/peripheral protocols, and raw CDC remain external.
+a composed test checks the complete synthetic reset-write sequence. The
+separate `/RVAS0` F74 is also phase-qualified: normal S2 `/AS` assertion
+presets it on S3 falling before S4 `RVA`, while a low-phase assertion presets
+it immediately; the sampled release clock is shared with `/RVAS` and active
+preset has priority. An HSBUS composition checks zero-wait and GSP-wait
+paths. External wait/peripheral protocols and raw CDC remain external.
 See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
-for decode, transport, and the logical hold chain; VERIFIED_SIMULATION/FORMAL
+for decode, transport, and both logical hold chains; VERIFIED_SIMULATION/FORMAL
 for the three standalone RTL blocks; UNKNOWN for system reset origin,
 specialized-source protocols, acknowledgement-path electrical timing, and
 raw-pin CDC.**
