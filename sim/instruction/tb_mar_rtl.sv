@@ -130,7 +130,7 @@ module tb_mar_rtl;
     program_memory[7]  = 16'h68a8;  // MAR *+
     program_memory[8]  = 16'h687f;  // direct MAR is NOP
     program_memory[9]  = 16'h6890;  // MAR *-,AR0
-    program_memory[10] = 16'h68b8;  // unresolved simultaneous update
+    program_memory[10] = 16'h68b8;  // unsupported simultaneous update
 
     initialize         = 1'b1;
     reset              = 1'b1;
@@ -204,15 +204,16 @@ module tb_mar_rtl;
     require(pc == 12'd10 && cycle_count == 32'd10,
             "every legal MAR form consumes one architectural cycle");
 
-    tick();  // reserved MAR
-    require(illegal && !retired, "reserved MAR control traps");
+    tick();  // unsupported simultaneous-update MAR
+    require(illegal && !retired,
+            "unsupported simultaneous-update MAR traps fail-closed");
     require(pc == 12'd10 && cycle_count == 32'd10,
-            "reserved MAR does not advance PC or cycle count");
+            "unsupported MAR does not advance PC or cycle count");
     require(
       auxiliary_register_0 == 16'hfe00 &&
       auxiliary_register_1 == 16'ha1ff &&
       !auxiliary_register_pointer,
-      "reserved MAR leaves auxiliary state unchanged"
+      "unsupported MAR leaves auxiliary state unchanged"
     );
 
     require(t_register == 16'h0000, "MAR preserves initialized T");

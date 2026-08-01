@@ -43,9 +43,11 @@
       },
       {
         "name": "UNRESOLVED_SIMULTANEOUS_UPDATE",
-        "meaning": "The word enters a documented indirect data-address pattern, keeps the explicitly reserved bits clear and every other enumerated field legal, but sets both auxiliary-register increment and decrement; TI defines each control separately without defining the combination.",
+        "meaning": "The word enters an original TMS32010 indirect data-address pattern, keeps the explicitly reserved bits clear, but sets both auxiliary-register increment and decrement. Original-part pages define the controls separately without defining the combination; a later C1x reference card says they cannot both be one, without assigning forced-word execution behavior.",
         "source_citations": [
-          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3.2 Indirect Addressing Format", "printed_page": "3-2", "pdf_page": 52}
+          {"source_id": "ti-tms32010-users-guide-spru001b", "section": "3.3.2 Indirect Addressing Format", "printed_page": "3-2", "pdf_page": 52},
+          {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "3.3.2 Indirect Addressing Format", "printed_page": "3-2", "pdf_page": 23},
+          {"source_id": "ti-first-generation-users-guide-1987", "section": "TMS320C1x Programmer's Reference Card", "printed_page": "unnumbered card page", "pdf_page": 402}
         ],
         "unresolved_questions": ["OQ-010"]
       },

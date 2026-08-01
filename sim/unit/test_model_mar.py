@@ -77,7 +77,7 @@ class MarModelTests(unittest.TestCase):
         self.assertEqual(trace.mnemonic, "LARP")
         self.assertEqual(model.state.status.arp, 0)
 
-    def test_reserved_indirect_control_traps_without_state_change(self) -> None:
+    def test_simultaneous_update_traps_without_state_change(self) -> None:
         model = Tms32010Model()
         model.state.ar = [0x1234, 0x5678]
         model.load_words([0x68B8])

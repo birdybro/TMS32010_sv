@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-015` indirect-LST ARP-precedence research and
+- **Current milestone:** `OQ-010` simultaneous indirect INC/DEC research and
   reproducible original-device probe
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 141 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 143 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -509,8 +509,8 @@
   entry, acknowledge state, and vector capture
 - **New opcode-audit evidence:** all 65,536 words now receive exactly one
   evidence-scoped classification: 21,895 documented legal, 10,976 setting
-  TI's explicitly reserved indirect-address bits 6/2/1, 372 otherwise legal-
-  pattern simultaneous increment/decrement combinations held under `OQ-010`,
+  TI's explicitly reserved indirect-address bits 6/2/1, 372 original-pattern
+  simultaneous increment/decrement combinations held under `OQ-010`,
   3,637 documented-pattern mismatches, and 28,656 encodings absent from TI's
   explicitly complete primary instruction summary. A generated
   report and boundary tests guard the counts. Pattern mismatches and
@@ -1026,6 +1026,17 @@
   directions and emits distinct port-7 markers for both hypotheses. No
   silicon result is assigned; `OQ-015` remains RESEARCHING/CONFLICT and the
   current memory-wins model/RTL policy remains PROVISIONAL.
+- **New simultaneous-update evidence:** the original TMS32010 guides define
+  separate INC/DEC controls and only three normal source forms, without
+  defining both bits set. A later TI TMS320C1x reference card explicitly says
+  they cannot both be one. Pinned MAME increments then decrements and pinned
+  IKA explicitly preserves on `2'b11`, so both independently choose no net
+  update; the related TI patent counter assumes mutually exclusive controls
+  and supplies no simultaneous result. `SC-040` preserves those scopes. A
+  stable contiguous 23-word raw-`0x68b8` fixture exports full AR results from
+  zero and `0x01ff`, distinguishing preserve, increment priority, decrement
+  priority, and unexpected outcomes. No silicon result is assigned; the 372
+  words remain rejected fail-closed and `OQ-010` remains open.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1060,10 +1071,10 @@
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
-  372 unresolved simultaneous-update words
-- **Next task:** investigate `OQ-010` simultaneous indirect increment/decrement
-  encodings in original TI decode/control evidence and independent
-  implementations, retaining trap policy unless authoritative behavior is
-  established.
+  372 unsupported simultaneous-update words with unknown original forced-word
+  execution
+- **Next task:** investigate `OQ-002` general `0x90`-`0xff` data-address decode
+  behavior and define a minimally destructive original-NMOS alias/open-read
+  experiment beyond the existing DMOV/LTD edge probes.
 - **Latest committed baseline before this cycle:**
-  `1a31e9f`
+  `10d5265`

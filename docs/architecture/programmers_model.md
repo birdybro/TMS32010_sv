@@ -203,6 +203,16 @@ zero and decrementing zero produces `0x1ff`, while `AR[15:9]` is unchanged
 [ti-tms32010-users-guide-spru001b, §2.4.1 and Figure 2-3, printed
 pp. 2-9–2-10 (PDF pp. 33–34)]. **Confidence: VERIFIED_PRIMARY.**
 
+The original-part pages define the increment and decrement controls
+separately but do not define both set together. A later TMS320C1x reference
+card says they cannot both be one; pinned MAME and IKA nevertheless both
+preserve the AR when a raw word is forced. The project treats all 372 such
+words as unsupported and traps before effects. That is a fail-closed project
+policy, not original-silicon trap behavior; the physical result remains
+UNKNOWN under `OQ-010`/`SC-040`
+[ti-first-generation-users-guide-1987, TMS320C1x Programmer's Reference
+Card, unnumbered card page (PDF p. 402)].
+
 `IN` and `OUT` combine that same direct/indirect internal-data address with a
 separate three-bit port number. `IN` samples all 16 external data bits from
 the selected port and writes them unchanged to the old resolved internal-RAM

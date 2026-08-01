@@ -105,6 +105,9 @@ Current supported boundary:
   counter updates; memory-sourced ARP precedence is a reversible provisional
   policy under `OQ-015`/`SC-009`, opposed by the original worked-result
   reading and pinned IKA;
+- fail-closed rejection of simultaneous indirect INC/DEC controls under
+  `OQ-010`/`SC-040`; later MAME/IKA no-net-update behavior remains an oracle
+  hypothesis and is deliberately not implemented as original silicon;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of

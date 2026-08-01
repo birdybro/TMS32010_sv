@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-040` plus a stable original-NMOS simultaneous-INC/DEC raw-word probe.
+  Original manuals leave the combination undefined, a later TI C1x card
+  prohibits it, MAME and IKA independently choose no net AR update, and the
+  related patent counter assumes mutual exclusion. The two-boundary fixture
+  assigns no silicon result and preserves the current fail-closed decoder.
 - Expanded `SC-009` plus a stable two-direction original-NMOS indirect-LST
   probe. The research now preserves the original guides' `ARP becomes 1`
   worked result against their memory-status restore contract, later C25/MAME
@@ -893,6 +898,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The simultaneous-update fixture assembles deterministically to an exact
+  contiguous 23-word image with fixed zero, wrap-boundary, and terminal
+  symbols. Documentation regressions require preserve/increment/decrement
+  hypotheses, later-family prohibition, both independent no-net-update
+  implementations, and no expected original-silicon sequence.
 - The indirect-LST precedence fixture assembles deterministically to an exact
   contiguous 30-word image with fixed case and terminal symbols.
   Documentation regressions require both marker hypotheses, both independent
@@ -910,7 +920,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 141 provenance/document/tool tests,
+- The complete repository gates pass with 143 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
@@ -1778,10 +1788,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   qualification because their external address ownership is unresolved.
 - The exhaustive primary-documentation partition contains 28,656
   `PRIMARY_UNLISTED_ENCODING` words and 372 simultaneous-update words under
-  `OQ-010`. It is not a completed reserved-behavior map: TI's complete
-  instruction summary proves those words are unlisted, not that silicon treats
-  them as reserved. Unsupported execution behavior remains unclaimed and the
-  model/RTL trap is only conservative project policy.
+  `OQ-010`/`SC-040`. A later C1x card prohibits the simultaneous control form,
+  but does not define original forced-word execution. MAME/IKA no-net-update
+  behavior remains hypothesis evidence; unsupported silicon behavior is
+  unclaimed and the model/RTL trap is only conservative project policy.
 - MAME models untaken BANZ as one cycle and does not fetch its following target
   word, contrary to original TI's unconditional two-word/two-cycle entry. MAME
   remains a functional oracle only for this instruction (`SC-012`).

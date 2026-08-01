@@ -17,7 +17,7 @@ and is checked by `make docs`.
 |---|---:|---|
 | `DOCUMENTED_LEGAL` | 21,895 | Exactly one supported instruction entry accepts the word and all field constraints. |
 | `PRIMARY_RESERVED_INDIRECT_FIELD` | 10,976 | A documented indirect data-address pattern sets bit 6, 2, or 1, which TI explicitly says is reserved and must be zero. |
-| `UNRESOLVED_SIMULTANEOUS_UPDATE` | 372 | Reserved bits and every other enumerated field are legal, but both AR increment and decrement are set; the combination remains `OQ-010`. |
+| `UNRESOLVED_SIMULTANEOUS_UPDATE` | 372 | Original reserved bits are clear, but both AR increment and decrement are set. A later C1x card prohibits the combination without defining forced-word execution; original behavior remains `OQ-010`. |
 | `DOCUMENTED_PATTERN_MISMATCH` | 3,637 | The word is inside a documented pattern envelope but violates a fixed/enumerated field, such as a nonzero branch-opcode low byte, an unsupported SACH shift, or an out-of-range direct SST field. TI does not call this whole class reserved. |
 | `PRIMARY_UNLISTED_ENCODING` | 28,656 | No qualified instruction or declared pattern envelope covers the word, and TI's explicitly complete original instruction-set summary lists no instruction for it. This says nothing about silicon behavior. |
 
@@ -31,6 +31,21 @@ unlisted 16-bit word is a reserved opcode
 descriptions, printed pp. 3-5–3-71 (PDF pp. 55–121)]. **Confidence:
 VERIFIED_PRIMARY for the legal decoder and explicitly reserved indirect bits;
 UNKNOWN for execution of every other unsupported word.**
+
+The original TMS32010 and assembly guides expose only preserve, increment,
+and decrement source forms and do not define `INC=DEC=1`. A later TI
+TMS320C1x reference card explicitly says the controls cannot both be one.
+That is authoritative evidence that the combination is unsupported software,
+but its later scope and lack of execution semantics do not define original
+NMOS silicon behavior. Pinned MAME and IKA both produce no net update when a
+raw word is forced, while MAME's disassembler labels the mode `??`; this is a
+candidate hypothesis, not permission to decode the 372 words as legal
+[ti-tms32010-users-guide-spru001b, Section 3.3.2, printed p. 3-2
+(PDF p. 52); ti-first-generation-users-guide-1987, TMS320C1x Programmer's
+Reference Card, unnumbered card page (PDF p. 402)]. See `SC-040` and
+`docs/research/simultaneous_ar_update_experiment.md`.
+**Confidence: VERIFIED_PRIMARY for unsupported later-family source use;
+UNKNOWN for original forced-word execution.**
 
 The eleven two-word branches have explicit `0xff00` audit envelopes because
 their primary encoding diagrams fix the low opcode byte to zero and place the
@@ -55,7 +70,7 @@ This partition improves provenance and test generation, but
 `reserved_encoding_audit_complete` remains false because 28,656 words are
 primary-unlisted rather than explicitly reserved and `OQ-010` remains open.
 Classification priority is legal,
-explicitly reserved indirect bit, otherwise-legal simultaneous update,
+explicitly reserved indirect field, unresolved simultaneous update,
 documented-pattern mismatch, then primary-unlisted. Thus a word that sets a
 primary-reserved bit retains that strongest label even if another field also
 mismatches. The architectural model and RTL still
@@ -261,11 +276,12 @@ documented NOP forms even though they carry an address field. Legal indirect
 forms apply only the common AR/ARP update controls and never access the
 nominal RAM word. Words `0x6880` and `0x6881` remain canonical `LARP 0/1`
 decodes because TI defines `MAR *,0/1` as exact LARP aliases. The remaining
-reserved indirect fields follow the existing conservative `OQ-010` policy
+explicitly reserved fields and unsupported simultaneous-update words follow
+the existing conservative `OQ-010` policy
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `MAR`, printed
 pp. 3-2–3-3 and 3-42 (PDF pp. 52–53 and 92)].
-**Confidence: VERIFIED_PRIMARY except the simultaneous-update case, which is
-UNKNOWN.**
+**Confidence: VERIFIED_PRIMARY except the forced simultaneous-update result,
+which is UNKNOWN.**
 
 `LDP` fixes bits 15:8 to `0x6f`; bit 7 and bits 6:0 use the common
 direct/indirect data-address field. Its indirect legality constraints and

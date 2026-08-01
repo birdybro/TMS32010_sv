@@ -39,6 +39,12 @@ on page one.
 such as `MAR 127`, `MAR *`, or `MAR *+,AR1`. `MAR *,AR0/AR1` assembles the
 documented exact aliases of `LARP 0/1`.
 
+No mnemonic can request simultaneous indirect increment and decrement. A
+later TI C1x reference card explicitly prohibits that combination, while its
+original NMOS execution remains `OQ-010`/`SC-040`. The physical probe uses an
+explicit `.word 0x68b8`; the disassembler retains such words as `.word` and
+the repository assigns no expected silicon outcome.
+
 `DMOV`, `LDP`, `LST`, `LT`, `LTA`, `LTD`, and `MPY` accept the no-shift common
 address forms, such as `DMOV 8`, `LDP 6`, `LT *`, `LTA 24`,
 `LTD *-,AR1`, `LST *+,AR1`, or `MPY *+,AR1`. For LST, accepting a next-ARP

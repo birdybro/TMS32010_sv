@@ -213,6 +213,9 @@ The synthesizable code:
   preserving `INTM`; indirect next-ARP precedence is a reversible provisional
   policy under `OQ-015`/`SC-009`, pending the exact original-NMOS probe;
 - preserves `OVM` through physical reset as TI documents;
+- rejects all 372 simultaneous INC/DEC control words before effects under
+  `OQ-010`/`SC-040`; this is fail-closed project behavior, not a claim that
+  original silicon traps or preserves the selected AR;
 - suppresses instruction qualification and every transaction class while
   recognized physical reset is active;
 - exposes sticky `OV` for ADD/ADDS/APAC/LTA/LTD/SPAC/SUB/SUBS

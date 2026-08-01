@@ -1005,3 +1005,39 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY that the two TI publications differ;
   CORROBORATED_PRIMARY for external asynchronous conditioning; UNKNOWN for
   original-silicon DINT priority beyond published setup/pulse requirements.
+
+## SC-040 — Unsupported simultaneous AR update versus modeled preservation
+
+- **Original-part boundary:** SPRU001B and SPRU002B define indirect bit 5 as
+  increment and bit 4 as decrement, expose only preserve/`*+`/`*-` source
+  forms, and do not define both bits set. Unlike bits 6, 2, and 1, they do not
+  call this combination reserved
+  [ti-tms32010-users-guide-spru001b, Section 3.3.2, printed p. 3-2
+  (PDF p. 52); ti-tms32010-assembly-guide-spru002b, Section 3.3.2, printed
+  p. 3-2 (PDF p. 23)].
+- **Later TI prohibition:** the TMS320C1x programmer's reference card included
+  with SPRU013 explicitly says INC and DEC cannot both be one. It establishes
+  an unsupported later-family source form, not original forced-word execution
+  [ti-first-generation-users-guide-1987, TMS320C1x Programmer's Reference
+  Card, unnumbered card page (PDF p. 402)].
+- **Related TI embodiment:** US4577282A describes separate increment and
+  decrement counter controls but assumes the decrement path occurs “instead
+  of” increment. It neither defines both active nor proves production decode
+  exclusion [ti-dsp-microcomputer-patent-us4577282a, patent cols. 27-28
+  (PDF p. 40)].
+- **Independent implementations:** pinned MAME increments then decrements a
+  temporary value, producing no net low-nine-bit change, while its
+  disassembler renders the mode `??`. Pinned IKA forwards both raw controls
+  into a `2'b11` case that explicitly preserves the register. Their agreement
+  is a candidate hypothesis without original-device provenance
+  [mame-tms320c1x-core-030fefc, `UPDATE_AR`, lines 240-248;
+  mame-tms320c1x-disassembler-030fefc, lines 33-34;
+  ika32010-rtl-51bc1f0, `IKA32010.sv`, lines 290-328].
+- **Current treatment:** all 372 words remain outside the legal decoder and
+  trap before effects in the model/RTL. This is an explicit fail-closed
+  project policy, not a physical trap claim. The exact two-boundary raw-word
+  capture in `docs/research/simultaneous_ar_update_experiment.md` assigns no
+  expected silicon sequence and is required before implementing a result.
+- **Confidence:** VERIFIED_PRIMARY that later C1x software prohibits the
+  combination; CORROBORATED that MAME and IKA choose no net update; UNKNOWN
+  for original NMOS execution, timing, and stability.

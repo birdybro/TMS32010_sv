@@ -252,8 +252,12 @@ model boundaries.
 The opcode audit assigns exactly one evidence-scoped classification to every
 16-bit word: 21,895 documented legal, 10,976 that set TI's explicitly reserved
 indirect-address bits, 372 simultaneous increment/decrement combinations
-under `OQ-010`, 3,637 documented-pattern mismatches, and 28,656 encodings not
-listed in TI's explicitly complete primary instruction summary.
+under `OQ-010`/`SC-040`, 3,637 documented-pattern mismatches, and 28,656
+encodings not listed in TI's explicitly complete primary instruction summary.
+Later TI C1x material prohibits both update bits together, but original NMOS
+forced-word behavior remains unknown; read
+`docs/research/simultaneous_ar_update_experiment.md` before changing the
+fail-closed rejection.
 Only the explicit reserved-bit class may be called reserved. Pattern mismatch
 and primary-unlisted do not establish execution behavior; the current model/RTL
 trap remains conservative project policy. The reserved-encoding audit is not

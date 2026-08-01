@@ -136,7 +136,9 @@ objective passing evidence.
 - **Documentation:** `docs/generated/tms32010_isa.yaml`,
   `docs/architecture/opcode_map.md`
 - **Tests:** `tests/regressions/test_isa_database.py`,
-  `tests/expected/opcode_fixtures.yaml`
+  `tests/expected/opcode_fixtures.yaml`,
+  `tests/asm/simultaneous_ar_update_probe.asm`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`
 - **Notes:** All sixty documented mnemonics (`ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `POP`, `PUSH`, `RET`, `SACL`, `SACH`, `SAR`,
@@ -153,8 +155,9 @@ objective passing evidence.
   collisions. A separate provenance-aware audit now partitions all 65,536
   words into 21,895 documented-legal encodings, 10,976 words that set TI's
   explicitly reserved indirect bits 6/2/1, 372 unresolved simultaneous
-  increment/decrement controls under `OQ-010`, 3,637 documented-pattern
-  mismatches, and 28,656 encodings absent from TI's explicitly complete
+  increment/decrement controls under `OQ-010`/`SC-040`, 3,637
+  documented-pattern mismatches, and 28,656 encodings absent from TI's
+  explicitly complete
   original instruction summary. Generated counts and boundary vectors are
   regression-checked. A one-step symbolic RTL harness independently exhausts
   all 65,536 input words against a compact family/field-validity predicate,
@@ -166,7 +169,12 @@ objective passing evidence.
   partition is complete, but
   full reserved-region qualification remains incomplete: only the explicit
   indirect-bit class is called reserved, while mismatches/primary-unlisted
-  words receive no invented behavior. Exact
+  words receive no invented behavior. A later TI C1x reference card now
+  proves the simultaneous controls are a prohibited source form, but it does
+  not define forced-word behavior on the original NMOS part. Pinned MAME and
+  IKA choose no net update; the current decoder rejection remains fail-closed
+  and the stable two-boundary original-device probe assigns no expected
+  result. Exact
   `ABS=0x7f88`, accumulator result, OVM-selected
   most-negative wrap/saturation, and one-cycle program-only boundary are
   primary-verified. Original-part OV preservation is `CORROBORATED` by
@@ -883,7 +891,9 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/instruction_set.md`
 - **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`,
   `tests/asm/lst_arp_precedence_probe.asm`,
-  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_lst_arp_precedence_probe_image_is_stable`
+  `tests/asm/simultaneous_ar_update_probe.asm`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_lst_arp_precedence_probe_image_is_stable`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`
 - **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
   `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
   `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,

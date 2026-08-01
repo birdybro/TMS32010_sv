@@ -114,6 +114,23 @@ C25 memory-wins clarification nor proves the original NMOS result. The
 two-direction capture in
 `docs/research/lst_arp_precedence_experiment.md` remains necessary.
 
+## Bidirectional-counter control and its limit
+
+The related auxiliary-register counter has separately named increment and
+decrement commands. The prose describes the decrement path as selected
+“instead of” increment and explains the two counter paths without stating
+what happens if both controls are active
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 27-28
+(PDF p. 40)].
+
+That circuit is useful background for the low-nine-bit counter, but it does
+not prove decode mutual exclusion, Boolean priority, or an electrically
+stable simultaneous-control result on production silicon. It therefore
+cannot convert the independent MAME/IKA no-net-update hypothesis into
+original-part behavior. The raw-word capture in
+`docs/research/simultaneous_ar_update_experiment.md` remains necessary for
+`OQ-010`.
+
 ## Why PUSH/POP remains unresolved
 
 The patent's Table A contains `CALLA` and `RET`, but it does not contain the
@@ -148,6 +165,8 @@ the smallest evidence needed to choose among those hypotheses.
   not establish the original production 144-word decoder or its array edge.
 - Generic indirect-ARP and LST status-restore prose do not state which source
   wins when both target ARP in one instruction.
+- Separate auxiliary-register increment/decrement circuitry assumes mutually
+  exclusive controls and does not define simultaneous assertion.
 - The prose's general one-state statement and Table A's two-state `SUBC` entry
   are internally awkward and differ from the production TMS32010's documented
   one-cycle SUBC. Its Q3 following-state shift and ALU-derived overflow path

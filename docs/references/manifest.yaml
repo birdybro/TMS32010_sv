@@ -91,6 +91,7 @@
         "Section 3.4.3 data movement, printed page 3-13 (PDF page 42)",
         "Section 3.6.3 status register, printed pages 3-24 through 3-26 (PDF pages 53-55)",
         "Section 3.8 and Figures 3-19 through 3-20, printed pages 3-31 through 3-34 (PDF pages 60-63): mixed-family interrupt logic, NMOS external-synchronizer note corroborating original Section 2.14, and N/dummy-N+1/vector fetch sequence retained as a conflict with original Figure 2-12",
+        "TMS320C1x Programmer's Reference Card, unnumbered card page (PDF page 402): variant-scoped statement that INC and DEC cannot both be one",
         "LST worked example, printed page 4-43 (PDF page 124): optional next-ARP syntax and ambiguous LARP 0/LST *,1 result saying ARP becomes one",
         "ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, OUT, PAC, POP, PUSH, RET, SAR, SPAC, SST, SUB, SUBC, SUBH, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-35, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54 through 4-58, 4-61 through 4-70, and 4-73 (PDF pages 95-116, 119, 122, 124-131, 133, 135-139, 142-151, and 154)",
         "Section 5.3.2 Subroutine Calls, printed page 5-17 (PDF page 174)",
@@ -374,7 +375,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "abst() instruction handler, lines 341-347",
-        "getdata() address-update helper, lar_ar0()/lar_ar1() handlers, and larp_mar() handler, lines 260-274, 547-557, and 569-575",
+        "UPDATE_AR() simultaneous-bit execution order, getdata() address-update helper, lar_ar0()/lar_ar1() handlers, and larp_mar() handler, lines 240-274, 547-557, and 569-575",
         "putdata_sar() update/write helper and sar_ar0()/sar_ar1() handlers, lines 291-304 and 697-704",
         "subc() conditional-subtract handler and overflow expression, lines 732-742",
         "subh() high-aligned subtraction and common overflow handler, lines 745-750",
@@ -443,6 +444,7 @@
       "notes": "Do not derive project ISA tables by copying this source.",
       "may_commit": false,
       "sections_or_pages_used": [
+        "Indirect-mode rendering table, including ?? for simultaneous INC/DEC, lines 33-34",
         "IN/OUT direct and indirect formats and B/BANZ/BIOZ/BV/CALL and accumulator-conditional two-word opcode table entries, lines 37-40 and 135-145"
       ],
       "status": "acquired",
@@ -644,6 +646,7 @@
         "ALU input, saturation, and flag logic around lines 1760-1898",
         "PUSH/POP two-microcycle bus and PC control around lines 690-731",
         "Bus-controller stop/read pin outputs and CALA/RET two-microcycle control around lines 166-228 and 1401-1461",
+        "Auxiliary-register INC/DEC update case and representative raw-bit controls around lines 290-328 and 663-675: simultaneous controls preserve the register",
         "LST direct/indirect ARP-source selection around lines 663-688: encoded next-ARP wins only in indirect form"
       ],
       "status": "acquired",
@@ -1319,6 +1322,7 @@
         "SUBC instruction and accumulator/status circuitry, patent columns 13-14 and 21-24 (PDF pages 33 and 37-38), Figure 5c: two-state related-embodiment timing, unshifted ALU result, following-state accumulator-local shift, and ALU-derived status path; inspected only as related-embodiment background",
         "DINT/EINT mask-latch prose, patent columns 13-14 (PDF page 33): related-embodiment mask/unmask function without normal-interrupt boundary timing",
         "Generic indirect-ARP, LST status-restore, and register-load timing prose, patent columns 11-16 (PDF pages 32-34): related-embodiment background that does not order simultaneous encoded and memory-sourced ARP writes",
+        "Bidirectional auxiliary-register counter controls, patent columns 27-28 (PDF page 40): separate increment/decrement paths whose prose assumes mutual exclusion and does not define simultaneous assertion",
         "RAM decoder overview and move-cell implementation, patent columns 17-18 and 25-26 (PDF pages 35 and 39), Figures 5i-5j: internally inconsistent row/column capacity statements, adjacent-column transfer, even/odd select complement, and odd-address row increment; inspected only as related-embodiment background",
         "Table A, patent columns 34-36 (PDF pages 43-44): disclosed instruction scope, encodings, word counts, and state counts",
         "Figure 5p and PC/stack description, patent sheets 24-25 and columns 31-34 (PDF pages 24-25 and 42-43): PC source selection and quarter-cycle push/pop clocks used for call/return control"

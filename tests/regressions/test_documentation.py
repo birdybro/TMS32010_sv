@@ -304,6 +304,64 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("literal example plus IKA", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-009`)", questions)
 
+    def test_simultaneous_ar_update_stays_unsupported_and_hardware_unknown(
+        self,
+    ) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        family_pages = " ".join(
+            by_id["ti-first-generation-users-guide-1987"]["sections_or_pages_used"]
+        )
+        mame_core = " ".join(
+            by_id["mame-tms320c1x-core-030fefc"]["sections_or_pages_used"]
+        )
+        mame_dasm = " ".join(
+            by_id["mame-tms320c1x-disassembler-030fefc"][
+                "sections_or_pages_used"
+            ]
+        )
+        ika_lines = " ".join(
+            by_id["ika32010-rtl-51bc1f0"]["sections_or_pages_used"]
+        )
+        patent_pages = " ".join(
+            by_id["ti-dsp-microcomputer-patent-us4577282a"][
+                "sections_or_pages_used"
+            ]
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (
+                DOCS / "research" / "simultaneous_ar_update_experiment.md"
+            ).read_text(encoding="utf-8"),
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (DOCS / "research" / "open_questions.md").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("INC and DEC cannot both be one", family_pages)
+        self.assertIn("UPDATE_AR() simultaneous-bit execution order", mame_core)
+        self.assertIn("?? for simultaneous INC/DEC", mame_dasm)
+        self.assertIn("simultaneous controls preserve the register", ika_lines)
+        self.assertIn("does not define simultaneous assertion", patent_pages)
+        for required in (
+            "The repository assigns no passing expected sequence",
+            "0033, 0000, 01ff",
+            "0033, 0001, 0000",
+            "0033, 01ff, 01fe",
+            "at least 32 reset-and-execute trials",
+            "fail-closed implementation policy",
+            "not treated as the expected silicon answer",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("## SC-040", conflicts)
+        self.assertIn("candidate hypothesis", conflicts)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-040`)", questions)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

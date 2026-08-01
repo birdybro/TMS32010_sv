@@ -230,6 +230,51 @@ class ToolchainSliceTests(unittest.TestCase):
             },
         )
 
+    def test_simultaneous_ar_update_probe_image_is_stable(self) -> None:
+        result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "simultaneous_ar_update_probe.asm"
+        )
+        self.assertEqual(
+            result.words,
+            dict(
+                enumerate(
+                    [
+                        0x6E00,
+                        0x7E33,
+                        0x5000,
+                        0x7E01,
+                        0x5010,
+                        0x7EFF,
+                        0x5011,
+                        0x2810,
+                        0x0011,
+                        0x5012,
+                        0x4F00,
+                        0x7000,
+                        0x6880,
+                        0x68B8,
+                        0x3020,
+                        0x4F20,
+                        0x3812,
+                        0x6880,
+                        0x68B8,
+                        0x3021,
+                        0x4F21,
+                        0xF900,
+                        0x0015,
+                    ]
+                )
+            ),
+        )
+        self.assertEqual(
+            result.symbols,
+            {
+                "CASE_ONE_FF": 0x010,
+                "CASE_ZERO": 0x00B,
+                "HOLD": 0x015,
+            },
+        )
+
     def test_mame_stack_control_smoke_image_is_stable(self) -> None:
         result = self.assembler.assemble_file(
             ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"

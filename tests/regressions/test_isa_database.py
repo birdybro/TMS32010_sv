@@ -128,6 +128,31 @@ class IsaDatabaseTests(unittest.TestCase):
             classify_word(self.database, 0x00B0)["unresolved_question"],
             "OQ-010",
         )
+        simultaneous_definition = next(
+            definition
+            for definition in self.database["opcode_space_audit"][
+                "classification_definitions"
+            ]
+            if definition["name"] == "UNRESOLVED_SIMULTANEOUS_UPDATE"
+        )
+        self.assertIn(
+            "later C1x reference card", simultaneous_definition["meaning"]
+        )
+        self.assertIn(
+            "without assigning forced-word execution behavior",
+            simultaneous_definition["meaning"],
+        )
+        self.assertEqual(
+            [
+                citation["source_id"]
+                for citation in simultaneous_definition["source_citations"]
+            ],
+            [
+                "ti-tms32010-users-guide-spru001b",
+                "ti-tms32010-assembly-guide-spru002b",
+                "ti-first-generation-users-guide-1987",
+            ],
+        )
 
     def test_abs_is_exact_one_cycle_and_preserves_status(self) -> None:
         decoded = decode_word(self.database, 0x7F88)

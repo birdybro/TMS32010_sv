@@ -668,9 +668,18 @@ nine-bit operation on `AR[8:0]`; `AR[15:9]` is unchanged
 Indirect control bits 6, 2, and 1 are documented reserved and must be zero.
 The manual defines separate increment and decrement bits but does not define
 their simultaneous assertion; that encoding is rejected and tracked as
-`OQ-010`. When ARP-preserve bit 3 is one, bit 0 is architecturally ignored.
+`OQ-010`/`SC-040`. A later TI C1x reference card explicitly prohibits both
+bits together, while pinned MAME and IKA both model a forced raw word as no
+net update. Neither later source establishes original NMOS execution. The
+two-boundary physical probe therefore assigns no expected silicon result.
+When ARP-preserve bit 3 is one, bit 0 is architecturally ignored.
 The disassembler renders the noncanonical bit-0-one alias as `.word` so
-binary round trips remain exact.
+binary round trips remain exact
+[ti-first-generation-users-guide-1987, TMS320C1x Programmer's Reference
+Card, unnumbered card page (PDF p. 402); mame-tms320c1x-core-030fefc,
+`UPDATE_AR`, lines 240-248; ika32010-rtl-51bc1f0, `IKA32010.sv`, lines
+290-328]. **Confidence: VERIFIED_PRIMARY for later-family prohibition;
+UNKNOWN for original forced-word execution.**
 
 ## Qualified `LAR` research slice
 
@@ -689,8 +698,9 @@ not modify the newly loaded value. If the destination is the other AR, the
 selected address AR receives the normal nine-bit post-access update. A
 requested next ARP is still applied in either case. This ordering is covered
 by directed model and RTL tests, including both same-AR suppression and
-different-AR modification. Reserved indirect controls and the lossless
-noncanonical preserve-bit policy remain linked to `OQ-010`
+different-AR modification. Explicitly reserved indirect bits are rejected;
+the forced simultaneous-update result remains linked to `OQ-010`/`SC-040`,
+while lossless noncanonical preserve-bit rendering is a separate tool policy
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LAR`, printed
 pp. 3-2–3-3 and 3-33 (PDF pp. 52–53 and 83)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
@@ -714,7 +724,8 @@ is the other AR, that source is stored unchanged while the selected address AR
 receives the normal nine-bit update. A requested next ARP is then applied.
 Directed model/RTL tests cover same-source increment and decrement, other-source
 modification, old-address selection, and ARP replacement/preservation.
-Reserved indirect controls remain linked to `OQ-010`
+Explicitly reserved indirect bits are rejected; the forced simultaneous-
+update result remains linked to `OQ-010`/`SC-040`
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `SAR`, printed
 pp. 3-2–3-3 and 3-55–3-56 (PDF pp. 52–53 and 105–106)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
@@ -760,8 +771,10 @@ read; the source LSB then becomes the new DP value. Indirect addressing reads
 through the AR selected by the old ARP before applying the ordinary optional
 nine-bit AR increment/decrement and next-ARP replacement. Directed model and
 RTL tests cover both source-bit values, old-DP address ordering, indirect
-update ordering, and unresolved address trapping. Reserved indirect controls
-and the noncanonical preserve-bit policy remain linked to `OQ-010`
+update ordering, and unresolved address trapping. Explicitly reserved
+indirect bits are rejected; the forced simultaneous-update result remains
+linked to `OQ-010`/`SC-040`, while noncanonical preserve-bit rendering is a
+separate lossless tool policy
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `LDP`, printed
 pp. 3-2–3-3 and 3-36 (PDF pp. 52–53 and 86);
 ti-tms32010-assembly-guide-spru002b, `LDP`, printed p. 3-36
@@ -1080,9 +1093,10 @@ an explicit zero placeholder when a next ARP follows, for example
 pp. 3-2–3-3 and 3-54 (PDF pp. 52–53 and 104)].
 **Confidence: VERIFIED_PRIMARY.**
 
-Reserved indirect controls, simultaneous increment/decrement, and the
-noncanonical ARP-preserve alias follow the same conservative policies as
-`LAC`; they remain linked to `OQ-010`.
+Explicitly reserved indirect controls, simultaneous increment/decrement, and
+the noncanonical ARP-preserve alias follow the same conservative policies as
+`LAC`; only the forced simultaneous-update result remains linked to
+`OQ-010`/`SC-040`.
 
 ## Qualified `SACH` research slice
 
@@ -1121,7 +1135,8 @@ Both instructions use the common direct/indirect data-address field without a
 shift operand. The indirect read occurs at the old selected-AR address before
 the optional nine-bit counter update and ARP replacement. Reserved indirect
 controls, simultaneous increment/decrement, and noncanonical ARP-preserve
-aliases follow the same conservative policy as `LAC`, `SACL`, and `SACH`
+aliases follow the same conservative policy as `LAC`, `SACL`, and `SACH`;
+only the forced simultaneous-update result remains `OQ-010`/`SC-040`
 [ti-tms32010-users-guide-spru001b, §§3.3.1–3.3.4 and `ZALH`/`ZALS`, printed
 pp. 3-2–3-3 and 3-70–3-71 (PDF pp. 52–53 and 120–121)].
 **Confidence: VERIFIED_PRIMARY; OQ-010 remains for simultaneous update bits.**
@@ -1147,8 +1162,9 @@ wording; VERIFIED_PRIMARY for ADDS status applicability.**
 
 Direct/indirect address selection and post-access controls use the common
 data-address form. The read uses the old selected-AR address before an optional
-nine-bit counter update and ARP replacement. The current conservative
-reserved-control and alias policies remain linked to `OQ-010`.
+nine-bit counter update and ARP replacement. Explicitly reserved controls are
+rejected; only the forced simultaneous-update result remains linked to
+`OQ-010`/`SC-040`, while alias rendering is a separate tool policy.
 
 ## Qualified `ADDH` research slice
 
