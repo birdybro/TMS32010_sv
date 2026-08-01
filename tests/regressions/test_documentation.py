@@ -88,6 +88,29 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("default the DSP interrupt input high", integration)
         self.assertIn("not pin-timing proof", integration)
 
+    def test_hard_drivin_read_status_preserves_masks_and_raw_polarity(self) -> None:
+        host_reads = (
+            DOCS / "integration" / "hard_drivin_host_reads.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "hard_drivin_sound_read_status.sv",
+            "fixed driven mask `16'hf000`",
+            "`MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and `/TIRDY`",
+            "all sixteen raw source nibbles",
+            "23 abstract cells",
+            "eight retained checks",
+            "not yet connected",
+        ):
+            self.assertIn(required, host_reads)
+        self.assertIn(
+            "Live `/READSTAT` inputs versus fixed emulator constants",
+            conflicts,
+        )
+        self.assertIn("see `OQ-030`", conflicts)
+
     def test_hard_drivin_dac_mapping_remains_evidence_scoped(self) -> None:
         integration = (
             DOCS / "integration" / "hard_drivin_requirements.md"

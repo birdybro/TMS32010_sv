@@ -144,6 +144,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A standalone synthesizable whole-word mailbox adapter with independent data
   and flag validity, explicit conflict reporting, exhaustive bidirectional
   16-bit verification, ten retained transition checks, and a Yosys target.
+- A standalone storage-free `/READSTAT` mapper preserving the raw
+  `MAINFLAG`/`SOUNDFLAG`/`SOUND.TEST`/`/TIRDY` order on host `D15:D12`, fixed
+  driven mask `0xf000`, independent per-source validity, and deterministic
+  carrier bits that do not claim an open-bus value.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -585,6 +589,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- All sixteen `/READSTAT` source nibbles against all sixteen source-validity
+  masks, including exact raw polarity, invalid-source clamping, constant
+  driven lanes, per-lane validity, and low-lane filler separation. Standalone
+  Yosys reports 23 cells/eight checks, no storage/latch, and zero structural
+  problems. The full regression passes 125 repository/tool, 231 model/unit,
+  38 instruction RTL, 37 bus/wrapper, 5 interrupt, and 10 differential tests;
+  strict lint, all fifteen Yosys targets, all 30 hashes, and all 24 formal
+  tasks pass.
 
 - Both main/sound mailbox directions over all 65,536 possible complete words,
   nominal flag set/read-clear, uncommitted retention, reset-preserved data,
@@ -1189,6 +1202,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   byte accesses and coincident LS74 preset/read-clock/reset behavior remain
   unresolved under `SC-031`/`OQ-031`; the board top and full 68000 bridge do
   not yet consume these callbacks.
+- The raw `/READSTAT` mapper is standalone. Its high nibble is qualified, but
+  no board-top 68000 read decode exists and physical `D11:D0` remain unresolved
+  under `OQ-030`; MAME's fixed test/ready/low-lane values are isolated as
+  `SC-032` rather than promoted to board behavior.
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
   lacks the 68000 bridge, actual sample storage, compare/DAC-analog

@@ -1301,8 +1301,9 @@ objective passing evidence.
   A twelfth script checks the address-encoded LS259 host-control adapter as 53
   cells/six checks. A thirteenth script checks the port-3 LS374 adapter as 19
   cells/five checks. A fourteenth script checks both whole-word mailboxes and
-  LS74 flags as 259 cells/ten checks. All three have no memory/latch or
-  structural problem.
+  LS74 flags as 259 cells/ten checks. A fifteenth script checks the
+  storage-free `/READSTAT` mapper as 23 cells/eight checks. All four have no
+  memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1368,7 +1369,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_bio_generator.sv`,
   `sim/bus/tb_hard_drivin_sound_host_control.sv`,
   `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`,
-  `sim/bus/tb_hard_drivin_sound_mailboxes.sv`
+  `sim/bus/tb_hard_drivin_sound_mailboxes.sv`,
+  `sim/bus/tb_hard_drivin_sound_read_status.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1506,9 +1508,16 @@ objective passing evidence.
   preset/read-clock conditions instead of assigning an undocumented priority.
   Pinned MAME corroborates ordinary handshakes but its local byte merge is
   isolated as `SC-031`/`OQ-031`. This adapter is not yet board-top connected.
-  The complete 124/231/38/36/5/10 regression split, strict lint, all fourteen
-  Yosys targets, all 30 pinned reference hashes, and all 24 tasks from twelve
-  formal configurations pass at this checkpoint.
+  The storage-free `/READSTAT` mapper separately preserves the exact raw
+  `MAINFLAG`/`SOUNDFLAG`/`SOUND.TEST`/`/TIRDY` order on `D15:D12`, exports fixed
+  driven mask `0xf000`, and tracks per-source validity without assigning a
+  value to the physical low twelve lanes. All 256 source/value-validity
+  combinations pass, and standalone Yosys reports 23 cells/eight checks.
+  MAME's fixed test/ready/low-lane values remain `SC-032`; board-top
+  integration remains separate. The complete 125/231/38/37/5/10 regression
+  split, strict lint, all fifteen Yosys targets, all 30 pinned reference
+  hashes, and all 24 tasks from twelve formal configurations pass at this
+  checkpoint.
 
 ## Milestone 22 — Release qualification
 

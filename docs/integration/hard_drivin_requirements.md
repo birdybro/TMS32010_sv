@@ -65,6 +65,15 @@ drives `D15:D0`; `/320PORT` drives only `D15:D8` from the TMS port-3 latch;
 filling a verified word. The complete trace is in
 `docs/integration/hard_drivin_host_reads.md`.
 
+The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
+`MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in
+`D15:D12`, with independent source validity and fixed driven mask `0xf000`.
+Its deterministic low twelve carrier bits remain outside that mask. Exhaustive
+simulation covers every source/value-validity combination; Yosys reports 23
+cells and eight retained checks. Pinned MAME's fixed test/ready/low-lane values
+remain a separate secondary abstraction under `SC-032`, and the mapper is not
+yet board-top connected.
+
 Two pairs of LS374s separately exchange complete 16-bit words between the
 main system and the local sound 68000. LS74 `20S` asynchronously sets
 `MAINFLAG` on `/MAINWR` and `SOUNDFLAG` on `/SOUNDWR`; the trailing edges of

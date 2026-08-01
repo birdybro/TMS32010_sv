@@ -444,6 +444,13 @@ validity and rejects coincident set/clear interpretation under `SC-031` and
 `docs/integration/hard_drivin_host_mailboxes.md` before changing or integrating
 this path. Do not infer byte merging, LS74 collision priority, or a complete
 68000 bridge from the callback model.
+The standalone storage-free `hard_drivin_sound_read_status` maps raw
+`MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and `/TIRDY` to host `D15:D12`, with
+fixed driven mask `0xf000` and independent per-source validity. Its low twelve
+zero carrier bits are not a physical open-bus value under `OQ-030`, and MAME's
+fixed test/ready values remain a secondary conflict under `SC-032`. It is not
+yet board-top connected. Read `docs/integration/hard_drivin_host_reads.md`
+before changing or integrating the masked host-read paths.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

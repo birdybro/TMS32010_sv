@@ -93,6 +93,27 @@ returns zero in `D11:D0`; that is a software convenience, not proof of the
 undriven physical lanes or a live TMS5220 ready path
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
 PDF pp. 3–4; mame-harddriv-audio-030fefc, `hdsnd68k_status_r`].
+This live-versus-constant distinction is recorded as `SC-032`.
+
+## FPGA boundary for `/READSTAT`
+
+`rtl/wrappers/hard_drivin_sound_read_status.sv` is a storage-free mapper. It
+accepts raw `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and `/TIRDY` values with one
+validity bit per source. It exports:
+
+- the four raw-polarity sources in host `D15:D12`;
+- fixed driven mask `16'hf000`;
+- a per-lane valid mask in `D15:D12`; and
+- deterministic zero carriers for invalid sources and `D11:D0`.
+
+The low twelve zeros are outside the driven mask and are not a board open-bus
+claim. Likewise, an invalid high-nibble source is zero only in the carrier;
+its cleared valid-mask bit prevents that value from becoming hardware
+evidence. The future 68000/MiSTer bridge must combine this result with an
+explicit platform open-bus policy. `SOUND.TEST` and `/TIRDY` remain raw inputs
+so the mapper neither hardcodes MAME's constants nor models an unqualified
+speech-device protocol. **Confidence: VERIFIED_PRIMARY for the bit/lane
+mapping; VERIFIED_SIMULATION for the masked FPGA convention.**
 
 ## FPGA boundary for `/320PORT`
 
@@ -131,3 +152,11 @@ same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
 Standalone Yosys reports 19 abstract cells and five retained checks; the
 integrated board hierarchy reports 2,495 cells, 171 checks, three memories,
 and zero structural problems. Neither result is a Cyclone V fit.
+
+`tb_hard_drivin_sound_read_status` exhausts all sixteen raw source nibbles
+against all sixteen source-validity masks. It checks exact raw polarity,
+per-lane validity, constant driven mask, invalid-source clamping, and the
+separation between deterministic filler and physically driven lanes.
+Standalone Yosys reports 23 abstract cells, eight retained checks, no storage
+or latch, and zero structural problems. The mapper is not yet connected to the
+board top and does not qualify a complete 68000 read cycle.

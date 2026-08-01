@@ -77,6 +77,10 @@ and LS74 `MAINFLAG`/`SOUNDFLAG` handshake. Its standalone RTL preserves
 reset-independent data, read-cleared flags, and explicit invalidity for
 unsourced coincident set/clear cases; board-top integration remains future
 work.
+`hard_drivin_host_reads.md` also defines the standalone storage-free
+`/READSTAT` mapper. It exports only `D15:D12` as driven, preserves one validity
+bit per raw status source, and leaves the complete-word open-bus policy to a
+future host bridge.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

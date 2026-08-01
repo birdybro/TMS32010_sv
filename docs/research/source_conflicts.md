@@ -682,3 +682,25 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for nominal whole-word wiring and ordinary
   flag behavior; CORROBORATED for MAME's normal software handshake; UNKNOWN
   for physical byte and coincident-strobe behavior.
+
+## SC-032 — Live `/READSTAT` inputs versus fixed emulator constants
+
+- **Primary board evidence:** While `/READSTAT` is active, A044427 LS244 `10K`
+  drives `MAINFLAG`, `SOUNDFLAG`, raw pulled-up `SOUND.TEST`, and raw active-low
+  `/TIRDY` onto host `D15:D12`. This target has no drawn source for `D11:D0`
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
+  PDF pp. 3–4].
+- **Secondary abstraction:** pinned MAME returns the two live software flags,
+  forces bit 13 high, forces bit 12 low, and returns zero in `D11:D0`
+  [mame-harddriv-audio-030fefc, `hdsnd68k_status_r`].
+- **Conflict:** MAME's fixed test/ready values do not reproduce live board
+  inputs, and its complete low-lane zeros do not prove the partially driven
+  physical bus.
+- **Current treatment:** `hard_drivin_sound_read_status` accepts all four raw
+  sources with independent validity, reports only `D15:D12` as driven, and
+  clamps invalid/filler carrier bits to zero without assigning them physical
+  meaning. A future host bridge must select its own explicit open-bus policy;
+  see `OQ-030`.
+- **Confidence:** VERIFIED_PRIMARY for the raw high-nibble mapping;
+  CORROBORATED only for MAME's software-visible flag positions; UNKNOWN for
+  the complete physical word outside the driven lanes.

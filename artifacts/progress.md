@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main/sound mailbox qualification
+- **Current milestone:** Hard Drivin' raw `/READSTAT` boundary qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 124 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 36 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 37 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -70,6 +70,9 @@
   A fourteenth target checks both standalone complete-word mailboxes and flags
   at 259 cells, ten retained checks, no memory/latch, and zero structural
   problems.
+  A fifteenth target checks the storage-free raw `/READSTAT` mapper at 23
+  combinational cells, eight retained checks, no storage/latch, and zero
+  structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -575,6 +578,15 @@
   reset/data retention, read-clear, conflict invalidity, and requalification.
   Standalone Yosys reports 259 cells/ten checks with zero structural problems;
   board-top integration remains deliberately separate.
+- **New `/READSTAT` evidence:** A044427 sheet 2 proves that LS244 `10K` maps
+  live raw `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` to
+  host `D15:D12`, while the selected target does not drive `D11:D0`. Pinned
+  MAME instead fixes the test/ready/low-lane values, now isolated as `SC-032`.
+  The storage-free mapper exhausts all sixteen source nibbles and all sixteen
+  source-validity masks, exposes constant driven mask `0xf000`, and never
+  promotes deterministic filler into board behavior. Standalone Yosys reports
+  23 cells/eight checks with zero structural problems; board-top and complete
+  68000 read integration remain separate.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -601,8 +613,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** integrate the qualified main/sound mailboxes into the board
-  top behind explicit whole-word callbacks and construct the raw `/READSTAT`
-  driven-nibble boundary without inventing its undriven lanes.
+- **Next task:** integrate the qualified main/sound mailboxes and raw
+  `/READSTAT` mapper into the board top behind explicit whole-word callbacks,
+  while retaining validity masks and leaving the complete 68000 bus/open-bus
+  policy outside the adapter.
 - **Latest committed baseline before this cycle:**
-  `843c93c`
+  `eb43fa7`

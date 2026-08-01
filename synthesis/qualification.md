@@ -206,6 +206,13 @@ zero structural problems. This proves only the exhaustive-tested whole-word
 callback state and explicit conflict invalidity; it is not an electrical
 LS74 collision result, byte-lane policy, or completed 68000 bridge.
 
+The fifteenth checked-in script targets the storage-free
+`hard_drivin_sound_read_status`. Yosys 0.67+111 reports 23 combinational cells
+with eight retained checks, no storage or latch, and zero structural problems.
+This proves only the exhaustive-tested raw `D15:D12` mapping, driven mask, and
+source-validity carrier; it is not an open-bus policy, live peripheral proof,
+or completed 68000 read path.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -224,7 +231,8 @@ ignored JSON outputs including
 `build/yosys/hard_drivin_sound_bio_generator.json`, and
 `build/yosys/hard_drivin_sound_host_control.json`,
 `build/yosys/hard_drivin_sound_320_port_latch.json`, and
-`build/yosys/hard_drivin_sound_mailboxes.json`. Tool-version differences
+`build/yosys/hard_drivin_sound_mailboxes.json`, and
+`build/yosys/hard_drivin_sound_read_status.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.
