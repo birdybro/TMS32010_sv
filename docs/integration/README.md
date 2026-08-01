@@ -16,7 +16,9 @@
 - `hard_drivin_compare.md`: primary port-2 `/CMPRD`/`CMPOUT` trace, explicit
   Rev-A nonpopulation, and MAME zero-stub boundary.
 - `hard_drivin_local_memory.md`: physical local-68000 ROM, SRAM, and high-bank
-  decode plus the same-clock storage callback bridge.
+  decode plus the same-clock storage callback bridge; its E1/E2 evidence and
+  authorized image workflow are bounded in
+  `docs/research/hard_drivin_program_rom_strap_audit.md`.
 - `hard_drivin_direct_io.md`: upper-Y5 host/TMS transceivers, asymmetric
   modulo-four read and canonical-only write decode, masked carriers, side
   effects, and MAME conflict.

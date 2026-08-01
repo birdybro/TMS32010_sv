@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-032` Driver Sound J3 cabinet-wiring and
-  disconnected-input audit
+- **Current milestone:** `OQ-034` Driver Sound local-program-ROM E1/E2 and
+  device-capacity audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 154 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 160 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 57 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 58 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -758,7 +758,7 @@
   pinned TI SDAS113B establish the ROM `/CE=A23 OR /AS` gate, all eight LS138
   `30P` high-bank outputs, Y5's A13-selected program-RAM versus direct-TMS-I/O
   controls, Y6 communication selection, and Y7 local-RAM selection. The
-  populated 27256 pair uses CPU `A15:A1`; the local 6264 pair uses `A13:A1`
+  drawn/default 27256 pair uses CPU `A15:A1`; the local 6264 pair uses `A13:A1`
   with separate `/UDS`/`/LDS` write enables and complete-word read drive. The
   storage-free RTL exhausts 131,072 combinations over `/AS`, `RVA`, `/RVAS`,
   `A23`, every ignored `A22:A17` alias, all banks, A13, direction, and byte
@@ -1107,6 +1107,20 @@
   clear the four source-valid bits rather than forcing MAME zero or an
   assumed floating-TTL high. Physical open values and other revisions remain
   unknown; no RTL/model behavior changed.
+- **New program-ROM option evidence:** A044427 Rev A connects the two EPROM
+  pin-1 nodes through alternative `E1` to +5 V or `E2` to local-MC68000 A16.
+  AMD publication 08005 Rev A establishes that the drawn 32Kx8 27256 needs
+  VPP=VCC on pin 1 for read operation, while the pin-compatible 64Kx8 27512
+  uses pin 1 as its highest address input. E1 is therefore required for the
+  drawing's 64-KiB combined image and E2 is the intended 128-KiB option;
+  fitting both is electrically illegal. Released pinned-MAME sets declare
+  0x8000-byte lanes, while the Race Drivin' Panorama prototype declares
+  0x10000-byte lanes. No reviewed assembly BOM, option table, or physical
+  board identifies its fitted link. A deterministic authorized-image helper
+  hashes and interleaves the lanes, distinguishes information-bearing 27512
+  halves, and always leaves `physical_strap_proven` false. The new AMD source
+  brings the verified ignored cache to 58. `OQ-034` is
+  `PARTIALLY_RESOLVED_PRIMARY`; no RTL/model behavior changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1136,7 +1150,8 @@
   main-bus peripheral response latency, exact DUART/main-clock phase and
   raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
-  exact local-68000 E1/E2 EPROM strap/variant population,
+  exact local-68000 E1/E2 EPROM strap/variant population despite the now-
+  verified capacity-option topology,
   authenticated original-TMS32010 errata/BBS notices, package-code decoding,
   and mask/date invariance across physical specimens under `OQ-008`/`SC-043`,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
@@ -1149,9 +1164,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-034` by tracing `E1/E2` from A044427 into the
-  `A046491-01`/`A046491-02` assembly evidence, populated EPROM identities, and
-  authorized mirror/continuity tests without inferring a larger-ROM mode from
-  an option footprint.
+- **Next task:** investigate `OQ-026` by reconciling A044427's twelve drawn
+  sample-ROM blocks with board-identified assembly/ROM-label evidence and an
+  authorized missing-block audit, without assigning a value to an undriven
+  selection.
 - **Latest committed baseline before this cycle:**
-  `fe2ff2b`
+  `772d2c3`

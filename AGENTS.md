@@ -547,12 +547,16 @@ value or a combinational side effect to this storage-free composition.
 The standalone storage-free `hard_drivin_sound_local_memory_decode` preserves
 A044427's local-68000 ROM gate, all eight high-bank LS138 outputs, Y5
 program-RAM/direct-I/O subdecode, Y6 communication select, Y7 local-RAM
-select, local byte write enables, and populated 27256/6264 address
-projections. Its broad physical aliases intentionally differ from MAME's
+select, local byte write enables, and drawing-default 27256/6264 address
+projections. The EPROM projection is not a physical population claim:
+`OQ-034` now proves E1/+5 V is the 27256 choice and E2/A16 is the
+pin-compatible 27512 choice, while the fitted link and device on each assembly
+remain unknown. Its broad physical aliases intentionally differ from MAME's
 canonical windows under `SC-034`. Read
 `docs/integration/hard_drivin_local_memory.md` before changing this path. Do
 not add ROM/RAM contents, a larger-EPROM jumper mode, or an open-bus value
-until `OQ-034` and the relevant electrical/storage boundary are resolved.
+until the remaining `OQ-034` assembly evidence and relevant
+electrical/storage boundary are resolved.
 The storage-free `hard_drivin_sound_local_memory_bridge` consumes the
 same-clock host-timing adapter's captured address/direction/strobes and emits
 ROM/local-RAM read requests, lane-specific local-RAM S7 write commits,

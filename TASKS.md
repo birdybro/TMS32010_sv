@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 57 pinned
+  until permission is demonstrated. The ignored cache now verifies 58 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -69,7 +69,11 @@ objective passing evidence.
   the migration's later unsupported schematic-inversion comment. Three newly
   pinned primary Atari publications add Hard Drivin' compact TM-329, Race
   Drivin' compact SP-360, and Race Drivin' cockpit TM-351 provenance for
-  Sound PCB cabinet/assembly-variant research. The exact TI
+  Sound PCB cabinet/assembly-variant research.
+  A contemporaneous AMD memory data book now establishes the 27256 pin-1
+  VPP/read requirement and pin-compatible 27512 A15 option used by A044427's
+  E1/E2 footprint, without asserting an installed EPROM vendor or population.
+  The exact TI
   LS20, AS00, combined ALS32/AS32,
   F04, F11, and F74 component documents now support SP-327 main-bus Boolean
   and future propagation analysis without treating a gate symbol as an
@@ -1596,7 +1600,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_host_reads.md`,
   `docs/integration/hard_drivin_host_mailboxes.md`,
   `docs/research/hard_drivin_dac_code_audit.md`,
-  `docs/research/hard_drivin_switch_input_audit.md`
+  `docs/research/hard_drivin_switch_input_audit.md`,
+  `docs/research/hard_drivin_program_rom_strap_audit.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1636,6 +1641,7 @@ objective passing evidence.
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
   `formal/hard_drivin_sound_host_routing.sby`,
   `tests/regressions/test_hard_drivin_dac_codes.py`,
+  `tests/regressions/test_hard_drivin_program_roms.py`,
   `tests/regressions/test_documentation.py`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1969,15 +1975,23 @@ objective passing evidence.
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
-  local-68000 ROM and high-bank decode. The populated 27256 pair uses
+  local-68000 ROM and high-bank decode. The drawn 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`
   and assigns Y4-Y7 to low I/O, the Y5 program/direct-I/O bank,
   communication RAM, and local 6264 RAM. A13 further splits Y5 through raw
   `/RAMCE`, `/PWE`, and `/PDEN` controls. The standalone storage-free decoder
   exhausts 131,072 control/alias/lane combinations and synthesizes to 56
   abstract cells/17 checks with no memory or latch. Pinned MAME's canonical
-  windows and wider declared ROM region remain `SC-034`; exact E1/E2 and
-  board-variant population remain `OQ-034`. This is decode evidence, not a
+  windows and wider declared ROM region remain `SC-034`. A044427 sheet 3 and
+  AMD publication 08005 Rev A now resolve the option topology: E1 supplies
+  the 27256 VPP pin from +5 V, while E2 makes the compatible 27512 pin an A16
+  extension. Released MAME sets declare 0x8000-byte lanes and the Panorama
+  prototype declares 0x10000-byte lanes, but no reviewed assembly publication
+  marks the fitted link or installed device. The deterministic authorized-
+  image analyzer hashes/interleaves lanes and distinguishes information-
+  bearing 27512 halves without ever claiming a physical strap. `OQ-034` is
+  therefore `PARTIALLY_RESOLVED_PRIMARY`; exact board/variant population
+  remains open. This is decode and option-topology evidence, not a
   68000, memory storage, or raw-pin timing implementation.
   The storage-free timing bridge now consumes the host adapter's captured
   direction/address/lanes. Synthetic end-to-end cycles verify valid and

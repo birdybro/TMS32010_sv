@@ -1107,6 +1107,53 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         )
         self.assertIn("OQ-034", questions)
 
+    def test_hard_drivin_program_rom_strap_remains_board_scoped(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        source = by_id["amd-bipolar-mos-memories-databook-1986"]
+        self.assertEqual(source["status"], "acquired")
+        self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+        self.assertFalse(source["may_commit"])
+        self.assertTrue(source["sections_or_pages_used"])
+
+        audit = " ".join(
+            (DOCS / "research" / "hard_drivin_program_rom_strap_audit.md")
+            .read_text(encoding="utf-8")
+            .split()
+        )
+        local_memory = " ".join(
+            (DOCS / "integration" / "hard_drivin_local_memory.md")
+            .read_text(encoding="utf-8")
+            .split()
+        )
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "`E1` reaches `+5 V`",
+            "`E2` reaches local-MC68000 `A16`",
+            "fitting both links would short CPU `A16` to `+5 V`",
+            "Race Drivin' Panorama prototype",
+            "Distinct halves in either 64 KiB lane",
+            "always leaves `physical_strap_proven` false",
+            "No RTL behavior changes",
+        ):
+            self.assertIn(required, audit)
+        for required in (
+            "E1 is required for the drawing's 27256 configuration",
+            "With E2 and a 27512 pair",
+            "legacy name",
+            "hard_drivin_program_rom_strap_audit.md",
+        ):
+            self.assertIn(required, local_memory)
+        self.assertIn("PARTIALLY RESOLVED_PRIMARY (`SC-034`)", questions)
+        self.assertIn("EPROM-option refinement", conflicts)
+
     def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
         mailboxes = (
             DOCS / "integration" / "hard_drivin_host_mailboxes.md"

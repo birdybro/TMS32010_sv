@@ -25,8 +25,9 @@ VERIFIED_PRIMARY.**
 ## Memory and host path
 
 The local 68000's physical ROM/high-bank/local-RAM decode, the Y5
-program/direct-I/O split, populated word-address projections, and byte-lane
-controls are traced separately in `docs/integration/hard_drivin_local_memory.md`.
+program/direct-I/O split, drawing-default word-address projections, and
+byte-lane controls are traced separately in
+`docs/integration/hard_drivin_local_memory.md`.
 The storage-free exhaustive RTL decoder preserves the board's broad aliases;
 it does not instantiate a 68000, ROM, local RAM, or open-bus policy.
 `hard_drivin_sound_local_memory_bridge` composes that decode with the
@@ -41,6 +42,15 @@ that storage invalidates metadata over 8,192 initialization clocks without
 resetting its data arrays. The upper-Y5 path now applies the asymmetric
 downstream direct-I/O decode and shares the existing physical port consumers;
 authorized ROM storage and platform open-bus composition remain external.
+Sheet 3's program-EPROM option is now separately bounded: alternative link
+`E1` ties the common pin-1 node to `+5 V` for the drawn 27256 pair, while
+`E2` connects it to CPU `A16` for a pin-compatible 27512 pair. Released MAME
+sets declare 27256-sized lanes, but the Race Drivin' Panorama prototype
+declares 27512-sized lanes. Neither declaration proves a physical link or
+assembly population. The wrapper therefore retains the drawing's
+`A15:A1`/64-KiB default while `OQ-034` requires an assembly BOM, physical
+continuity, or board-identified device evidence before any 128-KiB mode is
+added. See `docs/research/hard_drivin_program_rom_strap_audit.md`.
 An FPGA-only local-processor interlock separately gates the raw MC68000 RESET
 and HALT callbacks until initialization and any selected internal-SRAM scrub
 finish. It neither changes `/320RES` nor claims a physical SRAM reset; see

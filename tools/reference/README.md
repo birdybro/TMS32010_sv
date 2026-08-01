@@ -85,3 +85,27 @@ MAME or this project.
 
 No game ROMs, MAME binaries, trace files containing ROM-derived disassembly,
 generated placeholder images, or cached MAME source belong in Git.
+
+## Authorized Driver Sound program-ROM audit
+
+`hard_drivin_program_roms.py` accepts explicit local images for the program
+EPROM at `70N` (`D15:D8`, even byte addresses) and `45N` (`D7:D0`, odd byte
+addresses). It validates only the two documented per-lane capacities, reports
+SHA-256 hashes, interleaves the lanes for one complete-image hash, and compares
+the two 32 KiB halves of a 64 KiB lane:
+
+```sh
+python3 -m tools.reference.hard_drivin_program_roms \
+  --upper-even /authorized/path/70n.bin \
+  --lower-odd /authorized/path/45n.bin \
+  --pretty
+```
+
+Distinct halves establish that CPU `A16` is information-bearing in that image
+and that Atari link `E2` would be required to execute the complete contents.
+Equal halves remain ambiguous between a repeated 27512 image and a mirrored
+27256 read. A 32 KiB file is only 27256-sized; it does not photograph or prove
+`E1`. The tool therefore always reports `physical_strap_proven=false`. It does
+not print data bytes, download images, compare against copyrighted game hashes,
+or execute/disassemble supplied content. Keep all input images and generated
+reports outside Git.

@@ -7,6 +7,18 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `OQ-034` Driver Sound local-program-ROM strap audit. It proves A044427's
+  alternative E1/+5-V and E2/A16 topology, separates the drawn 27256 default
+  from a pin-compatible 27512 capacity option, inventories released and
+  Panorama MAME lane sizes, and defines the board-identified continuity and
+  device-read evidence needed to close production population.
+- A content-free authorized program-ROM analyzer and five regressions. It
+  accepts only matching 27256- or 27512-sized lane images, hashes each lane
+  and the correctly interleaved image, compares 32-KiB halves, and never
+  promotes a file-size or mirror result into proof of a physical strap.
+- An integrity-pinned, non-committed 1986 AMD Bipolar/MOS Memory Data Book as
+  contemporaneous component-family evidence for 27256 VPP and 27512 A15 pin-1
+  behavior. It is not evidence of the EPROM vendor installed by Atari.
 - `OQ-032` Driver Sound J3 audit using complete Atari cabinet wiring rather
   than connector-name inference. It traces the no-discrete-pull RC network,
   proves that SP-327 Hard Drivin' cockpit and SP-360 Race Drivin' compact do
@@ -731,6 +743,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-034` is now `PARTIALLY_RESOLVED_PRIMARY`: E1 is required by the
+  drawing's 27256 configuration and E2 is the intended 27512/A16 option, but
+  no reviewed assembly BOM, option table, ECO, or physical board identifies
+  the production link. The wrapper retains its explicit drawing-default
+  `A15:A1` projection; no RTL behavior changed.
 - `OQ-032` is now `PARTIALLY RESOLVED_PRIMARY`: the reviewed cabinet wiring
   assigns no function to `J3-11/J3-9/J3-8/J3-7`, while the sound-board
   network and LS244 specification provide no guaranteed disconnected value.
@@ -968,6 +985,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 58 locally acquired references pass their pinned SHA-256 checks. Focused
+  regressions lock the E1/E2 short-circuit exclusion, the released-versus-
+  Panorama declaration boundary, the legacy RTL-name nonclaim, deterministic
+  content-free analysis, and `physical_strap_proven=false` policy.
 - All 57 locally acquired references pass their pinned SHA-256 checks. A new
   documentation regression locks both no-J3 cabinet diagrams, the passive
   input network, later Sound PCB assembly identity, MAME non-authority, and
@@ -1798,6 +1819,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- Neither `A046491-01` nor `A046491-02` has a reviewed Sound PCB assembly BOM
+  or option drawing that identifies E1/E2 and installed program-EPROM types.
+  Even a distinct 27512 image proves only that A16 is information-bearing for
+  that content; a board-specific strap claim still requires physical
+  continuity or authoritative assembly evidence (`OQ-034`).
 - Published cockpit/compact wiring does not connect Driver Sound J3, but
   physical `A046491-01`/`A046491-02` header population, field options, open
   LS244 input voltage/read value, and other cabinet revisions remain

@@ -4,8 +4,9 @@
 
 This document traces the local MC68000 ROM, high-bank, DSP-program-path, and
 local-RAM controls on Atari Driver Sound drawing A044427 Rev A. It describes
-the physical Boolean decode and populated memory address projections needed by
-TM-327's synthetic local program-ROM/program-RAM diagnostics. It does not
+the physical Boolean decode and drawing-scoped memory address projections
+needed by TM-327's synthetic local program-ROM/program-RAM diagnostics. It does
+not
 provide a 68000 core, copyrighted ROM, memory storage, DTACK generator,
 electrical timing closure, or open-bus value.
 
@@ -18,7 +19,7 @@ ti-sn74als32-datasheet-sdas113b, printed p. 1;
 mame-harddriv-audio-030fefc, `driversnd_68k_map` and the associated
 `hdsnd68k_320*` handlers].
 
-## Low-half ROM gate and populated address
+## Low-half ROM gate and drawing-default address
 
 ALS32 `30R` drives both EPROM `/CE` pins with:
 
@@ -29,21 +30,39 @@ ALS32 `30R` drives both EPROM `/CE` pins with:
 The two drawn `27256D20` devices at `70N` and `45N` supply `D15:D8` and
 `D7:D0`. They share `/CE` and `/OE`, so a selected read drives a complete
 sixteen-bit word; `/UDS` and `/LDS` do not gate either EPROM output. CPU
-`A1:A15` reach the devices' fifteen address inputs. CPU `A16` reaches only the
-`E1/E2` option at pin 1, which the populated 27256 symbol identifies as VPP.
+`A1:A15` reach the devices' fifteen address inputs. Alternative link `E1`
+connects both pin-1 nodes to `+5 V`; `E2` instead connects them to CPU `A16`.
+The drawn 27256 identifies pin 1 as VPP.
 
-Consequences for the drawn 27256 population are:
+AMD's contemporaneous 27256/27512 family data identifies pin 1 as VPP on a
+32Kx8 27256 and the highest address input on a 64Kx8 27512. Its 27256 read
+table requires VPP=VCC. Thus E1 is required for the drawing's 27256
+configuration, while E2 is the intended 27512/CPU-A16 configuration
+[amd-bipolar-mos-memories-databook-1986, publication 08005 Rev A, printed
+pp. 6-15 through 6-21, PDF pp. 821-827].
+
+Consequences for the drawing's 27256 configuration are:
 
 - every asserted `/AS` cycle with `A23=0` selects the ROM pair;
-- `A22:A16` are absent from the populated word address;
+- `A22:A16` are absent from the drawn word address;
 - the physical 64 KiB image repeats throughout `0x000000-0x7fffff`; and
 - the storage word address is `A15:A1`.
 
-The exact installed `E1/E2` strap and any later larger-EPROM board population
-remain `OQ-034`. The RTL therefore exports only the verified populated-27256
-address and explicitly does not implement a larger-EPROM mode. **Confidence:
-VERIFIED_PRIMARY for the Rev-A drawing and populated-device projection;
-UNKNOWN for production strap/variant coverage.**
+With E2 and a 27512 pair, CPU `A16:A1` would address a 128 KiB combined image.
+The schematic does not mark the fitted link, and the reviewed assembly parts
+sections provide no Sound PCB BOM. Pinned released-game declarations are
+27256-sized; the Race Drivin' Panorama prototype instead declares a
+27512-sized pair, without a board revision or half-mirror result. The complete
+comparison and authorized audit workflow are in
+`docs/research/hard_drivin_program_rom_strap_audit.md`.
+
+The exact installed strap remains `OQ-034`. RTL therefore exports only the
+drawing's 27256 address and explicitly does not implement a larger-EPROM mode.
+The legacy name `populated_rom_word_address_o` is retained for interface
+stability; it is not a physical-population claim. **Confidence:
+VERIFIED_PRIMARY for the Rev-A option topology and device-family behavior;
+CORROBORATED for declared ROM sizes; UNKNOWN for production strap/variant
+coverage.**
 
 ## High-bank LS138
 
@@ -117,8 +136,9 @@ Pinned MAME declares canonical windows at `0x000000-0x01ffff`,
 `0xff0000-0xff3fff`, `0xff4000-0xff5fff`, `0xff6000-0xff7fff`,
 `0xff8000-0xffbfff`, and `0xffc000-0xffffff`. Its Hard Drivin' sets load one
 `0x8000`-byte even EPROM and one `0x8000`-byte odd EPROM into a `0x20000`-byte
-region. The 64 KiB populated payload corroborates the two drawn 27256 devices,
-but the emulator's 128 KiB declared ROM window and omission of the broad
+region. The released sets' 64 KiB payloads corroborate the two drawn 27256
+devices, but the emulator's 128 KiB declared ROM window and omission of the
+broad
 `A23=0`/high-bank aliases do not reproduce the physical gates. Its direct-I/O
 handlers also use `offset & 7` in both directions. A044427 sheet 5 instead
 proves that direct reads ignore `RA11:RA2` and alias modulo four, while direct
@@ -133,7 +153,7 @@ behavior remains useful but cannot replace the schematic decode. See
 combinational transcription. It exposes all eight raw LS138 outputs, ROM and
 local-RAM selects, `/320RAM` and `/320COM`, the Y5 program/direct-I/O
 controls, local byte write enables, complete-word read masks, and exact
-populated ROM/program/local-RAM word-address projections.
+drawing-default ROM plus program/local-RAM word-address projections.
 
 `tb_hard_drivin_sound_local_memory_decode` exhausts 131,072 combinations of
 both `/AS` states, both `RVA` states, both `/RVAS` states, both `A23` values,
@@ -162,7 +182,7 @@ The bridge remains storage-free and exposes these callbacks:
 
 | physical target | request/level | completion boundary |
 |---|---|---|
-| populated 27256 pair | complete-word read request with `A15:A1` | data must be valid by fixed S7; no READY exists |
+| drawn/default 27256 pair | complete-word read request with `A15:A1` | data must be valid by fixed S7; no READY exists |
 | local 6264 pair | complete-word read request with `A13:A1` | upper/lower write commits independently at S7 |
 | Y5 lower half | program-RAM read/write level with `A12:A1` | whole-word write commit at S7 |
 | Y5 upper half | direct `/PDEN` or `/PWE` level with `A12:A1` | direct `/PWE` callback is sampled at the S6 rising boundary |

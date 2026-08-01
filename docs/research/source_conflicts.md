@@ -831,8 +831,8 @@ electrical result of an out-of-range access.
 
 ## SC-034 — Physical local-68000 aliases versus canonical emulator windows
 
-- **Primary board evidence:** A044427 drives both `27256D20` EPROM `/CE`
-  pins from `A23 OR /AS` and addresses the populated pair only from CPU
+- **Primary board evidence:** A044427 drives both drawn `27256D20` EPROM `/CE`
+  pins from `A23 OR /AS` and addresses their ordinary pins only from CPU
   `A1:A15`. LS138 `30P` decodes high-bank `A16:A14` only while `A23=1` and
   `/AS=0`; `A22:A17` are absent. The Y5 bank is then split by `A13` into
   program-RAM controls and direct TMS `/PWE`/`/PDEN` controls
@@ -841,29 +841,45 @@ electrical result of an out-of-range access.
   ti-sn74als32-datasheet-sdas113b, printed p. 1].
 - **Secondary abstraction:** pinned MAME declares ROM only at
   `0x000000-0x01ffff` and six canonical high windows from `0xff0000` through
-  `0xffffff`. Hard Drivin' sets load one `0x8000`-byte file in each EPROM
-  lane, while direct-TMS-I/O handlers mask their offset with seven
+  `0xffffff`. Released Hard Drivin' and Race Drivin' sets load one
+  `0x8000`-byte file in each EPROM lane. The Race Drivin' Panorama prototype
+  instead loads `0x10000` bytes per lane, while direct-TMS-I/O handlers mask
+  their offset with seven
   [mame-harddriv-audio-030fefc, `driversnd_68k_map`,
   `hdsnd68k_320ports_r`, `hdsnd68k_320ports_w`, and Hard Drivin' soundcpu
-  ROM declarations].
-- **Conflict:** the 64 KiB populated payload corroborates two 27256 devices,
-  but a 128 KiB emulator region does not reproduce the populated pair's A16
-  mirror. MAME also omits the broad physical `A23=0` and `A22:A17` aliases.
+  ROM declarations; mame-harddriv-driver-030fefc, released-set and
+  `racedrivpan` soundcpu declarations].
+- **Conflict:** the released sets' 64 KiB payloads corroborate the drawing's
+  two-27256 configuration, but a generic 128 KiB emulator region does not
+  reproduce that configuration's A16 mirror. The Panorama prototype may use
+  the larger capacity, but its declaration does not qualify physical E2.
+  MAME also omits the broad physical `A23=0` and `A22:A17` aliases.
   For upper-Y5 I/O, MAME applies `offset & 7` to both directions. Physical
   LS139 95K instead ignores `RA11:RA2` and aliases every read modulo four;
   physical write predecode `PORT` requires `RA11:RA3=0`, so noncanonical
   writes select no LS138 100K output at all.
+- **EPROM-option refinement:** A044427 makes `E1` the +5-V link and `E2` the
+  CPU-A16 link to both EPROM pin-1 nodes. Contemporaneous AMD family data
+  makes E1 the required 27256-read configuration and E2 the intended 27512
+  highest-address configuration. The Panorama declaration shows that the
+  larger image case is operationally relevant, but it neither identifies an
+  `A046491-01`/`-02` population nor proves distinct 32 KiB halves. See
+  `docs/research/hard_drivin_program_rom_strap_audit.md`
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
+  PDF pp. 5-6; amd-bipolar-mos-memories-databook-1986, printed pp. 6-15
+  through 6-21, PDF pp. 821-827].
 - **Current treatment:** the storage-free board decoder exposes raw selects,
-  the exact populated word addresses, and the Y5 control split. The separate
+  the exact drawing-default word addresses, and the Y5 control split. The separate
   direct-I/O adapter implements the primary downstream asymmetry, masks
   undriven read lanes, and reports noncanonical writes without aliasing them.
   Higher-level software maps may retain canonical windows, but cannot describe
   omitted aliases or padding as pin-equivalent. See `OQ-034`,
   `docs/integration/hard_drivin_local_memory.md`, and
   `docs/integration/hard_drivin_direct_io.md`.
-- **Confidence:** VERIFIED_PRIMARY for the Rev-A decode; CORROBORATED for the
-  canonical software ranges and 64 KiB payload; UNKNOWN for installed jumper
-  and later board variants.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A decode and E1/E2 electrical
+  meaning; CORROBORATED for canonical software ranges and declared image
+  sizes; UNKNOWN for installed jumper, image-half uniqueness, and assembly
+  variants.
 
 ## SC-035 — Physical paired RC reset hold versus instantaneous emulator reset
 

@@ -384,7 +384,7 @@
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 /SRES decode",
         "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
-        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES J3 nibble with J3-1/J3-2 ground, four 1-kOhm series/two-capacitor networks and no discrete DC input pull, /IRQCLR decode, and program-RAM controls",
+        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES J3 nibble with J3-1/J3-2 ground, four 1-kOhm series/two-capacitor networks and no discrete DC input pull, /IRQCLR decode, program-RAM controls, two 27256D20 program EPROMs, and alternative E1=+5V/E2=A16 links to their common pin 1",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
       ],
@@ -415,6 +415,34 @@
       "sections_or_pages_used": [
         "Am6012/6012A and Am6022/6022A data sheet, printed pp. 3-17 through 3-22 (PDF pp. 95-100): pinout, digital bit significance, current-output behavior, and code-format table",
         "Am6012 application note, printed pp. 3-26 through 3-30 (PDF pp. 103-107): increasing-code transfer description and output/reference application circuits"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "amd-bipolar-mos-memories-databook-1986",
+      "title": "Bipolar/MOS Memory Data Book",
+      "author_or_organization": "Advanced Micro Devices",
+      "publication_number": "none identified",
+      "publication_date": "1986",
+      "revision": "1986 edition",
+      "source_url": "https://www.bitsavers.org/components/amd/_dataBooks/1986_AMD_Bipolar_MOS_Memories_Data_Book.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "amd/1986_AMD_Bipolar_MOS_Memories_Data_Book.pdf",
+      "sha256": "b734e40789aad83c99214a8d54ef12294a6353a90e24c6cab4ebb18145634831",
+      "document_type": "primary manufacturer data book scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted AMD publication; redistribution permission not established",
+      "relevance": "Contemporaneous manufacturer authority for the pin-compatible 27256/27512 capacity option implemented by Atari E1/E2",
+      "authority_level": 2,
+      "notes": "Bitsavers scan. The Atari drawing does not identify an EPROM manufacturer; use this source to establish the documented device-family pin/read requirements, not an installed vendor or part.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "8-Bit EPROM Family, publication 08005 Rev A issue May 1986, printed pp. 6-15 through 6-20 (PDF pp. 821-826): family capacities, common 28-pin connection diagram, pin 1 VPP on Am27256 versus A15 on Am27512, and read-mode description",
+        "Am27256 and Am27512 mode-select tables, printed p. 6-21 (PDF p. 827): Am27256 read requires VPP=VCC while Am27512 reads with pin 1 as its highest address input"
       ],
       "status": "acquired",
       "download": {
@@ -681,6 +709,9 @@
       "notes": "Sound-board behavior is split into harddriv_a.cpp in this commit.",
       "may_commit": false,
       "sections_or_pages_used": [
+        "Driver Sound PCB layout comment, lines 182-209: observed Race Drivin' Compact program-ROM labels at 70N/45N, without E1/E2 population",
+        "Hard Drivin', Hard Drivin' Compact, and Race Drivin' released-set soundcpu declarations: 0x8000-byte program-ROM lane images and socket-labelled filenames",
+        "Race Drivin' Panorama prototype soundcpu declaration: 0x10000-byte rdps1032/rdps1033 lane images without a Sound PCB assembly revision or mirror analysis",
         "Hard Drivin' serialroms region size, four 0x10000-byte loads, and physical socket labels",
         "driver_68k_map around lines 562-566: canonical GSP, MSP, DUART, ZRAM, and main RAM software-facing address ranges",
         "Machine configuration around lines 1500-1501: main MC68681 and 3.6864 MHz clock"
