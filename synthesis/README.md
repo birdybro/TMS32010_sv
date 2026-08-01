@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs eleven checked-in scripts. The main synthesis harness targets
+The command runs fourteen checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -89,8 +89,8 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,474 abstract cells, 166 checks, and zero structural problems after
-the opt-in host-control integration. This is not comparable to the
+reports 2,495 abstract cells, 171 checks, and zero structural problems after
+the opt-in host-control and port-3 latch integration. This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
 
@@ -112,6 +112,16 @@ cells, six retained checks, no memory or latch, and zero structural problems.
 This qualifies only the address-encoded LS259 state, board-reset sampling, and
 per-bit validity; it is not a 68000 decoder, DTACK path, or physical
 level-sensitive latch-timing result.
+
+The thirteenth script targets `hard_drivin_sound_320_port_latch`. It reports
+19 cells, five retained checks, no memory or latch, and zero structural
+problems. This qualifies only low-byte TMS capture and masked host-lane
+carriers, not the undriven byte or physical propagation timing.
+
+The fourteenth script targets `hard_drivin_sound_mailboxes`. It reports 259
+cells, ten retained checks, no memory or latch, and zero structural problems.
+This qualifies the tested same-clock complete-word/data-valid/flag-valid
+boundary, not physical LS74 coincidence behavior or either 68000 bus.
 
 ## Quartus
 

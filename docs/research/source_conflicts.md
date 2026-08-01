@@ -653,3 +653,32 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the populated byte path;
   CORROBORATED for the names in MAME; UNKNOWN for physical host `D7:D0` and
   latch power-up data.
+
+## SC-031 — Physical whole-word mailboxes versus byte-merged emulator state
+
+- **Primary board evidence:** A044427 clocks main-system `ED15:ED0` into
+  LS374 `10L`/`10N` with one `/MAINWR`, and local sound-CPU `D15:D0` into
+  LS374 `20L`/`20N` with one `/SOUNDWR`. Neither latch pair has reset. LS74
+  `20S` presets the corresponding flag from that write and clocks grounded D
+  from the opposite read strobe
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
+  PDF pp. 3–4; ti-sn74ls374-datasheet-sdls165b, printed pp. 1–3;
+  ti-sn74ls74a-datasheet-sdls119, printed pp. 1–3].
+- **Secondary abstraction:** pinned MAME uses `COMBINE_DATA` and a `mem_mask`
+  for local sound-CPU writes to `m_sounddata`; its main-side write schedules a
+  complete word. Handler calls clear the flags without modeling physical
+  strobe edges [mame-harddriv-audio-030fefc, `hd68k_snd_data_w`,
+  `hdsnd68k_data_w`, `hd68k_snd_data_r`, and `hdsnd68k_data_r`].
+- **Conflict and ambiguity:** the board's local latch clock is not qualified
+  by UDS/LDS, and the upstream origin of connector `/MAINWR` is outside the
+  drawing. MAME's byte preservation cannot establish what appears on an
+  inactive physical data lane. Neither source resolves coincident flag set
+  and read-clear strobes.
+- **Current treatment:** `hard_drivin_sound_mailboxes` accepts only complete
+  words. It captures data during a coincident request but marks the affected
+  flag invalid, and likewise marks a reset/write preset-clear conflict
+  invalid. Any byte merging belongs to a future explicitly nonphysical bus
+  policy until `OQ-031` is resolved.
+- **Confidence:** VERIFIED_PRIMARY for nominal whole-word wiring and ordinary
+  flag behavior; CORROBORATED for MAME's normal software handshake; UNKNOWN
+  for physical byte and coincident-strobe behavior.

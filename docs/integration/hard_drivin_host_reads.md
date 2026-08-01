@@ -34,7 +34,7 @@ lanes; UNKNOWN for the undriven lanes.**
 Main-system `ED15:ED0` are clocked into LS374 `10L`/`10N` by `/MAINWR` and
 their outputs drive all local sound-CPU `D15:D0` lanes while `/SOUNDRD` is
 active. The same main write asynchronously sets `MAINFLAG`; the trailing
-positive edge of active-low `/SOUNDRD` clocks grounded D into LS74 `10J` and
+positive edge of active-low `/SOUNDRD` clocks grounded D into LS74 `20S` and
 clears it. Board `/RESET` clears both `MAINFLAG` and `SOUNDFLAG`. The opposite
 direction uses `/SOUNDWR` and `/MAINRD` with a separate pair of LS374s and the
 `SOUNDFLAG` half of the LS74
@@ -46,6 +46,9 @@ Pinned MAME returns its complete `m_maindata` word from `hdsnd68k_data_r` and
 clears `m_mainflag`, independently corroborating the software-visible
 transaction but not its physical strobe timing
 [mame-harddriv-audio-030fefc, `hdsnd68k_data_r`].
+
+The complete two-direction data-latch, flag, reset, conflict, and whole-word
+callback contract is in `hard_drivin_host_mailboxes.md`.
 
 ## TMS-to-host port latch
 

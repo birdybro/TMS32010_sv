@@ -138,6 +138,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   exposes it on host `D15:D8`, and separates fixed driven lanes from captured
   data validity. The board top now acknowledges `/CPORT` internally without
   inheriting external callback backpressure.
+- Primary qualification of both complete-word main/sound mailbox directions,
+  their LS74 `20S` pending flags, reset behavior, read-clear edges, and
+  unresolved byte/coincident-strobe boundaries under `SC-031`/`OQ-031`.
+- A standalone synthesizable whole-word mailbox adapter with independent data
+  and flag validity, explicit conflict reporting, exhaustive bidirectional
+  16-bit verification, ten retained transition checks, and a Yosys target.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -466,6 +472,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   LS374 `50L` on A044427 sheet 4. `/CPORT` captures `TD7:TD0`, `/320PORT`
   drives those bits onto host `D15:D8`, and MAME's logging/zero-return stubs
   are now isolated as `SC-030` instead of being treated as missing hardware.
+- Corrected the mailbox flag component location from LS74 `10J` to `20S` and
+  separated the two-68000 word exchange from the unrelated TMS port-3 latch.
 - Split deterministic FPGA initialization from an independent synchronous
   processor-reset request in `tms32010_mister`, allowing board `/320RES` to
   retain shared program contents while preserving the five-cycle reset hold.
@@ -577,6 +585,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- Both main/sound mailbox directions over all 65,536 possible complete words,
+  nominal flag set/read-clear, uncommitted retention, reset-preserved data,
+  reset-qualified flags, simultaneous write/read and reset/write invalidity,
+  and later read/write/reset requalification. Standalone Yosys reports 259
+  cells, ten checks, no memory/latch, and zero structural problems. The full
+  regression passes 124 repository/tool, 231 model/unit, 38 instruction RTL,
+  36 bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all
+  fourteen Yosys targets, all 30 hashes, and all 24 formal tasks pass.
 
 - All eight LS259 selections, both A4 values, uncommitted retention, per-bit
   validity, two complete alternating patterns, board-reset qualification, and
@@ -1142,9 +1159,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 120 repository/ISA/tool tests, 231
+- The complete current regression passes 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
-  native bus/phase tests including thirteen explicit pipeline tests, five
+  native bus/phase/wrapper tests including the exhaustive mailbox test and
+  thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
@@ -1167,6 +1185,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
   its undriven host low byte remains a distinct open-bus question (`OQ-030`).
+- The main/sound mailbox adapter is standalone and whole-word only. Physical
+  byte accesses and coincident LS74 preset/read-clock/reset behavior remain
+  unresolved under `SC-031`/`OQ-031`; the board top and full 68000 bridge do
+  not yet consume these callbacks.
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
   lacks the 68000 bridge, actual sample storage, compare/DAC-analog

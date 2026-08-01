@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' host read-path and `/CPORT` qualification
+- **Current milestone:** Hard Drivin' main/sound mailbox qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 123 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 124 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 35 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 36 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -67,6 +67,9 @@
   cells/six retained checks with no memory, latch, or structural problem.
   A thirteenth target checks the standalone port-3 LS374 adapter at 19 cells,
   five retained checks, no memory/latch, and zero structural problems.
+  A fourteenth target checks both standalone complete-word mailboxes and flags
+  at 259 cells, ten retained checks, no memory/latch, and zero structural
+  problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -563,6 +566,15 @@
   `0xa500`/`0x3000`, preserves state across board reset, and leaves program
   RAM unchanged. Standalone Yosys reports 19 cells/five checks; the board top
   reports 2,495 cells/171 checks/three memories with zero problems.
+- **New mailbox evidence:** A044427 sheet 2 and TI SDLS165B/SDLS119 establish
+  complete 16-bit LS374 latches in both main/sound directions, LS74 `20S`
+  pending flags set by writes and cleared by opposite-side reads, flag-only
+  board reset, and unreset data latches. Pinned MAME corroborates the nominal
+  software handshake but byte-merges local sound writes (`SC-031`/`OQ-031`).
+  The standalone callback exhausts all 65,536 words in both directions,
+  reset/data retention, read-clear, conflict invalidity, and requalification.
+  Standalone Yosys reports 259 cells/ten checks with zero structural problems;
+  board-top integration remains deliberately separate.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -583,13 +595,14 @@
   BIO power-up/reset-release phase and independent-clock coincidence,
   production Rev-A port-2 `TDI15:TDI0` electrical value,
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
+  main/sound mailbox byte-write and coincident-strobe behavior,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement the primary-defined full-word main/sound latch and
-  `MAINFLAG`/`SOUNDFLAG` handshake as a standalone callback boundary while
-  preserving `/SOUNDRD` and `/MAINRD` read-clear timing uncertainty.
+- **Next task:** integrate the qualified main/sound mailboxes into the board
+  top behind explicit whole-word callbacks and construct the raw `/READSTAT`
+  driven-nibble boundary without inventing its undriven lanes.
 - **Latest committed baseline before this cycle:**
-  `a96aa68`
+  `843c93c`

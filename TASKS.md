@@ -1300,7 +1300,9 @@ objective passing evidence.
   seven retained checks, no memory or latch, and zero structural problems.
   A twelfth script checks the address-encoded LS259 host-control adapter as 53
   cells/six checks. A thirteenth script checks the port-3 LS374 adapter as 19
-  cells/five checks. Both have no memory/latch or structural problem.
+  cells/five checks. A fourteenth script checks both whole-word mailboxes and
+  LS74 flags as 259 cells/ten checks. All three have no memory/latch or
+  structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1353,7 +1355,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_bio.md`,
   `docs/integration/hard_drivin_compare.md`,
   `docs/integration/hard_drivin_host_control.md`,
-  `docs/integration/hard_drivin_host_reads.md`
+  `docs/integration/hard_drivin_host_reads.md`,
+  `docs/integration/hard_drivin_host_mailboxes.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1364,7 +1367,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_output_control.sv`,
   `sim/bus/tb_hard_drivin_sound_bio_generator.sv`,
   `sim/bus/tb_hard_drivin_sound_host_control.sv`,
-  `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`
+  `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`,
+  `sim/bus/tb_hard_drivin_sound_mailboxes.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1494,9 +1498,17 @@ objective passing evidence.
   `0x3000` from word `0xf230` exactly once while program RAM remains unchanged.
   `/SOUNDRD`, `/SWITCHES`, and `/READSTAT` are now schematic-traced, but their
   full host bridge, side effects, and partial-lane/open-bus policy remain
-  acceptance work. The complete 123/231/38/35/5/10 regression split, strict
-  lint, all thirteen Yosys targets, all 30 pinned reference hashes, and all 24
-  tasks from twelve formal configurations pass at this checkpoint.
+  acceptance work. Sheet 2 plus TI SDLS165B/SDLS119 now establish the two
+  complete-word LS374 mailbox directions and LS74 20S pending flags. The
+  standalone whole-word callback exhausts every 16-bit value in both
+  directions, preserves reset-independent data, clears flags on accepted
+  opposite-side reads, and explicitly invalidates coincident preset/clear or
+  preset/read-clock conditions instead of assigning an undocumented priority.
+  Pinned MAME corroborates ordinary handshakes but its local byte merge is
+  isolated as `SC-031`/`OQ-031`. This adapter is not yet board-top connected.
+  The complete 124/231/38/36/5/10 regression split, strict lint, all fourteen
+  Yosys targets, all 30 pinned reference hashes, and all 24 tasks from twelve
+  formal configurations pass at this checkpoint.
 
 ## Milestone 22 — Release qualification
 

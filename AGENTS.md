@@ -434,6 +434,16 @@ captured-data validity and the partial-lane mask; do not invent host `D7:D0`
 under `OQ-030`. Follow `docs/integration/hard_drivin_communication_ram.md`,
 `docs/integration/hard_drivin_host_reads.md`, and `SC-023` through `SC-025`
 plus `SC-030` before changing these paths.
+The external main system and local sound 68000 exchange two independent
+complete 16-bit words through LS374 pairs; LS74 `20S` sets `MAINFLAG` and
+`SOUNDFLAG` on the corresponding writes, clears them on opposite-side reads,
+and clears both flags on board reset. Neither data latch has reset. The
+standalone `hard_drivin_sound_mailboxes` preserves independent data/flag
+validity and rejects coincident set/clear interpretation under `SC-031` and
+`OQ-031`; it is not yet board-top connected. Read
+`docs/integration/hard_drivin_host_mailboxes.md` before changing or integrating
+this path. Do not infer byte merging, LS74 collision priority, or a complete
+68000 bridge from the callback model.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

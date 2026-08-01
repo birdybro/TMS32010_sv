@@ -335,6 +335,33 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("SC-030 — Populated `/CPORT` host latch", conflicts)
         self.assertIn("OQ-030", questions)
 
+    def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
+        mailboxes = (
+            DOCS / "integration" / "hard_drivin_host_mailboxes.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "LS374 `10L`/`10N`",
+            "LS374 `20L`/`20N`",
+            "LS74 `20S`",
+            "Neither data-latch pair has a clear",
+            "zero flag carrier with flag validity false",
+            "whole-word only",
+            "all 65,536 words in both directions",
+            "Ten retained RTL checks",
+            "not yet connected to\n`hard_drivin_sound_mister`",
+        ):
+            self.assertIn(required, mailboxes)
+        self.assertIn(
+            "SC-031 — Physical whole-word mailboxes", conflicts
+        )
+        self.assertIn("OQ-031", questions)
+
     def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
         sound_rom = (
             DOCS / "integration" / "hard_drivin_sound_rom.md"

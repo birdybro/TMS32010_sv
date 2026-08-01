@@ -166,7 +166,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,474 abstract cells, 166
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,495 abstract cells, 171
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
@@ -194,6 +194,18 @@ zero structural problems. This proves only the tested address-encoded LS259
 update, reset, retention, and validity logic; it is not `/RVAS`/DTACK decode,
 a complete 68000 bridge, or physical latch timing.
 
+The thirteenth checked-in script targets
+`hard_drivin_sound_320_port_latch`. Yosys 0.67+111 reports 19 cells with five
+retained checks, no memory or latch, and zero structural problems. This proves
+only the tested low-byte capture, validity, and partial-lane masks; it is not
+physical LS374 timing or an open-bus policy.
+
+The fourteenth checked-in script targets `hard_drivin_sound_mailboxes`. Yosys
+0.67+111 reports 259 cells with ten retained checks, no memory or latch, and
+zero structural problems. This proves only the exhaustive-tested whole-word
+callback state and explicit conflict invalidity; it is not an electrical
+LS74 collision result, byte-lane policy, or completed 68000 bridge.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -210,7 +222,9 @@ The ignored outputs are `build/yosys/tms32010.json`,
 ignored JSON outputs including
 `build/yosys/hard_drivin_sound_communication_path.json`,
 `build/yosys/hard_drivin_sound_bio_generator.json`, and
-`build/yosys/hard_drivin_sound_host_control.json`. Tool-version differences
+`build/yosys/hard_drivin_sound_host_control.json`,
+`build/yosys/hard_drivin_sound_320_port_latch.json`, and
+`build/yosys/hard_drivin_sound_mailboxes.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.

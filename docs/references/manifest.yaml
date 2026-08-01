@@ -485,6 +485,7 @@
       "sections_or_pages_used": [
         "driversnd_dsp_program_map, driversnd_dsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration",
         "driversnd_68k_map and hdsnd68k_data_r/hdsnd68k_switches_r/hdsnd68k_320port_r/hdsnd68k_status_r host read handlers",
+        "hd68k_snd_data_r/hd68k_snd_data_w, hdsnd68k_data_r/hdsnd68k_data_w, hd68k_snd_status_r, and hd68k_snd_reset_w mailbox handlers and flags",
         "hdsnddsp_comport_w port-3 logging stub"
       ],
       "status": "acquired",
@@ -748,7 +749,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for the A044427 port-6 sound-ROM block latch and port-3 TMS-to-host LS374 50L",
+      "relevance": "Primary component behavior for the A044427 port-6 sound-ROM block latch, port-3 TMS-to-host LS374 50L, and both 16-bit main/sound mailbox latch pairs",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
       "may_commit": false,
@@ -775,7 +776,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for A044427's port-4 mute-state and port-5 latched 68000-interrupt paths",
+      "relevance": "Primary component behavior for A044427's port-4 mute-state, port-5 latched 68000-interrupt path, and LS74 20S main/sound mailbox flags",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring and reset/clear connectivity.",
       "may_commit": false,

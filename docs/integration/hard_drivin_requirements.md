@@ -65,6 +65,17 @@ drives `D15:D0`; `/320PORT` drives only `D15:D8` from the TMS port-3 latch;
 filling a verified word. The complete trace is in
 `docs/integration/hard_drivin_host_reads.md`.
 
+Two pairs of LS374s separately exchange complete 16-bit words between the
+main system and the local sound 68000. LS74 `20S` asynchronously sets
+`MAINFLAG` on `/MAINWR` and `SOUNDFLAG` on `/SOUNDWR`; the trailing edges of
+`/SOUNDRD` and `/MAINRD` clear the respective flags by clocking grounded D.
+Board reset clears only the flags, not either word latch. The standalone
+`hard_drivin_sound_mailboxes` callback exhaustively verifies nominal
+whole-word exchange and explicitly invalidates unsourced coincident set/clear
+conditions. Byte-write behavior remains `SC-031`/`OQ-031`, and the adapter is
+not yet connected to the board top. See
+`docs/integration/hard_drivin_host_mailboxes.md`.
+
 ### Program-RAM ownership is a firmware protocol
 
 The drawing contains no mutual-exclusion arbiter. LS259 output `/320RES`
