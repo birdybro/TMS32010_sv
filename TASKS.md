@@ -57,9 +57,10 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 32 pinned
+  until permission is demonstrated. The ignored cache now verifies 33 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
-  Motorola M68000UM Ninth Edition for local-host bus-state timing, the 1983 AMD
+  Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
+  data sheet for the local memory gates, the 1983 AMD
   manufacturer data book needed to interpret A044427's Am6012 path, and the
   pinned MAME DAC support sources needed to distinguish emulator sample
   mapping from board wiring.
@@ -1328,7 +1329,9 @@ objective passing evidence.
   checks the masked low-host-read selector as 72 cells/13 checks. An eighteenth
   checks the same-clock host-timing adapter as 142 cells/24 checks. A
   nineteenth checks the storage-free local-68000 memory decoder as 56
-  cells/17 checks. All eight have no memory/latch or structural problem.
+  cells/17 checks. A twentieth composes that decoder into the storage-free
+  timing/callback bridge as 305 hierarchy cells/40 checks. All nine have no
+  memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1402,6 +1405,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`,
   `sim/bus/tb_hard_drivin_sound_host_timing.sv`,
   `sim/bus/tb_hard_drivin_sound_local_memory_decode.sv`,
+  `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1544,8 +1548,8 @@ objective passing evidence.
   exact masks, and S7 side effects. Integrated Yosys retains three memories at
   2,966 cells/257 checks. It does not claim raw-pin CDC, open-bus policy, or
   electrical closure. The current
-  127/231/38/41/5/10 regression split, strict lint across 29 modules, all
-  nineteen Yosys targets, all 33 hashes, and all 28 formal tasks from fourteen
+  127/231/38/42/5/10 regression split, strict lint across 30 modules, all
+  twenty Yosys targets, all 33 hashes, and all 28 formal tasks from fourteen
   configurations pass. The host adapter's 16-step proof uses an explicit
   legal same-clock event contract and reaches read, write, and VPA covers; the
   12-step board proof reaches seven covers across all six implemented routing
@@ -1610,8 +1614,8 @@ objective passing evidence.
   four masked targets through S6, applies `/SOUNDRD`, complete-word
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
   and exposes `/SPEECH` without a side effect. The complete current
-  127/231/38/41/5/10 regression split and strict lint across 29 modules pass;
-  all nineteen Yosys targets and all 33 hashes pass. Formal qualification now
+  127/231/38/42/5/10 regression split and strict lint across 30 modules pass;
+  all twenty Yosys targets and all 33 hashes pass. Formal qualification now
   comprises 28 tasks from fourteen configurations: the standalone adapter
   proof is bounded to 16 steps, and a separate 12-step board-routing proof
   checks seven covers across all six implemented timing-derived transaction
@@ -1627,6 +1631,16 @@ objective passing evidence.
   windows and wider declared ROM region remain `SC-034`; exact E1/E2 and
   board-variant population remain `OQ-034`. This is decode evidence, not a
   68000, memory storage, or raw-pin timing implementation.
+  The storage-free timing bridge now consumes the host adapter's captured
+  direction/address/lanes. Synthetic end-to-end cycles verify valid and
+  unavailable ROM reads, explicitly invalid unwritten SRAM, complete and
+  upper-byte SRAM writes at S7, Y5 program and direct-I/O paths, Y6
+  communication callbacks, high-bank aliases, and Y4 isolation. Direct
+  `/PWE` commits at its S6 trailing edge; SRAM callbacks commit at S7. The
+  bridge synthesizes to 305 hierarchy cells/40 checks with no storage or
+  latch. It neither supplies copyrighted contents nor inserts READY/open-bus
+  behavior; board-top callback selection and an integration-specific local
+  SRAM remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

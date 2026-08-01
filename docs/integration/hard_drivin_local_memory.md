@@ -145,3 +145,49 @@ Yosys 0.67+111 reports 56 abstract combinational cells, 17 retained checks,
 no memory or latch, and zero structural problems. This evidence qualifies the
 Boolean decode only; it is not a raw-pin bridge, SRAM/EPROM model, Cyclone V
 fit, or electrical timing result.
+
+## Same-clock storage callback bridge
+
+`rtl/wrappers/hard_drivin_sound_local_memory_bridge.sv` consumes the settled
+same-clock state exported by `hard_drivin_sound_host_timing`: active-cycle
+state, `RVA`, `/RVAS`, the pre-edge ordinary S7 completion event, and the
+captured address, R/W direction, and byte strobes. The host write word is not
+captured at `/AS`; the caller must retain it through its documented write-data
+interval and the callback boundary, just as the current board-top timing path
+does.
+
+The bridge remains storage-free and exposes these callbacks:
+
+| physical target | request/level | completion boundary |
+|---|---|---|
+| populated 27256 pair | complete-word read request with `A15:A1` | data must be valid by fixed S7; no READY exists |
+| local 6264 pair | complete-word read request with `A13:A1` | upper/lower write commits independently at S7 |
+| Y5 lower half | program-RAM read/write level with `A12:A1` | whole-word write commit at S7 |
+| Y5 upper half | direct `/PDEN` or `/PWE` level with `A12:A1` | direct `/PWE` callback is sampled at the S6 rising boundary |
+| Y6 | communication-RAM read/write level with `A9:A1` | whole-word write commit at S7 |
+
+The S6 `/PWE` distinction is externally relevant. `/PWE` is generated from
+`RVA`, so its rising edge occurs when `RVA` ends at S6. The SRAM write controls
+instead remain active through `/RVAS` and end at S7. All callback event outputs
+are pre-edge enables intended for same-clock `always_ff` consumers; they are
+not asynchronous pulses or a new clock.
+
+The bridge's ROM/local-RAM read carrier always reports a complete physical
+driven mask for a selected read. Data validity is separate: an unavailable
+ROM response or an unwritten synthetic SRAM word has a zero valid mask and
+zeroed carrier data, while the driven mask remains `16'hffff`. A distinct
+missing-response event is emitted at fixed S7. This is observability, not a
+wait state and not an assigned open-bus value.
+
+`tb_hard_drivin_sound_local_memory_bridge` composes the actual timing adapter,
+decoder, bridge, and a testbench-only synthetic byte-valid SRAM. It checks
+ROM-valid, ROM-invalid, and mirrored ROM reads; an invalid unwritten SRAM
+read; complete and upper-byte SRAM writes; a broad Y7 alias; Y5 program reads
+and writes; Y5 direct reads and S6 writes; Y6 communication reads and writes;
+and isolation of the separate Y4 low-I/O path. No copyrighted image is used.
+
+Yosys 0.67+111 reports 305 abstract combinational hierarchy cells, 40
+retained checks, no memory or latch, and zero structural problems. The
+bridge is not yet selected by the board top and does not provide ROM/SRAM
+contents, raw-pin CDC, a complete MC68000 data-bus mux, a Cyclone V fit, or
+electrical timing closure.

@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' local-68000 memory decode
+- **Current milestone:** Hard Drivin' local-68000 fixed-timing storage callbacks
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 127 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 41 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 42 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -85,6 +85,9 @@
   A nineteenth target checks the storage-free local-68000 memory decoder at
   56 abstract combinational cells, 17 retained checks, no memory/latch, and
   zero structural problems.
+  A twentieth target checks the composed storage-free local-memory timing
+  bridge at 305 abstract combinational hierarchy cells, 40 retained checks,
+  no memory/latch, and zero structural problems.
 - **Formal status:** all 28 tasks from 14 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -683,8 +686,8 @@
   Integrated Yosys retains three memories at 2,966 cells/257 checks. This does
   not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
-  127/231/38/41/5/10 regression split, strict lint across 29 modules, all
-  nineteen Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
+  127/231/38/42/5/10 regression split, strict lint across 30 modules, all
+  twenty Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
   configurations pass. The adapter's dedicated 16-step bounded harness uses
   the documented legal same-clock event contract and reaches read, write, and
   VPA paths; the 12-step board harness reaches seven covers across all six
@@ -698,10 +701,20 @@
   with separate `/UDS`/`/LDS` write enables and complete-word read drive. The
   storage-free RTL exhausts 131,072 combinations over `/AS`, `RVA`, `/RVAS`,
   `A23`, every ignored `A22:A17` alias, all banks, A13, direction, and byte
-  strobes. Strict lint now covers 29 modules, and all nineteen Yosys targets
+  strobes. Strict lint now covers 30 modules, and all twenty Yosys targets
   pass; the new target reports 56 cells/17 checks. Pinned MAME's canonical
   windows and 128 KiB declared ROM region do not reproduce the physical
   aliases (`SC-034`). The exact E1/E2 production option remains `OQ-034`.
+- **New local-memory callback evidence:** the timing adapter now exports its
+  captured R/W direction, and the storage-free bridge composes it with the
+  complete decoder. End-to-end synthetic cycles verify valid and unavailable
+  ROM data, physical ROM aliases, explicitly invalid unwritten local SRAM,
+  full and upper-byte local-SRAM S7 commits, a broad Y7 alias, Y5 program
+  reads/writes, direct `/PDEN` reads and `/PWE` S6 writes, Y6 communication
+  reads/writes, and Y4 isolation. Read carriers preserve separate driven and
+  valid masks and report a fixed-S7 missing response without READY or an
+  open-bus value. Standalone Yosys reports 305 hierarchy cells/40 checks and
+  no storage/latch or structural problem.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -732,9 +745,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** compose the qualified local-memory decode with the same-clock
-  host timing boundary and define ROM/local-RAM storage callbacks for
-  synthetic TM-327-style diagnostics without embedding copyrighted ROM data
-  or assigning an open-bus value.
+- **Next task:** select the local-memory bridge in the opt-in board top,
+  connect its Y5/Y6 callbacks to the existing program/communication storage,
+  and add an integration-specific lane-valid 8K-by-16 local SRAM boundary
+  while retaining an external authorized-ROM callback and explicit masks.
 - **Latest committed baseline before this cycle:**
-  `37c3813`
+  `89a9a5a`

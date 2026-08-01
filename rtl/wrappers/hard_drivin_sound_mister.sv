@@ -59,6 +59,7 @@ module hard_drivin_sound_mister (
   output logic        host_timing_read_select_valid_o,
   output logic        host_timing_write_select_valid_o,
   output logic [23:1] host_timing_latched_address_o,
+  output logic        host_timing_latched_read_not_write_o,
   output logic        host_timing_latched_upper_data_strobe_n_o,
   output logic        host_timing_latched_lower_data_strobe_n_o,
   output logic [1:0]  host_timing_select_quadrant_o,
@@ -528,6 +529,9 @@ module hard_drivin_sound_mister (
     .read_select_valid_o           (host_timing_read_select_valid_o),
     .write_select_valid_o          (host_timing_write_select_valid_o),
     .latched_address_o             (host_timing_latched_address_o),
+    .latched_read_not_write_o      (
+      host_timing_latched_read_not_write_o
+    ),
     .latched_upper_data_strobe_n_o (
       host_timing_latched_upper_data_strobe_n_o
     ),

@@ -26,6 +26,7 @@ module tb_hard_drivin_sound_host_timing;
   logic        read_select_valid;
   logic        write_select_valid;
   logic [23:1] latched_address;
+  logic        latched_read_not_write;
   logic        latched_upper_data_strobe_n;
   logic        latched_lower_data_strobe_n;
   logic [1:0]  select_quadrant;
@@ -61,6 +62,7 @@ module tb_hard_drivin_sound_host_timing;
     .read_select_valid_o         (read_select_valid),
     .write_select_valid_o        (write_select_valid),
     .latched_address_o           (latched_address),
+    .latched_read_not_write_o    (latched_read_not_write),
     .latched_upper_data_strobe_n_o(latched_upper_data_strobe_n),
     .latched_lower_data_strobe_n_o(latched_lower_data_strobe_n),
     .select_quadrant_o           (select_quadrant),
@@ -193,6 +195,8 @@ module tb_hard_drivin_sound_host_timing;
                       "low-I/O quadrant is captured from A13:A12");
               require(latched_address == cycle_address,
                       "the adapter retains the complete stable bus address");
+              require(latched_read_not_write == rw[0],
+                      "the adapter retains the transfer direction");
               require(!latched_upper_data_strobe_n &&
                       !latched_lower_data_strobe_n,
                       "the adapter retains both asserted byte strobes");

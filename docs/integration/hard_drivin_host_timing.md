@@ -180,9 +180,10 @@ captures the complete stable `A23:A1`, function code, `RWN`, `/UDS`, and
 - pre-edge S7 completion events for same-clock stateful consumers plus
   one-clock registered ordinary/read/write trace pulses;
 - retained `/UDS` and `/LDS` state for completion policy;
-  and
 - the full captured address so high aliases are not discarded by the timing
-  boundary.
+  boundary; and
+- the captured R/W direction so downstream memory decode does not consult a
+  live bus input after `/AS` assertion.
 
 The module has no READY input. A normal completion occurs only after F74 `50S`
 has sampled low `/DTACK`, `RVA` has deasserted, and the following falling-edge

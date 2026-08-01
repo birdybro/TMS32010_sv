@@ -45,6 +45,7 @@ module hard_drivin_sound_host_timing_formal (
   logic [23:1] latched_address;
   logic        latched_upper_data_strobe_n;
   logic        latched_lower_data_strobe_n;
+  logic        latched_read_not_write;
   logic [1:0]  select_quadrant;
   logic [7:0]  target_select;
   logic        cycle_complete_event;
@@ -87,6 +88,7 @@ module hard_drivin_sound_host_timing_formal (
     .read_select_valid_o           (read_select_valid),
     .write_select_valid_o          (write_select_valid),
     .latched_address_o             (latched_address),
+    .latched_read_not_write_o      (latched_read_not_write),
     .latched_upper_data_strobe_n_o (latched_upper_data_strobe_n),
     .latched_lower_data_strobe_n_o (latched_lower_data_strobe_n),
     .select_quadrant_o             (select_quadrant),
@@ -176,6 +178,7 @@ module hard_drivin_sound_host_timing_formal (
       assert (select_quadrant == latched_address[13:12]);
       assert (read_write_strobe_n ==
               (rvas_n || captured_read_not_write_model));
+      assert (latched_read_not_write == captured_read_not_write_model);
       assert (upper_write_enable_n ==
               (latched_upper_data_strobe_n || read_write_strobe_n));
       assert (lower_write_enable_n ==

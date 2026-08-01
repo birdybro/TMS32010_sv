@@ -30,6 +30,7 @@ module hard_drivin_sound_host_timing (
   output logic        read_select_valid_o,
   output logic        write_select_valid_o,
   output logic [23:1] latched_address_o,
+  output logic        latched_read_not_write_o,
   output logic        latched_upper_data_strobe_n_o,
   output logic        latched_lower_data_strobe_n_o,
   output logic [1:0]  select_quadrant_o,
@@ -83,6 +84,7 @@ module hard_drivin_sound_host_timing (
   assign read_select_valid_o = io_decode_active && read_not_write_q;
   assign write_select_valid_o = io_decode_active && !read_not_write_q;
   assign select_quadrant_o = latched_address_o[13:12];
+  assign latched_read_not_write_o = read_not_write_q;
   assign latched_upper_data_strobe_n_o = upper_data_strobe_n_q;
   assign latched_lower_data_strobe_n_o = lower_data_strobe_n_q;
 

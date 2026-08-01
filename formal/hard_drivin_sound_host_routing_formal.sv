@@ -187,6 +187,7 @@ module hard_drivin_sound_host_routing_formal (
     .host_timing_write_select_valid_o       (
       host_timing_write_select_valid
     ),
+    .host_timing_latched_read_not_write_o   (),
     .host_timing_select_quadrant_o          (
       host_timing_select_quadrant
     ),

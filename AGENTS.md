@@ -510,6 +510,15 @@ canonical windows under `SC-034`. Read
 `docs/integration/hard_drivin_local_memory.md` before changing this path. Do
 not add ROM/RAM contents, a larger-EPROM jumper mode, or an open-bus value
 until `OQ-034` and the relevant electrical/storage boundary are resolved.
+The storage-free `hard_drivin_sound_local_memory_bridge` consumes the
+same-clock host-timing adapter's captured address/direction/strobes and emits
+ROM/local-RAM read requests, lane-specific local-RAM S7 write commits,
+whole-word program/communication S7 commits, and the distinct direct-TMS
+`/PWE` trailing event at S6. Its ROM/local-RAM carrier preserves driven and
+valid masks and reports a missing response at fixed S7 rather than adding
+READY or an open-bus value. Keep memory contents and platform storage outside
+this bridge, and preserve the pre-edge sampling contract documented in
+`docs/integration/hard_drivin_local_memory.md`.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

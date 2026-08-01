@@ -51,6 +51,7 @@ module tb_hard_drivin_sound_mister;
   logic        host_timing_read_select_valid;
   logic        host_timing_write_select_valid;
   logic [23:1] host_timing_latched_address;
+  logic        host_timing_latched_read_not_write;
   logic        host_timing_latched_upper_data_strobe_n;
   logic        host_timing_latched_lower_data_strobe_n;
   logic [1:0]  host_timing_select_quadrant;
@@ -241,6 +242,9 @@ module tb_hard_drivin_sound_mister;
     .host_timing_read_select_valid_o(host_timing_read_select_valid),
     .host_timing_write_select_valid_o(host_timing_write_select_valid),
     .host_timing_latched_address_o(host_timing_latched_address),
+    .host_timing_latched_read_not_write_o(
+      host_timing_latched_read_not_write
+    ),
     .host_timing_latched_upper_data_strobe_n_o(
       host_timing_latched_upper_data_strobe_n
     ),
@@ -592,6 +596,7 @@ module tb_hard_drivin_sound_mister;
     require(host_timing_cycle_active && host_timing_vpa_n &&
             !host_timing_rvf_n &&
             host_timing_latched_address == host_bus_address &&
+            host_timing_latched_read_not_write == read_not_write_value &&
             host_timing_select_quadrant == quadrant &&
             host_timing_latched_upper_data_strobe_n == upper_strobe_n &&
             host_timing_latched_lower_data_strobe_n == lower_strobe_n,

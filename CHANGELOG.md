@@ -517,9 +517,17 @@ Changelog, and the project follows semantic versioning once releases begin.
   backed by a newly pinned TI SDAS113B ALS32 data sheet, exact Rev-A equations,
   `SC-034` for physical-versus-MAME mapping differences, and `OQ-034` for the
   unqualified E1/E2/larger-EPROM production option.
+- A storage-free local-memory timing bridge connecting the captured
+  S2-through-S7 host state to ROM/local-SRAM callbacks, exact byte-lane S7
+  commits, program/communication-RAM callbacks, and the distinct direct-TMS
+  `/PWE` S6 edge. Read data carries separate driven/valid masks and an explicit
+  fixed-boundary missing-response event without a READY or open-bus policy.
 
 ### Changed
 
+- The host-timing adapter now exposes its captured R/W direction alongside
+  the already captured address and byte strobes, preventing downstream bank
+  decode from consulting a live processor input after `/AS` assertion.
 - Added pre-edge S7 completion-event outputs to the host-timing adapter so
   same-clock state consumers update on the documented trailing boundary; the
   registered one-clock completion outputs remain available for trace/debug.
@@ -1283,9 +1291,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   S7 mailbox/control effects, partial-write rejection, unimplemented speech
   visibility, and external-callback selection. Integrated Yosys retains three
   memories at 2,966 cells/257 checks. The complete current regression passes 127
-  repository/tool, 231 model/unit, 38 instruction RTL, 41 bus/wrapper, 5
-  interrupt, and 10 differential tests; strict lint across 29 modules, all
-  nineteen Yosys targets, all 33 reference hashes, and all 28 tasks from
+  repository/tool, 231 model/unit, 38 instruction RTL, 42 bus/wrapper, 5
+  interrupt, and 10 differential tests; strict lint across 30 modules, all
+  twenty Yosys targets, all 33 reference hashes, and all 28 tasks from
   fourteen formal configurations pass. The adapter BMC passes through 16
   steps; its whole-word read/write covers reach step 8 and the fully settled
   VPA cover reaches step 9. The separate board BMC passes 12 steps and reaches
@@ -1305,6 +1313,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   combinations covering every ignored `A22:A17` alias, bank, transfer
   direction, and byte-strobe state. Yosys 0.67+111 reports 56 combinational
   cells, 17 checks, no memory/latch, and zero structural problems.
+- The local-memory timing bridge passes complete synthetic ROM-valid,
+  ROM-invalid, unwritten-SRAM, full-word SRAM, upper-byte SRAM, Y5 program,
+  Y5 direct-I/O, Y6 communication, and isolated Y4 transactions. Yosys reports
+  305 combinational hierarchy cells, 40 retained checks, no storage/latch,
+  and zero structural problems.
 
 ### Known Issues
 

@@ -245,6 +245,13 @@ Rev-A ROM/high-bank/Y5/local-RAM equations, populated word-address
 projections, and local byte lanes. It does not qualify memory contents,
 raw-pin timing, a 68000 implementation, or a Cyclone V fit.
 
+The twentieth checked-in script targets the composed storage-free
+`hard_drivin_sound_local_memory_bridge` hierarchy. Yosys 0.67+111 reports 305
+abstract combinational cells with 40 retained checks, no memory or latch, and
+zero structural problems. This qualifies callback decode, exact S6/S7 event
+selection, and validity-mask carriers only; it does not qualify storage,
+raw-pin timing, a 68000 implementation, or a Cyclone V fit.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -260,6 +267,7 @@ The ignored outputs are `build/yosys/tms32010.json`,
 `build/yosys/tms32010_mister.json`; the board-specific scripts also write
 ignored JSON outputs including
 `build/yosys/hard_drivin_sound_communication_path.json`,
+`build/yosys/hard_drivin_sound_local_memory_bridge.json`,
 `build/yosys/hard_drivin_sound_bio_generator.json`, and
 `build/yosys/hard_drivin_sound_host_control.json`,
 `build/yosys/hard_drivin_sound_320_port_latch.json`, and

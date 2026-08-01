@@ -29,6 +29,10 @@ program/direct-I/O split, populated word-address projections, and byte-lane
 controls are traced separately in `docs/integration/hard_drivin_local_memory.md`.
 The storage-free exhaustive RTL decoder preserves the board's broad aliases;
 it does not instantiate a 68000, ROM, local RAM, or open-bus policy.
+`hard_drivin_sound_local_memory_bridge` composes that decode with the
+same-clock timing state and emits fixed ROM/SRAM requests and write commits.
+Its data carrier preserves separate driven/valid masks; storage and a complete
+68000 read-bus selector remain outside the module.
 
 The DSP exposes `TA0..TA11`, `TD0..TD15`, `/MEN`, `/DEN`, and `/TWE` to board
 logic. The drawings show four 20-pin `8168D45`-labeled SRAM slices. Every

@@ -411,6 +411,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         local_memory = (
             DOCS / "integration" / "hard_drivin_local_memory.md"
         ).read_text(encoding="utf-8")
+        local_memory_flat = " ".join(local_memory.split())
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
@@ -428,9 +429,14 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "131,072 combinations",
             "56 abstract combinational cells",
             "17 retained checks",
+            "hard_drivin_sound_local_memory_bridge",
+            "direct `/PWE` callback is sampled at the S6 rising boundary",
+            "ROM-invalid",
+            "305 abstract combinational hierarchy cells",
+            "40 retained checks",
             "provide a 68000 core",
         ):
-            self.assertIn(required, local_memory)
+            self.assertIn(required, local_memory_flat)
         self.assertIn(
             "SC-034 — Physical local-68000 aliases", conflicts
         )
