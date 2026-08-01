@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 46 pinned
+  until permission is demonstrated. The ignored cache now verifies 50 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -138,6 +138,16 @@ objective passing evidence.
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
   Physical pin timing and logical transaction timing must remain distinct.
+  `OQ-008` now has a dated, reproducible publication/device-revision audit.
+  `SC-043` separates the October-1985, February-1986, January-1987, and
+  May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists
+  from any unproved silicon-mask identity. Two newly pinned 1989 TI guides
+  agree that their current lists contain only the 20-MHz NMOS part, but
+  neither is an erratum or product-change notice. TI's stated BBS
+  specification-update route has no authenticated TMS32010 notice archive in
+  the located corpus. Full raw package/date/lot provenance and at least two
+  specimens are now required for physical generalization; no RTL behavior
+  changed and `OQ-008` remains RESEARCHING/NO REVISION MAP.
 
 ## Milestone 4 — Instruction encoding database
 

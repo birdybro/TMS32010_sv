@@ -18,14 +18,16 @@
       "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
       "relevance": "Primary architectural, instruction, programming, and interface authority for the original TMS32010",
       "authority_level": 1,
-      "notes": "Bitsavers scan. Bibliographic year appears as 1983 in filename while cover revision is March 1985; preserve both facts.",
+      "notes": "Bitsavers scan. Bibliographic year appears as 1983 in filename while the colophon is March 1985 revision B. This archive artifact appends a TMS32010 data sheet dated May 1983 and revised February 1986; cite the manual and appended data-sheet revisions separately.",
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.10, printed pages 2-1 through 2-19 (PDF pages 25-43)",
         "Section 2.14 and Figure 2-17, printed page 2-24 (PDF page 48): recommended external CLKOUT-clocked synchronization for asynchronous NMOS interrupt input",
         "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDH/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALA/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SST/SUB/SUBC/SUBH/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-44, 3-46 through 3-51, 3-53 through 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-94, 96-101, 103-113, 118, and 120-121)",
         "Section 3.3.2 and LST worked example, printed pages 3-1 through 3-2 and 3-38 (PDF pages 51-52 and 88): generic post-execution encoded-ARP rule and ambiguous LARP 0/LST *,1 result",
-        "Section 2.12 clock/oscillator, printed page 2-20 (PDF page 44), and Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 10-20 (PDF pages 366-376)"
+        "Section 2.12 clock/oscillator, printed page 2-20 (PDF page 44), and Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 10-20 (PDF pages 366-376)",
+        "Appended TMS32010 data-sheet control heading, May 1983 revised February 1986, PDF page 357; this is later than the March 1985 SPRU001B colophon and is tracked as a separately revised embedded artifact",
+        "Appended data-sheet symbolization, printed data-sheet page 21 (PDF page 377): package carries a standard device number, TI design copyright, tracking mark/date code, and lot code, but no published silicon-mask identifier field"
       ],
       "status": "acquired",
       "download": {
@@ -64,6 +66,35 @@
       }
     },
     {
+      "id": "ti-tms32010-users-guide-1985-alt-scan",
+      "title": "TMS32010 User's Guide: Digital Signal Processor Products",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU001B",
+      "publication_date": "1985-03",
+      "revision": "B; alternate archive scan",
+      "source_url": "https://bitsavers.org/components/ti/TMS320xx/3201x/TMS32010_Users_Guide_1985.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SPRU001B_TMS32010_Users_Guide_1985_alt_scan.pdf",
+      "sha256": "d4c4080f99c16d8156344af04d00f4ec36a70c14cd50a6e8914f86606a283266",
+      "document_type": "primary user guide alternate scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Alternate archived artifact used to determine whether SPRU001B's appended data sheet differs from the already pinned scan",
+      "authority_level": 1,
+      "notes": "Keep only in the ignored reference cache. This distinct archive artifact has 1985 copyright front matter and appends a TMS32010 data sheet dated May 1983, revised October 1985; the other pinned SPRU001B scan appends a February 1986 data-sheet revision.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Front matter, PDF pages 2-3: title and 1985 copyright/latest-specification notice",
+        "Appended TMS32010 data-sheet heading, PDF page 358: May 1983 revised October 1985, base 20.5-MHz TMS32010 and TMS32010-25 device labels",
+        "Appended data-sheet symbolization, PDF page 379: standard device number, TI design copyright, tracking mark/date code, and lot-code fields without a published silicon-mask identifier"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
       "id": "ti-first-generation-users-guide-1987",
       "title": "First-Generation TMS320 User's Guide",
       "author_or_organization": "Texas Instruments",
@@ -79,7 +110,7 @@
       "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
       "relevance": "Later primary family description and explicit TMS32010/C10/C15 variant comparison",
       "authority_level": 1,
-      "notes": "Later family guide may describe CMOS variants; every statement must be scoped to the original TMS32010 before use.",
+      "notes": "May 1987 initial family guide. It describes CMOS variants and every statement must be scoped before use. Its data sheet and product table list three NMOS TMS32010 speed grades but provide no mask-revision map.",
       "may_commit": false,
       "sections_or_pages_used": [
         "Section 1.1, printed pages 1-2 through 1-4, device technology, RAM, program memory, and compatibility comparison",
@@ -97,7 +128,9 @@
         "ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, OUT, PAC, POP, PUSH, RET, SAR, SPAC, SST, SUB, SUBC, SUBH, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-35, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54 through 4-58, 4-61 through 4-70, and 4-73 (PDF pages 95-116, 119, 122, 124-131, 133, 135-139, 142-151, and 154)",
         "Section 5.3.2 Subroutine Calls, printed page 5-17 (PDF page 174)",
         "Section 5.7.2 unsigned divide using repeated SUBC, printed page 5-37 (PDF page 194)",
-        "ROVM instruction description, printed page 4-58 (PDF page 139)"
+        "ROVM instruction description, printed page 4-58 (PDF page 139)",
+        "Appendix A device introduction/overview, printed pages A-1 through A-3 (PDF pages 232-234): January 1987 data sheet listing TMS32010-14, base 20-MHz TMS32010, and TMS32010-25 as NMOS speed versions",
+        "Appendix E product table and specification-update route (PDF pages 360-361): BBS was the stated channel for current/new-device specification updates and the part table lists TMS32010NL-14, TMS32010NL, and TMS32010NL-25"
       ],
       "status": "acquired",
       "download": {
@@ -110,7 +143,7 @@
       "title": "TMS320 Family Development Support Reference Guide",
       "author_or_organization": "Texas Instruments",
       "publication_number": "SPRU011",
-      "publication_date": "1986",
+      "publication_date": "1986-12",
       "revision": "initial",
       "source_url": "https://www.bitsavers.org/components/ti/TMS320xx/tools/SPRU011_TMS320_Family_Development_Support_Reference_Guide_1986.pdf",
       "retrieval_date": "2026-07-30",
@@ -121,9 +154,72 @@
       "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
       "relevance": "Contemporary first-generation device matrix, assembler/linker/simulator/emulator descriptions, and tool formats",
       "authority_level": 3,
-      "notes": "Development-system evidence; architectural conflicts defer to original device manuals.",
+      "notes": "December 1986 development-system evidence; architectural conflicts defer to original device manuals.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Section 2.1 first-generation device summary, printed pages 2-4 through 2-8 (PDF pages 21-25): NMOS/CMOS variant separation",
+        "Section 9 documentation support, especially the BBS specification-update statement (PDF page 117) and data-sheet list naming TMS32010 SPRS02A and TMS32010-14 SPRS008",
+        "Appendix A Table A-1, printed page A-1 (PDF page 176): TMS32010NL, TMS32010NL-14, and TMS32010NL-25 as 2.4-micrometer NMOS frequency grades"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-first-generation-users-guide-1989",
+      "title": "First-Generation TMS320 User's Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU013B",
+      "publication_date": "1989-03",
+      "revision": "B",
+      "source_url": "https://bitsavers.org/components/ti/TMS320xx/3201x/TI_First-Generation_TMS320_Users_Guide_1989.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/TI_First-Generation_TMS320_Users_Guide_1989.pdf",
+      "sha256": "174211f8233ba47e177bf256a2d16f02fe3c92ad1858b4569d2bd9e43057eeae",
+      "document_type": "primary family user guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Later primary family-guide revision to audit corrections and variant statements against the 1985 original-TMS32010 and 1987 family publications",
+      "authority_level": 1,
+      "notes": "The colophon is March 1989 revision B, while the embedded first-generation data sheet says January 1987 revised May 1989. Keep only in the ignored cache and cite those control dates separately. Later CMOS-family text is not original-NMOS proof.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Colophon, PDF page 598: printed March 1989, SPRU013B",
+        "Appendix A heading and device introduction, printed pages A-1 through A-3 (PDF pages 238-240): January 1987 data sheet revised May 1989 and only the 20-MHz NMOS TMS32010 in the first-generation overview",
+        "Appendix E specification-update route and Table E-1, printed pages E-11 through E-13 (PDF pages 424-426): BBS supplied current/new-device specification updates and the current part table lists only TMS32010NL among NMOS first-generation parts"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-development-support-spru011a-1989",
+      "title": "TMS320 Family Development Support Reference Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPRU011A",
+      "publication_date": "1989-04",
+      "revision": "A",
+      "source_url": "https://bitsavers.trailing-edge.com/components/ti/TMS320xx/tools/SPRU11A_TI_TMS320_Family_Development_Support_Reference_Guide_1989.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SPRU011A_TMS320_Family_Development_Support_Reference_Guide_1989.pdf",
+      "sha256": "19391ad6bf08fc2fd01229a6e4936c30116f6fde4c7c2fa58b107c201a330bf0",
+      "document_type": "primary development support guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Later contemporary first-generation product and development-tool matrix used to audit NMOS device naming and availability",
+      "authority_level": 3,
+      "notes": "Printed April 1989. Development-system/product-list evidence only; absence from a table does not prove discontinuation or a silicon change. Keep only in the ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Section 2.1, printed page 2-4 (PDF page 21): first generation lists one 20-MHz NMOS TMS32010 and separates the TMS320C10/C14/C15/C17 CMOS devices",
+        "Section 7.7, printed pages 7-31 through 7-32 (PDF pages 160-161): BBS was the contemporary channel for current/new-device specification updates",
+        "Appendix A Table A-1, printed page A-1 (PDF page 318): current part table lists TMS32010NL at 20 MHz and no NMOS -14/-25 entries",
+        "Colophon, PDF page 370: printed April 1989, SPRU011A"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -1333,6 +1429,33 @@
         "RAM decoder overview and move-cell implementation, patent columns 17-18 and 25-26 (PDF pages 35 and 39), Figures 5i-5j: internally inconsistent row/column capacity statements, adjacent-column transfer, even/odd select complement, and odd-address row increment; inspected only as related-embodiment background",
         "Table A, patent columns 34-36 (PDF pages 43-44): disclosed instruction scope, encodings, word counts, and state counts",
         "Figure 5p and PC/stack description, patent sheets 24-25 and columns 31-34 (PDF pages 24-25 and 42-43): PC source selection and quarter-cycle push/pop clocks used for call/return control"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-ti32000-family-data-manual-1985-rejected",
+      "title": "TI32000 Family Data Manual",
+      "author_or_organization": "Texas Instruments Incorporated",
+      "publication_number": "ISBN 0-89512-186-7; no TI literature number located",
+      "publication_date": "1985",
+      "revision": "1985 edition",
+      "source_url": "https://bitsavers.org/components/ti/TMS320xx/TI32000_Family_Data_Manual_1985.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/TI32000_Family_Data_Manual_1985.pdf",
+      "sha256": "ab5c8c34ee2a92ce241eaa3a17e0af80acf693b174e085476564bf6ccb985517",
+      "document_type": "unrelated primary manual retained as a rejected search lead",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Texas Instruments manual; redistribution permission not established",
+      "relevance": "Negative-search provenance only: the archive filename resembles TMS320, but the document covers the unrelated 32-bit TI32000 microprocessor family",
+      "authority_level": 8,
+      "notes": "Acquired during the OQ-008 search before cover inspection exposed the TI32000/TMS320 false positive. It is excluded from all TMS32010 architectural evidence and retained only so every download has provenance and the route is not repeated.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Cover, contents, and important notice, PDF pages 1-8: confirms TI32000 title, 32-bit microprocessor/coprocessor contents, 1985 copyright, and ISBN"
       ],
       "status": "acquired",
       "download": {

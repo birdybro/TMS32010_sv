@@ -1115,3 +1115,43 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the named reset effects and unchanged
   OVM; CORROBORATED for EVM register recoverability; UNKNOWN for the exact
   physical reset network and mask invariance of all unlisted state.
+
+## SC-043 — Publication/speed-grade changes versus unknown silicon revisions
+
+- **Revisioned primary artifacts:** one pinned SPRU001B artifact appends a
+  TMS32010 data sheet revised October 1985; another appends a February-1986
+  revision despite the same March-1985 manual colophon. The former labels
+  base TMS32010 and TMS32010-25 speed versions, while the latter uses
+  TMS32010-20 and TMS32010-25 timing-table labels
+  [ti-tms32010-users-guide-1985-alt-scan, appended data-sheet heading,
+  PDF p. 358; ti-tms32010-users-guide-spru001b, appended data-sheet heading
+  and clock table, PDF pp. 357 and 366-367].
+- **Product-list change:** the December-1986 support guide and May-1987
+  family guide list 14/20/25-MHz 2.4-micrometer NMOS TMS32010 products. The
+  April-1989 support guide and May-1989 revised first-generation data sheet
+  list only the 20-MHz NMOS TMS32010 while retaining separate CMOS speed
+  grades. None calls this a mask change, discontinuation notice, or functional
+  difference
+  [ti-development-support-spru011-1986, Appendix A Table A-1, PDF p. 176;
+  ti-first-generation-users-guide-1987, Appendix A and Appendix E, PDF
+  pp. 232-234 and 361; ti-development-support-spru011a-1989, Section 2.1 and
+  Appendix A, PDF pp. 21 and 318; ti-first-generation-users-guide-1989,
+  Appendix A and Appendix E, PDF pp. 238-240 and 426].
+- **Package-marking boundary:** both original data-sheet artifacts describe a
+  standard part number, tracking mark/date code, and lot code, but publish no
+  mask-revision character or code map. Raw package strings must therefore be
+  preserved; they cannot be decoded by assumption
+  [ti-tms32010-users-guide-1985-alt-scan, symbolization, PDF p. 379;
+  ti-tms32010-users-guide-spru001b, symbolization, PDF p. 377].
+- **Missing update channel:** TI says current/new-device specification updates
+  were communicated through its contemporary dial-up BBS. No authenticated
+  TMS32010-specific BBS notice archive has been located, so the surviving
+  manuals are not proved complete
+  [ti-development-support-spru011a-1989, Section 7.7, PDF pp. 160-161].
+- **Current treatment:** document revision, speed grade, package suffix,
+  tracking/date string, lot, ROM sibling, and later CMOS/later-generation
+  device identity remain separate fields. No model or RTL behavior changes.
+  `docs/research/device_revision_audit.md` defines the search log and specimen
+  evidence rules; `OQ-008` remains open.
+- **Confidence:** VERIFIED_PRIMARY for the document/product-list timeline;
+  UNKNOWN for original-NMOS mask identities, behavior changes, and invariance.

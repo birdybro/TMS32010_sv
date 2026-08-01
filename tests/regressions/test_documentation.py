@@ -261,6 +261,78 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ):
             self.assertTrue((ROOT / "tests" / "asm" / source_name).is_file())
 
+    def test_device_revision_audit_separates_documents_from_silicon(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        audit = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "device_revision_audit.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        architecture = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "architecture" / "tms32010_architecture.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        for source_id in (
+            "ti-tms32010-users-guide-1985-alt-scan",
+            "ti-first-generation-users-guide-1989",
+            "ti-development-support-spru011a-1989",
+            "ti-ti32000-family-data-manual-1985-rejected",
+        ):
+            source = by_id[source_id]
+            self.assertEqual(source["status"], "acquired")
+            self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+            self.assertFalse(source["may_commit"])
+            self.assertTrue(source["sections_or_pages_used"])
+        self.assertIn(
+            "revised October 1985",
+            " ".join(
+                by_id["ti-tms32010-users-guide-1985-alt-scan"][
+                    "sections_or_pages_used"
+                ]
+            ),
+        )
+        self.assertIn(
+            "revised February 1986",
+            " ".join(
+                by_id["ti-tms32010-users-guide-spru001b"][
+                    "sections_or_pages_used"
+                ]
+            ),
+        )
+        self.assertEqual(
+            by_id["ti-ti32000-family-data-manual-1985-rejected"][
+                "authority_level"
+            ],
+            8,
+        )
+        for required in (
+            "No located Texas Instruments source identifies",
+            "not be converted into a mask history",
+            "A matching pair is not a mask map",
+            "No RTL or model behavior changes solely because",
+            "Negative search results mean only",
+            "Tracking mark/date code and lot code",
+            "unrelated 32-bit TI32000 family",
+        ):
+            self.assertIn(required, audit)
+        self.assertIn("## SC-043", conflicts)
+        self.assertIn("RESEARCHING/NO REVISION MAP (`SC-043`)", questions)
+        self.assertIn("none selects architectural RTL behavior", architecture)
+
     def test_subc_pipeline_evidence_stays_provisional_and_reproducible(self) -> None:
         manifest = json.loads(
             (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")

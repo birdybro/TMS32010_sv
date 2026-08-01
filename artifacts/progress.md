@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-012` physical-reset retention research and
-  reproducible complementary original-device probes
+- **Current milestone:** `OQ-008` original-TMS32010 publication, speed-grade,
+  package-code, and silicon-revision audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 147 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 148 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 46 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 50 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -1062,6 +1062,22 @@
   and use external BIO alone to enter a post-reset observer that consumes no
   retained RAM. The project model emits matching 13-word before/after vectors;
   hardware has no assigned result.
+- **New device-revision evidence:** a second SPRU001B archive artifact pins an
+  October-1985 TMS32010 data-sheet revision against the existing February-1986
+  embedded revision; the former labels base/-25 timing and the latter
+  -20/-25. December-1986 SPRU011 and May-1987 SPRU013 list 14/20/25-MHz
+  2.4-micrometer NMOS products, while April-1989 SPRU011A and the May-1989
+  revised data sheet embedded in SPRU013B list only the 20-MHz NMOS product.
+  None identifies a silicon mask, package-code decoder, functional change, or
+  erratum. Both family timelines say current/new-device specification updates
+  were distributed through a dial-up BBS whose authenticated TMS32010 notice
+  archive was not located. `SC-043` and
+  `docs/research/device_revision_audit.md` therefore retain publication,
+  speed grade, package, tracking/date, lot, ROM sibling, and later-CMOS
+  identity as separate fields. The lawful search also cataloged and rejected
+  an unrelated TI32000 manual false positive. All 50 acquired source hashes
+  verify; `OQ-008` remains RESEARCHING/NO REVISION MAP and no RTL behavior
+  changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1091,6 +1107,8 @@
   raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
+  authenticated original-TMS32010 errata/BBS notices, package-code decoding,
+  and mask/date invariance across physical specimens under `OQ-008`/`SC-043`,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
   policy,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
@@ -1099,9 +1117,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-008` for original-TMS32010 errata, mask/date
-  codes, product-change notices, and documented NMOS revision differences;
-  catalog negative search evidence without treating later C10/C15 behavior as
-  equivalent.
+- **Next task:** investigate `OQ-020` by auditing the history and provenance of
+  MAME's DAC-MSB transform, all lawful Atari Driver Sound board revisions/ECO
+  material, and the complete Am6012/reference/transimpedance transfer. Retain
+  the existing raw `TD15:TD4` mapping unless primary or physical evidence
+  resolves the intended sample encoding.
 - **Latest committed baseline before this cycle:**
-  `a3a662c`
+  `1a0070b`

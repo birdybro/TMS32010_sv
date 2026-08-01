@@ -34,6 +34,19 @@ The default core will not expose on-chip program ROM, expanded C15 RAM, C17
 serial peripherals, or later-family instructions. Variant parameterization is
 deferred until the base part is objectively qualified.
 
+Primary publications expose several original-NMOS speed-grade names and a
+sequence of revised data sheets, but no located source maps those labels or
+the package tracking/date field to a silicon-mask revision. Later 1989 product
+tables omit the earlier NMOS -14/-25 listings without calling the change a
+functional revision. Publication revision, speed grade, package/temperature
+suffix, tracking/date string, lot, ROM sibling, and later CMOS device identity
+therefore remain separate provenance dimensions; none selects architectural
+RTL behavior. `SC-043`, `OQ-008`, and
+`docs/research/device_revision_audit.md` preserve the exact timeline and
+physical-specimen requirements. **Confidence: VERIFIED_PRIMARY for the
+publication/product-list distinction; UNKNOWN for mask identities or
+behavioral differences.**
+
 ## Data path
 
 The programmer-visible data path comprises a 32-bit accumulator and ALU, a

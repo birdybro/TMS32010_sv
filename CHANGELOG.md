@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-043` and an original-TMS32010 device-revision audit that separates
+  publication revision, speed grade, package marking, tracking/date and lot
+  fields, ROM siblings, and later CMOS devices from unproved silicon-mask
+  identity. It records the exact lawful negative-search routes and defines the
+  specimen provenance needed before any physical result is generalized.
+- Integrity-pinned, non-committed copies of the October-1985-appended
+  SPRU001B artifact, March-1989 SPRU013B, and April-1989 SPRU011A. A downloaded
+  `TI32000` false positive is also checksum-cataloged as unrelated so every
+  acquired artifact retains provenance and the route is not repeated.
 - `SC-042` and complementary set/clear original-NMOS reset-retention probes.
   Each image exports ACC/T/P/AR/status/stack before reset, reconstructs every
   destructive observation, emits an armed marker, and uses external BIO alone
@@ -699,6 +708,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Original-device scope now explicitly treats the 1985/1986/1987/1989
+  data-sheet and 14/20/25-MHz product-list changes as document/product facts,
+  not RTL parameters or mask-revision proof. `OQ-008` is narrowed to
+  `RESEARCHING/NO REVISION MAP` and no architectural behavior changed.
 - Refined `OQ-012` from source silence alone to
   `RESEARCHING/CORROBORATED EVM`: production TI reset effects remain narrow,
   EVM register recoverability supports retention, related patent clearing is
@@ -921,6 +934,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 50 locally acquired references pass their pinned SHA-256 checks, and a
+  documentation regression locks the OQ-008 source timeline, the TI32000
+  false-positive exclusion, the missing-BBS boundary, and the prohibition on
+  inferring a silicon revision from a document or speed label.
 - The two sparse reset-retention images are locked by fixed address/word
   digests, word counts, and symbols. The independent instruction-boundary
   model emits the exact set/clear pre-vectors, reconstructs the armed state,
@@ -1739,6 +1756,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- No authenticated original-TMS32010 erratum, product-change/mask notice,
+  package-code decoder, or period BBS specification-update archive has been
+  located. `OQ-008` remains open, and measurements on one specimen cannot be
+  called mask-invariant.
 - The explicit pipeline closes the current 25 MHz Cyclone V internal target
   but not the exploratory 50 MHz target; the rejected fit has -9.098 ns worst
   slow-corner setup slack. This still exceeds the Driver Sound board's 20 MHz
