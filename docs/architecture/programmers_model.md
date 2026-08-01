@@ -5,16 +5,16 @@
 | State | Width | Documented role | Reset/power-up evidence | Confidence |
 |---|---:|---|---|---|
 | `PC` | 12 | next program address | reset clears to 0 | VERIFIED_PRIMARY |
-| `ACC` | 32 | ALU operand/result with guard half | unspecified here | VERIFIED_PRIMARY |
-| `P` | 32 | signed multiplier product | unspecified here | VERIFIED_PRIMARY |
-| `T` | 16 | multiplier operand | unspecified here | VERIFIED_PRIMARY |
-| `AR0`, `AR1` | 16 each | indirect address/counter registers | unspecified here | VERIFIED_PRIMARY |
-| `ARP` | 1 | selects active auxiliary register | status bit; reset value unresolved | VERIFIED_PRIMARY |
-| `DP` | 1 | selects direct-address data page | status bit; reset value unresolved | VERIFIED_PRIMARY |
-| `OV` | 1 | sticky arithmetic overflow | reset behavior unresolved (`OQ-012`) | VERIFIED_PRIMARY for role; UNKNOWN for reset |
+| `ACC` | 32 | ALU operand/result with guard half | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `P` | 32 | signed multiplier product | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `T` | 16 | multiplier operand | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `AR0`, `AR1` | 16 each | indirect address/counter registers | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `ARP` | 1 | selects active auxiliary register | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `DP` | 1 | selects direct-address data page | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
+| `OV` | 1 | sticky arithmetic overflow | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
 | `OVM` | 1 | saturation enable | unchanged by reset | VERIFIED_PRIMARY |
 | `INTM` | 1 | interrupt mask | set by reset and `DINT` | VERIFIED_PRIMARY |
-| stack | 4 × 12 | PC return stack | contents unspecified | VERIFIED_PRIMARY |
+| stack | 4 × 12 | PC return stack | production reset unlisted; EVM warm-save corroborates retention (`OQ-012`) | VERIFIED_PRIMARY for role; CORROBORATED EVM/UNKNOWN silicon-reset network |
 
 Sources: [ti-tms32010-users-guide-spru001b, §§2.1–2.5, Figures 2-1–2-12,
 printed pp. 2-1–2-19 (PDF pp. 25–43)].
@@ -25,7 +25,10 @@ constructor defaults for reproducibility, but those defaults are not physical
 reset claims. The RTL's separate `initialize_i` test/FPGA control establishes
 the same deterministic modeled state, while physical reset leaves unlisted
 state without an assigned reset value; retention is provisional under
-`OQ-012`.
+`OQ-012`. TI's contemporary EVM warm-reset workflow expects all of these
+registers except PC to remain recoverable, but its save ordering is not
+published; see `SC-042` and
+`docs/research/reset_retention_experiment.md`.
 
 Project traces and RTL diagnostics order the four stack entries as
 `[top, level_1, level_2, bottom]`. A push inserts the new 12-bit value at

@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+from hashlib import sha256
 import tempfile
 import unittest
 from pathlib import Path
 
+from sim.reference_models.tms32010_model import Tms32010Model
 from tools.assembler.tms32010_as import Assembler, AssemblyError
 from tools.disassembler.tms32010_dis import Disassembler
 
@@ -221,6 +223,125 @@ class ToolchainSliceTests(unittest.TestCase):
                 source_name,
             )
             self.assertEqual(result.symbols, write_symbols, source_name)
+
+    def test_reset_retention_probe_images_and_provisional_paths_are_stable(
+        self,
+    ) -> None:
+        fixtures = (
+            (
+                "reset_retention_set_probe.asm",
+                "1105539afa5233ca36ed76afa008771ead3f4f245061d2e88b40f251e680b890",
+                133,
+                {
+                    "INIT": 0x010,
+                    "ARMED": 0x066,
+                    "POST_RESET": 0x100,
+                    "HOLD": 0x127,
+                },
+                [
+                    0x00A5,
+                    0x0000,
+                    0x0012,
+                    0x0034,
+                    0xFFFF,
+                    0x00FF,
+                    0x0000,
+                    0x0055,
+                    0x0000,
+                    0x0044,
+                    0x0033,
+                    0x0022,
+                    0x0011,
+                ],
+                0x00A1,
+            ),
+            (
+                "reset_retention_clear_probe.asm",
+                "e91509dda23265824587a2b31aead71f7a6dcc17c932dec1f928164ff01ebefe",
+                122,
+                {
+                    "INIT": 0x010,
+                    "ARMED": 0x05B,
+                    "POST_RESET": 0x100,
+                    "HOLD": 0x127,
+                },
+                [
+                    0x003C,
+                    0x0000,
+                    0x0056,
+                    0x0078,
+                    0x3EFE,
+                    0x00AA,
+                    0x0000,
+                    0x0022,
+                    0x0000,
+                    0x0088,
+                    0x0077,
+                    0x0066,
+                    0x0055,
+                ],
+                0x00A2,
+            ),
+        )
+
+        for (
+            source_name,
+            expected_digest,
+            expected_word_count,
+            expected_symbols,
+            expected_vector,
+            armed_marker,
+        ) in fixtures:
+            with self.subTest(source_name=source_name):
+                result = self.assembler.assemble_file(
+                    ROOT / "tests" / "asm" / source_name
+                )
+                address_word_bytes = b"".join(
+                    address.to_bytes(2, byteorder="big")
+                    + word.to_bytes(2, byteorder="big")
+                    for address, word in sorted(result.words.items())
+                )
+                self.assertEqual(len(result.words), expected_word_count)
+                self.assertEqual(
+                    sha256(address_word_bytes).hexdigest(),
+                    expected_digest,
+                )
+                self.assertEqual(result.symbols, expected_symbols)
+
+                model = Tms32010Model()
+                for address, word in result.words.items():
+                    model.program[address] = word
+
+                writes: list[int] = []
+
+                def run_until(write_count: int) -> None:
+                    for _ in range(512):
+                        trace = model.step()
+                        writes.extend(
+                            transaction.data
+                            for transaction in trace.transactions
+                            if transaction.space == "io"
+                            and transaction.operation == "write"
+                        )
+                        if len(writes) >= write_count:
+                            return
+                    self.fail(
+                        f"{source_name} did not reach {write_count} writes"
+                    )
+
+                run_until(14)
+                self.assertEqual(writes, expected_vector + [armed_marker])
+
+                model.bio_input_high = False
+                model.reset_at_instruction_boundary()
+                run_until(28)
+                self.assertEqual(
+                    writes,
+                    expected_vector
+                    + [armed_marker]
+                    + expected_vector
+                    + [0x00AF],
+                )
 
     def test_subc_physical_probe_images_are_stable(self) -> None:
         cases = (

@@ -205,6 +205,62 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("## SC-041", conflicts)
         self.assertIn("read-only controlled-history sweep", memory)
 
+    def test_reset_retention_keeps_evm_evidence_below_silicon_proof(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "reset_retention_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        architecture = (
+            DOCS / "architecture" / "tms32010_architecture.md"
+        ).read_text(encoding="utf-8")
+        evm_pages = " ".join(
+            by_id["ti-tms32010-evm-users-guide-spru005a"][
+                "sections_or_pages_used"
+            ]
+        )
+        patent_pages = " ".join(
+            by_id["ti-dsp-microcomputer-patent-us4577282a"][
+                "sections_or_pages_used"
+            ]
+        )
+        for required in (
+            "warm RESET saves all TMS32010 registers except PC",
+            "PDF pages 68-69 and 97-98",
+            "uncontrolled halt warning",
+        ):
+            self.assertIn(required, evm_pages)
+        self.assertIn("explicitly assigned to a ROM reset routine", patent_pages)
+        for required in (
+            "No retained RAM flag or candidate register chooses the path",
+            "post-reset vector therefore does not depend on internal-RAM retention",
+            "Both directions are required",
+            "at least 32 warm-reset trials per fixture",
+            "EVM evidence is **CORROBORATED** workflow evidence",
+            "portable core's unlisted-state retention remains **PROVISIONAL**",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("## SC-042", conflicts)
+        self.assertIn("RESEARCHING/CORROBORATED EVM (`SC-042`)", questions)
+        self.assertIn("§2.11", architecture)
+        for source_name in (
+            "reset_retention_set_probe.asm",
+            "reset_retention_clear_probe.asm",
+        ):
+            self.assertTrue((ROOT / "tests" / "asm" / source_name).is_file())
+
     def test_subc_pipeline_evidence_stays_provisional_and_reproducible(self) -> None:
         manifest = json.loads(
             (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")

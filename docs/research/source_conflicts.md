@@ -1079,3 +1079,39 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for `0x00`-`0x8f` implemented storage;
   UNKNOWN for original NMOS reads, writes, retirement, aliasing, disturbance,
   electrical stability, and mask invariance across `0x90`-`0xff`.
+
+## SC-042 — Production reset omissions versus EVM warm-save behavior
+
+- **Production-device boundary:** SPRU001B Section 2.11 assigns PC/address
+  clear, inactive external controls, a tristated data bus, `INTM=1`, cleared
+  interrupt flag, and unchanged OVM. It does not assign ACC, T, P, AR0/AR1,
+  ARP, DP, stack, or OV
+  [ti-tms32010-users-guide-spru001b, Sections 2.6.1 and 2.11, printed
+  pp. 2-13 and 2-19 (PDF pp. 37 and 43)].
+- **Contemporary TI workflow evidence:** SPRU005A's `EX` and `RUN` commands
+  say an EVM warm RESET saves every TMS32010 register except PC. Its register
+  menu includes all of the unlisted state above. The same guide's warm-reset
+  overview warns that the uncontrolled halt clears internal registers and may
+  corrupt memory, but does not publish whether saving precedes clearing or
+  which instructions perform the save
+  [ti-tms32010-evm-users-guide-spru005a, Section 2.3.10.2, Table 3-2, and
+  `EX`/`RUN`, printed pp. 2-28-2-29, 3-4-3-5, 3-27-3-28, and 3-56-3-57
+  (PDF pp. 39-40, 45-46, 68-69, and 97-98)].
+- **Related-embodiment distinction:** US4577282A attributes address and
+  temporary-register clearing to a ROM reset routine and separately says RAM
+  is not cleared. It therefore cannot turn software initialization into a
+  hardware-reset value [ti-dsp-microcomputer-patent-us4577282a, patent
+  columns 5-6 (PDF p. 29)].
+- **Independent policy conflict:** pinned MAME uses a mixed reset policy that
+  resets ACC and selected status bits, forces OVM set contrary to SPRU001B,
+  and leaves T/P/AR/stack untouched after device start. Pinned IKA retains OVM
+  but clears multiple unlisted registers. Neither is original-device proof.
+- **Current treatment:** the model/RTL retains every unlisted register and
+  labels that choice PROVISIONAL. The two complementary BIO-selected
+  before/restore/reset/after images and exact capture protocol in
+  `docs/research/reset_retention_experiment.md` are required before upgrading
+  original-silicon confidence. The EVM manual is CORROBORATED workflow
+  evidence only.
+- **Confidence:** VERIFIED_PRIMARY for the named reset effects and unchanged
+  OVM; CORROBORATED for EVM register recoverability; UNKNOWN for the exact
+  physical reset network and mask invariance of all unlisted state.

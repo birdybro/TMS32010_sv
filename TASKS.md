@@ -92,7 +92,8 @@ objective passing evidence.
   citation and confidence; contradictions and unknowns are linked; no C10/C15
   behavior is silently assigned to the TMS32010.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
-- **Tests:** `tests/regressions/test_documentation.py`
+- **Tests:** `tests/regressions/test_documentation.py`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`
 - **Notes:** Initial primary-cited baseline and ADR exist. The status register
   is now qualified as exactly five architectural bits plus a 16-bit LST/SST
   representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
@@ -123,6 +124,16 @@ objective passing evidence.
   write unique full-AR sentinels before scanning all 144 valid words and all
   112 absent selects. The read-only image must run first. No absent value,
   alias, zero-fill, or trap result is assigned without physical capture.
+  `OQ-012` now has a similarly reproducible boundary. `SC-042` separates the
+  production guide's unlisted register values from SPRU005A's statement that
+  warm EVM RESET saves every register except PC, its separate
+  clear/corruption warning, related-patent software initialization, and
+  conflicting MAME/IKA policies. Complementary set/clear fixtures export the
+  complete state before reset, reconstruct every destructively observed
+  register, use external BIO alone to choose the post-reset path, and consume
+  no retained RAM while capturing the after vector. The EVM evidence is
+  CORROBORATED; original-silicon retention remains PROVISIONAL until both
+  physical captures match.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.

@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-002` absent internal-data-address research and
-  reproducible original-device probe matrix
+- **Current milestone:** `OQ-012` physical-reset retention research and
+  reproducible complementary original-device probes
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 145 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 147 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1048,6 +1048,20 @@
   144 valid and 112 absent locations. The read-only image must run first and
   none assigns an expected physical result. A TMS320M10 decap lead remains
   metadata-only after a lawful HTTP-429 response and supplies no decoder fact.
+- **New physical-reset evidence:** SPRU001B assigns PC/address clear,
+  interrupt mask/flag effects, inactive bus controls, and unchanged OVM, but
+  no value to ACC/T/P/AR/ARP/DP/stack/OV. Contemporary SPRU005A says its warm
+  `EX`/`RUN` RESET workflow saves every TMS32010 register except PC, while its
+  overview separately warns that the uncontrolled halt clears registers and
+  may corrupt memory without publishing save order. The related TI patent
+  assigns broader clearing to a ROM reset routine, not the pin. Pinned MAME
+  and IKA use conflicting mixed policies. `SC-042` therefore classifies the
+  EVM workflow as CORROBORATED while retaining original-silicon behavior as
+  PROVISIONAL. Two exact sparse images now export a complete set/clear state
+  vector before reset, reconstruct P/stack/ACC/status, arm on `00a1`/`00a2`,
+  and use external BIO alone to enter a post-reset observer that consumes no
+  retained RAM. The project model emits matching 13-word before/after vectors;
+  hardware has no assigned result.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1060,8 +1074,8 @@
   PUSH/POP per-cycle program-address/fetched-word ownership, SUBC result availability and
   OV stage, simultaneous indirect
   increment/decrement, `0x90`-`0xff` read/write/alias behavior under
-  `OQ-002`/`SC-041`, physical-reset retention of
-  unlisted state,
+  `OQ-002`/`SC-041`, physical-reset retention of unlisted state under
+  `OQ-012`/`SC-042` despite CORROBORATED EVM recoverability,
   DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
   and firmware compliance,
   communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
@@ -1085,8 +1099,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-012` original-NMOS reset retention for
-  ACC/T/P/AR/ARP/DP/OV and define a noncircular before/after capture without
-  assigning deterministic FPGA initialization to the portable core.
+- **Next task:** investigate `OQ-008` for original-TMS32010 errata, mask/date
+  codes, product-change notices, and documented NMOS revision differences;
+  catalog negative search evidence without treating later C10/C15 behavior as
+  equivalent.
 - **Latest committed baseline before this cycle:**
-  `1d8c271`
+  `a3a662c`

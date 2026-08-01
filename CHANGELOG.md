@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-042` and complementary set/clear original-NMOS reset-retention probes.
+  Each image exports ACC/T/P/AR/status/stack before reset, reconstructs every
+  destructive observation, emits an armed marker, and uses external BIO alone
+  to select a post-reset observer whose scratch data is written only after
+  reset. The capture protocol assigns no original-silicon result.
+- Primary EVM research showing that TI's warm-reset `EX`/`RUN` workflow saves
+  every TMS32010 register except PC, alongside the same manual's separate
+  clear/corruption warning and an explicit monitor-ordering nonclaim.
 - `SC-041` and three stable original-NMOS absent-data-address probes. A
   read-only fixture sweeps `0x90`-`0xff` after controlled zero and all-one
   legal reads; ascending and descending fixtures write unique full-AR
@@ -691,6 +699,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Refined `OQ-012` from source silence alone to
+  `RESEARCHING/CORROBORATED EVM`: production TI reset effects remain narrow,
+  EVM register recoverability supports retention, related patent clearing is
+  explicitly a ROM-routine effect, and conflicting MAME/IKA policies remain
+  nonauthoritative. The portable retention policy is still PROVISIONAL.
+- Corrected the architecture reset citation from SPRU001B Section 2.5 to the
+  actual Section 2.11 while retaining the already verified page and behavior.
 - Raised ADR-0003's RET address ownership from INFERRED to CORROBORATED using
   the related contemporary TI patent, while retaining CALA as INFERRED and
   exact original-TMS32010 pin behavior as UNKNOWN. PUSH/POP remain excluded
@@ -906,6 +921,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The two sparse reset-retention images are locked by fixed address/word
+  digests, word counts, and symbols. The independent instruction-boundary
+  model emits the exact set/clear pre-vectors, reconstructs the armed state,
+  applies only the current provisional reset policy, and emits matching
+  post-vectors. Documentation tests require the EVM/patent claim boundary,
+  BIO-only selection, no retained-RAM dependency, both complementary cases,
+  and an explicit physical-capture requirement.
 - The absent-data-address fixtures assemble deterministically to exact
   contiguous 35-, 43-, and 43-word images with fixed history/write/scan/read/
   terminal symbols. Documentation regressions require read-before-write
@@ -1871,7 +1893,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   confidence under `SC-017`/`OQ-011`: the implementation preserves OV,
   ignores OVM, and never saturates, but original-silicon measurement is still
   needed to upgrade confidence. Physical-reset retention of unlisted state
-  remains unresolved as `OQ-012`. ABS result and
+  remains unresolved as `OQ-012`; EVM warm-save behavior now corroborates the
+  hypothesis, but both complementary original-device captures remain absent.
+  ABS result and
   timing are primary-verified; its OV preservation is explicitly
   `CORROBORATED`, not physical-hardware verified, under resolved `OQ-013`.
 - Original-part DMOV/LTD behavior when source `0x8f` implies destination

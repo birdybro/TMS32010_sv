@@ -279,7 +279,9 @@ Recognized core reset now has dedicated actual-core simulation and a 10-step
 bounded proof for TI-defined PC/INTM/interrupt-flag/control effects, inactive
 transactions/instruction qualification, clock-enable priority, documented OVM
 retention, and explicitly PROVISIONAL retention of TI-unlisted state under
-`OQ-012`. Do not promote that implementation retention to physical behavior.
+`OQ-012`. `SC-042` adds CORROBORATED EVM warm-save evidence plus exact
+complementary before/after physical fixtures, but no original-device capture
+exists. Do not promote implementation retention to verified physical behavior.
 `tms32010_sequential_pipeline_slice` now connects it to the partial core for
 reset priming, the 41 already-qualified one-cycle operation families, and
 exact B, BANZ, BV, BIOZ, CALL, the six accumulator-conditional branches, and

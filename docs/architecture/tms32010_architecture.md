@@ -114,7 +114,7 @@ sets the interrupt mask, clears the interrupt flag, and drives `MEN`, `DEN`,
 and `WE` inactive high while the data bus is high impedance. Reset does not
 change `OVM`. Other register reset/power-up values are not specified by this
 pass and must not be invented
-[ti-tms32010-users-guide-spru001b, §2.5, printed p. 2-19 (PDF p. 43)].
+[ti-tms32010-users-guide-spru001b, §2.11, printed p. 2-19 (PDF p. 43)].
 **Confidence: VERIFIED_PRIMARY.**
 
 Appendix A resolves the external first-fetch sequence: after reset release,
@@ -127,6 +127,19 @@ conservative implementation policy pending `OQ-012`, not as a verified
 physical-device claim
 [ti-tms32010-users-guide-spru001b, Appendix A reset timing, printed data-sheet
 p. 19 (PDF p. 375)]. **Confidence: VERIFIED_PRIMARY.**
+
+SPRU005A adds contemporary development-system evidence without closing the
+production omission: its `EX` and `RUN` descriptions say a warm EVM RESET
+saves every TMS32010 register except PC, and its register menu enumerates ACC,
+T, P, both ARs, OV/OVM, DP/ARP, and stack. The same guide also warns that the
+uncontrolled halt clears registers and may corrupt memory without documenting
+the monitor's save-before-clear mechanism. This **CORROBORATES** register
+recoverability in the EVM workflow but does not assign the original reset
+network. `SC-042` and the complementary BIO-selected before/after fixtures in
+`docs/research/reset_retention_experiment.md` preserve that boundary
+[ti-tms32010-evm-users-guide-spru005a, Section 2.3.10.2, Table 3-2, and
+`EX`/`RUN`, printed pp. 2-28-2-29, 3-4-3-5, 3-27-3-28, and 3-56-3-57
+(PDF pp. 39-40, 45-46, 68-69, and 97-98)].
 
 A dedicated actual-core test now establishes nonzero ACC, T, P, AR0/AR1,
 ARP, DP, stack, OV, and OVM state before reset. It verifies the documented PC,

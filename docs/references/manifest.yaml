@@ -393,7 +393,7 @@
         "POP_STACK()/ret() stack-pop/PC handlers and fixed two-cycle opcode-table entry, lines 222-228, 676-679, and 849",
         "POP_STACK()/PUSH_STACK() backing-array order, lines 222-237, and debugger-visible PC/STR/ACC/P/T/AR/STK state registration, lines 900-910",
         "execute_run() interrupt service, debugger hook, opcode fetch, and PC increment ordering, lines 997-1012",
-        "pop()/push() architectural handlers, lines 665-675, and MAME-specific reset status initialization, lines 925-932",
+        "pop()/push() architectural handlers, lines 665-675, and MAME-specific mixed reset policy, lines 925-932: PC/ACC reset, OV/ARP/DP clear, OVM/INTM set, with other device-start state untouched",
         "in_p()/out_p() handlers, common data-address helpers, and fixed two-cycle opcode-table entries for high bytes 0x40-0x4f, lines 260-304, 530-535, 654-659, and 818-825"
       ],
       "status": "acquired",
@@ -615,6 +615,8 @@
       "sections_or_pages_used": [
         "Section 3.3.2 register display/modify workflow, including direct ACC, OV, and OVM access, printed pages 3-4 through 3-5 and command pages 3-53 through 3-54",
         "Sections 3.3.2 through 3.3.3 and Tables 3-2 through 3-3, printed pages 3-4 through 3-6 (PDF pages 45-47), plus MDM printed page 3-47 (PDF page 88): architectural-register inspection and the monitor's 0x00-0x5f direct data-memory limit",
+        "Section 2.3.10.2 warm RESET discussion, printed pages 2-28 through 2-29 (PDF pages 39-40): uncontrolled halt warning, register clearing language, possible memory corruption, and cold-reset software zeroing distinction",
+        "EX and RUN command descriptions, printed pages 3-27 through 3-28 and 3-56 through 3-57 (PDF pages 68-69 and 97-98): warm RESET saves all TMS32010 registers except PC; interpreted only as EVM workflow evidence",
         "SB command breakpoint restrictions, printed page 3-58 (PDF page 99): the address immediately after PUSH, POP, CALA, RET, IN, OUT, TBRD, or TBWR is rejected as an EVM breakpoint",
         "Section 9.3 Program Execution and Breakpoint Logic, printed pages 9-2 through 9-3 (PDF pages 179-180): address-indexed breakpoint RAM, program-data-to-NOP switching, and captured TMS32010 address",
         "Appendix A schematic drawing D96214 sheet 3 (PDF page 188): TMS32010, program-memory, breakpoint-RAM, and start/stop connections; inspected for gating but not used as undocumented phase proof"
@@ -650,6 +652,7 @@
         "Bus-controller stop/read pin outputs and CALA/RET two-microcycle control around lines 166-228 and 1401-1461",
         "Auxiliary-register INC/DEC update case and representative raw-bit controls around lines 290-328 and 663-675: simultaneous controls preserve the register",
         "LST direct/indirect ARP-source selection around lines 663-688: encoded next-ARP wins only in indirect form",
+        "Reset paths around lines 102-114 and 262-413 plus instantiated ALU/multiplier/stack reset paths: OVM retention but deterministic clearing policies for multiple TI-unlisted registers; DP conditional inspected as internally suspect",
         "IKA32010_ram 256-word internal RAM allocation and deterministic initialization, lines 1909-1937"
       ],
       "status": "acquired",
@@ -1321,6 +1324,7 @@
       "sections_or_pages_used": [
         "Figures 2A-2B and 3a-3dd, patent sheets 2-8 (PDF pages 2-8): program-control structure and quarter-cycle fetch/branch/RET/IN/OUT/table timing",
         "System overview and external program access, patent columns 5-6 (PDF page 29): every-state active-low RCLK rule and DEN-/WE- exceptions",
+        "System overview reset prose, patent columns 5-6 (PDF page 29): pin reset clears PC/bus controls, while address and temporary-register clearing is explicitly assigned to a ROM reset routine and internal RAM is not cleared",
         "System timing, patent columns 15-18 (PDF pages 34-35): PC increment behavior, branch/CALL/RET discarded fetches, selected-target fetch, and PC hold during IN/OUT",
         "SUBC instruction and accumulator/status circuitry, patent columns 13-14 and 21-24 (PDF pages 33 and 37-38), Figure 5c: two-state related-embodiment timing, unshifted ALU result, following-state accumulator-local shift, and ALU-derived status path; inspected only as related-embodiment background",
         "DINT/EINT mask-latch prose, patent columns 13-14 (PDF page 33): related-embodiment mask/unmask function without normal-interrupt boundary timing",

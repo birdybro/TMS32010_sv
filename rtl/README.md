@@ -196,7 +196,12 @@ reproducibility but does not initialize internal RAM. Physical reset assigns
 only the source-backed control effects; unlisted state receives no arbitrary
 reset value. `CLKOUT` phases continue while `rs_i` is held, matching the
 data-sheet reset waveform. Retention of unlisted state is an implementation
-policy pending `OQ-012`, not a physical-device reset claim.
+policy pending `OQ-012`, not a physical-device reset claim. TI's contemporary
+EVM manual corroborates recoverability by saying warm RESET saves every
+register except PC, but its separate clear/corruption warning and unpublished
+save ordering keep the policy PROVISIONAL under `SC-042`; the two exact
+before/after hardware fixtures are documented in
+`docs/research/reset_retention_experiment.md`.
 The core also forces its nonphysical `instruction_valid_o` qualification low
 during deterministic initialization and recognized physical reset so inactive
 program-data pins cannot advertise executable ownership.

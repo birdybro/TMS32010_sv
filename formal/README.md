@@ -108,7 +108,9 @@ OV, but that bundle is explicitly only PROVISIONAL FPGA policy under
 `OQ-012`; the proof does not promote it to original-silicon behavior. A fixed
 `SOVM; LACK 0x5a` path makes this boundary nonvacuous, and the reset-retention
 cover is reached at step 5. Internal-RAM retention is directed-tested rather
-than formally quantified by this harness.
+than formally quantified by this harness. `SC-042` now records contemporary
+TI EVM warm-save evidence and the contradictory clear/corruption warning;
+neither changes what this bounded implementation proof establishes.
 
 ## Native program-bus reset/release harness
 
