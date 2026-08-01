@@ -9,6 +9,12 @@
   conflicts around ports 1–3.
 - `hard_drivin_sound_rom.md`: primary-transcribed parallel sample-ROM block,
   address, population, port-0 word alignment, and MAME sign-bit conflict.
+- `hard_drivin_sound_control.md`: primary-transcribed raw MUTE and 68000 IRQ
+  latch behavior for ports 4 and 5.
+- `hard_drivin_bio.md`: primary-transcribed divide-by-50 source and CLKOUT
+  resampler, with explicit independent-clock uncertainty.
+- `hard_drivin_compare.md`: primary port-2 `/CMPRD`/`CMPOUT` trace, explicit
+  Rev-A nonpopulation, and MAME zero-stub boundary.
 - `hard_drivin_mister_wrapper.md`: partial same-clock processor/program-RAM
   top, reset/ownership protocol, physical I/O callback, and test boundary.
 
@@ -50,6 +56,10 @@ or embedding a 68000 bus decoder.
 one-period `/320BIO` pulse, reset-uninitialized counter phase, and CLKOUT
 resampler. Its standalone RTL uses explicit enables and validity instead of
 creating clocks or pretending board reset initializes the divider.
+`hard_drivin_compare.md` establishes that Rev-A port 2 drives only `TDI15`
+from an unpopulated-source `CMPOUT`; it therefore remains on the board top's
+external data/ready callback instead of receiving an invented zero-valued
+peripheral.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

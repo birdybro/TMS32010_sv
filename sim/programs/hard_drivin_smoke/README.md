@@ -16,9 +16,12 @@ PDF pp. 5–14; mame-harddriv-audio-030fefc,
 handlers]. **Confidence: VERIFIED_PRIMARY for the cited board wiring;
 CORROBORATED for the software-visible port roles.**
 
-Port 2 remains `PROVISIONAL`: the pinned MAME handler only logs the access and
-returns zero. The smoke test deliberately expects that oracle value without
-claiming physical compare-circuit behavior. MAME also configures a TMS320C10
+Port 2's physical word is `UNKNOWN` under `OQ-029`: A044427 routes only
+`CMPOUT` to `TDI15`, and its complete microphone/LM311 source sheet is marked
+`THIS SHEET NOT LOADED.` The pinned MAME handler only logs the access and
+returns zero. The smoke harness deliberately supplies that value through its
+external callback as a deterministic oracle sentinel, not as physical
+compare-circuit behavior. MAME also configures a TMS320C10
 device despite the A044427 TMS32010 label, so this fixture uses MAME only for
 board adapter semantics, never as proof of processor behavior.
 
@@ -31,7 +34,7 @@ The harness supplies the following synthetic values:
 - populated Hard Drivin' sound-ROM block `0x03` and address `0x3456` through
   ports 6 and 7;
 - synthetic physical sound-ROM response `0xea80` from raw byte `0xd5` at port 0;
-- provisional compare response zero from port 2; and
+- synthetic compare sentinel zero from the external port-2 callback; and
 - asserted active-low BIO, causing `BIOZ` to skip a sentinel `LACK 0xee`.
 
 The program writes port 7 before its first input read. This qualifies the

@@ -35,6 +35,7 @@ REQUIRED_FILES = {
     "docs/research/open_questions.md",
     "docs/research/source_conflicts.md",
     "docs/integration/hard_drivin_requirements.md",
+    "docs/integration/hard_drivin_compare.md",
     "docs/decisions/ADR-0001-reference-precedence.md",
     "docs/generated/tms32010_isa.yaml",
     "sim/reference_models/README.md",

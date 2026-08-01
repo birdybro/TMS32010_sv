@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 29-source
+- Reference-provenance policy, safe acquisition/hash tools, a 30-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -113,6 +113,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   opt-in, derives CLKOUT sampling from the core phase, keeps external raw BIO
   as the default, and rejects unresolved coincident 1 MHz scheduling under
   `OQ-028`.
+- Primary schematic qualification of Driver Sound port 2, backed by TI
+  SLCS007K: `/CMPRD` exposes only `CMPOUT` on `TDI15`, while the optional
+  microphone/LM311 source and pull-up are on a sheet explicitly marked
+  `THIS SHEET NOT LOADED.` `SC-029`/`OQ-029` now prevent MAME's zero-return
+  stub from being promoted into physical behavior; the wrapper retains an
+  explicit external callback and the smoke zero is a named synthetic sentinel.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -547,6 +553,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- The A044427 cross-sheet port-2 trace from LS139 decode through LS244 `10H`
+  to `TDI15`, the absent compare-target connections to `TDI14:TDI0`, the
+  optional LM311 open-collector polarity, and Rev-A's explicit nonpopulation
+  notice. All 30 cached references pass pinned SHA-256 verification. This is
+  source qualification, not a physical read-word measurement.
 
 - Board-level BIO selection with an external-high sentinel and a generated,
   qualified low: BIOZ takes only target `LACK 0x22`, consumes three total
@@ -1093,6 +1105,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- A production A044427 Rev-A port-2 word is electrically unqualified. The
+  drawing routes only `CMPOUT` to `TDI15`, while the complete source and pull-up
+  sheet is not loaded; pinned MAME's `0x0000` handler is a deterministic stub,
+  not hardware evidence (`SC-029`/`OQ-029`).
 - The parallel sample-ROM callback is implemented, but exact population remains
   board/revision data and authorized storage is external. An absent block
   leaves the shown physical data bus undriven; the adapter reports and stalls

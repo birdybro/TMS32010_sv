@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' opt-in board BIO integration
+- **Current milestone:** Hard Drivin' port-2 compare-path qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 120 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 121 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -12,7 +12,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 29 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 30 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -517,6 +517,16 @@
   qualified generated low, proves BIOZ reaches only `LACK 0x22` in three
   cycles, and observes release only after a later CLKOUT sample. Board-top
   Yosys passes at 2,408 abstract cells/154 checks/three memories.
+- **New compare-path evidence:** A044427 sheets 3 and 5 prove that port-2
+  `/CMPRD` enables only `CMPOUT` onto `TDI15`; the target supplies no drawn
+  source for `TDI14:TDI0`. Sheet 8 draws the microphone/DAC LM311 comparison
+  and 1 kΩ open-collector pull-up, then explicitly states
+  `THIS SHEET NOT LOADED.` Newly acquired TI SLCS007K confirms the component
+  pinout and output polarity. `SC-029`/`OQ-029` now isolate MAME's complete
+  zero word as an emulator stub, not a physical default. The existing external
+  port-2 callback is retained, the smoke zero is labeled a synthetic sentinel,
+  and no unsupported RTL was added. All 30 cached sources pass pinned SHA-256
+  verification; the full regression and lint pass unchanged.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -535,6 +545,7 @@
   communication-RAM byte behavior and CRAMEN firmware discipline, sample-ROM
   population and absent-block behavior,
   BIO power-up/reset-release phase and independent-clock coincidence,
+  production Rev-A port-2 `TDI15:TDI0` electrical value,
   loaded
   `/CPORT` purpose,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
@@ -542,8 +553,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the A044427 port-2 compare circuit from the primary
-  schematic and replace the current provisional integration behavior only
-  when its exact digital result and timing are established.
+- **Next task:** trace the A044427 68000 host latch/address decode for
+  `/320RES`, `CRAMEN`, program-RAM selection, communication-RAM selection, and
+  `/IRQCLR`, then define the smallest evidence-backed host-control adapter.
 - **Latest committed baseline before this cycle:**
-  `10c78d2`
+  `2103c44`

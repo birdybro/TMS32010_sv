@@ -814,6 +814,35 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "ti-lm311-datasheet-slcs007k",
+      "title": "LM111, LM211, LM311 Differential Comparators",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SLCS007K",
+      "publication_date": "1973-09; revised 2017-03",
+      "revision": "K",
+      "source_url": "https://www.ti.com/lit/ds/symlink/lm311.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SLCS007K_LM111_LM211_LM311_Differential_Comparators.pdf",
+      "sha256": "fb1e379c722be5d257cec506573863aca3882191307cc151f4257979568e8a32",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for the optional A044427 microphone-to-DAC compare circuit",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use the Atari schematic as authority for actual wiring and the explicit Rev-A nonpopulation note.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Pin Configuration and Functions, printed page 3",
+        "Detailed Description sections 8.3-8.4, printed page 11",
+        "Input Voltage Range section 9.2.2.1, printed page 13"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

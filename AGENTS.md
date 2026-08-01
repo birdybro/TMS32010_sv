@@ -445,6 +445,13 @@ word combinationally. `hard_drivin_sound_mister` routes processor port 0 to it;
 the external generic I/O response must not override ports 0 or 1. Do not infer
 ROM contents, absent-bus values, asynchronous device timing, or authorized ROM
 provenance from this adapter.
+A044427 port 2 is not a qualified compare word. `/CMPRD` enables an LS244 path
+from `CMPOUT` only to `TDI15`; the optional microphone/LM311 source sheet,
+including its output pull-up, is explicitly `THIS SHEET NOT LOADED.` Keep port
+2 on an explicit external data/ready callback under `SC-029`/`OQ-029`. Never
+hardwire MAME's zero-return stub and label it production Rev-A behavior; the
+synthetic smoke zero is only a named test sentinel. Read
+`docs/integration/hard_drivin_compare.md` before changing this boundary.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

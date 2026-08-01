@@ -1346,7 +1346,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_communication_ram.md`,
   `docs/integration/hard_drivin_sound_rom.md`,
   `docs/integration/hard_drivin_sound_control.md`,
-  `docs/integration/hard_drivin_bio.md`
+  `docs/integration/hard_drivin_bio.md`,
+  `docs/integration/hard_drivin_compare.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1415,8 +1416,13 @@ objective passing evidence.
   model/tool smoke program now covers
   raw accesses to every mapped port role, an asserted-BIO branch, exact
   program/I/O transaction traces, a 22-cycle total, the primary raw DAC code,
-  the distinct pinned-MAME transform, and explicit provisional port-2
-  behavior. User-supplied ROM
+  the distinct pinned-MAME transform, and an explicit synthetic port-2
+  sentinel. A044427 sheets 3, 5, and 8 plus newly pinned TI SLCS007K establish
+  that `/CMPRD` connects only `CMPOUT` to `TDI15`, while the complete
+  microphone/LM311 source and pull-up sheet is marked `THIS SHEET NOT LOADED.`
+  The production sixteen-bit read therefore remains `OQ-029`; MAME's returned
+  zero is isolated as `SC-029`, and the existing external callback remains the
+  honest wrapper boundary. User-supplied ROM
   hashes may enable local tests; ROMs are never committed.
   Sheets 3, 5, and 6 plus TI's original LS191/LS259 data sheets now establish
   the separate 512-by-16 communication RAM: CRAMEN low grants DSP port-1
@@ -1457,9 +1463,9 @@ objective passing evidence.
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
   reports 2,408 abstract cells/154 checks and retains the same three memories.
-  Host latch/68000 bus adaptation, authorized sample storage,
-  compare/DAC-analog/effective-mute peripherals, and physical timing remain
-  acceptance work.
+  Host latch/68000 bus adaptation, authorized sample storage, optional
+  populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
+  electrical data, and physical timing remain acceptance work.
 
 ## Milestone 22 — Release qualification
 

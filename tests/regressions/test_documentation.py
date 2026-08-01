@@ -226,6 +226,31 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("SC-028", conflicts)
         self.assertIn("OQ-028", questions)
 
+    def test_hard_drivin_compare_does_not_promote_mame_zero(self) -> None:
+        compare = (DOCS / "integration" / "hard_drivin_compare.md").read_text(
+            encoding="utf-8"
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "`/CMPRD`",
+            "`CMPOUT`",
+            "`TDI15`",
+            "`TDI14:TDI0`",
+            "`THIS SHEET NOT LOADED.`",
+            "open-collector NPN",
+            "zero is an emulator stub, not physical proof",
+            "leaves port 2 on the explicit external",
+            "No new RTL is warranted",
+        ):
+            self.assertIn(required, compare)
+        self.assertIn("SC-029", conflicts)
+        self.assertIn("OQ-029", questions)
+
     def test_hard_drivin_communication_ram_remains_primary_scoped(self) -> None:
         communication = (
             DOCS / "integration" / "hard_drivin_communication_ram.md"

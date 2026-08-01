@@ -11,7 +11,7 @@ It combines the generic `tms32010_mister`, the board-native decoder, and the
 512-by-16 communication RAM and sound-address controls to processor input port
 1 and routes port 0 through a present-block-aware byte callback.
 It does not implement the 68000 bus/address decoder, actual sample storage,
-compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
+the optional unpopulated compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
 clock-enable source, or a MiSTer framework top level.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
@@ -147,7 +147,11 @@ address/MEN/DEN/WE decode. `io_commit_o` pulses at an enabled phase-3 boundary
 when the physical request and selected target readiness are both active.
 Processor port-0 reads take their data/readiness from the sample-ROM callback,
 and port-1 reads from the internal communication path; the external `io_read_data_i` and `io_ready_i` are ignored
-for both targets. Port-0, port-4, and port-5 writes use internal always-ready
+for both targets. Port 2 deliberately remains external because Rev-A `/CMPRD`
+routes only unpopulated-source `CMPOUT` to `TDI15` and does not define a full
+read word (`SC-029`/`OQ-029`). A caller must explicitly provide its data and
+ready policy; the wrapper does not hardwire MAME's zero-return stub. Port-0,
+port-4, and port-5 writes use internal always-ready
 latches; other physical targets continue to use the external callback.
 Consumers commit writes or count reads only on `io_commit_o`, not on every
 FPGA clock for which a request remains asserted. The same pulse drives the

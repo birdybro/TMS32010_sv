@@ -122,7 +122,7 @@ secondary adapter behavior:
 | 0 | read | parallel sample-ROM byte, signed and shifted left 7 | VERIFIED_PRIMARY |
 | 0 | write | 12-bit DAC latch from `TD15..TD4` | VERIFIED_PRIMARY for raw code; signed-audio interpretation unresolved |
 | 1 | read | 512-word host communication RAM at shared `SA8:SA0` | VERIFIED_PRIMARY |
-| 2 | read | compare path, incompletely emulated | PROVISIONAL |
+| 2 | read | optional microphone/DAC comparator; Rev-A source sheet not loaded; only `CMPOUT` reaches `TDI15` | UNKNOWN (`OQ-029`) |
 | 3 | write | decoded `/CPORT`; no loaded consumer found | UNKNOWN (`OQ-023`) |
 | 4 | write | LS74 captures TD0; raw `MUTE=/Q=!TD0`; only drawn consumer not loaded | VERIFIED_PRIMARY for raw state; effective mute UNKNOWN |
 | 5 | write | data-independent LS74 preset asserts latched `320IRQ` | VERIFIED_PRIMARY |
@@ -222,6 +222,25 @@ stall, and target-isolation cases. The board top routes port 0 internally and
 holds block 3/address `0x3457` stable through a delayed synthetic `0xd5`
 response. This is VERIFIED_SIMULATION for the schematic-derived digital
 mapping, not a ROM-content, open-bus, or physical-access-time claim.
+
+### Port-2 compare path
+
+Port 2 decodes `/CMPRD` and enables one half of LS244 `10H`, but that target
+connects only `CMPOUT` to `TDI15`; it does not drive `TDI14:TDI0`. Sheet 8
+draws `CMPOUT` from an LM311 comparing filtered microphone audio against
+`DACOUT`, with a 1 kΩ open-collector pull-up, and then explicitly states
+`THIS SHEET NOT LOADED.` A production Rev-A read word is therefore not
+qualified by the schematic. Pinned MAME's full-word zero is an emulator stub,
+not a board default (`SC-029`/`OQ-029`). The wrapper correctly retains an
+external port-2 callback rather than internalizing zero. Complete topology,
+component polarity, population evidence, and FPGA guidance are in
+`docs/integration/hard_drivin_compare.md`.
+
+Every accepted port-2 input read still increments the shared sound-address
+counter because `/PDEN`, not an individual handler, clocks the LS191 chain.
+That separately verified side effect remains implemented under `SC-024`.
+**Confidence: VERIFIED_PRIMARY for decode, connectivity, nonpopulation, and
+counter side effect; UNKNOWN for the physical sixteen-bit response.**
 
 ### DAC path
 
@@ -364,9 +383,10 @@ The fixture separately records the primary-backed physical DAC input code,
 the pinned MAME adapter's different derived DAC value, and sound-ROM
 bank/address fields. The processor model records the raw output word, and the
 board RTL now captures only the primary-backed raw DAC code; neither interprets
-it as audio or uses MAME to promote hardware facts. In particular, port 2
-remains PROVISIONAL because the pinned handler returns zero without modeling
-the compare circuit. This is **VERIFIED_SIMULATION for the project-local
+it as audio or uses MAME to promote hardware facts. In particular, the harness
+supplies zero through the external port-2 callback only to obtain a
+deterministic test; A044427 Rev A does not establish that physical read word.
+This is **VERIFIED_SIMULATION for the project-local
 model/tool workflow, CORROBORATED for the MAME-facing port roles, and not a
 physical board or game-ROM qualification.**
 

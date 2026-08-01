@@ -601,3 +601,31 @@ electrical result of an out-of-range access.
   retain physical startup/coincident-edge uncertainty under `OQ-028`.
 - **Confidence:** VERIFIED_PRIMARY for board logic and nominal waveform;
   documented secondary implementation-convenience difference.
+
+## SC-029 — Unpopulated partial compare path versus MAME zero word
+
+- **Primary board evidence:** `/CMPRD` enables the second half of LS244 `10H`.
+  `CMPOUT` at input pin 11 reaches only `TDI15` at output pin 9; the other
+  three outputs in that buffer half are unconnected, and no compare target
+  drives `TDI14:TDI0`. The optional microphone/LM311 sheet that would source
+  `CMPOUT`, including its 1 kΩ output pull-up, is explicitly marked
+  `THIS SHEET NOT LOADED.`
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3, 5,
+  and 8 of 10, PDF pp. 5–6, 9–10, and 15–16;
+  ti-snx4ls24x-datasheet, printed pp. 11–13;
+  ti-lm311-datasheet-slcs007k, printed pp. 3, 11, and 13].
+- **Secondary abstraction:** pinned MAME's `hdsnddsp_compare_r` logs the port-2
+  read and returns the full word `0x0000`; it models neither the partial TDI
+  wiring nor the unpopulated source [mame-harddriv-audio-030fefc,
+  `hdsnddsp_compare_r` and `driversnd_dsp_io_map`].
+- **Conflict:** MAME supplies a deterministic word where the production
+  drawing establishes no qualified digital result. Its zero cannot prove the
+  value of the floating/unqualified `CMPOUT` input or of `TDI14:TDI0`.
+- **Current treatment:** retain an explicit external data/ready callback for
+  port 2. The ROM-free smoke deliberately supplies zero as a named synthetic
+  oracle sentinel, not as physical board behavior. See `OQ-029` and
+  `docs/integration/hard_drivin_compare.md`. Port-2 sound-address increment is
+  independently primary-verified under `SC-024`.
+- **Confidence:** VERIFIED_PRIMARY for the shown path and explicit Rev-A
+  nonpopulation; CORROBORATED for MAME's software behavior; UNKNOWN for the
+  physical read word.
