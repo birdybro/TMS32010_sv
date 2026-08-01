@@ -666,12 +666,26 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("see `OQ-030`", conflicts)
 
     def test_hard_drivin_dac_mapping_remains_evidence_scoped(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
         integration = (
             DOCS / "integration" / "hard_drivin_requirements.md"
         ).read_text(encoding="utf-8")
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
+        questions = (DOCS / "research" / "open_questions.md").read_text(
+            encoding="utf-8"
+        )
+        audit = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "hard_drivin_dac_code_audit.md").read_text(
+                encoding="utf-8"
+            ),
+        )
         for required in (
             "`TD15` through `TD4` directly",
             "`B1` through `B12`",
@@ -683,13 +697,40 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "all 65,536 input words",
             "does not emit MAME's `0x723`",
             "14 cells, two retained checks",
+            "`R12=1 kOhm` and `R13=4.7 kOhm`",
+            "MAME's XOR is older than its hardware explanation",
+            "tools/trace/hard_drivin_dac_codes.py",
         ):
             self.assertIn(required, integration)
         self.assertIn(
             "Hard Drivin' DAC direct wiring versus MAME MSB complement",
             conflicts,
         )
-        self.assertIn("UNKNOWN for the intended signed PCM mapping", conflicts)
+        self.assertIn("Secondary lineage", conflicts)
+        self.assertIn("intended game PCM mapping", conflicts)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-019`)", questions)
+        for source_id in (
+            "historic-mame-harddriv-audio-062",
+            "historic-mame-dac-core-062",
+            "historic-mame-whatsnew-062",
+            "mame-harddriv-audio-36944269",
+        ):
+            source = by_id[source_id]
+            self.assertEqual(source["status"], "acquired")
+            self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+            self.assertFalse(source["may_commit"])
+            self.assertTrue(source["sections_or_pages_used"])
+        for required in (
+            "positive-reference, single-ended current-to-voltage path",
+            "not independent hardware corroboration",
+            "MAME 0.62 introduction",
+            "2016 AM6012 migration",
+            "Negative search results mean only",
+            "`320 DAC Ones`",
+            "`75E` Q pin 19",
+            "no RTL or model behavior changes",
+        ):
+            self.assertIn(required, audit)
 
     def test_hard_drivin_program_decode_remains_evidence_scoped(self) -> None:
         integration = (

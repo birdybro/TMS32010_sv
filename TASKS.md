@@ -57,13 +57,17 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 50 pinned
+  until permission is demonstrated. The ignored cache now verifies 54 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
   manufacturer data book needed to interpret A044427's Am6012 path, and the
   pinned MAME DAC support sources needed to distinguish emulator sample
-  mapping from board wiring. The exact TI LS20, AS00, combined ALS32/AS32,
+  mapping from board wiring. Four historical MAME artifacts now trace that
+  mapping from the first located 0.62 Hard Drivin' sound support through the
+  2016 AM6012 migration, separating continuous signed-software behavior from
+  the migration's later unsupported schematic-inversion comment. The exact TI
+  LS20, AS00, combined ALS32/AS32,
   F04, F11, and F74 component documents now support SP-327 main-bus Boolean
   and future propagation analysis without treating a gate symbol as an
   electrical specification. Atari A044425 Rev-J supplemental GSP/MSP sheets
@@ -1587,7 +1591,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
-  `docs/integration/hard_drivin_host_mailboxes.md`
+  `docs/integration/hard_drivin_host_mailboxes.md`,
+  `docs/research/hard_drivin_dac_code_audit.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1625,7 +1630,8 @@ objective passing evidence.
   `formal/hard_drivin_sound_direct_io.sby`,
   `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
-  `formal/hard_drivin_sound_host_routing.sby`
+  `formal/hard_drivin_sound_host_routing.sby`,
+  `tests/regressions/test_hard_drivin_dac_codes.py`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1687,7 +1693,18 @@ objective passing evidence.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
-  that wiring and remains isolated under `SC-019`/`OQ-020`. The first ROM-free
+  that wiring and remains isolated under `SC-019`/`OQ-020`. The complete
+  positive-reference network, grounded complementary output, inverting
+  2.2-kOhm current stage, and 1-uF AC coupling confirm that Rev-A does not hide
+  a single-bit digital conversion. Historical MAME 0.62 already interpreted
+  the DSP word as signed; the 2016 AM6012 migration preserved that behavior
+  and only then added the schematic-inversion comment while modeling symmetric
+  references. No cited alternate drawing/ECO accompanies it. A deterministic
+  helper now exhausts raw/MAME code mapping and ideal nominal transfer; TM-327
+  walking-ones/ramp and authorized-game capture criteria are fixed in
+  `hard_drivin_dac_code_audit.md`. No RTL changed and the default audio
+  transform remains blocked pending physical or authorized-game evidence. The
+  first ROM-free
   model/tool smoke program now covers
   raw accesses to every mapped port role, an asserted-BIO branch, exact
   program/I/O transaction traces, a 22-cycle total, the primary raw DAC code,

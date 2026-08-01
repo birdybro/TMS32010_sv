@@ -7,6 +7,20 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-019`/`OQ-020` DAC-code lineage audit reconstructing the complete Rev-A
+  positive-reference, current-output, transimpedance, and AC-coupling path;
+  tracing MAME's sign-bit transform back to its first located 0.62 sound
+  support; and defining a TM-327 walking-ones/ramp plus authorized-game
+  capture that can distinguish a physical inverter from a software-only
+  interpretation.
+- A deterministic Driver Sound DAC trace helper and five regressions. It
+  exhausts every 16-bit output word and low-nibble alias, keeps the primary raw
+  Am6012 code separate from MAME's mapper code, checks the signed major
+  boundary, and reproduces ideal nominal primary-component transfer points
+  without labeling them measurements.
+- Four integrity-pinned, non-committed historical MAME references: the 0.62
+  Hard Drivin' sound handler, its generic signed-DAC function and changes
+  attribution, plus the exact 2016 AM6012-migration snapshot.
 - `SC-043` and an original-TMS32010 device-revision audit that separates
   publication revision, speed grade, package marking, tracking/date and lot
   fields, ROM siblings, and later CMOS devices from unproved silicon-mask
@@ -708,6 +722,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-020` is narrowed from an unexplained current-MAME discrepancy to a
+  source-dated conflict. MAME's signed interpretation is now CORROBORATED as
+  continuous software behavior since 2002, while its 2016 schematic-inversion
+  comment is explicitly non-independent. The verified physical latch remains
+  raw `data[15:4]`; no RTL or architectural-model behavior changed.
 - Original-device scope now explicitly treats the 1985/1986/1987/1989
   data-sheet and 14/20/25-MHz product-list changes as document/product facts,
   not RTL parameters or mask-revision proof. `OQ-008` is narrowed to
@@ -934,7 +953,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- All 50 locally acquired references pass their pinned SHA-256 checks, and a
+- All 54 locally acquired references pass their pinned SHA-256 checks. The DAC
+  helper proves physical `0x7ff`/`0x800` are adjacent ideal transfer steps
+  while the MAME mapper crosses `0xfff`/`0x000`, and retains the known smoke
+  distinction `0xf23` versus `0x723` across all low-nibble aliases.
+- The 50-source device-revision corpus passed its pinned SHA-256 checks, and a
   documentation regression locks the OQ-008 source timeline, the TI32000
   false-positive exclusion, the missing-BBS boundary, and the prohibition on
   inferring a silicon revision from a document or speed label.
@@ -1756,6 +1779,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- No authenticated alternate Driver Sound drawing, ECO, rework notice, or
+  physical/authorized normal-game capture resolves the Rev-A raw DAC wiring
+  against MAME's signed interpretation. A production-default digital audio
+  transform remains blocked even though the raw latch is qualified.
 - No authenticated original-TMS32010 erratum, product-change/mask notice,
   package-code decoder, or period BBS specification-update archive has been
   located. `OQ-008` remains open, and measurements on one specimen cannot be

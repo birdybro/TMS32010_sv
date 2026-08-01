@@ -458,9 +458,14 @@ electrical result of an out-of-range access.
   sheet, printed pp. 3-17 and 3-22 (PDF pp. 95 and 100), and application
   note, printed p. 3-27 (PDF p. 104)].
 - **Analog boundary:** the board grounds the complementary current output and
-  sends `IOUT` into an inverting TL084 transimpedance stage. This reverses the
-  complete analog signal polarity; it does not complement only digital bit
-  11 [atari-driver-sound-board-schematic, sheet 7 of 10, PDF pp. 13-14].
+  uses a positive reference from +5 V through 1 kOhm plus 4.7 kOhm. `IOUT`
+  enters an inverting TL084 transimpedance stage with 2.2 kOhm feedback, and
+  its `DACOUT` is AC-coupled through 1 uF `C26` into `DF IN`. This is a
+  monotonic, unipolar current path followed by whole-signal analog inversion
+  and DC removal; it does not complement only digital bit 11
+  [atari-driver-sound-board-schematic, sheet 7 of 10, PDF pp. 13-14;
+  amd-analog-communications-databook-1983, positive-reference connection,
+  printed p. 3-29 (PDF p. 106)].
 - **Secondary disagreement:** pinned MAME's `hdsnddsp_dac_w` extracts bits
   15:4 and XORs `0x800`, commenting that the schematic inverts the MSB. Its
   AM6012 device is an unsigned-mapped 12-bit DAC with a default bipolar
@@ -468,6 +473,19 @@ electrical result of an out-of-range access.
   bits as two's-complement audio rather than reproducing the shown digital
   nets [mame-harddriv-audio-030fefc; mame-dac-header-030fefc;
   mame-dac-core-030fefc].
+- **Secondary lineage:** the XOR is not derived by the 2016 comment. The first
+  located MAME Hard Drivin' sound support in MAME 0.62 (2002) already passes
+  `data XOR 0x8000` to a generic signed-16-bit DAC function that subtracts
+  `0x8000`, thereby interpreting the original DSP word as signed. It contains
+  no schematic-inversion comment. Commit
+  `36944269bd6fe1fb47822a2112c524b13c4b27f2` migrates that older behavior to
+  a twelve-bit AM6012 abstraction, adds the schematic claim, and at that time
+  supplies symmetric positive/negative emulator references unlike Rev-A. No
+  alternate drawing, ECO, or capture is cited
+  [historic-mame-harddriv-audio-062, lines 330-335;
+  historic-mame-dac-core-062, lines 59-68;
+  historic-mame-whatsnew-062, improved-sound list;
+  mame-harddriv-audio-36944269].
 - **Competing hypotheses:** the Rev-A drawing is accurate and original
   firmware emits the required straight/offset-binary code; a shipped board
   carried an unrecorded ECO or different latch path; or MAME's conversion is
@@ -475,10 +493,15 @@ electrical result of an out-of-range access.
   distinguish them.
 - **Current treatment:** preserve the primary-backed raw code `data[15:4]` and
   keep MAME's XOR only as a separately named oracle expectation. Do not put
-  the XOR into the generic CPU or call it physical behavior. See `OQ-020`.
+  the XOR into the generic CPU or call it physical behavior. The ideal
+  transfer, exact MAME history, negative ECO search, and decisive
+  walking-ones/ramp/game-trace captures are in
+  `docs/research/hard_drivin_dac_code_audit.md`; see `OQ-020`.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A raw digital mapping and
-  first analog-stage polarity; UNKNOWN for the intended signed PCM mapping
-  and production-board equivalence beyond that drawing.
+  positive-reference/first-stage/AC-coupling topology; CORROBORATED for the
+  continuity of MAME's signed software interpretation; UNKNOWN for the
+  intended game PCM mapping and production-board equivalence beyond that
+  drawing.
 
 ## SC-020 — Physical reset-qualified RAM ownership versus MAME shared RAM
 

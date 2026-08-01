@@ -552,6 +552,116 @@
       }
     },
     {
+      "id": "historic-mame-harddriv-audio-062",
+      "title": "MAME 0.62 Hard Drivin' sound hardware",
+      "author_or_organization": "MAMEdev; Hard Drivin' sound support credited to Aaron Giles",
+      "publication_number": "MAME 0.62 tag f86e9e3365f6574c486f0dd174708e430f5b6dcc",
+      "publication_date": "2002-11-13",
+      "revision": "mame062",
+      "source_url": "https://raw.githubusercontent.com/mamedev/historic-mame/mame062/src/sndhrdw/harddriv.c",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/history/mame062/harddriv_sound.c",
+      "sha256": "86e08e3caa799ad697e685ded934656dacf34ede50077dbcb1a7dc1ed917142c",
+      "document_type": "historical independent emulator integration source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "Historical MAME source; original MAME redistribution terms apply and repository redistribution is not assumed",
+      "relevance": "Earliest tagged MAME Hard Drivin' sound implementation located; establishes that signed DSP-word interpretation predates the later schematic-inversion comment",
+      "authority_level": 6,
+      "notes": "Independent software-oracle history only. MAME 0.61 has no Hard Drivin' sound source or handler; MAME 0.62 adds this file and credits Hard Drivin' sound support in its whatsnew file.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "hdsnddsp_dac_w, lines 330-335: writes data XOR 0x8000 to the generic signed-16-bit DAC API without a schematic-inversion comment",
+        "TMS32010 I/O port map and surrounding sound-board handlers"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "historic-mame-dac-core-062",
+      "title": "MAME 0.62 generic DAC implementation",
+      "author_or_organization": "MAMEdev and contributors",
+      "publication_number": "MAME 0.62 tag f86e9e3365f6574c486f0dd174708e430f5b6dcc",
+      "publication_date": "2002-11-13",
+      "revision": "mame062",
+      "source_url": "https://raw.githubusercontent.com/mamedev/historic-mame/mame062/src/sound/dac.c",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/history/mame062/dac.c",
+      "sha256": "7b6ff5ffd22e8d377a143d5637aca0d14585ecd604b0ddb2bbc2791e634f6dc6",
+      "document_type": "historical independent emulator support source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "Historical MAME source; original MAME redistribution terms apply and repository redistribution is not assumed",
+      "relevance": "Defines the signed-16-bit DAC conversion paired with the first MAME Hard Drivin' sound handler",
+      "authority_level": 6,
+      "notes": "Independent software-oracle history only; not electrical evidence.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "DAC_signed_data_16_w, lines 59-68: subtracts 0x8000 from its input"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "historic-mame-whatsnew-062",
+      "title": "MAME 0.62 changes",
+      "author_or_organization": "MAMEdev and contributors",
+      "publication_number": "MAME 0.62 tag f86e9e3365f6574c486f0dd174708e430f5b6dcc",
+      "publication_date": "2002-11-13",
+      "revision": "mame062",
+      "source_url": "https://raw.githubusercontent.com/mamedev/historic-mame/mame062/whatsnew.txt",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/history/mame062/whatsnew.txt",
+      "sha256": "9586ffb82d7239ded574f9ac6d873de830bcd8018c9b665041e61787618bff69",
+      "document_type": "historical emulator release notes",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "Historical MAME release material; repository redistribution is not assumed",
+      "relevance": "Dates and attributes the first located tagged Hard Drivin' sound implementation",
+      "authority_level": 6,
+      "notes": "Independent software-oracle provenance only.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Improved SOUND list, line 37: credits Hard Drivin' sound support to Aaron Giles"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "mame-harddriv-audio-36944269",
+      "title": "MAME Hard Drivin' audio implementation at the DAC-framework migration",
+      "author_or_organization": "MAMEdev and contributors",
+      "publication_number": "Git commit 36944269bd6fe1fb47822a2112c524b13c4b27f2",
+      "publication_date": "2016-10-17",
+      "revision": "DAC WIP commit",
+      "source_url": "https://raw.githubusercontent.com/mamedev/mame/36944269bd6fe1fb47822a2112c524b13c4b27f2/src/mame/audio/harddriv.cpp",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "mame/history/36944269bd6fe1fb47822a2112c524b13c4b27f2/harddriv.cpp",
+      "sha256": "e30a97b53fe276c52491f7fbd93bffda62058440fd2e2fa4198d224b1e0e9e1b",
+      "document_type": "historical independent emulator integration source",
+      "media_type": "text/plain",
+      "license_or_redistribution_status": "BSD-3-Clause file within the MAME project; keep outside the clean-room repository",
+      "relevance": "Dates the change from a generic signed 16-bit DAC to an AM6012 abstraction and the first located comment claiming schematic MSB inversion",
+      "authority_level": 6,
+      "notes": "Commit message is 'DAC WIP, started documenting the DACs in use.' The change preserves the pre-existing signed interpretation, selects bits 15:4, and configures symmetric positive/negative emulator references; it cites no Atari ECO or alternate schematic.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "hdsnddsp_dac_w, lines 325-329: data bits 15:4 XOR 0x800 and the newly added schematic-inversion comment",
+        "harddriv_snd configuration, lines 434-440: AM6012 with symmetric positive/negative emulator reference routing"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["text/plain", "application/octet-stream"]
+      }
+    },
+    {
       "id": "mame-harddriv-driver-030fefc",
       "title": "MAME Atari Hard Drivin' driver",
       "author_or_organization": "MAMEdev and contributors",
@@ -600,6 +710,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "driversnd_dsp_program_map, driversnd_dsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration",
+        "hdsnddsp_dac_w, lines 326-330: bits 15:4 XOR 0x800 plus the claimed schematic MSB inversion; AM6012 configuration at line 455",
         "driversnd_68k_map and hdsnd68k_data_r/hdsnd68k_switches_r/hdsnd68k_320port_r/hdsnd68k_status_r host read handlers",
         "hdsnd68k_latches_w address-bit data/select mapping and Q4-inverted TMS320C10 HALT connection, lines 191-196 and 432-450",
         "hd68k_snd_data_r/hd68k_snd_data_w, hdsnd68k_data_r/hdsnd68k_data_w, hd68k_snd_status_r, and hd68k_snd_reset_w mailbox handlers and flags",
@@ -860,7 +971,9 @@
       "authority_level": 2,
       "notes": "Statements are useful hardware-design evidence but title-block schematics remain the electrical authority.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "Driver Sound Board section: first-person statement that Hard Drivin' and Race Drivin' used the same sound board, uncertainty limited to possible additional Race Drivin' ROM population, and link to the pinned electrical drawing"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,

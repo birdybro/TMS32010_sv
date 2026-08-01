@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-008` original-TMS32010 publication, speed-grade,
-  package-code, and silicon-revision audit
+- **Current milestone:** `OQ-020` Hard Drivin' physical DAC-code versus MAME
+  signed-sample lineage audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 148 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 153 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 50 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 54 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -1075,9 +1075,24 @@
   `docs/research/device_revision_audit.md` therefore retain publication,
   speed grade, package, tracking/date, lot, ROM sibling, and later-CMOS
   identity as separate fields. The lawful search also cataloged and rejected
-  an unrelated TI32000 manual false positive. All 50 acquired source hashes
-  verify; `OQ-008` remains RESEARCHING/NO REVISION MAP and no RTL behavior
+  an unrelated TI32000 manual false positive. The complete source cache
+  verifies; `OQ-008` remains RESEARCHING/NO REVISION MAP and no RTL behavior
   changed.
+- **New DAC-code evidence:** Rev-A's complete converter path uses +5 V through
+  1 kOhm plus 4.7 kOhm to the positive Am6012 reference, grounds the
+  complementary current output, converts `IOUT` through an inverting 2.2-kOhm
+  TL084B stage, and AC-couples `DACOUT` through 1 uF. Its physical codes
+  `0x7ff`/`0x800` are adjacent ideal steps. Historical MAME 0.62 already
+  paired `data XOR 0x8000` with a signed-DAC subtraction; the 2016 AM6012
+  migration retained that signed interpretation, selected bits 15:4, added
+  the later schematic-inversion comment, and modeled symmetric references.
+  Thus MAME's comment is not independent pin evidence. Four exact historical
+  sources bring the verified cache to 54. A new trace helper exhausts every
+  16-bit word/low-nibble alias and emits raw, MAME, signed, current, and ideal
+  first-stage voltage columns. `hard_drivin_dac_code_audit.md` fixes the
+  TM-327 walking-ones/ramp plus authorized normal-game physical capture. No
+  alternate drawing/ECO was located, `OQ-020` remains RESEARCHING/CONFLICT,
+  and no RTL/model behavior changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1111,16 +1126,17 @@
   and mask/date invariance across physical specimens under `OQ-008`/`SC-043`,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
   policy,
-  Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
+  Hard Drivin' signed-audio DAC interpretation and possible unrecorded
+  production MSB rework under `OQ-020`, pending walking-ones/ramp plus
+  authorized normal-game captures on two documented boards, and general
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-020` by auditing the history and provenance of
-  MAME's DAC-MSB transform, all lawful Atari Driver Sound board revisions/ECO
-  material, and the complete Am6012/reference/transimpedance transfer. Retain
-  the existing raw `TD15:TD4` mapping unless primary or physical evidence
-  resolves the intended sample encoding.
+- **Next task:** investigate `OQ-032` using Atari cabinet wiring/interconnect
+  tables and exact Driver Sound connector `J3` routing to name the four
+  `/SWITCHES` inputs and their documented inactive levels without importing
+  MAME's fixed zero.
 - **Latest committed baseline before this cycle:**
-  `1a0070b`
+  `c5ff39e`

@@ -470,6 +470,29 @@ disagreement is `SC-019`/`OQ-020`. A board adapter may expose raw
 an ECO, another board revision, original firmware trace, or hardware
 measurement resolves the coding.
 
+The complete reference circuit reinforces that boundary. Rev-A supplies
+`VREF(+)` from +5 V through `R12=1 kOhm` and `R13=4.7 kOhm`, returns
+`VREF(-)` through `R14=5.6 kOhm`, grounds the complementary current output,
+converts `IOUT` with inverting TL084B `105D` and `R15=2.2 kOhm`, and AC-couples
+the resulting `DACOUT` through `C26=1 uF` into `DF IN`. An ideal nominal
+calculation places physical codes `0x7ff` and `0x800` one LSB apart, not at a
+digital sign wrap [atari-driver-sound-board-schematic, sheet 7, PDF
+pp. 13-14; amd-analog-communications-databook-1983, printed pp. 3-22 and
+3-29 (PDF pp. 100 and 106)].
+
+MAME's XOR is older than its hardware explanation. MAME 0.62 already paired
+`data XOR 0x8000` with a generic signed-DAC function that subtracts `0x8000`;
+the 2016 AM6012 migration narrows the value to twelve bits and first adds the
+schematic-inversion comment while retaining the signed interpretation. It
+also modeled symmetric references, unlike Rev-A. This history makes the
+comment non-independent evidence; it does not show a second board revision
+[historic-mame-harddriv-audio-062; historic-mame-dac-core-062;
+mame-harddriv-audio-36944269]. The ideal transfer, exact history, search log,
+and TM-327 walking-ones/ramp capture protocol are in
+`docs/research/hard_drivin_dac_code_audit.md`. The deterministic helper
+`tools/trace/hard_drivin_dac_codes.py` keeps raw physical and MAME mapper codes
+separate for user-supplied traces.
+
 `rtl/wrappers/hard_drivin_sound_dac_latch.sv` now implements only that safe
 digital boundary. A committed port-0 write captures `io_write_data[15:4]`,
 sets explicit validity, and emits one same-clock `dac_commit_o` pulse. It has
