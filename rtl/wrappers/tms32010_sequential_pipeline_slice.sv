@@ -595,11 +595,18 @@ module tms32010_sequential_pipeline_slice (
     .execute_word_o       (execute_word_o)
   );
 
-  tms32010_core core (
+  // execute_word_o and its effective internal-data address are registered for
+  // several FPGA subphases before core_execute_boundary. Capture the RAM read
+  // during that lead time; architectural effects still occur only at the
+  // qualified falling boundary.
+  tms32010_core #(
+    .REGISTER_INTERNAL_RAM_READ (1'b1)
+  ) core (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .reset_i                       (core_reset),
     .clock_enable_i                (core_execute_boundary),
+    .internal_ram_read_enable_i    (clock_enable_i),
     .bio_i                         (core_bio),
     .int_i                         (int_i),
     .program_address_o             (core_program_address),

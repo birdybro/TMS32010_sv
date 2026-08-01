@@ -191,9 +191,8 @@ module tb_sequential_pipeline_io;
     require(
       data_write && !data_read &&
       data_address_valid && data_address == 8'h03 &&
-      data_write_data == 16'h1111 &&
-      data_read_data == 16'hcafe,
-      "IN exposes its live port word and old internal RAM contents"
+      data_write_data == 16'h1111,
+      "IN exposes its live port word and effective internal RAM address"
     );
 
     tick();
@@ -201,8 +200,9 @@ module tb_sequential_pipeline_io;
       phase == 2'd1 &&
       native_address == 12'h002 &&
       men_n && !den_n && we_n &&
-      io_read && !io_write,
-      "IN execution cycle 1 asserts DEN alone"
+      io_read && !io_write &&
+      data_read_data == 16'hcafe,
+      "IN execution cycle 1 asserts DEN after the staged RAM read arrives"
     );
     clock_enable = 1'b0;
     io_read_data = 16'hbeef;
@@ -373,9 +373,16 @@ module tb_sequential_pipeline_io;
       auxiliary_register_0 == 16'h0003 &&
       !auxiliary_register_pointer &&
       data_address == 8'h03 &&
-      data_write && data_write_data == 16'habcd &&
-      data_read_data == 16'hcafe,
+      data_write && data_write_data == 16'habcd,
       "indirect IN transfer uses the old selected AR address"
+    );
+
+    tick();
+    require(
+      phase == 2'd1 &&
+      io_read && !io_write &&
+      data_read_data == 16'hcafe,
+      "indirect IN receives its staged old-address RAM word before sampling"
     );
 
     advance_to_sample("indirect IN transfer");

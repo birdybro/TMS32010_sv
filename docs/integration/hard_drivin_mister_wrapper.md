@@ -346,8 +346,8 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains six memories and reports 3,603
-abstract cells with 384 checks and zero structural problems after opt-in
+The pre-technology Yosys target retains six memories and reports 3,809
+abstract cells with 406 checks and zero structural problems after opt-in
 same-clock local-host timing, storage-callback, direct-I/O, and local-reset
 interlock integration.
 This is not a

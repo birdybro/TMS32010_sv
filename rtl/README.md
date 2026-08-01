@@ -12,12 +12,22 @@ shifts, and common-address data accesses outside the verified 144-word RAM
 assert `illegal_o` and do not advance the PC.
 
 `tms32010_internal_ram` supplies the original-part 144 by 16-bit data store.
-Its asynchronous read lets the present single-boundary execution slice consume
-an operand without inventing another architectural cycle. This is an
-implementation convenience, not a claim about the physical memory array, and
-currently maps to registers and muxes in both qualified synthesis flows. DMOV
-and LTD use independent RAM read and write addresses to copy the unchanged
-source word to the next location; LTD additionally loads T and accumulates P.
+Its default asynchronous read lets the standalone single-boundary execution
+slice consume an operand without inventing another architectural cycle. The
+explicit fetch/execute wrapper instead enables ADR-0004's registered read:
+the effective address is retained early enough for the operand to arrive by
+phase 1 without adding a processor cycle. Same-address write forwarding makes
+the newly committed word available during the next owner's phase-0 setup
+interval. In registered mode, `internal_ram_read_enable_i` must advance with
+the caller's FPGA subphase sequence; the explicit wrapper connects it to
+`clock_enable_i`, so a global pause holds the captured operand and forwarding
+metadata. Standalone asynchronous users still connect the input explicitly,
+although that generate branch does not consume it. Quartus maps registered
+mode to one portable 144-by-16 M10K; no vendor
+primitive appears in RTL. These are implementation choices, not claims about
+the physical TMS32010 memory array. DMOV and LTD use independent RAM read and
+write addresses to copy the unchanged source word to the next location; LTD
+additionally loads T and accumulates P.
 The
 explicit debug write port is only for deterministic verification preload;
 physical reset never initializes the RAM, and assertions reject preload during
@@ -95,6 +105,14 @@ executes. Other multicycle, reserved, or invalid-address execute words park
 the wrapper at
 phase zero with a visible `pipeline_blocked_o`; this is a qualification
 mechanism, not claimed hardware behavior.
+
+The wrapper's internal-data observation follows ADR-0004. A newly owned
+instruction's `data_address_o` is visible immediately at phase 0, while
+`data_read_data_o` is guaranteed to match that address by phase 1 and through
+the eventual architectural boundary. Same-address writes bypass the inferred
+RAM's old-data output, so a following `OUT` has its new word during phase 0,
+before `WE` becomes active. These signals are verification diagnostics, not
+original package pins; standalone-core mode retains its combinational read.
 
 A 40-step formal harness checks one fixed direct-TBLR use of this complete
 hierarchy across arbitrary clock-enable stalls. It covers discarded PC+1,

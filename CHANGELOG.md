@@ -7,6 +7,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- ADR-0004 defining phase-staged internal-RAM reads without another TMS32010
+  machine cycle, including phase-1 operand validity, phase-0 same-address
+  forwarding, standalone-core compatibility, and explicit nonclaims about the
+  original silicon array.
+- A directed registered-RAM test and a five-step symbolic proof covering all
+  144 words, both write sources, untouched-word persistence, and same-address
+  forwarding while leaving initial contents arbitrary.
 - A reproducible Quartus full setup-path reporter that writes twenty detailed,
   untracked paths with endpoints, logic depth, and routing/cell delay shares.
 - Repository governance, build, research, model, RTL, verification, formal,
@@ -622,6 +629,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The explicit fetch/execute wrapper now selects a synchronous internal-RAM
+  read while the standalone core retains its asynchronous default. The
+  wrapper uses its existing FPGA subphases to capture the operand by phase 1;
+  separately registered forwarding metadata supplies a same-address committed
+  word during the following owner's phase-0 setup interval. No native strobe,
+  retirement boundary, or processor cycle moves.
+- Registered RAM capture now uses a distinct wrapper-subphase enable. The
+  complete operand/forwarding output holds during a global pause and advances
+  with phase 0 to phase 1, independently of the core's architectural execute
+  pulse.
 - The explicit phase wrapper now selects retained branch operands directly
   from registered pipeline state and records TBLR/TBLW direction when the
   table sequence starts. This removes a redundant wrapper decode from the
@@ -749,6 +766,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Fixed registered internal-RAM output movement while the wrapper clock enable
+  was clear. The existing table-transfer formal stall invariant found the
+  defect; the read-side enable now holds captured data and forwarding metadata
+  instead of weakening the invariant.
 - Formal configuration discovery is now sorted and top-level-only, so direct
   SymbiYosys output left below `formal/` cannot be recursively mistaken for a
   checked-in configuration on a later `make formal` run. A repository
@@ -809,22 +830,21 @@ Changelog, and the project follows semantic versioning once releases begin.
 ### Verified
 
 - The complete repository gates pass with 131 provenance/document/tool tests,
-  231 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
+  232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
-  checks 39 modules; all 44 formal jobs from 22 configurations pass; all 29
+  checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 2,414 ALMs, 2,703 registers, no block RAM, and one DSP
-  block. TimeQuest closes the 25 MHz internal constraint with +10.000 ns worst
-  setup and +0.165 ns worst hold slack, 33.33 MHz worst slow-corner Fmax, and
+  on `5CSEBA6U23I7` in 1,416 ALMs, 417 registers, one 144-by-16 M10K, and one
+  DSP block. TimeQuest closes the 25 MHz internal constraint with +15.331 ns
+  worst setup and +0.164 ns worst hold slack, 40.54 MHz worst slow-corner Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
-  warnings. The detailed 100 °C critical path improves from 33.464 ns/26
-  levels to 29.180 ns/19 levels; the remaining execution cone still traverses
-  core decode, asynchronous internal RAM, operand shift, and accumulation.
-- Yosys 0.67+111 reports 16,506 cells/125 checks for both the synthesis harness
-  and direct explicit pipeline, and 16,555 cells/132 checks for the generic
+  warnings. The detailed 100 °C critical path improves from the original
+  33.464 ns/26 levels through 29.180 ns/19 levels to 24.217 ns/16 levels.
+- Yosys 0.67+111 reports 17,017 cells/125 checks for the synthesis harness,
+  16,923 cells/125 checks for the direct pipeline, and 16,972 cells/132 checks for the generic
   MiSTer adapter, all with clean structural checks. The generic count grows
   while Cyclone V ALMs fall, so neither representation is reported as a proxy
   for the other.
@@ -874,7 +894,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   readiness combinations, and board simulation proves an actual sequential
   scrub clamps both processor inputs until validity address `0x1fff` clears.
   Its one-step BMC and four covers pass; standalone Yosys reports 13 cells/
-  seven checks, and the six-memory board hierarchy reports 3,603 cells/384
+  seven checks, and the six-memory board hierarchy reports 3,809 cells/406
   checks with no structural problem. The updated board-routing proof passes.
 - The direct-I/O decoder passes exhaustive simulation across all 4,096 read
   aliases and all 4,096 write addresses plus a one-step symbolic BMC over
@@ -1747,8 +1767,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The execution core still has an instruction-step test interface; the
   native-phase wrapper covers the qualified normal, branch, I/O, table, and
   interrupt program-read sequences but not the complete overlapped pipeline.
-- The asynchronous RAM read is intentionally correctness-first and maps to
-  2,304 registers plus mux logic, not an FPGA block RAM.
+- The standalone core intentionally retains its asynchronous RAM read. The
+  phase-aware wrapper uses ADR-0004's registered one-M10K mapping; this does
+  not qualify an arbitrary caller to enable registered mode without address
+  lead time.
 - Yosys, iverilog, SymbiYosys, and pytest are not currently available on the
   local executable path. Yosys is qualified in an isolated Ubuntu 24.04
   environment; the host target still fails explicitly when the tool is absent.

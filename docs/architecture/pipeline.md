@@ -141,6 +141,26 @@ than the emulated crystal input only if:
 This is an implementation policy, not a claim about the original internal
 gate topology.
 
+ADR-0004 uses those explicit FPGA subphases to stage the internal-RAM read.
+When a fetched word becomes the execute owner at phase 0, its effective
+address is immediately visible and is captured on the next FPGA edge. The
+operand is therefore stable from phase 1 through the qualified falling
+machine-cycle boundary. A same-address architectural write is forwarded into
+the captured output so a newly installed dependent instruction sees the
+committed word during phase 0; the retiring instruction still consumes the
+previously staged operand. No native program/I/O/table phase or retirement
+edge moves. Standalone core mode remains asynchronous because it does not
+promise this lead time. **Confidence: VERIFIED_SIMULATION for the represented
+pipeline and VERIFIED_SYNTHESIS for the recorded Cyclone V mapping; this is
+not an original-silicon microarchitecture claim.**
+
+The RAM read-side enable is the wrapper's `clock_enable_i`, not the core's
+architectural execution pulse. Thus a paused FPGA subphase holds the captured
+operand and forwarding metadata; resuming phase 0 captures the owned address
+while advancing to phase 1. The composed table formal proof leaves this enable
+arbitrary and checks all exposed state and diagnostics remain stable on every
+disabled edge.
+
 ## Unresolved sequences
 
 Normal read, table, I/O, and reset pin sequences are transcribed in

@@ -23,9 +23,10 @@ does not raise that mapping's architectural confidence.
 Yosys 0.67+111 from
 the 2026-07-29 OSS CAD Suite is the currently verified open-source synthesis
 baseline; see `synthesis/qualification.md` for the exact invocation and
-results. The
-asynchronous data-RAM read currently lowers to registers and muxes rather than
-a memory block. The portable multiply operator remains technology-neutral;
+results. ADR-0004's phase-aware registered data-RAM read maps to one M10K in
+Quartus; target-neutral Yosys technology mapping still lowers it and its
+same-address forwarding to registers and muxes. The standalone core retains
+its asynchronous default. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
 After a Quartus fit, reproduce the detailed twenty-path setup report with:
@@ -42,7 +43,7 @@ figures and the scope of the retained table-direction optimization are in
 
 The command runs twenty-nine checked-in scripts. The main synthesis harness
 targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 16,506 generic cells and 125 retained
+`build/yosys/tms32010.json`; it reports 17,017 generic cells and 125 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -62,8 +63,10 @@ Explicit reset-time instruction qualification and the loop-free recognized-
 reset boundary brought the preceding checkpoint to 15,733 generic cells and
 103 retained checks. CALA/RET and their assertions brought the next direct
 pipeline checkpoint to 16,280 generic cells and 124 retained checks. Retained
-table direction and its consistency assertion bring the current checkpoint to
-16,506 cells, 125 checks, and zero structural-check problems. This generic
+table direction and its consistency assertion brought the preceding
+checkpoint to 16,506 cells and 125 checks. ADR-0004's registered array and
+forwarding bring the current direct checkpoint to 16,923 cells, 125 checks,
+and zero structural-check problems. This generic
 increase coexists with the lower Cyclone V ALM count recorded by the fitter;
 the two representations are not interchangeable resource estimates.
 
@@ -72,7 +75,7 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 16,555 generic cells and 132 retained checks, with zero
+Yosys 0.67+111 reports 16,972 generic cells and 132 retained checks, with zero
 structural problems; 49 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset.
 
@@ -108,8 +111,8 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, 144-word internal RAM, and the optional local SRAM's two
-byte memories plus validity metadata as six memory objects. It reports 3,603
-abstract cells, 384 checks, and zero structural problems after upper-Y5
+byte memories plus validity metadata as six memory objects. It reports 3,809
+abstract cells, 406 checks, and zero structural problems after upper-Y5
 direct-I/O, lane-valid local-SRAM, and local-reset interlock integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or

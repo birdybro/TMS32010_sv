@@ -25,6 +25,7 @@ module tb_bioz_rtl;
     .initialize_i                   (initialize),
     .reset_i                        (reset),
     .clock_enable_i                 (clock_enable),
+    .internal_ram_read_enable_i    (clock_enable),
     .bio_i                          (bio),
     .int_i                          (1'b1),
     .program_address_o              (program_address),

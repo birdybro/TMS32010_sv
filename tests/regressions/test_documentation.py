@@ -47,6 +47,19 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         architecture = (
             DOCS / "architecture" / "tms32010_architecture.md"
         ).read_text(encoding="utf-8")
+        memory = (
+            DOCS / "architecture" / "memory_model.md"
+        ).read_text(encoding="utf-8")
+        pipeline = (
+            DOCS / "architecture" / "pipeline.md"
+        ).read_text(encoding="utf-8")
+        ram_adr = (
+            DOCS / "decisions" / "ADR-0004-phase-staged-internal-ram.md"
+        ).read_text(encoding="utf-8")
+        governance = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+        qualification = (
+            ROOT / "synthesis" / "qualification.md"
+        ).read_text(encoding="utf-8")
         self.assertRegex(
             architecture,
             r"not yet a complete implementation\s+specification",
@@ -54,6 +67,21 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("partial RTL support only", architecture)
         self.assertIn("does not constitute", architecture)
         self.assertNotIn("cycle-accurate implementation", architecture.lower())
+        for required in (
+            "phase 1",
+            "same-address forwarding",
+            "global pause",
+        ):
+            self.assertIn(required, memory)
+        for required in (
+            "clock_enable_i",
+            "arbitrary",
+            "remain stable",
+        ):
+            self.assertIn(required, pipeline)
+        self.assertIn("It does not raise confidence", ram_adr)
+        self.assertIn("ADR-0004-phase-staged-internal-ram.md", governance)
+        self.assertIn("not passing evidence", qualification)
 
     def test_no_native_ready_protocol_is_claimed(self) -> None:
         interface = (
@@ -203,8 +231,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,603",
-            "384 checks",
+            "3,809",
+            "406 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -412,8 +440,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,603 abstract cells",
-            "384 checks",
+            "3,809 abstract cells",
+            "406 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)

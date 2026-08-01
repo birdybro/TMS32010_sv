@@ -262,7 +262,7 @@ checks fixed-cycle ROM/local-SRAM callbacks, byte-specific local-SRAM commits,
 the optional lane-valid SRAM's internal/external callback isolation,
 lower-Y5 program-RAM storage, upper-Y5 direct-I/O S6 timing and isolation, and
 Y6 communication-RAM storage under CRAMEN. Integrated Yosys retains six
-memories and reports 3,603 abstract cells, 384 checks, and zero structural
+memories and reports 3,809 abstract cells, 406 checks, and zero structural
 problems.
 
 `formal/hard_drivin_sound_host_routing.sby` adds a 12-step bounded composition

@@ -27,6 +27,7 @@ module tms32010_internal_ram_formal (
   // symbolic physical word while every other word is observationally hidden.
   tms32010_internal_ram storage_dut (
     .clk_i                  (clk_i),
+    .read_enable_i          (1'b1),
     .read_address_i         (watched_address),
     .read_data_o            (watched_read_data),
     .read_address_valid_o   (watched_read_valid),
@@ -43,6 +44,7 @@ module tms32010_internal_ram_formal (
   // over all 256 values without violating the block's active-write contract.
   tms32010_internal_ram validity_dut (
     .clk_i                  (clk_i),
+    .read_enable_i          (1'b1),
     .read_address_i         (read_address_i),
     .read_data_o            (arbitrary_read_data),
     .read_address_valid_o   (arbitrary_read_valid),

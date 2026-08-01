@@ -118,6 +118,7 @@ module tms32010_phase_slice (
     .initialize_i                  (initialize_i),
     .reset_i                       (core_reset),
     .clock_enable_i                (execute_boundary),
+    .internal_ram_read_enable_i    (clock_enable_i),
     .bio_i                         (bio_i),
     .int_i                         (int_i),
     .program_address_o             (logical_program_address),

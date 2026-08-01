@@ -91,6 +91,7 @@ module tms32010_interrupt_multiply_indirect_formal (
     .initialize_i                  (initialize),
     .reset_i                       (1'b0),
     .clock_enable_i                (clock_enable_i),
+    .internal_ram_read_enable_i    (clock_enable_i),
     .bio_i                         (1'b1),
     .int_i                         (int_n),
     .program_address_o             (program_address),

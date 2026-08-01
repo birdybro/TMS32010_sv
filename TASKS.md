@@ -415,7 +415,8 @@ objective passing evidence.
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`,
-  `formal/tms32010_internal_ram.sby`
+  `formal/tms32010_internal_ram.sby`,
+  `formal/tms32010_internal_ram_registered.sby`
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
@@ -484,8 +485,16 @@ objective passing evidence.
   remaining stack operations and remaining status behavior remain. The CALL
   path implements and exposes all four 12-bit stack levels, including
   nested pushes and old-bottom discard.
-  The asynchronous RAM read is a provisional implementation boundary and
-  synthesizes to registers, not block RAM.
+  ADR-0004 keeps the standalone asynchronous RAM boundary but enables a
+  phase-staged registered read in the explicit pipeline. Directed and
+  inductive tests prove registered capture, stable untouched data, invalid
+  qualification, debug and CPU writes, and same-address forwarding. The
+  native IN-to-OUT test proves the new word is present during phase-0 setup
+  before OUT's active WE phase. Quartus maps the 144-by-16 array to one M10K
+  without adding a processor cycle. The table-transfer formal proof exposed
+  and now guards a separate requirement: global clock-enable pauses must hold
+  read data and forwarding metadata. Exact synthesis evidence is under
+  SYNTH-001.
 
 ## Milestone 8 — RTL program sequencer
 
@@ -1356,22 +1365,26 @@ objective passing evidence.
   `synthesis/qualification.md`. All harness exclusions are enumerated and
   TimeQuest reports zero unconstrained categories; this is still not wrapper
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
-  structural/generic synthesis, lowering the asynchronous RAM to
-  flip-flops/muxes. `make synth-yosys` now reproducibly checks both the
-  synthesis harness (16,506 generic cells/125 checks) and the directly
+  structural/generic synthesis. Generic technology mapping still lowers the
+  registered array to flip-flops/muxes, while Quartus recognizes one M10K.
+  `make synth-yosys` now reproducibly checks both the
+  synthesis harness (17,017 generic cells/125 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,506 generic cells/125 checks),
+  pipeline slice (16,923 generic cells/125 checks),
   each with zero structural problems. The Quartus harness now elaborates that
   explicit pipeline rather than the legacy fail-closed wrapper. A retained
   table-direction bit and state-driven sampled-operand selection remove the
   wrapper decoder from that mux cone without changing a processor boundary:
-  the fit uses 2,414 ALMs/2,703 registers/one DSP block, closes a 25 MHz
-  constraint with +10.000 ns worst setup and +0.165 ns worst hold slack, and
-  reports 33.33 MHz worst slow-corner Fmax. The reproducible full-path report
-  reduced the measured critical path from 33.464 ns/26 levels to 29.180 ns/19
-  levels; the remaining cone still includes core decode, asynchronous RAM,
-  shifting, and accumulator arithmetic.
+  ADR-0004 then phase-stages internal-RAM reads and forwards same-address
+  writes. The accepted fit uses 1,416 ALMs/417 registers/one M10K/one DSP,
+  closes a 25 MHz constraint with +15.331 ns worst setup and +0.164 ns worst
+  hold slack, and reports 40.54 MHz worst slow-corner Fmax. The reproducible
+  full-path report now measures 24.217 ns/16 levels from execute-word decode to
+  a multiplier input enable, down from 29.180 ns/19 levels at the preceding
+  checkpoint.
+  An unforwarded M10K experiment failed the back-to-back IN/OUT data contract;
+  an in-process bypass experiment lost RAM inference. Both were rejected.
   The board's primary-documented clock is 20 MHz. A rejected exploratory
   explicit-pipeline fit missed the old 50 MHz objective by -9.098 ns worst
   setup; 50 MHz closure is not claimed. All 415 non-clock harness pins remain
@@ -1435,9 +1448,9 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,555 generic
+  unsupported-word parking, and reset recovery. Yosys reports 16,972 generic
   cells/132 checks with no structural problems. This is an IMPLEMENTING
-  milestone: asynchronous SDRAM CDC/adaptation, a block-RAM-safe core, a full
+  milestone: asynchronous SDRAM CDC/adaptation, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
 
 ## Milestone 21 — Hard Drivin' integration research
@@ -1741,7 +1754,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,603 abstract cells/384
+  Integrated Yosys retains six memories and reports 3,809 abstract cells/406
   checks with no structural problem. Partial lower-Y5 and Y6 writes are
   reported and rejected because their unselected physical data lane remains
   unresolved under `OQ-022`/`OQ-024`.
@@ -1761,8 +1774,8 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,603 cells/
-  384 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,809 cells/
+  406 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
   separate 7406/pull-up branches drive equal logical RESET/HALT requests after

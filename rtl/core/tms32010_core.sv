@@ -3,12 +3,19 @@
 module tms32010_core #(
   // ADR-0003 assigns an INFERRED physical prefetch sequence to CALA/RET.
   // Wrappers that cannot preserve that sequence must turn the family off.
-  parameter bit ENABLE_INFERRED_COMPUTED_CONTROL = 1'b1
+  parameter bit ENABLE_INFERRED_COMPUTED_CONTROL = 1'b1,
+  // Phase-aware wrappers may pre-capture internal data before asserting the
+  // architectural execution enable. Standalone core users retain the
+  // combinational-read interface unless they explicitly provide that lead.
+  parameter bit REGISTER_INTERNAL_RAM_READ = 1'b0
 ) (
   input  logic        clk_i,
   input  logic        initialize_i,
   input  logic        reset_i,
   input  logic        clock_enable_i,
+  // Advances implementation-only registered internal-RAM capture. Phase-aware
+  // callers gate it with the same enable that advances their FPGA subphases.
+  input  logic        internal_ram_read_enable_i,
   input  logic        bio_i,
   input  logic        int_i,
 
@@ -313,8 +320,11 @@ module tms32010_core #(
     end
   end
 
-  tms32010_internal_ram data_ram (
+  tms32010_internal_ram #(
+    .REGISTERED_READ (REGISTER_INTERNAL_RAM_READ)
+  ) data_ram (
     .clk_i                  (clk_i),
+    .read_enable_i          (internal_ram_read_enable_i),
     .read_address_i         (data_address_o),
     .read_data_o            (ram_read_data),
     .read_address_valid_o   (ram_address_valid),

@@ -146,18 +146,36 @@ ACC-minus-P operation requires no data-memory access
 [ti-tms32010-users-guide-spru001b, `SPAC`, printed p. 3-58 (PDF p. 108)].
 **Confidence: VERIFIED_PRIMARY.**
 
-The current array has an asynchronous read because the temporary execution
-slice samples program data and commits a one-cycle instruction at one
-boundary. Independent source-read and destination-write addresses also support
-DMOV/LTD's documented dual-address operation. This is an implementation
-convenience, not evidence about the
-physical TMS32010 RAM. It consequently synthesizes as registers and muxes in
-the qualified Yosys and Quartus flows. Replacing it with an FPGA block-RAM
-implementation is deferred until the documented pipeline phases can preserve
-the same externally visible cycle without speculative latency.
+The standalone core keeps an asynchronous read because it supplies no
+subphase lead between a new instruction word and its execution enable.
+ADR-0004 permits the explicit fetch/execute wrapper to select a synchronous
+read instead: its registered execute ownership holds an effective address for
+multiple FPGA subphases before architectural consumption. The operand is
+valid by phase 1, and explicit same-address forwarding exposes a just-written
+word during the following owner's phase-0 setup interval. Thus `IN` followed
+by `OUT` establishes the new output word before the active `WE` phase. The
+qualified Cyclone V flow maps this mode to one 144-by-16 M10K without changing
+a documented machine cycle. Independent source-read and destination-write
+addresses continue to support DMOV/LTD's documented dual-address operation.
+This is implementation evidence, not evidence about the physical TMS32010 RAM
+or its internal read-during-write topology.
+
+The phase-aware wrapper's `data_address_o` is combinational, while its
+diagnostic `data_read_data_o` may still reflect the preceding address during
+the single phase-0 edge at which a new execute owner is installed. It must
+match the owned address from phase 1 through architectural consumption;
+same-address forwarding is the exception that deliberately supplies the new
+word already at phase 0. The signals are not original package pins.
+Read capture is gated by the same enable that advances the wrapper subphase,
+so a global pause holds both the registered output and forwarding metadata.
 
 An explicit synchronous preload port exists for simulation and integration
 debug only. It is forbidden during live CPU execution, does not run on
 physical reset, and does not imply deterministic hardware power-up contents.
 `DMOV`, `SACL`, `SACH`, `SAR`, and `LTD` supply architectural write paths; assertions exclude
 simultaneous CPU/debug writes and invalid CPU write addresses.
+The registered mode additionally has directed and inductive tests for
+capture, persistence, invalid qualification, debug preload, and same-address
+forwarding, including disabled-capture stability
+[`sim/unit/tb_internal_ram_registered.sv`,
+`formal/tms32010_internal_ram_registered.sby`].

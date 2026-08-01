@@ -1,10 +1,10 @@
 # Progress summary
 
-- **Current milestone:** Cyclone V critical-path characterization and portable
-  operand-selection optimization
+- **Current milestone:** phase-staged internal RAM and Cyclone V block-memory
+  qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 131 repository/provenance/document/ISA/toolchain/program
-  tests; 231
+  tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
   instruction/decode tests; 5 interrupt RTL/phase
@@ -32,8 +32,8 @@
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
   RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
-  2,414 ALMs, 2,703 registers, 0 RAM blocks, 1 DSP block, 33.33 MHz worst
-  slow-corner internal Fmax, +10.000 ns setup slack, and +0.165 ns worst hold
+  1,416 ALMs, 417 registers, one 144-by-16 M10K, 1 DSP block, 40.54 MHz worst
+  slow-corner internal Fmax, +15.331 ns setup slack, and +0.164 ns worst hold
   slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
   fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
   claimed. TimeQuest
@@ -41,18 +41,19 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 16,506 generic cells with 125 retained checks and lowering the
-  asynchronous RAM to registers/muxes; its technology-neutral multiplier
+  producing 17,017 generic cells with 125 retained checks and lowering the
+  registered RAM and forwarding to generic registers/muxes; its
+  technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 16,506 generic cells with 125 retained checks and
+  independently passes at 16,923 generic cells with 125 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 16,555 generic cells
+  Yosys at 16,972 generic cells
   with 132 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
@@ -66,7 +67,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,603 abstract cells/384 checks
+  board top retains six memories and passes at 3,809 abstract cells/406 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -125,7 +126,7 @@
   the two held strobes, and the complete `/DTACK` cone at 185 hierarchy
   cells/64 retained checks, with no memory, latch, generated clock, or
   structural problem.
-- **Formal status:** all 44 tasks from 22 SymbiYosys configurations pass with
+- **Formal status:** all 46 tasks from 23 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -180,7 +181,11 @@
   reach word 0, word `0x8f`, a non-target write, and invalid reads at `0x90`
   and `0xff`. Original-silicon `OQ-002`, physical power-up contents,
   instruction address selection, electrical timing, and technology mapping
-  remain outside that proof. A twelfth one-step decoder BMC leaves all 16
+  remain outside that proof. A separate five-step phase-staged RAM induction
+  quantifies the same 144 addresses and proves CPU/debug same-address
+  forwarding plus untouched-word persistence without constraining initial
+  contents; three covers reach both write sources and the stable path. A
+  twelfth one-step decoder BMC leaves all 16
   instruction bits arbitrary and proves the partial RTL's exact valid set
   against a compact family/field predicate, operation bounds, and meaningful
   operand projections. Nine step-0 covers reach legal direct/indirect,
@@ -819,8 +824,9 @@
   32 Boolean cases; board simulation proves external-storage pass-through,
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
-  Standalone Yosys reports 13 cells/seven checks, and the board reports 3,603
-  cells/384 checks with six memories. This interlock does not itself select
+  Standalone Yosys reports 13 cells/seven checks, and the current board reports
+  3,809 cells/406 checks with six memories. This interlock does not itself
+  select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
 - **New physical reset-source evidence:** A044427 sheet 2 and TI SDLS043 now
@@ -922,7 +928,7 @@
   launchers so its hash identifies the actual emulator binary. This is actual
   synthetic TMS320C10 execution but not Atari firmware; device equivalence,
   `/MEN`, cycles, and pin timing remain unqualified.
-- **New synthesis evidence:** a checked-in setup-path reporter localizes the
+- **New synthesis evidence:** a checked-in setup-path reporter localized the
   preceding 33.464 ns/26-level path from registered execute word through
   wrapper decode, sampled-program selection, core decode, asynchronous RAM,
   shift, and accumulation. Registered pipeline state plus one retained table-
@@ -930,8 +936,20 @@
   verified machine-cycle edge. The accepted fit reduces the path to 29.180
   ns/19 levels, saves 90 ALMs, and raises worst slow-corner Fmax from 29.30 to
   33.33 MHz. A 2,633-ALM/28.98-MHz intermediate is explicitly rejected; the
-  asynchronous RAM and broad core execution cone remain the next structural
-  timing limit.
+  asynchronous RAM and broad core execution cone left those structures as the
+  next timing limit. ADR-0004 now exploits the already modeled FPGA subphases to
+  stage internal-RAM reads without another processor cycle. Same-address
+  forwarding was added after an `IN`-then-`OUT` trace rejected the first
+  old-data-only experiment; an in-process bypass was also rejected because it
+  lost memory inference. The broad formal sweep then rejected an ungated read
+  capture because `data_read_data_o` moved during a global pause; a distinct
+  wrapper-subphase read enable now preserves the pre-existing stall invariant.
+  The rejected ungated checkpoint's 1,420-ALM, 22.988-ns/15-level, 42.11-MHz
+  figures are retained as failed evidence rather than reported as closure.
+  The accepted separate forwarding metadata preserves
+  one M10K and reduces the fit from 2,414 ALMs/2,703 registers to 1,416
+  ALMs/417 registers. The worst path falls from 29.180 ns/19 levels to 24.217
+  ns/16 levels, and worst slow-corner Fmax rises from 33.33 to 40.54 MHz.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -966,10 +984,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** define and test whether phase-local operand capture can make
-  the internal RAM block-memory-safe without adding a documented processor
-  cycle; keep the current asynchronous RAM if primary timing and bus ownership
-  cannot support that refactor. Continue PUSH/POP physical-ownership research
-  independently.
+- **Next task:** use the new critical-path report to separate remaining
+  execute-word decode from the arithmetic result cone without moving an
+  architectural boundary; continue PUSH/POP physical-ownership research
+  independently and do not invent its missing program addresses.
 - **Latest committed baseline before this cycle:**
-  `c10ed55`
+  `68d43be`

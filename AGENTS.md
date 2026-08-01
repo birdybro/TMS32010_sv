@@ -46,6 +46,8 @@ Pipeline changes must also follow
 `docs/decisions/ADR-0002-fetch-execute-separation.md`.
 Provisional CALA/RET program-cycle changes must additionally follow
 `docs/decisions/ADR-0003-computed-control-prefetch.md`.
+Internal-RAM latency or phase-staging changes must additionally follow
+`docs/decisions/ADR-0004-phase-staged-internal-ram.md`.
 
 MAME and other implementations are independent behavioral oracles only. Do
 not copy or transliterate their code into the model or RTL. Preserve exact

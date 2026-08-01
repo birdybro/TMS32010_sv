@@ -17,14 +17,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 2,414 ALMs (6%).
-- Registers: 2,703.
-- Memory: 0 bits, 0 RAM blocks.
+- Logic: 1,416 ALMs (3%).
+- Registers: 417.
+- Memory: 2,304 used bits in one M10K block.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +10.000 ns at 25 MHz.
-- Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 33.48 MHz at 100 °C, 33.33 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +15.331 ns at 25 MHz.
+- Worst internal hold slack across analyzed corners: +0.164 ns.
+- Slow-corner internal Fmax: 40.54 MHz at 100 °C, 40.93 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -51,25 +51,48 @@ checks that retained direction against the still-owned execute instruction at
 the TBLR/TBLW prefetch boundary. This removes a redundant wrapper decode from
 the sampled-operand mux without changing any native phase or retirement edge.
 
-The resulting worst 100 °C setup path is from registered
+The retained-operand checkpoint's worst 100 °C setup path was from registered
 `execute_word_o[11]` to `accumulator_o[28]`: 29.180 ns and 19 logic levels,
 with 64% interconnect delay. Relative to the preceding checkpoint, the fit
 uses 90 fewer ALMs and improves worst slow-corner Fmax from 29.30 MHz to
 33.33 MHz. A first intermediate experiment that retained a live TBLR decode
-in this mux was rejected after it regressed to 2,633 ALMs and 28.98 MHz. The
-accepted result still uses no block RAM; reaching materially higher internal
-clocks will require a separately verified phase-staging or synchronous-memory
-architecture, not an undocumented change to processor-cycle timing.
+in this mux was rejected after it regressed to 2,633 ALMs and 28.98 MHz.
+
+ADR-0004 then uses the wrapper's existing FPGA subphases to capture internal
+RAM data before the architectural boundary. The standalone core remains
+asynchronous, while the explicit pipeline selects a registered simple-dual-
+port template. A directed `IN`-then-`OUT` test rejected the first old-data-only
+mapping because the next owner's phase-0 output word was stale. The accepted
+implementation retains same-address write metadata beside the memory and
+forwards the committed word through an output mux. A second in-process bypass
+form was rejected because Quartus again lowered the array to registers.
+
+The first separately forwarded fit was also rejected after the broad formal
+sweep proved its RAM output could advance while the wrapper clock enable was
+clear. That checkpoint used 1,420 ALMs and reported 22.988 ns/15 levels and
+42.11 MHz worst slow-corner Fmax, but it is not passing evidence. Qualifying
+read capture with the wrapper subphase enable restores the existing stall
+invariant and produces the accepted figures below.
+
+The accepted fit maps all 2,304 bits into one M10K, reducing the full hierarchy
+from 2,414 to 1,416 ALMs and from 2,703 to 417 registers. Its worst 100 °C
+setup path is now from registered `execute_word_o[14]` to a multiplier input
+enable: 24.217 ns, 16 logic levels, and 65% interconnect delay. Worst
+slow-corner Fmax rises from 33.33 to 40.54 MHz. Directed traces preserve
+phase-1 operand availability, phase-0 same-address forwarding, every native
+program/I/O/table edge, stalls, retirement, and cycle counts; the new
+five-step inductive proof covers all 144 RAM words and both forwarding ports.
 
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
 not timing closure. The qualified 25 MHz constraint still exceeds the A044427
-Rev-A board's primary-documented 20 MHz input by 25%; the fitted 33.33 MHz
-worst slow-corner result is a 66.65% margin over the board frequency. The
+Rev-A board's primary-documented 20 MHz input by 25%; the fitted 40.54 MHz
+worst slow-corner result is a 102.7% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
 not a release requirement or a concealed pass. The retained-direction change
-raises the qualified worst slow-corner result to 33.33 MHz, but does not turn
+and RAM-staging changes raise the qualified worst slow-corner result to
+40.54 MHz, but do not turn
 that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
@@ -87,9 +110,9 @@ The reports contain no latch diagnostic. Analysis/synthesis and TimeQuest
 finish with zero warnings. The three full-flow warnings are the expected
 synthesis-harness notices: a Lite-only LogicLock notice, incomplete I/O
 assignments, and the sole physical clock's intentionally absent package
-location. Quartus separately
-reports as information that the 144-word array cannot infer RAM because its
-read is asynchronous, so it maps to registers and logic. The fit uses 415
+location. Quartus infers the phase-aware 144-word array as a 144-by-16 simple-
+dual-port `altsyncram` and fits it into one M10K; the standalone core's default
+remains asynchronous. The fit uses 415
 virtual pins and one physical clock pin; the expected critical warning says
 that clock has no package location.
 This is not a deployable board image, and the generated `.sof` is deliberately
@@ -147,9 +170,9 @@ synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 125 RTL checks
 remain represented, and both the synthesis harness and directly targeted
-pipeline contain 16,506 cells. The
-asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
-1,217 mux cells, leaving no inferred memories after generic synthesis. This
+pipeline contain 17,017 and 16,923 cells respectively. The
+registered array and forwarding logic lower to flip-flops and muxes under
+generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
 signed multiplier accounts for 1,753 of those generic cells; unlike Quartus,
 generic Yosys synthesis does not map it to a target DSP resource.
@@ -160,8 +183,11 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 125 RTL checks, and contains 16,506 generic
-cells. The retained table-direction checkpoint adds 226 generic cells and one
+zero reported problems, retains 125 RTL checks, and contains 16,923 generic
+cells. ADR-0004 adds 421 generic cells beyond the 16,506-cell retained-table-
+direction checkpoint because target-neutral Yosys maps the memory and bypass
+to gates rather than a Cyclone V M10K. The retained table-direction checkpoint
+had added 226 generic cells and one
 check to the 16,280-cell/124-check CALA/RET checkpoint even though Cyclone V
 technology mapping uses 90 fewer ALMs; generic cells are not a device-resource
 estimate. CALA/RET had added 547 cells and 21 checks to the preceding
@@ -183,8 +209,8 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 132 checks, and reports 16,555 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 16,506-cell,
+with zero problems, retains 132 checks, and reports 16,972 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 16,923-cell,
 125-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
@@ -222,10 +248,10 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,603 abstract cells, 384
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,809 abstract cells, 406
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
-program RAM, synchronous 512-by-16 communication RAM, the core's existing
-asynchronous-read 144-by-16 internal RAM, and the optional local SRAM's upper,
+program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
+144-by-16 internal RAM, and the optional local SRAM's upper,
 lower, and validity arrays.
 Both structural checks pass with zero problems. This proves hierarchy and
 memory retention plus the opt-in BIO/host-control/host-timing selection and

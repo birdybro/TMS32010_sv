@@ -30,6 +30,7 @@ module tb_interrupt_entry;
     .initialize_i                  (initialize),
     .reset_i                       (reset),
     .clock_enable_i                (clock_enable),
+    .internal_ram_read_enable_i    (clock_enable),
     .bio_i                         (1'b1),
     .int_i                         (int_n),
     .program_address_o             (program_address),
