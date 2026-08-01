@@ -584,6 +584,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   storage-free RTL exposes all active-low outputs and preserves physical
   `/DUART`, `/GSP`, and `/MSP` aliases that are broader than MAME's canonical
   software-facing handlers.
+- An address-driven `hard_drivin_main_bus_control` hierarchy connecting the
+  verified decoder, held-strobe state, and `/DTACK` cone. It preserves the
+  explicit event-domain boundary and peripheral-owned TMS34010 `HRDY` and
+  MC68681 `DTACK` inputs while exposing all raw selects and intermediate
+  acknowledgement terms.
 
 ### Changed
 
@@ -750,10 +755,17 @@ Changelog, and the project follows semantic versioning once releases begin.
 ### Verified
 
 - The complete repository gates pass with 129 provenance/document/tool tests,
-  231 model/unit tests, 38 instruction/decode RTL tests, 53 bus/integration
+  231 model/unit tests, 38 instruction/decode RTL tests, 54 bus/integration
   tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
-  checks 38 modules; all 42 formal jobs from 21 configurations pass; all 28
+  checks 39 modules; all 42 formal jobs from 21 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
+- The address-driven bus-control regression reaches a mirrored GSP access,
+  canonical MSP access with arbitrary external wait, mirrored DUART access
+  with late external acknowledge, and ordinary expansion-bus `RVA`
+  acknowledgement through their complete held-strobe release sequences.
+  Hierarchical Yosys synthesis reports 185 cells/64 retained checks, no
+  memory, latch, generated clock, or structural problem; its three constituent
+  blocks retain their separately bounded formal evidence.
 - The main address-decode regression exhausts all 1,024 `A23:A14` values
   across both `/AS` and `/RVAS0` levels, then directs canonical and physically
   mirrored DUART, RAM, GSP, and MSP selections. Its one-step BMC proves the

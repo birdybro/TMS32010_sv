@@ -229,9 +229,19 @@ main-board gate block.
 preserves even contradictory raw input combinations for exhaustive checking.
 `hard_drivin_main_address_decode` separately produces the raw `/HSBUS` and
 `/DUART` inputs from physical address and `/AS`, plus `/RHSBUS`, `/GSP`, and
-`/MSP` from `/RVAS0`. The timing compositions still drive raw selects directly
-so each block remains independently testable; a full address/timing
-composition is the next integration boundary.
+`/MSP` from `/RVAS0`. The standalone timing compositions still drive raw
+selects directly so each block remains independently testable.
+
+`hard_drivin_main_bus_control` is the corresponding address-driven hierarchy.
+It connects the raw `/HSBUS` and `/DUART` outputs to
+`hard_drivin_main_dtack_decode`, connects final `/DTACK` back to
+`hard_drivin_main_rvas_timing`, and feeds held `/RVAS0` back into the GSP/MSP
+subdecoder. Both independently transcribed `/RHSBUS` equations remain present,
+with an assertion requiring equality at the composition. The wrapper exposes
+the complete decoder vectors, named raw selects, peripheral selects, held
+strobes, and all three acknowledgement terms. It adds no timing state beyond
+the existing held-strobe block and keeps TMS34010 `HRDY` and MC68681
+`/DUDTACK` as external levels.
 
 ## Verification evidence
 
@@ -259,8 +269,19 @@ that `/RVAS`, not `/RVAS0`, selects the MC68681; arbitrary external wait is
 retained; a late `/DUDTACK` completes the transfer; and raw select removal
 suppresses a still-low open-drain pin before the sampled release edge.
 
+The address-driven composition adds four complete physical-address cases: a
+mirrored `0xd02000` GSP zero-wait access, canonical `0xc04000` MSP access held
+by external `HRDY`, mirrored `0xfe2000` DUART access completed by late
+`/DUDTACK`, and ordinary `0x84c000` expansion-bus acknowledgement from `RVA`.
+Each case checks raw and qualified selections, the relevant intermediate
+acknowledgement term, sampled `/DTACK`, and held-strobe release. Yosys
+0.67+111 reports 185 hierarchy cells with 64 retained checks and no memory,
+latch, generated clock, or structural problem. The hierarchy adds directed
+simulation and structural-composition evidence; formal claims remain the
+separate constituent bounds described above.
+
 Yosys 0.67+111 reports 93 cells/25 retained checks for the two-strobe hold
 state and 21 cells/eight retained checks for the combinational decode, with no
 memory, latch, generated clock, or structural problem. This is not a Cyclone V
 fit, raw-pin CDC proof, electrical timing calculation, TMS34010 host-interface
-or MC68681 model, or complete main-processor bus wrapper.
+or MC68681 model, or raw-pin main-processor bus wrapper.

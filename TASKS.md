@@ -1396,6 +1396,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_local_memory.md`,
   `docs/integration/hard_drivin_direct_io.md`,
   `docs/integration/hard_drivin_local_reset.md`,
+  `docs/integration/hard_drivin_main_address_decode.md`,
   `docs/integration/hard_drivin_main_bus_timing.md`,
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
@@ -1422,6 +1423,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
   `sim/bus/tb_hard_drivin_main_address_decode.sv`,
+  `sim/bus/tb_hard_drivin_main_bus_control.sv`,
   `sim/bus/tb_hard_drivin_main_dtack_decode.sv`,
   `sim/bus/tb_hard_drivin_main_duart_timing.sv`,
   `sim/bus/tb_hard_drivin_main_hsbus_timing.sv`,
@@ -1738,6 +1740,12 @@ objective passing evidence.
   one-step proof with six covers, and synthesizes to 49 cells/20 checks. It
   exposes all active-low outputs, including unconnected Y1/Y2 and Y2/Y3,
   without assigning peripheral-internal register behavior.
+  The address-driven `hard_drivin_main_bus_control` hierarchy now composes
+  that decoder with the held-strobe and `/DTACK` blocks. A directed test
+  reaches mirrored GSP, canonical waited MSP, mirrored late-acknowledged
+  DUART, and ordinary expansion-bus cycles through complete release; Yosys
+  reports 185 hierarchy cells/64 checks. Peripheral response latency, phase
+  adaptation, raw CDC, and electrical timing remain explicitly external.
   The original system `/RESET` driver, workload-specific TMS34010 latency,
   exact cross-clock phase, raw CDC, and electrical timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,

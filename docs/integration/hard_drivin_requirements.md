@@ -101,6 +101,10 @@ selection: `/AS` and `A23:A21` select the primary region; `/RAMEN` plus
 `A15:A14` select `/GSP` or `/MSP`. The full output vectors and broad aliases
 are verified separately from MAME's narrower canonical handlers. See
 `hard_drivin_main_address_decode.md` and `hard_drivin_main_bus_timing.md`.
+The `hard_drivin_main_bus_control` hierarchy now connects those physical
+selects to the held-strobe and acknowledgement blocks and verifies four
+address-driven peripheral/ordinary cycles without assigning any device-owned
+latency.
 **Confidence: VERIFIED_PRIMARY
 for decode, transport, both logical hold chains, graphics-wait ownership,
 graphics-ready polarity, and the generic MC68681 acknowledge contract;

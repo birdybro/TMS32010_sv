@@ -114,4 +114,6 @@ HSBUS equations, three one-hot-low invariants, and six non-vacuous covers.
 Yosys 0.67+111 synthesizes the storage-free block to 49 cells with 20 retained
 checks, no memory, latch, generated clock, or structural warning. This is not
 a peripheral model, a complete main-board memory map, a raw-pin CDC boundary,
-or electrical propagation analysis.
+or electrical propagation analysis. Its address-driven connection to the
+separately verified held-strobe and `/DTACK` blocks is documented in
+`hard_drivin_main_bus_timing.md`.

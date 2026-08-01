@@ -1,14 +1,14 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board physical address decode
-  qualification
+- **Current milestone:** Hard Drivin' main-board address-driven bus-control
+  composition
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 53 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 54 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -112,6 +112,10 @@
   A twenty-eighth target checks the storage-free main primary/RAM/HSBUS
   address decoder at 49 cells/20 retained checks, with no memory, latch,
   generated clock, or structural problem.
+  A twenty-ninth target checks the address-driven composition of that decoder,
+  the two held strobes, and the complete `/DTACK` cone at 185 hierarchy
+  cells/64 retained checks, with no memory, latch, generated clock, or
+  structural problem.
 - **Formal status:** all 42 tasks from 21 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -878,6 +882,14 @@
   directs ignored-bit aliases, including physical DUART/GSP/MSP selections
   broader than MAME's canonical handlers. One-step BMC and six covers pass;
   the storage-free target is 49 cells/20 checks. The pinned total is 45.
+- **New address-driven main-bus evidence:** `hard_drivin_main_bus_control`
+  connects the verified raw selects to the separately verified held-strobe
+  and `/DTACK` blocks without adding peripheral latency. Directed simulation
+  reaches a mirrored GSP zero-wait cycle, canonical MSP cycle held by its
+  external `HRDY`, mirrored DUART cycle completed by a late external
+  `/DUDTACK`, and ordinary expansion-bus `RVA` acknowledgement through each
+  release sequence. Strict lint and 185-cell/64-check hierarchical synthesis
+  pass; constituent formal bounds remain unchanged.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -913,8 +925,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** compose the verified main address decoder with the held-
-  strobe and `/DTACK` blocks for address-driven GSP, MSP, DUART, and ordinary
-  expansion-bus cycles without adding peripheral latency policy.
+- **Next task:** return to the highest-priority original-TMS32010 pipeline
+  backlog and qualify the remaining unsupported instruction ownership/timing
+  boundary before extending the partial sequential core.
 - **Latest committed baseline before this cycle:**
-  `9dc6959`
+  `5bbb42a`

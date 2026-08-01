@@ -447,6 +447,12 @@ Read `docs/integration/hard_drivin_main_address_decode.md` and
 `hard_drivin_main_bus_timing.md` before modifying or composing this path. It
 does not model peripheral registers, response latency, raw CDC, or electrical
 propagation.
+The `hard_drivin_main_bus_control` hierarchy is the address-driven,
+same-clock-event composition of that decoder, the separately proved
+`/RVAS0`/`RVA`/`/RVAS` state, and the combinational `/DTACK` cone. It exposes
+all raw selects and acknowledgement terms for traceability while retaining
+TMS34010 `HRDY` and MC68681 `DTACK` as external inputs. Do not convert its
+explicit phase events into a raw-pin timing or CDC claim.
 The separate 12-step `hard_drivin_sound_host_routing` harness instantiates the
 board hierarchy with the processor paused, selects one symbolic transaction
 from six routed host classes with a symbolic partial-byte orientation, holds

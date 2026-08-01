@@ -100,6 +100,12 @@ active-low TTL outputs, including unconnected outputs, so broad aliases and
 one-hot selection remain testable. It contains no peripheral register model
 or response timing.
 
+`rtl/wrappers/hard_drivin_main_bus_control.sv` is the address-driven
+same-clock-event composition of that decoder, the held `/RVAS0`/`/RVAS`
+state, and the complete `/DTACK` cone. All raw selects and acknowledgement
+terms remain observable. TMS34010 `HRDY`, MC68681 `DTACK`, event adaptation,
+CDC, and electrical timing remain outside the hierarchy.
+
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every
