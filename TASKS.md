@@ -1385,6 +1385,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_compare.md`,
   `docs/integration/hard_drivin_local_memory.md`,
   `docs/integration/hard_drivin_direct_io.md`,
+  `docs/integration/hard_drivin_local_reset.md`,
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
@@ -1409,7 +1410,9 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `sim/bus/tb_hard_drivin_sound_local_reset_interlock.sv`,
   `formal/hard_drivin_sound_direct_io.sby`,
+  `formal/hard_drivin_sound_local_reset_interlock.sby`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1428,6 +1431,12 @@ objective passing evidence.
   A physical coincident-edge policy, signed-audio DAC interpretation,
   effective mute semantics, board-variant audit, 68000 bus adaptation, and
   complete peripheral integration remain.
+  The current local-SRAM reset-interlock acceptance slice requires exhaustive
+  pass/block truth-table simulation, symbolic proof, an actual 8,192-clock
+  integrated scrub-to-release transition, immediate re-clamp on initialization
+  or board reset, strict lint, standalone and board Yosys checks, and explicit
+  documentation that the output is an FPGA platform policy rather than a
+  physical 6264 or portable-TMS reset behavior.
   The partial `hard_drivin_sound_mister` now connects the core, native decoder,
   shared program RAM, and communication path. A directed RTL test host-loads
   the fixed ROM-free smoke and a synthetic communication word,
@@ -1640,7 +1649,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,560 abstract cells/374
+  Integrated Yosys retains six memories and reports 3,603 abstract cells/384
   checks with no structural problem. Partial lower-Y5 and Y6 writes are
   reported and rejected because their unselected physical data lane remains
   unresolved under `OQ-022`/`OQ-024`.
@@ -1654,9 +1663,15 @@ objective passing evidence.
   composes masked port-0/1/2/3 reads, increments the shared address at S7, and
   suppresses/reports active host/TMS I/O overlap under `OQ-021`. Pinned MAME's
   symmetric `offset & 7` alias remains `SC-034`. Standalone Yosys reports 336
-  cells/seven checks. Raw-pin CDC, authorized ROM storage, a platform reset-
-  release interlock for the SRAM scrub, and open-bus policy remain acceptance
-  work.
+  cells/seven checks. Raw-pin CDC, authorized ROM storage, and open-bus policy
+  remain acceptance work. The reset-interlock slice now preserves separate
+  raw MC68000 RESET and HALT inputs, gates both only for initialization or an
+  incomplete selected
+  scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
+  demonstrates release after the real 8,192-clock board scrub. Standalone
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,603 cells/
+  384 checks. MC68000 pulse duration, full HALT-source behavior, and CDC remain
+  `OQ-035`, so this is an FPGA policy boundary rather than pin-level reset.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
   local-68000 ROM and high-bank decode. The populated 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`

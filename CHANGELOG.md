@@ -534,6 +534,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A one-step symbolic proof of every direct-I/O address/control/data/mask
   combination, with covers for the highest read alias, undriven port 3,
   canonical port-7 writes, and the first unselected write.
+- A storage-free local-MC68000 reset-release interlock preserving separate raw
+  RESET and HALT callbacks while clamping both during FPGA initialization or
+  an incomplete selected internal-SRAM scrub, plus exhaustive simulation and
+  one-step formal coverage of all policy inputs.
 
 ### Changed
 
@@ -548,6 +552,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   the internal lane-valid SRAM explicitly. Internal selection suppresses the
   external request and write commits while retaining raw address/data
   observability; authorized ROM data remains a separate external callback.
+  The board wrapper now exports separately gated local RESET/HALT signals and
+  a denied-release diagnostic without changing the TMS `/320RES` path.
 - The host-timing adapter now exposes its captured R/W direction alongside
   the already captured address and byte strobes, preventing downstream bank
   decode from consulting a live processor input after `/AS` assertion.
@@ -683,6 +689,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The local-reset policy passes all 32 initialization/RESET/HALT/selection/
+  readiness combinations, and board simulation proves an actual sequential
+  scrub clamps both processor inputs until validity address `0x1fff` clears.
+  Its one-step BMC and four covers pass; standalone Yosys reports 13 cells/
+  seven checks, and the six-memory board hierarchy reports 3,603 cells/384
+  checks with no structural problem. The updated board-routing proof passes.
 - The direct-I/O decoder passes exhaustive simulation across all 4,096 read
   aliases and all 4,096 write addresses plus a one-step symbolic BMC over
   arbitrary masks and data. Board simulation proves canonical address/block,
@@ -1379,13 +1391,17 @@ Changelog, and the project follows semantic versioning once releases begin.
   regression split is 128/231/38/44/5/10; strict lint covers 32 modules, all
   22 Yosys targets pass, all 33 pinned hashes verify, and all 30 formal tasks
   from 15 configurations pass.
+- The local-reset increment passes the complete 129/231/38/45/5/10 regression
+  split, strict lint across 33 modules, all 23 Yosys targets, all 33 pinned
+  reference hashes, and all 32 formal tasks from 16 configurations.
 
 ### Known Issues
 
 - The optional FPGA local SRAM needs 8,192 clocks to invalidate metadata after
   `initialize_i`. This is an integration convention, not physical 6264 reset
-  or wait behavior; a platform selecting it must keep the local processor from
-  accessing Y7 until `host_local_ram_storage_ready_o` is true.
+  or wait behavior. The wrapper gates exported local RESET/HALT release, but a
+  future MC68000 integration must use that boundary and still qualify the
+  separate physical HALT source, pulse duration, and CDC under `OQ-035`.
 - A044427's `RVA`/`/DTACK`/`/RVAS` logic and same-clock board composition are
   qualified at logical bus-state resolution, but complete TTL
   propagation/loading margin, raw-pin CDC, and unreset power-up transient are

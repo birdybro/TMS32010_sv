@@ -89,9 +89,9 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, 144-word internal RAM, and the optional local SRAM's two
-byte memories plus validity metadata as six memory objects. It reports 3,560
-abstract cells, 374 checks, and zero structural problems after upper-Y5
-direct-I/O and lane-valid local-SRAM integration.
+byte memories plus validity metadata as six memory objects. It reports 3,603
+abstract cells, 384 checks, and zero structural problems after upper-Y5
+direct-I/O, lane-valid local-SRAM, and local-reset interlock integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
@@ -175,6 +175,12 @@ The twenty-second script targets the storage-free
 seven retained checks, no memory or latch, and zero structural problems. This
 qualifies the primary asymmetric read/write decode and mask composition only;
 it is not host/TMS electrical contention or open-bus timing evidence.
+
+The twenty-third script targets the storage-free
+`hard_drivin_sound_local_reset_interlock`. It reports 13 combinational cells,
+seven retained checks, no memory or latch, and zero structural problems. This
+qualifies the exhaustive-tested FPGA RESET/HALT release policy only; it is not
+an MC68000 reset-duration, physical HALT-source, CDC, or electrical result.
 
 ## Quartus
 

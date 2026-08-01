@@ -77,6 +77,7 @@ module hard_drivin_sound_mister (
   output logic        host_local_rom_read_request_o,
   output logic [14:0] host_local_rom_word_address_o,
   input  logic        use_internal_local_ram_i,
+  input  logic        local_processor_halt_n_i,
   input  logic [15:0] host_local_ram_read_data_i,
   input  logic [15:0] host_local_ram_read_valid_mask_i,
   output logic        host_local_ram_read_request_o,
@@ -88,6 +89,9 @@ module hard_drivin_sound_mister (
   output logic        host_local_ram_storage_scrub_active_o,
   output logic [12:0] host_local_ram_storage_scrub_address_o,
   output logic        host_local_ram_storage_write_blocked_o,
+  output logic        local_processor_reset_n_o,
+  output logic        local_processor_halt_n_o,
+  output logic        local_processor_release_blocked_o,
   output logic [15:0] host_local_memory_read_data_o,
   output logic [15:0] host_local_memory_read_driven_mask_o,
   output logic [15:0] host_local_memory_read_valid_mask_o,
@@ -920,6 +924,21 @@ module hard_drivin_sound_mister (
     )
   );
 
+  hard_drivin_sound_local_reset_interlock local_reset_interlock (
+    .initialize_i                       (initialize_i),
+    .board_reset_n_i                    (board_reset_n_i),
+    .local_processor_halt_n_i           (local_processor_halt_n_i),
+    .use_internal_local_ram_i           (use_internal_local_ram_i),
+    .local_ram_storage_ready_i          (
+      host_local_ram_storage_ready_o
+    ),
+    .local_processor_reset_n_o          (local_processor_reset_n_o),
+    .local_processor_halt_n_o           (local_processor_halt_n_o),
+    .local_processor_release_blocked_o  (
+      local_processor_release_blocked_o
+    )
+  );
+
   hard_drivin_sound_host_control host_control (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
@@ -1135,6 +1154,17 @@ module hard_drivin_sound_mister (
                ~host_local_memory_read_driven_mask_o) == 16'h0000);
       assert ((host_local_memory_read_data_o &
                ~host_local_memory_read_valid_mask_o) == 16'h0000);
+      assert (local_processor_reset_n_o ==
+              (board_reset_n_i &&
+               (!use_internal_local_ram_i ||
+                host_local_ram_storage_ready_o)));
+      assert (local_processor_halt_n_o ==
+              (local_processor_halt_n_i &&
+               (!use_internal_local_ram_i ||
+                host_local_ram_storage_ready_o)));
+      assert (!local_processor_release_blocked_o ||
+              (!local_processor_reset_n_o &&
+               !local_processor_halt_n_o));
       if (use_internal_local_ram_i) begin
         assert (!host_local_ram_read_request_o);
         assert (!host_local_ram_upper_write_commit_o);

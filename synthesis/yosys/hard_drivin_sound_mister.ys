@@ -27,6 +27,7 @@ read_verilog -sv rtl/wrappers/hard_drivin_sound_local_memory_decode.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_local_memory_bridge.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_direct_io.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_local_ram.sv
+read_verilog -sv rtl/wrappers/hard_drivin_sound_local_reset_interlock.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_mister.sv
 
 hierarchy -check -top hard_drivin_sound_mister

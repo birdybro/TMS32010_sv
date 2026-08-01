@@ -166,7 +166,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,560 abstract cells, 374
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,603 abstract cells, 384
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's existing
 asynchronous-read 144-by-16 internal RAM, and the optional local SRAM's upper,
@@ -266,6 +266,14 @@ structural problems. Together with exhaustive simulation and the one-step
 symbolic proof, this qualifies exact address decode and mask composition only;
 it is not an electrical host/TMS arbitration or open-bus result.
 
+The twenty-third checked-in script targets the storage-free
+`hard_drivin_sound_local_reset_interlock`. Yosys 0.67+111 reports 13
+combinational cells with seven retained checks, no memory or latch, and zero
+structural problems. Together with exhaustive simulation and the one-step
+symbolic proof, this qualifies only the FPGA RESET/HALT release equation; it
+is not MC68000 reset duration, physical HALT behavior, CDC, or electrical
+timing evidence.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -282,9 +290,12 @@ The ignored outputs are `build/yosys/tms32010.json`,
 ignored JSON outputs including
 `build/yosys/hard_drivin_sound_communication_path.json`,
 `build/yosys/hard_drivin_sound_local_memory_bridge.json`,
-`build/yosys/hard_drivin_sound_bio_generator.json`, and
+`build/yosys/hard_drivin_sound_local_ram.json`,
+`build/yosys/hard_drivin_sound_direct_io.json`,
+`build/yosys/hard_drivin_sound_local_reset_interlock.json`,
+`build/yosys/hard_drivin_sound_bio_generator.json`,
 `build/yosys/hard_drivin_sound_host_control.json`,
-`build/yosys/hard_drivin_sound_320_port_latch.json`, and
+`build/yosys/hard_drivin_sound_320_port_latch.json`,
 `build/yosys/hard_drivin_sound_mailboxes.json`, and
 `build/yosys/hard_drivin_sound_read_status.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier

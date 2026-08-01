@@ -237,7 +237,9 @@ accepted ahead of a later scrub location. This is a deterministic FPGA
 qualification policy, not a claim that either physical 6264 clears, waits, or
 blocks writes after board reset. An integration selecting internal storage
 must finish the scrub before releasing the local processor; the fixed Atari
-host path has no READY mechanism with which to stretch an early access.
+host path has no READY mechanism with which to stretch an early access. The
+board wrapper now exports the separate RESET/HALT policy boundary documented
+in `hard_drivin_local_reset.md`.
 
 When internal storage is selected, the external local-RAM request and write-
 commit outputs remain inactive, while the raw word address and write data stay
@@ -258,11 +260,13 @@ lanes independently, and reads one fully valid combined word. It also checks
 lower-Y5 program-RAM write/readback; canonical upper-Y5 address/block, DAC,
 and CPORT S6 commits; port-0/2 and aliased-undriven-port-3 reads with S7 shared
 address increments; noncanonical-write isolation; and Y6 communication-RAM
-write/readback under CRAMEN. Opposite explicit callback sentinels prove
+write/readback under CRAMEN. It also proves external-storage reset
+pass-through, selected-scrub RESET/HALT blocking, and release only after the
+8,192nd metadata clear. Opposite explicit callback sentinels prove
 timing-mode ownership, and later board tests prove the explicit-callback
 fallback still operates with timing mode disabled.
 
-The composed board hierarchy retains six memories and reports 3,560 abstract
-cells with 374 checks and zero structural problems in Yosys 0.67+111. This
+The composed board hierarchy retains six memories and reports 3,603 abstract
+cells with 384 checks and zero structural problems in Yosys 0.67+111. This
 remains pre-technology synthesis, not raw-pin CDC, a complete MC68000 data-bus
 mux, a Cyclone V fit, or electrical timing closure.

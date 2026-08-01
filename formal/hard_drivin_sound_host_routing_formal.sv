@@ -113,6 +113,7 @@ module hard_drivin_sound_host_routing_formal (
     .bio_i                                  (1'b1),
     .use_board_bio_i                        (1'b0),
     .board_reset_n_i                        (board_reset_n),
+    .local_processor_halt_n_i               (1'b1),
     .bio_one_mhz_rise_i                     (1'b0),
     .bio_counter_seed_i                     (8'h00),
     .bio_counter_seed_valid_i               (1'b0),

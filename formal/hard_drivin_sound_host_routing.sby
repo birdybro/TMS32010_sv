@@ -41,6 +41,7 @@ read -formal -sv hard_drivin_sound_local_memory_decode.sv
 read -formal -sv hard_drivin_sound_local_memory_bridge.sv
 read -formal -sv hard_drivin_sound_direct_io.sv
 read -formal -sv hard_drivin_sound_local_ram.sv
+read -formal -sv hard_drivin_sound_local_reset_interlock.sv
 read -formal -sv hard_drivin_sound_mister.sv
 read -formal -sv hard_drivin_sound_host_routing_formal.sv
 prep -top hard_drivin_sound_host_routing_formal
@@ -75,5 +76,6 @@ rtl/wrappers/hard_drivin_sound_local_memory_decode.sv
 rtl/wrappers/hard_drivin_sound_local_memory_bridge.sv
 rtl/wrappers/hard_drivin_sound_direct_io.sv
 rtl/wrappers/hard_drivin_sound_local_ram.sv
+rtl/wrappers/hard_drivin_sound_local_reset_interlock.sv
 rtl/wrappers/hard_drivin_sound_mister.sv
 formal/hard_drivin_sound_host_routing_formal.sv

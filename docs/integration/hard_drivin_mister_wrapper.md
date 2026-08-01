@@ -159,6 +159,15 @@ rejected and reported, because the physical fixed-cycle path cannot stall.
 Internal selection suppresses the external request and write commits so two
 storage owners cannot consume one transaction.
 
+The local processor's reset boundary is separate from `/320RES`.
+`board_reset_n_i` supplies the raw MC68000 RESET source and
+`local_processor_halt_n_i` supplies the independently modeled raw HALT source.
+`local_processor_reset_n_o` and `local_processor_halt_n_o` preserve those two
+sources but clamp both during `initialize_i` or while selected internal SRAM is
+not ready. `local_processor_release_blocked_o` reports only a denied release
+request. See `hard_drivin_local_reset.md`; a later distinct MC68000 clock
+domain still requires reviewed reset synchronization.
+
 Upper-Y5 direct DSP I/O is deliberately distinct from program RAM. The top
 exports raw `/PDEN`/`/PWE` timing and now applies the downstream physical
 decode: reads alias `A12:A1` modulo four, while writes select a target only
@@ -336,9 +345,10 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains six memories and reports 3,560
-abstract cells with 374 checks and zero structural problems after opt-in
-same-clock local-host timing, storage-callback, and direct-I/O integration.
+The pre-technology Yosys target retains six memories and reports 3,603
+abstract cells with 384 checks and zero structural problems after opt-in
+same-clock local-host timing, storage-callback, direct-I/O, and local-reset
+interlock integration.
 This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

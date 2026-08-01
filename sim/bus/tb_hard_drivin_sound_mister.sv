@@ -68,6 +68,7 @@ module tb_hard_drivin_sound_mister;
   logic        host_local_rom_read_request;
   logic [14:0] host_local_rom_word_address;
   logic        use_internal_local_ram;
+  logic        local_processor_halt_n_input;
   logic [15:0] host_local_ram_read_data;
   logic [15:0] host_local_ram_read_valid_mask;
   logic        host_local_ram_read_request;
@@ -79,6 +80,9 @@ module tb_hard_drivin_sound_mister;
   logic        host_local_ram_storage_scrub_active;
   logic [12:0] host_local_ram_storage_scrub_address;
   logic        host_local_ram_storage_write_blocked;
+  logic        local_processor_reset_n;
+  logic        local_processor_halt_n;
+  logic        local_processor_release_blocked;
   logic [15:0] host_local_memory_read_data;
   logic [15:0] host_local_memory_read_driven_mask;
   logic [15:0] host_local_memory_read_valid_mask;
@@ -317,6 +321,7 @@ module tb_hard_drivin_sound_mister;
     .host_local_rom_read_request_o(host_local_rom_read_request),
     .host_local_rom_word_address_o(host_local_rom_word_address),
     .use_internal_local_ram_i     (use_internal_local_ram),
+    .local_processor_halt_n_i     (local_processor_halt_n_input),
     .host_local_ram_read_data_i   (host_local_ram_read_data),
     .host_local_ram_read_valid_mask_i(host_local_ram_read_valid_mask),
     .host_local_ram_read_request_o(host_local_ram_read_request),
@@ -337,6 +342,11 @@ module tb_hard_drivin_sound_mister;
     ),
     .host_local_ram_storage_write_blocked_o(
       host_local_ram_storage_write_blocked
+    ),
+    .local_processor_reset_n_o    (local_processor_reset_n),
+    .local_processor_halt_n_o     (local_processor_halt_n),
+    .local_processor_release_blocked_o(
+      local_processor_release_blocked
     ),
     .host_local_memory_read_data_o(host_local_memory_read_data),
     .host_local_memory_read_driven_mask_o(
@@ -961,6 +971,7 @@ module tb_hard_drivin_sound_mister;
     host_local_rom_read_data = 16'h0000;
     host_local_rom_read_data_valid = 1'b0;
     use_internal_local_ram = 1'b0;
+    local_processor_halt_n_input = 1'b1;
     host_local_ram_read_data = 16'h0000;
     host_local_ram_read_valid_mask = 16'h0000;
     bio_one_mhz_rise = 1'b0;
@@ -998,8 +1009,37 @@ module tb_hard_drivin_sound_mister;
     debug_data_address = 8'h00;
     debug_data = 16'h0000;
     tick();
+    require(!local_processor_reset_n && !local_processor_halt_n &&
+            local_processor_release_blocked,
+            "FPGA initialization clamps local-processor reset release");
     initialize = 1'b0;
     tick();
+
+    require(local_processor_reset_n && local_processor_halt_n &&
+            !local_processor_release_blocked,
+            "external local storage does not wait for internal metadata");
+    board_reset_n = 1'b0;
+    #1;
+    require(!local_processor_reset_n && local_processor_halt_n &&
+            !local_processor_release_blocked,
+            "raw board RESET assertion does not invent a HALT assertion");
+    board_reset_n = 1'b1;
+    local_processor_halt_n_input = 1'b0;
+    #1;
+    require(local_processor_reset_n && !local_processor_halt_n &&
+            !local_processor_release_blocked,
+            "raw HALT assertion does not invent a board RESET assertion");
+    local_processor_halt_n_input = 1'b1;
+    use_internal_local_ram = 1'b1;
+    #1;
+    require(!local_processor_reset_n && !local_processor_halt_n &&
+            local_processor_release_blocked,
+            "selected internal SRAM blocks release throughout its scrub");
+    use_internal_local_ram = 1'b0;
+    #1;
+    require(local_processor_reset_n && local_processor_halt_n &&
+            !local_processor_release_blocked,
+            "returning to external storage restores board reset request");
 
     require(reset_active && !native_bus_active && men_n && den_n && we_n,
             "held physical reset keeps every TMS native strobe inactive");
@@ -1370,6 +1410,10 @@ module tb_hard_drivin_sound_mister;
             "internal local SRAM becomes ready only after all 8192 words");
 
     use_internal_local_ram = 1'b1;
+    #1;
+    require(local_processor_reset_n && local_processor_halt_n &&
+            !local_processor_release_blocked,
+            "selected internal SRAM releases reset only after final scrub word");
     host_local_ram_read_data = 16'hffff;
     host_local_ram_read_valid_mask = 16'hffff;
     local_host_start_address(

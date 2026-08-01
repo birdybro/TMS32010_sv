@@ -376,7 +376,18 @@ reach the highest read alias, undriven port 3, canonical port-7 write, and the
 first noncanonical write. This is exhaustive combinational evidence, not a
 host-cycle, peripheral-state, or electrical contention proof.
 
-The fifteen harnesses leave DINT ordering, formal coverage of the represented
+## Driver Sound local-reset interlock harness
+
+`hard_drivin_sound_local_reset_interlock.sby` is a one-step symbolic BMC and
+cover over arbitrary initialization, raw MC68000 RESET/HALT, internal-storage
+selection, and storage readiness. It proves separate RESET/HALT preservation,
+initialization and selected-scrub clamping, external-storage independence, and
+the exact denied-release diagnostic. Four step-0 covers reach external
+pass-through, active scrub blocking, ready internal release, and asserted raw
+RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
+duration, a physical HALT-source implementation, or clock-domain proof.
+
+The sixteen harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

@@ -1,0 +1,10 @@
+read_verilog -sv rtl/wrappers/hard_drivin_sound_local_reset_interlock.sv
+
+hierarchy -check -top hard_drivin_sound_local_reset_interlock
+proc
+opt
+check -assert
+synth -top hard_drivin_sound_local_reset_interlock
+check -assert
+stat
+write_json build/yosys/hard_drivin_sound_local_reset_interlock.json

@@ -46,6 +46,7 @@ class HardDrivinSoundMisterTests(unittest.TestCase):
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_local_memory_bridge.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_direct_io.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_local_ram.sv",
+            ROOT / "rtl" / "wrappers" / "hard_drivin_sound_local_reset_interlock.sv",
             ROOT / "rtl" / "wrappers" / "hard_drivin_sound_mister.sv",
             ROOT / "sim" / "bus" / f"{name}.sv",
         ]

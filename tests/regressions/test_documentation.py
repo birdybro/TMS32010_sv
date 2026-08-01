@@ -200,9 +200,11 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "host_timing_partial_program_write_o",
             "host_timing_partial_communication_write_o",
             "use_internal_local_ram_i",
+            "local_processor_halt_n_i",
+            "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,560",
-            "374 checks",
+            "3,603",
+            "384 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -410,8 +412,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,424 abstract cells",
-            "362 checks",
+            "3,603 abstract cells",
+            "384 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)
@@ -514,6 +516,27 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("OQ-021", questions)
         self.assertIn("OQ-029", questions)
         self.assertIn("OQ-030", questions)
+
+    def test_hard_drivin_local_reset_keeps_fpga_policy_separate(self) -> None:
+        local_reset = (
+            DOCS / "integration" / "hard_drivin_local_reset.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "RESET pin 18",
+            "HALT pin 17",
+            "asserted together",
+            "platform_release_permitted",
+            "all 32 combinations",
+            "8,192",
+            "implementation convenience",
+            "not physical-board behavior",
+            "OQ-035",
+        ):
+            self.assertIn(required, local_reset)
+        self.assertIn("OQ-035", questions)
 
     def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
         sound_rom = (

@@ -279,7 +279,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
-        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock and /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
+        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
         "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
@@ -704,6 +704,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Section 4.1.1 read-cycle states, printed pp. 4-1 through 4-3",
+        "Section 5.5 reset operation, printed p. 5-29 (PDF page 75)",
         "Sections 5.7-5.8 asynchronous and synchronous operation, printed pp. 5-32 through 5-36",
         "MC68000 electrical timing table and Figure 10-5 read-cycle timing, printed pp. 10-24 through 10-26"
       ],

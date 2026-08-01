@@ -41,6 +41,10 @@ that storage invalidates metadata over 8,192 initialization clocks without
 resetting its data arrays. The upper-Y5 path now applies the asymmetric
 downstream direct-I/O decode and shares the existing physical port consumers;
 authorized ROM storage and platform open-bus composition remain external.
+An FPGA-only local-processor interlock separately gates the raw MC68000 RESET
+and HALT callbacks until initialization and any selected internal-SRAM scrub
+finish. It neither changes `/320RES` nor claims a physical SRAM reset; see
+`docs/integration/hard_drivin_local_reset.md`.
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
