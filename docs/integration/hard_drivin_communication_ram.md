@@ -85,16 +85,18 @@ physical address is therefore not qualified until software writes port 7.
 MAME's zero initialization and any deterministic FPGA `initialize_i` value are
 implementation conveniences, not power-up claims.
 
-## Port 3 is unresolved
+## Port 3 is separate from communication RAM
 
-The output LS138 decodes port 3 as active-low `/CPORT`, but the audited Rev-A
-sheets show no loaded consumer for that named net. Pinned MAME's port-3
-handler logs the written word and changes no modeled state. Neither fact proves
-that “communication control” is a working hardware function. `OQ-023` retains
-the possibility of an unreviewed ECO, test connection, or board variant.
+The output LS138 decodes port 3 as active-low `/CPORT`. A044427 sheet 4 shows
+that strobe clocking `TD7:TD0` into LS374 `50L`; host `/320PORT` enables the
+latch onto `D15:D8`. It does not change the communication RAM, shared sound
+address, or ROM-block nibble. This resolves `OQ-023`; the independent masked
+host-read boundary and MAME disagreement are documented in
+`hard_drivin_host_reads.md` and `SC-030`.
 
-The ROM-free smoke deliberately retains a port-3 write as a decode probe. Its
-`0x00a5` value is not a claimed control command.
+The ROM-free smoke's `0x00a5` port-3 write is now a real latch transaction,
+not merely a decode probe. Its low byte becomes host high byte `0xa5` while
+the selected target leaves host `D7:D0` unresolved under `OQ-030`.
 
 ## FPGA adaptation requirements
 
@@ -111,7 +113,7 @@ commit pulses, provided it labels those as FPGA conventions. It must:
    physical input read;
 7. load the full counter on an accepted port-7 write and latch only the low
    nibble on port 6; and
-8. expose port 3 without inventing a state effect.
+8. leave the separately modeled port-3 latch orthogonal to address/RAM state.
 
 These requirements describe the digital relationship, not the HM6116 AC
 timing, 68000 DTACK generation, or firmware handoff interval.
@@ -135,14 +137,17 @@ clears the communication memory nor claims a deterministic physical counter
 or latch power-up value. A port-1 request before a port-7 load is explicitly
 reported as an invalid address and is not acknowledged. A request by the
 non-owning side is reported as blocked rather than returning RAM contents.
-Port 3 is visible to the commit stream but has no state effect.
+Port 3 is visible to this module's commit stream but has no address-control or
+communication-RAM effect; `hard_drivin_sound_320_port_latch` consumes the
+same committed transaction separately at the board-top boundary.
 
 `tb_hard_drivin_sound_communication_path` loads every one of the 512 words
 through whole-word host writes and reads every word through the DSP port-1
 path at the exact low-nine address. It also checks both CRAMEN ownership
 states, blocked accesses, synchronous response ownership, exactly-once
 increments including port 2, 16-bit wrap, port-7 load, port-6 low-nibble
-latching, port-3 non-effect, invalid initial address state, and storage
+latching, port-3 isolation from address state, invalid initial address state,
+and storage
 retention across FPGA initialization. **Confidence: VERIFIED_SIMULATION for
 the stated adapter contract.**
 

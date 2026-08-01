@@ -172,8 +172,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "`host_irq_clear_commit_i` callback",
             "`LACK 0x5a` and `NOP`",
-            "2,474",
-            "166 checks",
+            "2,495",
+            "171 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -223,7 +223,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "connected to `hard_drivin_sound_mister` as an explicit opt-in",
             "external platform-independent raw BIO input remains the default",
             "selected_bio_valid_o=0",
-            "2,474 abstract cells",
+            "2,495 abstract cells",
             "52 cells",
             "seven retained checks",
         ):
@@ -292,9 +292,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "making the DSP path read-only",
             "after every completed input-port read",
             "No clear or board-reset input is drawn",
-            "Port 3 is unresolved",
-            "not a claimed control command",
+            "Port 3 is separate from communication RAM",
+            "real latch transaction",
             "hard_drivin_sound_communication_path",
+            "hard_drivin_sound_320_port_latch",
             "loads every one of the 512 words",
             "now connected",
             "physical HM6116 timing",
@@ -306,6 +307,33 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "SC-025 — Physical whole-word communication RAM",
         ):
             self.assertIn(required, conflicts)
+
+    def test_hard_drivin_host_reads_preserve_partial_lane_validity(self) -> None:
+        host_reads = (
+            DOCS / "integration" / "hard_drivin_host_reads.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "`/SOUNDRD` | `D15:D0`",
+            "`/320PORT` | `D15:D8`",
+            "`/SWITCHES` | `D15:D12`",
+            "`/READSTAT` | `D15:D12`",
+            "LS374 `50L`",
+            "host `D7:D0`",
+            "driven-lane mask `16'hff00`",
+            "valid-lane mask `16'hff00`",
+            "all 65,536 TMS words",
+            "low-address TBLW",
+            "not a physical open-bus claim",
+        ):
+            self.assertIn(required, host_reads)
+        self.assertIn("SC-030 — Populated `/CPORT` host latch", conflicts)
+        self.assertIn("OQ-030", questions)
 
     def test_hard_drivin_sound_rom_mapping_remains_primary_scoped(self) -> None:
         sound_rom = (

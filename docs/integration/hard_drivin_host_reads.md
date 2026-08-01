@@ -1,0 +1,130 @@
+# Hard Drivin' Driver Sound host read paths
+
+## Scope
+
+This document traces the four A044427 Rev-A low host-I/O read targets from
+their decoder to the 68000 `D15:D0` bus. It distinguishes a physically driven
+lane from a convenient complete software word. It does not implement the
+complete 68000 bus, `/RVAS`, DTACK, connector conditioning, TMS5220 speech
+interface, or main-system bus bridge.
+
+## Decode and driven lanes
+
+With `/RVAS` active, LS138 `30N` decodes a host read from `RWN=1` and
+`A13:A12`. The four targets and their physically driven lanes are
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 2–4 of 10,
+PDF pp. 3–8]:
+
+| `A13:A12` | strobe | driven host lanes | drawn source |
+|---:|---|---|---|
+| `00` | `/SOUNDRD` | `D15:D0` | LS374 `10L`/`10N`, main-to-sound word |
+| `01` | `/320PORT` | `D15:D8` | LS374 `50L`, captured TMS `TD7:TD0` |
+| `10` | `/SWITCHES` | `D15:D12` | LS244 `10H`, four conditioned J3 inputs |
+| `11` | `/READSTAT` | `D15:D12` | LS244 `10K`, flags/test/speech-ready |
+
+No source from the selected target is drawn for `/320PORT` host `D7:D0` or for
+`/SWITCHES` and `/READSTAT` `D11:D0`. A complete digital word for those reads
+therefore requires an explicit platform open-bus policy; zero, one, bus hold,
+or another value must not be attributed to the Rev-A drawing without further
+evidence. This is `OQ-030`. **Confidence: VERIFIED_PRIMARY for the driven
+lanes; UNKNOWN for the undriven lanes.**
+
+## Main-to-sound word and handshake
+
+Main-system `ED15:ED0` are clocked into LS374 `10L`/`10N` by `/MAINWR` and
+their outputs drive all local sound-CPU `D15:D0` lanes while `/SOUNDRD` is
+active. The same main write asynchronously sets `MAINFLAG`; the trailing
+positive edge of active-low `/SOUNDRD` clocks grounded D into LS74 `10J` and
+clears it. Board `/RESET` clears both `MAINFLAG` and `SOUNDFLAG`. The opposite
+direction uses `/SOUNDWR` and `/MAINRD` with a separate pair of LS374s and the
+`SOUNDFLAG` half of the LS74
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
+PDF pp. 3–4]. **Confidence: VERIFIED_PRIMARY for the digital wiring and
+nominal handshake.**
+
+Pinned MAME returns its complete `m_maindata` word from `hdsnd68k_data_r` and
+clears `m_mainflag`, independently corroborating the software-visible
+transaction but not its physical strobe timing
+[mame-harddriv-audio-030fefc, `hdsnd68k_data_r`].
+
+## TMS-to-host port latch
+
+A044427 LS374 `50L` connects TMS `TD7:TD0` to its eight D inputs. The
+active-low output-port-3 decode `/CPORT` connects to the positive-edge clock,
+so the latch captures on strobe deassertion. Its eight true Q outputs connect
+in order to host `D15:D8`; active-low `/320PORT` controls output enable. No
+clear or reset input exists on this LS374 path
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 4 of 10,
+PDF pp. 7–8; ti-sn74ls374-datasheet-sdls165b, description, pinout, and
+positive-edge behavior, printed pp. 1–3]. **Confidence: VERIFIED_PRIMARY.**
+
+This resolves the former `OQ-023` hypothesis that `/CPORT` was unconsumed.
+Pinned MAME labels its DSP-side handler `COM port TD0-7` but only logs the
+write, while its host `/320PORT` handler always returns zero. That incomplete
+secondary behavior is recorded as `SC-030`; it cannot override the populated
+schematic path.
+
+## Switch and status nibbles
+
+The `/SWITCHES` half of LS244 `10H` drives `D15:D12` from four connector J3
+inputs, each shown with a 1 kOhm/0.1 uF conditioning network. The drawing does
+not assign enough board-level meaning to those connector signals to name
+their cabinet functions here. Pinned MAME's handler only logs and returns
+zero, so it is not wiring evidence
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
+PDF pp. 5–6; mame-harddriv-audio-030fefc, `hdsnd68k_switches_r`].
+
+The `/READSTAT` half of LS244 `10K` drives:
+
+| host bit | source | active meaning established here |
+|---:|---|---|
+| 15 | `MAINFLAG` | main-to-sound word pending when high |
+| 14 | `SOUNDFLAG` | sound-to-main word pending when high |
+| 13 | `SOUND.TEST` | pulled high; front-panel/test contact grounds it |
+| 12 | `/TIRDY` | raw active-low speech ready net |
+
+The table preserves raw electrical polarity. Speech-device protocol and the
+exact connector semantics remain future peripheral work. Pinned MAME assembles
+bits 15 and 14 from its flags, forces bit 13 high, forces bit 12 low, and
+returns zero in `D11:D0`; that is a software convenience, not proof of the
+undriven physical lanes or a live TMS5220 ready path
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
+PDF pp. 3–4; mame-harddriv-audio-030fefc, `hdsnd68k_status_r`].
+
+## FPGA boundary for `/320PORT`
+
+`rtl/wrappers/hard_drivin_sound_320_port_latch.sv` accepts a same-clock
+physical I/O completion and captures only `io_write_data_i[7:0]` when port 3
+is written. It exports:
+
+- the raw eight-bit latch value and an explicit validity bit;
+- a one-clock exact-commit pulse;
+- `{latch, 8'h00}` as an interface data carrier;
+- constant driven-lane mask `16'hff00`; and
+- valid-lane mask `16'hff00` only after a real port-3 capture.
+
+The low-byte zeros are filler outside the driven mask; this is not a physical open-bus claim.
+`initialize_i` supplies deterministic FPGA storage with validity false;
+processor and board reset do not clear the latch because no such connection
+is drawn.
+
+`hard_drivin_sound_mister` instantiates this path and treats port-3 output as
+an internal no-wait target. It still exposes the physical I/O request and
+commit for trace checking. The top does not yet decode a 68000 `/320PORT`
+transaction or combine the masked value with a platform open-bus policy.
+
+## Verification and synthesis
+
+`tb_hard_drivin_sound_320_port_latch` exhausts all 65,536 TMS words, every
+other port, direction and commit isolation, persistence, reinitialization,
+and lane/valid masks. Five retained checks cover mask containment, validity,
+commit qualification, and state validity.
+
+The integrated board test forces external callback readiness low for port 3.
+The smoke OUT captures `0xa5` and exposes masked host carrier `0xa500`; a
+later low-address TBLW captures `0x30` from word `0xf230` and exposes
+`0x3000`, exactly once, without modifying program RAM. This verifies the
+same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
+Standalone Yosys reports 19 abstract cells and five retained checks; the
+integrated board hierarchy reports 2,495 cells, 171 checks, three memories,
+and zero structural problems. Neither result is a Cyclone V fit.

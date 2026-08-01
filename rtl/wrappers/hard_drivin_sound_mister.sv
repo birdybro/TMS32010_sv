@@ -81,6 +81,12 @@ module hard_drivin_sound_mister (
   output logic [11:0] dac_code_o,
   output logic        dac_code_valid_o,
   output logic        dac_commit_o,
+  output logic [7:0]  cport_latch_data_o,
+  output logic        cport_latch_data_valid_o,
+  output logic        cport_latch_commit_o,
+  output logic [15:0] host_320_port_read_data_o,
+  output logic [15:0] host_320_port_driven_mask_o,
+  output logic [15:0] host_320_port_valid_mask_o,
   output logic        mute_net_o,
   output logic        mute_commit_o,
   output logic        irq_68000_o,
@@ -196,9 +202,9 @@ module hard_drivin_sound_mister (
   end
 
   // Port 0 is served by the parallel sample-ROM adapter and port 1 by the
-  // internal communication-RAM path. Every other physical port remains on
-  // the external callback. Physical request/commit signals stay visible for
-  // trace and ownership checking.
+  // internal communication-RAM path. The port-3 LS374 and port-0/4/5 output
+  // latches have no wait input; remaining targets stay on the external
+  // callback. Physical request/commit signals remain visible for tracing.
   always_comb begin
     selected_io_read_data = io_read_data_i;
     selected_io_ready     = io_ready_i;
@@ -210,6 +216,7 @@ module hard_drivin_sound_mister (
       selected_io_ready     = communication_port_1_ready;
     end else if (io_write_o && (
       (io_port_o == 3'd0) ||
+      (io_port_o == 3'd3) ||
       (io_port_o == 3'd4) ||
       (io_port_o == 3'd5)
     )) begin
@@ -317,6 +324,21 @@ module hard_drivin_sound_mister (
     .dac_code_o                    (dac_code_o),
     .dac_code_valid_o              (dac_code_valid_o),
     .dac_commit_o                  (dac_commit_o)
+  );
+
+  hard_drivin_sound_320_port_latch cport_latch (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .io_port_i                     (io_port_o),
+    .io_write_i                    (io_write_o),
+    .io_write_data_i               (io_write_data_o),
+    .io_commit_i                   (io_commit_o),
+    .latch_data_o                  (cport_latch_data_o),
+    .latch_data_valid_o            (cport_latch_data_valid_o),
+    .latch_commit_o                (cport_latch_commit_o),
+    .host_read_data_o              (host_320_port_read_data_o),
+    .host_driven_mask_o            (host_320_port_driven_mask_o),
+    .host_valid_mask_o             (host_320_port_valid_mask_o)
   );
 
   hard_drivin_sound_output_control output_control (
@@ -472,6 +494,7 @@ module hard_drivin_sound_mister (
       end
       if (io_write_o && (
         (io_port_o == 3'd0) ||
+        (io_port_o == 3'd3) ||
         (io_port_o == 3'd4) ||
         (io_port_o == 3'd5)
       )) begin

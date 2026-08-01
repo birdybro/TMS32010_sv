@@ -629,3 +629,27 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the shown path and explicit Rev-A
   nonpopulation; CORROBORATED for MAME's software behavior; UNKNOWN for the
   physical read word.
+
+## SC-030 — Populated `/CPORT` host latch versus MAME zero stub
+
+- **Primary board evidence:** A044427 LS374 `50L` connects `TD7:TD0` to its
+  inputs, clocks from `/CPORT`, and drives its true outputs onto host
+  `D15:D8` while `/320PORT` is active. No clear input is drawn, and this target
+  does not drive host `D7:D0`
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 4 of 10,
+  PDF pp. 7–8; ti-sn74ls374-datasheet-sdls165b, printed pp. 1–3].
+- **Secondary abstraction:** pinned MAME calls port 3 `COM port TD0-7`, but
+  its DSP write handler only logs the value and its 68000 `/320PORT` read
+  handler always returns `0x0000`
+  [mame-harddriv-audio-030fefc, `hdsnddsp_comport_w` and
+  `hdsnd68k_320port_r`].
+- **Conflict:** the secondary zero stub discards a populated physical latch.
+  It also supplies a complete low byte that the selected Rev-A target does not
+  drive.
+- **Current treatment:** `hard_drivin_sound_320_port_latch` captures the low
+  TMS byte, reports only host `D15:D8` as driven, and keeps captured-data
+  validity separate from its deterministic FPGA filler. See `OQ-030` and
+  `docs/integration/hard_drivin_host_reads.md`.
+- **Confidence:** VERIFIED_PRIMARY for the populated byte path;
+  CORROBORATED for the names in MAME; UNKNOWN for physical host `D7:D0` and
+  latch power-up data.

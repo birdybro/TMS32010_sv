@@ -428,10 +428,12 @@ A044427 communication RAM is a separate 512-by-16 resource. Host latch
 `CRAMEN` selects either host read/write access or DSP port-1 read-only access;
 the DSP address comes from the low nine bits of a shared 16-bit LS191 counter.
 Every physical input read increments that counter, port 7 loads it, and port 6
-latches a separate ROM block nibble. Port 3 only produces an unconsumed
-`/CPORT` decode in the audited Rev-A drawing and must remain unresolved under
-`OQ-023`. Follow `docs/integration/hard_drivin_communication_ram.md` and
-`SC-023` through `SC-025` before changing this path.
+latches a separate ROM block nibble. Port 3 separately clocks `TD7:TD0` into
+LS374 `50L`; host `/320PORT` drives only `D15:D8` from that latch. Preserve
+captured-data validity and the partial-lane mask; do not invent host `D7:D0`
+under `OQ-030`. Follow `docs/integration/hard_drivin_communication_ram.md`,
+`docs/integration/hard_drivin_host_reads.md`, and `SC-023` through `SC-025`
+plus `SC-030` before changing these paths.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

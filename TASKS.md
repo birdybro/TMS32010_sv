@@ -1290,13 +1290,17 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control/BIO/host-control board top as 2,474 abstract cells, 166
-  checks, and three retained memories with zero structural problems. A tenth
+  output-control/BIO/host-control/port-3-latch board top as 2,495 abstract
+  cells, 171 checks, and three retained memories with zero structural
+  problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. An eleventh script
   checks the standalone explicit-enable BIO divider/resampler as 52 cells,
   seven retained checks, no memory or latch, and zero structural problems.
+  A twelfth script checks the address-encoded LS259 host-control adapter as 53
+  cells/six checks. A thirteenth script checks the port-3 LS374 adapter as 19
+  cells/five checks. Both have no memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1348,7 +1352,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_sound_control.md`,
   `docs/integration/hard_drivin_bio.md`,
   `docs/integration/hard_drivin_compare.md`,
-  `docs/integration/hard_drivin_host_control.md`
+  `docs/integration/hard_drivin_host_control.md`,
+  `docs/integration/hard_drivin_host_reads.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1358,7 +1363,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_dac_latch.sv`,
   `sim/bus/tb_hard_drivin_sound_output_control.sv`,
   `sim/bus/tb_hard_drivin_sound_bio_generator.sv`,
-  `sim/bus/tb_hard_drivin_sound_host_control.sv`
+  `sim/bus/tb_hard_drivin_sound_host_control.sv`,
+  `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1433,12 +1439,14 @@ objective passing evidence.
   16-bit sound address, every input-read trailing edge increments it, and port
   6 holds a separate ROM-block nibble. Pinned MAME's unconditional DSP RAM
   visibility, selective port-0/1-only increment, and byte merge remain
-  `SC-023` through `SC-025`. Rev-A `/CPORT` has no identified loaded consumer,
-  so port 3 is `OQ-023`, not established communication control. The standalone
+  `SC-023` through `SC-025`. Rev-A sheet 4 resolves the former `/CPORT`
+  uncertainty: LS374 50L captures `TD7:TD0` and host `/320PORT` enables the
+  byte onto `D15:D8`. Pinned MAME logs the DSP write and returns zero from its
+  host stub (`SC-030`), while undriven host `D7:D0` remain `OQ-030`. The standalone
   FPGA communication path now exhaustively host-loads and DSP-reads all 512
   words, rejects the non-owning side, preserves storage across initialization,
   tracks explicit counter/block validity, verifies global port-2 increment and
-  16-bit wrap, and assigns port 3 no effect. Its pre-technology Yosys target
+  16-bit wrap, and proves port 3 does not alter address control. Its pre-technology Yosys target
   retains one memory in an 82-cell hierarchy with seven checks. The board top
   now routes processor port 1 internally, proves it ignores an external
   sentinel, verifies `0x3456` to `0x3459` global increments, and reads the
@@ -1464,7 +1472,7 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,474 abstract cells/166 checks and retains the same three memories.
+  reports 2,495 abstract cells/171 checks and retains the same three memories.
   Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
@@ -1477,10 +1485,18 @@ objective passing evidence.
   opt-in preserves external defaults, exposes selected Q4/Q3 validity, and
   passes a synthetic program/communication-memory handoff while opposite
   external sentinels are ignored. Full `/RVAS`/DTACK decode and 68000 timing
-  remain. The
-  complete 122/231/38/34/5/10 regression split, strict lint, all twelve Yosys
-  targets, and all 24 tasks from twelve formal configurations pass at this
-  checkpoint.
+  remain. The new standalone `hard_drivin_sound_320_port_latch` exhausts all
+  65,536 words and every non-target/commit/direction case, preserves explicit
+  invalid startup state, and exports fixed driven mask `0xff00` separately
+  from captured-data validity. Its Yosys target reports 19 cells/five checks.
+  The board top treats port 3 as internal no-wait hardware: the smoke OUT
+  exposes masked carrier `0xa500`, and low-address TBLW later exposes
+  `0x3000` from word `0xf230` exactly once while program RAM remains unchanged.
+  `/SOUNDRD`, `/SWITCHES`, and `/READSTAT` are now schematic-traced, but their
+  full host bridge, side effects, and partial-lane/open-bus policy remain
+  acceptance work. The complete 123/231/38/35/5/10 regression split, strict
+  lint, all thirteen Yosys targets, all 30 pinned reference hashes, and all 24
+  tasks from twelve formal configurations pass at this checkpoint.
 
 ## Milestone 22 — Release qualification
 

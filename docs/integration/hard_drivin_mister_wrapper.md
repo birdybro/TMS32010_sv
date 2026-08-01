@@ -193,8 +193,11 @@ writes, three input reads, the BIOZ branch, final accumulator, and raw DAC word.
 
 The test then reasserts only processor reset, reloads a LACK/TBLW/NOP program,
 and proves a low-address TBLW commits once through output port 3 while shared
-RAM word 3 retains the unsupported park word. A final host read verifies the
-unchanged word. It then reloads a second five-cycle sequence targeting address
+RAM word 3 retains the unsupported park word. The internal LS374 model
+captures low byte `0x30` from `0xf230` and exposes host carrier `0x3000` with
+driven/valid mask `0xff00`, even though external callback readiness is held
+low. A final host read verifies the unchanged word. It then reloads a second
+five-cycle sequence targeting address
 zero while the external port-0 callback remains unready. `TBLW` captures
 internal word `0x00a5` once as raw DAC code `0x00a`, and a host readback proves
 program word zero remains the original `LACK 0` opcode `0x7e00`. This directly
@@ -236,7 +239,7 @@ Q4 subsequently disables TMS ownership and reasserts processor reset, after
 which Q3 grants a synchronous host readback of the preserved word `0x1357`.
 This is an end-to-end same-clock callback test, not a physical 68000 bus test.
 
-The pre-technology Yosys target retains three memories and reports 2,474
-abstract cells with 166 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,495
+abstract cells with 171 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

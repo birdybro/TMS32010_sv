@@ -75,8 +75,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A standalone synthesizable Driver Sound communication path comprising a
   512-by-16 CRAMEN-selected host/DSP memory, read-only DSP port-1 view,
   shared 16-bit sound-address state, port-7 load, every-input-read increment,
-  port-6 block latch, and explicit physical-state validity. Port 3 remains a
-  no-effect unresolved decode instead of being assigned invented behavior.
+  port-6 block latch, and explicit physical-state validity. Port 3 remains
+  orthogonal to that address/RAM state and is modeled by its separate LS374.
 - Primary-transcribed Driver Sound parallel sample-ROM wiring, backed by
   newly pinned TI LS138, LS244, and LS374 data sheets. The contract identifies
   twelve decoded 64K-byte positions, exact pre-increment addressing,
@@ -130,6 +130,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 - An opt-in board-top host-control path that selects LS259 Q4/Q3 for
   `/320RES` and CRAMEN, exports raw and selected-control validity, preserves
   the external callbacks by default, and keeps `/IRQCLR` separate.
+- Primary cross-sheet qualification of all four low 68000 host reads,
+  including complete `/SOUNDRD`, partial `/320PORT`/`/SWITCHES`/`/READSTAT`
+  lane maps, handshake side effects, raw status polarity, and explicit
+  `OQ-030` treatment for lanes the selected target does not drive.
+- A standalone synthesizable port-3 LS374 model that captures `TD7:TD0`,
+  exposes it on host `D15:D8`, and separates fixed driven lanes from captured
+  data validity. The board top now acknowledges `/CPORT` internally without
+  inheriting external callback backpressure.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -454,9 +462,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Replaced the misleading serial-ROM shorthand with parallel sample-ROM
   terminology after tracing the direct `SA15:SA0` address and `SD14:SD7` data
   wiring in A044427.
-- Corrected the Driver Sound port-3 description: Rev-A decodes `/CPORT` but no
-  loaded consumer was found, and pinned MAME only logs the word. The synthetic
-  smoke retains it as a decode probe rather than a communication-control claim.
+- Corrected the earlier Driver Sound port-3 conclusion after locating populated
+  LS374 `50L` on A044427 sheet 4. `/CPORT` captures `TD7:TD0`, `/320PORT`
+  drives those bits onto host `D15:D8`, and MAME's logging/zero-return stubs
+  are now isolated as `SC-030` instead of being treated as missing hardware.
 - Split deterministic FPGA initialization from an independent synchronous
   processor-reset request in `tms32010_mister`, allowing board `/320RES` to
   retain shared program contents while preserving the five-cycle reset hold.
@@ -527,6 +536,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Removed the nonphysical external-ready dependency from Driver Sound port 3
+  and implemented its populated byte latch. Both OUT and low-address TBLW now
+  complete against the internal no-wait target and update the masked host view
+  exactly once.
 - Board-top low-address `TBLW` completion now uses the selected physical I/O
   target's readiness instead of the external callback unconditionally. This
   prevents address-zero `/DACL` writes from stalling when the external port-0
@@ -569,16 +582,24 @@ Changelog, and the project follows semantic versioning once releases begin.
   validity, two complete alternating patterns, board-reset qualification, and
   reset-over-write priority. Standalone Yosys reports 53 cells, six checks,
   no memory/latch, and zero structural problems. The complete regression
-  passes 122 repository/tool, 231 model/unit, 38 instruction RTL, 34
-  bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all twelve
+  passes 123 repository/tool, 231 model/unit, 38 instruction RTL, 35
+  bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all thirteen
   Yosys targets, and all 24 tasks from twelve formal configurations pass.
+
+- Exhaustive port-3 LS374 coverage over all 65,536 TMS words, every non-target
+  port, direction/commit isolation, persistence, invalid FPGA startup state,
+  and fixed driven/valid masks. Integrated OUT and low-address TBLW captures
+  produce masked host carriers `0xa500` and `0x3000` under forced external
+  backpressure; board reset preserves the unreset latch and program RAM stays
+  unchanged. Standalone Yosys reports 19 cells/five checks, while the board
+  hierarchy reports 2,495 cells/171 checks/three memories with zero problems.
 
 - Opt-in Q4/Q3 board control with opposite-valued external callback sentinels:
   board reset qualifies all raw outputs, Q4 enables a safe synthetic
   program-RAM handoff, Q3 loads and releases communication RAM, the DSP
   executes `LACK 0x5a; NOP` in two instruction cycles, and a later Q4 reset/Q3
-  host read returns preserved word `0x1357`. Integrated Yosys reports 2,474
-  cells, 166 retained checks, three memories, and zero structural problems.
+  host read returns preserved word `0x1357`. Integrated Yosys reports 2,495
+  cells, 171 retained checks, three memories, and zero structural problems.
 
 - The A044427 cross-sheet port-2 trace from LS139 decode through LS244 `10H`
   to `TDI15`, the absent compare-target connections to `TDI14:TDI0`, the
@@ -590,7 +611,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   qualified low: BIOZ takes only target `LACK 0x22`, consumes three total
   instruction cycles with that target, and sees source release only after a
   later modeled CLKOUT sample. The partial board hierarchy synthesizes to
-  2,474 abstract cells, 166 checks, and three retained memories with zero
+  2,495 abstract cells, 171 checks, and three retained memories with zero
   structural problems.
 
 - The complete fifty-state BIO divider sequence, one-source-period low pulse,
@@ -605,7 +626,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   host clear, and set-over-clear priority. Integrated smoke proves raw MUTE
   capture, data-independent IRQ assertion, host clear, and reset restoration
   while external readiness remains low. Yosys reports 33 cells/four checks for
-  the standalone path and 2,474 cells/166 checks/three memories for the partial
+  the standalone path and 2,495 cells/171 checks/three memories for the partial
   board hierarchy, with zero structural problems.
 
 - Exhaustive raw-DAC coverage across all 65,536 TMS output words, every
@@ -617,7 +638,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   A separate five-cycle `LACK 0; TBLW 0x11; NOP` execution captures internal
   word `0x00a5` as raw code `0x00a` through the same target while a host
   readback proves program word zero remains `0x7e00`.
-  The board hierarchy passes Yosys at 2,474 abstract cells/166 checks with its
+  The board hierarchy passes Yosys at 2,495 abstract cells/171 checks with its
   same three memories.
 - Exhaustive standalone sample-ROM coverage across all sixteen block values,
   all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
@@ -627,14 +648,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
   commit, external-sentinel rejection, and shared-counter advance. The board
   hierarchy retains three memories and, with the raw DAC latch, passes Yosys
-  at 2,474 abstract cells with 166 checks and zero structural problems.
+  at 2,495 abstract cells with 171 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
 - Complete host loading and exact DSP port-1 readback across all 512
   communication words; both CRAMEN ownership states, blocked non-owner
   accesses, owner-tagged synchronous responses, port-2 increment, 16-bit
-  wrap, port-7 load, port-6 low-nibble latch, port-3 non-effect, invalid
+  wrap, port-7 load, port-6 low-nibble latch, port-3 address-state isolation, invalid
   preload state, and initialization-time memory retention. Pre-technology
   Yosys retains one 512-by-16 memory in an 82-cell hierarchy with seven checks
   and zero structural problems.
@@ -650,8 +671,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,474 abstract
-  cells, 166 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,495 abstract
+  cells, 171 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -1144,8 +1165,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   68000 latch/bus bridge exists. Its registered response is an FPGA convention,
   not physical HM6116 timing.
   Pinned MAME still conflicts by returning RAM during host ownership and by
-  omitting the global `/PDEN` increment from port 2; port 3 remains an
-  unresolved decoded strobe (`OQ-023`–`OQ-025`).
+  omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
+  its undriven host low byte remains a distinct open-bus question (`OQ-030`).
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
   lacks the 68000 bridge, actual sample storage, compare/DAC-analog

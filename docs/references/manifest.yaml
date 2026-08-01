@@ -279,9 +279,9 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
-        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): /320BIO generator and 320IRQ open-collector connections to 68000 IPL1/IPL0",
-        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): host /IRQCLR decode and program-RAM controls",
-        "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
+        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
+        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): host read/write decode, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
+        "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
       ],
       "status": "acquired",
@@ -483,7 +483,9 @@
       "notes": "Independent oracle only. Current source configures TMS320C10 at 20 MHz although game comments call the slave TMS32010; investigate device-label distinction against schematics.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "sounddsp_program_map, sounddsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration"
+        "driversnd_dsp_program_map, driversnd_dsp_io_map, BIO_FREQUENCY/hdsnddsp_get_bio callback, I/O handlers, 68000 IRQ routing, and DSP device configuration",
+        "driversnd_68k_map and hdsnd68k_data_r/hdsnd68k_switches_r/hdsnd68k_320port_r/hdsnd68k_status_r host read handlers",
+        "hdsnddsp_comport_w port-3 logging stub"
       ],
       "status": "acquired",
       "download": {
@@ -746,7 +748,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for the A044427 port-6 sound-ROM block latch",
+      "relevance": "Primary component behavior for the A044427 port-6 sound-ROM block latch and port-3 TMS-to-host LS374 50L",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
       "may_commit": false,

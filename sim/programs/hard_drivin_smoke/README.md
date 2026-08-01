@@ -8,7 +8,7 @@ exact sequence.
 The working port map comes from Atari A044427 Rev-A wiring plus the pinned
 MAME integration adapter. MAME maps program space to 4K shared words and maps
 ports as sound-ROM read/DAC write (0), communication-RAM read (1), compare
-read (2), an unresolved decoded `/CPORT` probe (3), mute (4), 68000 interrupt
+read (2), a TMS-low-byte-to-host-high-byte `/CPORT` latch (3), mute (4), 68000 interrupt
 request (5), and sound-ROM bank/address writes (6/7)
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3–7 of 10,
 PDF pp. 5–14; mame-harddriv-audio-030fefc,
@@ -29,7 +29,7 @@ The harness supplies the following synthetic values:
 
 - raw DAC word `0xf230` at internal RAM `0x10`;
 - host communication word `0x55aa` from port 1;
-- unresolved port-3 probe value `0x00a5`, mute value 1, and one 68000 IRQ
+- port-3 latch value `0x00a5` (host driven byte `0xa5`), mute value 1, and one 68000 IRQ
   request;
 - populated Hard Drivin' sound-ROM block `0x03` and address `0x3456` through
   ports 6 and 7;

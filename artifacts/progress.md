@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' opt-in host-control board integration
+- **Current milestone:** Hard Drivin' host read-path and `/CPORT` qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 122 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 123 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 34 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 35 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -55,8 +55,8 @@
   with no memory, latch, or structural problem. An eighth target checks raw
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
-  communication/sample-ROM/DAC/output-control/BIO/host-control board top
-  retains all three memories and passes at 2,474 abstract cells/166 checks
+  communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
+  board top retains all three memories and passes at 2,495 abstract cells/171 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -65,6 +65,8 @@
   with no memory, latch, or structural problem.
   A twelfth target checks the standalone address-encoded LS259 adapter at 53
   cells/six retained checks with no memory, latch, or structural problem.
+  A thirteenth target checks the standalone port-3 LS374 adapter at 19 cells,
+  five retained checks, no memory/latch, and zero structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -161,7 +163,7 @@
   report above the original instruction definitions;
   the pinned Hard Drivin' adapter maps port 0 as sound-ROM read/DAC write,
   port 1 as communication-RAM read, port 2 as an incompletely modeled compare
-  read, port 3 as an unresolved `/CPORT` decode probe, ports 4–5 as
+  read, port 3 as an eight-bit `/CPORT` latch onto host `D15:D8`, ports 4–5 as
   mute/68000-IRQ writes, and ports 6–7 as
   sound-ROM bank/address writes; the synthetic smoke fixture verifies raw
   processor transactions while retaining these roles below primary authority;
@@ -453,15 +455,16 @@
   512 by 16 words. CRAMEN selects host read/write or DSP port-1 read-only
   ownership; `SA8:SA0` supplies the DSP address. Four LS191 counters load on
   port 7 and increment after every input read, with a separate port-6 ROM
-  block nibble. Port 3 has only an unresolved `/CPORT` decode. Official TI
-  LS191/LS259 sources are hash-pinned, and `SC-023`–`SC-025` isolate MAME's
+  block nibble. Port 3 is separate from that state and clocks `TD7:TD0` into
+  host-facing LS374 50L. Official TI LS191/LS259/LS374 sources are hash-pinned,
+  and `SC-023`–`SC-025` isolate MAME's
   unconditional DSP access, selective increment, and byte merge.
 - **New communication implementation evidence:** the standalone adapter loads
   all 512 complete words from the host and reads them at exact low-nine
   addresses through DSP port 1. Directed simulation covers both ownership
   states, blocked non-owner requests, owner-tagged synchronous reads, global
   port-2 increment, 16-bit wrap, port-7 load, port-6 low-nibble state, port-3
-  non-effect, invalid pre-load state, and memory retention. Yosys retains one
+  address-control isolation, invalid pre-load state, and memory retention. Yosys retains one
   512-by-16 memory in an 82-cell hierarchy with seven checks. The board-top
   execution described above now qualifies its processor callback connection;
   physical HM6116 timing and a 68000 bridge remain unimplemented.
@@ -521,7 +524,7 @@
   coincidence. An integrated fixture holds external BIO high, selects a
   qualified generated low, proves BIOZ reaches only `LACK 0x22` in three
   cycles, and observes release only after a later CLKOUT sample. Board-top
-  Yosys passes at 2,474 abstract cells/166 checks/three memories.
+  Yosys passes at 2,495 abstract cells/171 checks/three memories.
 - **New compare-path evidence:** A044427 sheets 3 and 5 prove that port-2
   `/CMPRD` enables only `CMPOUT` onto `TDI15`; the target supplies no drawn
   source for `TDI14:TDI0`. Sheet 8 draws the microphone/DAC LM311 comparison
@@ -546,8 +549,20 @@
   reset, loads program and communication RAM under latched ownership, hands
   both to the DSP, executes `LACK 0x5a; NOP` in two cycles, reasserts latched
   reset, and reads communication word `0x1357` back under Q3. Integrated Yosys
-  reports 2,474 cells/166 checks/three memories with zero structural problems.
+  reports 2,495 cells/171 checks/three memories with zero structural problems.
   This does not claim `/RVAS`, DTACK, or physical level-sensitive timing.
+- **New host-read evidence:** A044427 sheets 2–4 establish that `/SOUNDRD`
+  drives a complete word and clears `MAINFLAG`, `/320PORT` drives only
+  `D15:D8`, and `/SWITCHES` plus `/READSTAT` each drive only `D15:D12`.
+  `OQ-030` keeps every undriven lane electrically unknown. Sheet 4 LS374 50L
+  resolves `OQ-023`: `/CPORT` captures `TD7:TD0`, while pinned MAME only logs
+  the write and returns zero (`SC-030`). The new standalone RTL exhausts all
+  65,536 input words, non-target ports, direction/commit isolation, validity,
+  and masks. Integrated smoke captures `0xa5` on OUT and `0x30` on low-address
+  TBLW under forced external backpressure, exposes only masked host carriers
+  `0xa500`/`0x3000`, preserves state across board reset, and leaves program
+  RAM unchanged. Standalone Yosys reports 19 cells/five checks; the board top
+  reports 2,495 cells/171 checks/three memories with zero problems.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -567,15 +582,14 @@
   population and absent-block behavior,
   BIO power-up/reset-release phase and independent-clock coincidence,
   production Rev-A port-2 `TDI15:TDI0` electrical value,
-  loaded
-  `/CPORT` purpose,
+  undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the remaining A044427 host readback/status paths and
-  determine the smallest evidence-backed callback boundary without inventing
-  byte-lane or DTACK behavior.
+- **Next task:** implement the primary-defined full-word main/sound latch and
+  `MAINFLAG`/`SOUNDFLAG` handshake as a standalone callback boundary while
+  preserving `/SOUNDRD` and `/MAINRD` read-clear timing uncertainty.
 - **Latest committed baseline before this cycle:**
-  `624e441`
+  `a96aa68`

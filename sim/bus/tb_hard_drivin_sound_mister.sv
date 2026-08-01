@@ -70,6 +70,12 @@ module tb_hard_drivin_sound_mister;
   logic [11:0] dac_code;
   logic        dac_code_valid;
   logic        dac_commit;
+  logic [7:0]  cport_latch_data;
+  logic        cport_latch_data_valid;
+  logic        cport_latch_commit;
+  logic [15:0] host_320_port_read_data;
+  logic [15:0] host_320_port_driven_mask;
+  logic [15:0] host_320_port_valid_mask;
   logic        mute_net;
   logic        mute_commit;
   logic        irq_68000;
@@ -104,6 +110,7 @@ module tb_hard_drivin_sound_mister;
   integer      sound_rom_commit_count;
   integer      sound_rom_wait_cycles;
   integer      dac_commit_count;
+  integer      cport_latch_commit_count;
   integer      mute_commit_count;
   logic        sound_rom_request_seen;
 
@@ -184,6 +191,12 @@ module tb_hard_drivin_sound_mister;
     .dac_code_o                    (dac_code),
     .dac_code_valid_o              (dac_code_valid),
     .dac_commit_o                  (dac_commit),
+    .cport_latch_data_o            (cport_latch_data),
+    .cport_latch_data_valid_o      (cport_latch_data_valid),
+    .cport_latch_commit_o          (cport_latch_commit),
+    .host_320_port_read_data_o     (host_320_port_read_data),
+    .host_320_port_driven_mask_o   (host_320_port_driven_mask),
+    .host_320_port_valid_mask_o    (host_320_port_valid_mask),
     .mute_net_o                    (mute_net),
     .mute_commit_o                 (mute_commit),
     .irq_68000_o                   (irq_68000),
@@ -239,11 +252,12 @@ module tb_hard_drivin_sound_mister;
   always #5 clk = ~clk;
 
   always_comb begin
-    // Prove that internal port-0/4/5 latch targets do not inherit downstream
+    // Prove that internal port-0/3/4/5 latch targets do not inherit downstream
     // callback backpressure. Other still-external targets remain ready.
     external_io_ready = !(
       io_write && (
         (io_port == 3'd0) ||
+        (io_port == 3'd3) ||
         (io_port == 3'd4) ||
         (io_port == 3'd5)
       )
@@ -279,6 +293,7 @@ module tb_hard_drivin_sound_mister;
       end
       if (io_write) begin
         if (((io_port == 3'd0) ||
+             (io_port == 3'd3) ||
              (io_port == 3'd4) ||
              (io_port == 3'd5)) && external_io_ready) begin
           $fatal(1, "internal output commit relied on external readiness");
@@ -292,9 +307,12 @@ module tb_hard_drivin_sound_mister;
   always_ff @(posedge clk) begin
     if (initialize) begin
       dac_commit_count <= 0;
+      cport_latch_commit_count <= 0;
       mute_commit_count <= 0;
     end else if (dac_commit) begin
       dac_commit_count <= dac_commit_count + 1;
+    end else if (cport_latch_commit) begin
+      cport_latch_commit_count <= cport_latch_commit_count + 1;
     end else if (mute_commit) begin
       mute_commit_count <= mute_commit_count + 1;
     end
@@ -533,6 +551,12 @@ module tb_hard_drivin_sound_mister;
     require(selected_bio_valid && !selected_bio_n &&
             !board_bio_valid && board_bio_n,
             "external BIO remains selected while board BIO power-up is invalid");
+    require(
+      !cport_latch_data_valid &&
+      host_320_port_driven_mask == 16'hff00 &&
+      host_320_port_valid_mask == 16'h0000,
+      "host D15:D8 are the only /320PORT lanes and power-up data is invalid"
+    );
 
     // The host loads the project-authored ROM-free board smoke program while
     // /320RES is asserted. Address 14 is an explicit conservative park word.
@@ -577,6 +601,14 @@ module tb_hard_drivin_sound_mister;
             "port-4 TD0=1 commits the primary raw complementary MUTE net");
     require(irq_68000,
             "data-independent port-5 request leaves 320IRQ asserted");
+    require(
+      cport_latch_data_valid && cport_latch_data == 8'ha5 &&
+      cport_latch_commit_count == 1 &&
+      host_320_port_read_data == 16'ha500 &&
+      host_320_port_driven_mask == 16'hff00 &&
+      host_320_port_valid_mask == 16'hff00,
+      "port three exposes TD7:TD0 on host D15:D8 with explicit lane masks"
+    );
     require(output_ports[3] == 16'h00a5 &&
             output_ports[4] == 16'h0001 &&
             output_ports[5] == 16'h0000 &&
@@ -650,6 +682,12 @@ module tb_hard_drivin_sound_mister;
     run_until_retired(3);
     require(io_write_count == 7 && output_ports[3] == 16'hf230,
             "low-address TBLW commits exactly once through output port three");
+    require(
+      cport_latch_commit_count == 2 && cport_latch_data == 8'h30 &&
+      host_320_port_read_data == 16'h3000 &&
+      host_320_port_valid_mask == 16'hff00,
+      "low-address TBLW clocks its low byte through the physical /CPORT path"
+    );
     require(cycle_count == 32'd5,
             "LACK/TBLW/NOP consumes the documented five cycles");
     require(execute_valid && execute_address == 12'h003 &&
@@ -771,6 +809,11 @@ module tb_hard_drivin_sound_mister;
       !selected_communication_host_enable &&
       selected_communication_host_enable_valid,
       "board reset qualifies Q4/Q3 low and ignores opposite external controls"
+    );
+    require(
+      cport_latch_data_valid && cport_latch_data == 8'h30 &&
+      host_320_port_valid_mask == 16'hff00,
+      "board reset does not clear the separately unreset LS374 50L"
     );
     require(reset_active && !tms_access_permitted,
             "selected Q4 low holds the processor and TMS buffers reset");

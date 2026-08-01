@@ -59,9 +59,9 @@ adapter is now connected to `hard_drivin_sound_mister`: a host callback
 preloads a synthetic communication word, processor port 1 reads it internally,
 and the full address/block side effects survive the expected execution/reset
 sequence. This is not a 68000 bus/latch implementation or physical HM6116
-timing model. Port 3 remains an unresolved
-decoded `/CPORT` strobe with no loaded consumer found on Rev A and has no
-invented state effect.
+timing model. The independently modeled port-3 LS374 captures `TD7:TD0` on
+`/CPORT` and exposes it on host `D15:D8`; explicit masks keep undriven host
+`D7:D0` unresolved rather than inventing a complete read word.
 A044427 sheets 5–6 now define the remaining port-0 input as a parallel
 sample-ROM path: a present block and the pre-increment 16-bit sound address
 select one byte, which reaches the TMS as a signed byte shifted left seven.

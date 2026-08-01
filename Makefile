@@ -75,6 +75,7 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_program_ram.ys \
 			synthesis/yosys/hard_drivin_sound_rom_path.ys \
 			synthesis/yosys/hard_drivin_sound_dac_latch.ys \
+			synthesis/yosys/hard_drivin_sound_320_port_latch.ys \
 			synthesis/yosys/hard_drivin_sound_output_control.ys \
 			synthesis/yosys/hard_drivin_sound_host_control.ys \
 			synthesis/yosys/hard_drivin_sound_mister.ys \

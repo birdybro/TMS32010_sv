@@ -58,6 +58,13 @@ opposite-valued external callbacks are ignored. `/RVAS`, DTACK, the full 68000
 memory map, and physical host timing remain separate acceptance work. Complete
 details are in `docs/integration/hard_drivin_host_control.md`.
 
+The four host read targets do not all drive a complete word. `/SOUNDRD`
+drives `D15:D0`; `/320PORT` drives only `D15:D8` from the TMS port-3 latch;
+`/SWITCHES` and `/READSTAT` each drive only `D15:D12`. Undriven lanes remain
+`OQ-030`, so the FPGA boundary uses driven/valid masks instead of silently
+filling a verified word. The complete trace is in
+`docs/integration/hard_drivin_host_reads.md`.
+
 ### Program-RAM ownership is a firmware protocol
 
 The drawing contains no mutual-exclusion arbiter. LS259 output `/320RES`
@@ -146,14 +153,14 @@ secondary adapter behavior:
 | 0 | write | 12-bit DAC latch from `TD15..TD4` | VERIFIED_PRIMARY for raw code; signed-audio interpretation unresolved |
 | 1 | read | 512-word host communication RAM at shared `SA8:SA0` | VERIFIED_PRIMARY |
 | 2 | read | optional microphone/DAC comparator; Rev-A source sheet not loaded; only `CMPOUT` reaches `TDI15` | UNKNOWN (`OQ-029`) |
-| 3 | write | decoded `/CPORT`; no loaded consumer found | UNKNOWN (`OQ-023`) |
+| 3 | write | LS374 captures `TD7:TD0`; host `/320PORT` drives it on `D15:D8` | VERIFIED_PRIMARY (`OQ-023` resolved) |
 | 4 | write | LS74 captures TD0; raw `MUTE=/Q=!TD0`; only drawn consumer not loaded | VERIFIED_PRIMARY for raw state; effective mute UNKNOWN |
 | 5 | write | data-independent LS74 preset asserts latched `320IRQ` | VERIFIED_PRIMARY |
 | 6 | write | low-nibble sample-ROM block latch | VERIFIED_PRIMARY |
 | 7 | write | 16-bit shared sound-address counter load | VERIFIED_PRIMARY |
 
-Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 5–7,
-PDF pp. 9–14; mame-harddriv-audio-030fefc, `sounddsp_io_map` and handlers].
+Sources: [atari-driver-sound-board-schematic, drawing A044427, sheets 4–7,
+PDF pp. 7–14; mame-harddriv-audio-030fefc, `driversnd_dsp_io_map` and handlers].
 
 The A044427 output decode uses the physical bus, not the CPU's logical
 instruction class. Three LS27 groups and an ALS11 generate `PORT` when
@@ -204,16 +211,18 @@ Those abstractions are isolated as `SC-023` and `SC-024`
 ti-sn74ls191-datasheet-sdls072, printed pp. 1-4;
 mame-harddriv-audio-030fefc, communication/ROM/compare handlers].
 
-Port 3 is only a decoded `/CPORT` strobe in the audited drawing. No loaded
-consumer was found, and MAME's handler only logs the write. It remains
-`OQ-023`; the synthetic smoke's port-3 write is a decode probe, not a known
-control command. Complete wiring, conflicts, and FPGA requirements are in
-`docs/integration/hard_drivin_communication_ram.md`.
+Port 3 clocks `TD7:TD0` into LS374 `50L`; `/320PORT` enables its outputs onto
+host `D15:D8`. The earlier no-consumer hypothesis is closed by sheet 4 under
+`OQ-023`. Pinned MAME logs the write and returns zero from the host read, so
+its incomplete stub is isolated as `SC-030`. Host `D7:D0` remain electrically
+unqualified under `OQ-030`. Complete wiring and the masked FPGA boundary are
+in `docs/integration/hard_drivin_host_reads.md`.
 
 The standalone `hard_drivin_sound_communication_path` now implements the
 qualified 512-word storage/ownership boundary and shared address/block state.
 Its exhaustive simulation covers all 512 words plus the global port-2 read
-increment, wrap, validity, ownership, and port-3 non-effect cases; its
+increment, wrap, validity, ownership, and port-3 address-control-isolation
+cases; its
 pre-technology Yosys target retains one memory with zero structural problems.
 The processor/program-RAM board top now routes port 1 to this path, preloads a
 synthetic word through the whole-word host callback, and verifies execution,

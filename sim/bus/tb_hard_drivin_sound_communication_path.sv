@@ -243,7 +243,7 @@ module tb_hard_drivin_sound_communication_path;
       old_block = sound_rom_block;
       commit_io_write(3'd3, 16'h00a5);
       require(sound_address == old_address && sound_rom_block == old_block,
-              "unresolved port 3 has no invented address-control effect");
+              "separate /CPORT latch has no address-control effect");
     end
 
     initialize = 1'b1;
