@@ -12,6 +12,7 @@ read_verilog -sv rtl/wrappers/hard_drivin_sound_program_ram.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_address_control.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_communication_ram.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_communication_path.sv
+read_verilog -sv rtl/wrappers/hard_drivin_sound_rom_path.sv
 read_verilog -sv rtl/wrappers/hard_drivin_sound_mister.sv
 
 hierarchy -check -top hard_drivin_sound_mister

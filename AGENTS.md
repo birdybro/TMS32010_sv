@@ -407,7 +407,7 @@ script qualify the isolated adapter. `hard_drivin_sound_mister` now routes
 processor port 1 to that path and exposes its whole-word host callback; the
 synthetic execution test qualifies the handoff, data source, global read
 increments, and reset retention. Do not infer a 68000 bridge/latch decode,
-physical HM6116 latency, sound-ROM data path, or completed board integration.
+physical HM6116 latency, or completed board integration.
 A044427's sample-ROM path is parallel, not serial: a port-6 LS374 selects one
 of twelve drawn 64K-byte blocks, `SA15:SA0` supplies the pre-increment byte
 address, and port 0 returns
@@ -416,6 +416,13 @@ present; blocks 12–15 select no drawn ROM, and an absent block is electrically
 undefined under `OQ-026`. Pinned MAME's unsigned left shift omits TDI15 and is
 only a named secondary-oracle difference (`SC-026`). Read
 `docs/integration/hard_drivin_sound_rom.md` before implementing this path.
+The storage-free `hard_drivin_sound_rom_path` now enforces that contract. It
+issues a byte callback only for explicit present/valid block and address state,
+never acknowledges invalid or absent selections, and forms the duplicated-sign
+word combinationally. `hard_drivin_sound_mister` routes processor port 0 to it;
+the external generic I/O response must not override ports 0 or 1. Do not infer
+ROM contents, absent-bus values, asynchronous device timing, or authorized ROM
+provenance from this adapter.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
 provisional behavior under `OQ-015`.

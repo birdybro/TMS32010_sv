@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' parallel sample-ROM research
+- **Current milestone:** Hard Drivin' integrated parallel sample-ROM callback
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 118 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 29 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 30 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -48,9 +48,11 @@
   with zero structural problems. A fifth target retains the board's 4K-by-16
   adapter as one registered-read, single-write-port abstract memory in an
   85-cell hierarchy with five checks and zero structural problems.
-  The partial processor/program/communication-RAM board top retains all three
-  memories and passes at 2,259 abstract cells/131 checks with zero structural
-  problems before technology mapping. A seventh target retains the
+  A sixth standalone target checks the storage-free parallel sample-ROM
+  adapter at 18 abstract cells/three checks with no latch or structural
+  problem. The partial processor/program/communication/sample-ROM board top
+  retains all three memories and passes at 2,290 abstract cells/137 checks
+  with zero structural problems before technology mapping. An eighth target retains the
   standalone 512-by-16 communication memory as one `$mem_v2` in an 82-cell
   hierarchy with seven checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
@@ -460,6 +462,14 @@
   hash-pinned. The smoke fixture now selects populated Hard Drivin' block 3
   and expects physical byte `0xd5` as `0xea80`; block population and absent
   reads remain `OQ-026`.
+- **New sample-ROM implementation evidence:** the storage-free adapter checks
+  all 16 block values, every one of 65,536 pre-increment addresses, all 256
+  byte values, explicit presence/validity, unready responses, and port
+  isolation. It never acknowledges an invalid/absent selection. The board top
+  now routes port 0 internally, rejects an external `0x6a80` sentinel, holds
+  block 3/address `0x3457` across three unready clocks, returns synthetic byte
+  `0xd5` as `0xea80`, commits once, and advances only through the shared
+  physical I/O pulse. No ROM image is stored or distributed.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -484,7 +494,7 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement and exhaustively verify a present-block-aware
-  parallel sample-ROM callback adapter, then route processor port 0 internally.
+- **Next task:** transcribe and implement the primary-defined raw DAC latch
+  boundary while leaving analog/sample-format interpretation under `OQ-020`.
 - **Latest committed baseline before this cycle:**
-  `8a2f6e0`
+  `e0f513c`

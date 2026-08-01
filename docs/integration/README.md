@@ -33,9 +33,11 @@ peripheral implementations and the 68000 bridge external.
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every
 word. `hard_drivin_sound_mister` now routes processor port 1 to that adapter
 and exposes its whole-word host callback, but still does not implement a 68000
-bus/latch decode, physical HM6116 timing, or parallel sound-ROM data path.
-`hard_drivin_sound_rom.md` records the selected-ROM mapping and corrects older
-serial-path shorthand.
+bus/latch decode or physical HM6116 timing.
+`hard_drivin_sound_rom.md` records the parallel selected-ROM mapping. The new
+storage-free adapter routes processor port 0 to an explicit authorized-byte
+callback, rejects absent/invalid selections instead of inventing a bus value,
+and contains neither ROM images nor physical access-time behavior.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

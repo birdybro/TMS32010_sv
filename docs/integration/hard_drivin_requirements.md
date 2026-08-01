@@ -211,6 +211,15 @@ records the conflict, and `OQ-026` tracks unpopulated-block behavior and exact
 population by revision. Complete details and FPGA requirements are in
 `docs/integration/hard_drivin_sound_rom.md`.
 
+The storage-free FPGA adapter now accepts an explicit twelve-bit population
+mask and authorized byte callback, reports every invalid or absent selection,
+and forms the physical signed-left-seven port-0 word. Its exhaustive test spans
+all blocks, all 65,536 byte addresses, all 256 byte values, validity, presence,
+stall, and target-isolation cases. The board top routes port 0 internally and
+holds block 3/address `0x3457` stable through a delayed synthetic `0xd5`
+response. This is VERIFIED_SIMULATION for the schematic-derived digital
+mapping, not a ROM-content, open-bus, or physical-access-time claim.
+
 ### DAC path
 
 Sheet 7 shows `/DACL` clocking two LS374 latches. Their outputs connect

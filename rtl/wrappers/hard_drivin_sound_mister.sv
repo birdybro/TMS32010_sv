@@ -1,8 +1,9 @@
 `default_nettype none
 
 // Same-clock FPGA integration of the generic MiSTer callback wrapper with the
-// qualified A044427 Rev-A program/communication RAM ownership and native
-// target decode. Remaining peripherals and the 68000 bus bridge are external.
+// qualified A044427 Rev-A program/communication RAM ownership, parallel
+// sample-ROM callback, and native target decode. Remaining peripherals and the
+// 68000 bus bridge are external.
 module hard_drivin_sound_mister (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -45,6 +46,13 @@ module hard_drivin_sound_mister (
   output logic        sound_address_valid_o,
   output logic [3:0]  sound_rom_block_o,
   output logic        sound_rom_block_valid_o,
+  input  logic [11:0] sound_rom_present_i,
+  output logic        sound_rom_request_o,
+  output logic [3:0]  sound_rom_request_block_o,
+  output logic [15:0] sound_rom_request_address_o,
+  input  logic [7:0]  sound_rom_byte_i,
+  input  logic        sound_rom_byte_ready_i,
+  output logic        sound_rom_selection_invalid_o,
 
   input  logic        debug_data_write_i,
   input  logic [7:0]  debug_data_address_i,
@@ -113,6 +121,8 @@ module hard_drivin_sound_mister (
   logic        program_ram_select_n;
   logic [15:0] communication_port_1_read_data;
   logic        communication_port_1_ready;
+  logic [15:0] sound_rom_port_0_read_data;
+  logic        sound_rom_port_0_ready;
   logic [15:0] selected_io_read_data;
   logic        selected_io_ready;
 
@@ -137,13 +147,17 @@ module hard_drivin_sound_mister (
     end
   end
 
-  // Port 1 is served by the internal communication-RAM path. Every other
-  // physical port remains on the external callback. The physical request and
-  // commit signals stay visible for trace/debug ownership.
+  // Port 0 is served by the parallel sample-ROM adapter and port 1 by the
+  // internal communication-RAM path. Every other physical port remains on
+  // the external callback. Physical request/commit signals stay visible for
+  // trace and ownership checking.
   always_comb begin
     selected_io_read_data = io_read_data_i;
     selected_io_ready     = io_ready_i;
-    if (io_read_o && (io_port_o == 3'd1)) begin
+    if (io_read_o && (io_port_o == 3'd0)) begin
+      selected_io_read_data = sound_rom_port_0_read_data;
+      selected_io_ready     = sound_rom_port_0_ready;
+    end else if (io_read_o && (io_port_o == 3'd1)) begin
       selected_io_read_data = communication_port_1_read_data;
       selected_io_ready     = communication_port_1_ready;
     end
@@ -217,6 +231,24 @@ module hard_drivin_sound_mister (
     .sound_address_valid_o         (sound_address_valid_o),
     .sound_rom_block_o             (sound_rom_block_o),
     .sound_rom_block_valid_o       (sound_rom_block_valid_o)
+  );
+
+  hard_drivin_sound_rom_path sound_rom_path (
+    .io_port_i                     (io_port_o),
+    .io_read_i                     (io_read_o),
+    .sound_address_i               (sound_address_o),
+    .sound_address_valid_i         (sound_address_valid_o),
+    .sound_rom_block_i             (sound_rom_block_o),
+    .sound_rom_block_valid_i       (sound_rom_block_valid_o),
+    .sound_rom_present_i           (sound_rom_present_i),
+    .sound_rom_request_o           (sound_rom_request_o),
+    .sound_rom_request_block_o     (sound_rom_request_block_o),
+    .sound_rom_request_address_o   (sound_rom_request_address_o),
+    .sound_rom_byte_i              (sound_rom_byte_i),
+    .sound_rom_byte_ready_i        (sound_rom_byte_ready_i),
+    .port_0_read_data_o            (sound_rom_port_0_read_data),
+    .port_0_ready_o                (sound_rom_port_0_ready),
+    .sound_rom_selection_invalid_o (sound_rom_selection_invalid_o)
   );
 
   tms32010_mister processor (
@@ -303,6 +335,11 @@ module hard_drivin_sound_mister (
       if (io_read_o && (io_port_o == 3'd1)) begin
         assert (selected_io_ready == communication_port_1_ready);
         assert (selected_io_read_data == communication_port_1_read_data);
+      end
+      if (io_read_o && (io_port_o == 3'd0)) begin
+        assert (selected_io_ready == sound_rom_port_0_ready);
+        assert (selected_io_read_data == sound_rom_port_0_read_data);
+        assert (!io_commit_o || sound_rom_request_o);
       end
     end
   end

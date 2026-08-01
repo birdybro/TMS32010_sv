@@ -4,13 +4,13 @@
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
-communication-memory paths.
+communication-memory and sample-ROM paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
-1. It does not implement the 68000 bus/latches, parallel sound-ROM path, compare
-circuit, DAC analog path, mute/IRQ consumers, BIO divider, or a MiSTer
-framework top level.
+1 and routes port 0 through a present-block-aware byte callback. It does not implement the 68000 bus
+or latches, actual sample storage, compare circuit, DAC
+analog path, mute/IRQ consumers, BIO divider, or a MiSTer framework top level.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -70,19 +70,35 @@ latch output but does not implement the 68000 decode that controls it. Host
 byte lanes and DTACK remain unresolved integration work under
 `SC-025`/`OQ-024`.
 
+## Parallel sample-ROM callback
+
+`sound_rom_present_i[11:0]` explicitly declares which of the twelve decoded
+positions the integration can supply. A valid port-0 read asserts
+`sound_rom_request_o` with `sound_rom_request_block_o` and the pre-increment
+`sound_rom_request_address_o`. The integration returns one authorized byte and
+`sound_rom_byte_ready_i`; the wrapper constructs the exact physical signed-
+byte-left-seven word. Invalid or absent selections assert
+`sound_rom_selection_invalid_o`, remain unacknowledged, and therefore hold the
+processor rather than fabricating an open-bus zero. `OQ-026` still governs the
+unmeasured electrical value of those out-of-contract reads.
+
+This callback is same-clock and storage-free. It does not establish ROM access
+time, contain copyrighted bytes, or permit a ROM image to be committed.
+
 ## Physical I/O callback
 
 `io_port_o`, `io_read_o`, `io_write_o`, `io_write_data_o`, `io_ready_i`, and
 `io_read_data_i` represent the board's physical low-eight target after native
 address/MEN/DEN/WE decode. `io_commit_o` pulses at an enabled phase-3 boundary
 when the physical request and selected target readiness are both active.
-Processor port-1 reads take their data/readiness from the internal
-communication path; the external `io_read_data_i` and `io_ready_i` are ignored
-for that target. All other ports continue to use the external callback.
+Processor port-0 reads take their data/readiness from the sample-ROM callback,
+and port-1 reads from the internal communication path; the external `io_read_data_i` and `io_ready_i` are ignored
+for both targets. All other ports
+continue to use the external callback.
 Consumers commit writes or count reads only on `io_commit_o`, not on every
 FPGA clock for which a request remains asserted. The same pulse drives the
-shared address control, so every committed input read—including external
-ports 0/2 and internal port 1—increments the full 16-bit address once. Port 7
+shared address control, so every committed input read—including internal ports
+0/1 and external port 2—increments the full 16-bit address once. Port 7
 loads that address and port 6 latches the separate low block nibble.
 
 This physical callback intentionally differs from the generic logical split.
@@ -115,10 +131,12 @@ The processor receives the internal word even though the external port-1
 callback supplies a deliberately different sentinel. Port-1, port-0, and
 port-2 reads advance the shared address from `0x3456` to `0x3459`; port 6
 retains populated block nibble `0x3`. A processor-reset/host-read handoff then
-proves the
-communication word survived execution and reset.
+proves the communication word survived execution and reset. Port 0 also
+ignores an external unsigned-MAME sentinel, holds block 3/address `0x3457`
+stable through three unready clocks, maps synthetic byte `0xd5` to `0xea80`,
+and commits once.
 
-The pre-technology Yosys target retains three memories and reports 2,259
-abstract cells with 131 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,290
+abstract cells with 137 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

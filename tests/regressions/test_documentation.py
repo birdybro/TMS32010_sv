@@ -161,7 +161,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "A TBLW to address 0–7 arrives as `io_write_o`",
             "No Atari ROM data is used",
             "`0x3456` to `0x3459`",
-            "2,259",
+            "2,290",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -211,6 +211,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "`0xc000`",
             "pre-increment `SA15:SA0`",
             "accept only authorized user-supplied data",
+            "hard_drivin_sound_rom_path.sv",
+            "65,536 pre-increment addresses",
+            "is never acknowledged",
+            "18 abstract combinational cells",
         ):
             self.assertIn(required, sound_rom)
         self.assertIn("SC-026 — Sound-ROM sign extension", conflicts)

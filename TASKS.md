@@ -1284,9 +1284,11 @@ objective passing evidence.
   structural problems. A fifth script retains the 4K-by-16 board adapter as
   one synchronous-read, single-write-port abstract memory with 85 total cells
   and zero structural problems. A sixth pre-technology script checks the
-  partial processor/program/communication-RAM board top as 2,259 abstract
-  cells, 131 checks, and three retained memories with zero structural
-  problems. A seventh
+  standalone storage-free sample-ROM adapter as 18 abstract cells with three
+  checks and zero structural problems. A seventh pre-technology script checks
+  the partial processor/program/communication/sample-ROM board top as 2,290
+  abstract cells, 137 checks, and three retained memories with zero structural
+  problems. An eighth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. This is not a
@@ -1341,7 +1343,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_mister.sv`,
-  `sim/bus/tb_hard_drivin_sound_communication_path.sv`
+  `sim/bus/tb_hard_drivin_sound_communication_path.sv`,
+  `sim/bus/tb_hard_drivin_sound_rom_path.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1398,8 +1401,17 @@ objective passing evidence.
   sign bit (`SC-026`). The smoke fixture now derives physical byte `0xd5` as
   `0xea80` and selects populated Hard Drivin' block 3 rather than the Rev-A
   unpopulated block 11. Population and absent-block reads remain `OQ-026`.
-  Host latch/68000 bus adaptation, the sample-ROM callback RTL, and physical
-  timing remain acceptance work.
+  The storage-free sample-ROM adapter now exhaustively checks all 16 block
+  values, 65,536 addresses, 256 byte values, explicit presence/validity,
+  readiness stalls, exact sign mapping, and target isolation; Yosys reports 18
+  cells/three checks with no latch or structural problem. The board top routes
+  port 0 internally, ignores the external unsigned-MAME sentinel, holds
+  block 3/address `0x3457` through three unready clocks, commits synthetic byte
+  `0xd5` exactly once as `0xea80`, and advances the shared counter only on that
+  commit. Integrated Yosys reports 2,290 abstract cells/137 checks and retains
+  the same three memories. Host latch/68000 bus adaptation, authorized sample
+  storage, compare/DAC/control peripherals, and physical timing remain
+  acceptance work.
 
 ## Milestone 22 — Release qualification
 

@@ -36,6 +36,13 @@ module tb_hard_drivin_sound_mister;
   logic        sound_address_valid;
   logic [3:0]  sound_rom_block;
   logic        sound_rom_block_valid;
+  logic [11:0] sound_rom_present;
+  logic        sound_rom_request;
+  logic [3:0]  sound_rom_request_block;
+  logic [15:0] sound_rom_request_address;
+  logic [7:0]  sound_rom_byte;
+  logic        sound_rom_byte_ready;
+  logic        sound_rom_selection_invalid;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
   logic [15:0] debug_data;
@@ -63,6 +70,9 @@ module tb_hard_drivin_sound_mister;
   logic [15:0] output_ports [0:7];
   integer      io_read_count;
   integer      io_write_count;
+  integer      sound_rom_commit_count;
+  integer      sound_rom_wait_cycles;
+  logic        sound_rom_request_seen;
 
   hard_drivin_sound_mister dut (
     .clk_i                         (clk),
@@ -104,6 +114,13 @@ module tb_hard_drivin_sound_mister;
     .sound_address_valid_o         (sound_address_valid),
     .sound_rom_block_o             (sound_rom_block),
     .sound_rom_block_valid_o       (sound_rom_block_valid),
+    .sound_rom_present_i           (sound_rom_present),
+    .sound_rom_request_o           (sound_rom_request),
+    .sound_rom_request_block_o     (sound_rom_request_block),
+    .sound_rom_request_address_o   (sound_rom_request_address),
+    .sound_rom_byte_i              (sound_rom_byte),
+    .sound_rom_byte_ready_i        (sound_rom_byte_ready),
+    .sound_rom_selection_invalid_o (sound_rom_selection_invalid),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
     .debug_data_i                  (debug_data),
@@ -157,7 +174,7 @@ module tb_hard_drivin_sound_mister;
 
   always_comb begin
     case (io_port)
-      3'd0: io_read_data = 16'hea80;
+      3'd0: io_read_data = 16'h6a80;
       3'd1: io_read_data = 16'hdead;
       3'd2: io_read_data = 16'h0000;
       default: io_read_data = 16'hffff;
@@ -168,17 +185,50 @@ module tb_hard_drivin_sound_mister;
     if (initialize) begin
       io_read_count  <= 0;
       io_write_count <= 0;
+      sound_rom_commit_count <= 0;
       for (int unsigned port = 0; port < 8; port++) begin
         output_ports[port] <= 16'h0000;
       end
     end else if (io_commit) begin
       if (io_read) begin
         io_read_count <= io_read_count + 1;
+        if (io_port == 3'd0) begin
+          if (!sound_rom_request ||
+              sound_rom_request_block != 4'h3 ||
+              sound_rom_request_address != 16'h3457 ||
+              sound_rom_selection_invalid) begin
+            $fatal(1, "port-0 commit lacks the exact internal ROM callback");
+          end
+          sound_rom_commit_count <= sound_rom_commit_count + 1;
+        end
       end
       if (io_write) begin
         io_write_count <= io_write_count + 1;
         output_ports[io_port] <= io_write_data;
       end
+    end
+  end
+
+  // Exercise a stalled same-clock sample-ROM callback. The request block and
+  // pre-increment address must remain owned until the response is accepted.
+  always_ff @(posedge clk) begin
+    if (initialize) begin
+      sound_rom_byte_ready   <= 1'b0;
+      sound_rom_wait_cycles  <= 0;
+      sound_rom_request_seen <= 1'b0;
+    end else if (sound_rom_request && !sound_rom_byte_ready) begin
+      if (sound_rom_request_block != 4'h3 ||
+          sound_rom_request_address != 16'h3457 ||
+          sound_rom_selection_invalid) begin
+        $fatal(1, "stalled sound-ROM callback changed ownership");
+      end
+      sound_rom_request_seen <= 1'b1;
+      sound_rom_wait_cycles  <= sound_rom_wait_cycles + 1;
+      if (sound_rom_wait_cycles == 2) begin
+        sound_rom_byte_ready <= 1'b1;
+      end
+    end else if (io_commit && io_read && (io_port == 3'd0)) begin
+      sound_rom_byte_ready <= 1'b0;
     end
   end
 
@@ -326,6 +376,8 @@ module tb_hard_drivin_sound_mister;
     host_communication_commit = 1'b0;
     host_communication_address = 9'h000;
     host_communication_write_data = 16'h0000;
+    sound_rom_present = 12'h008;
+    sound_rom_byte = 8'hd5;
     debug_data_write = 1'b0;
     debug_data_address = 8'h00;
     debug_data = 16'h0000;
@@ -389,6 +441,10 @@ module tb_hard_drivin_sound_mister;
     );
     require(!port_1_blocked && !port_1_address_invalid,
             "processor port-1 communication read completed from internal RAM");
+    require(sound_rom_commit_count == 1 &&
+            sound_rom_request_seen && sound_rom_wait_cycles == 3 &&
+            !sound_rom_selection_invalid,
+            "processor port 0 held and committed one internal ROM response");
 
     // Processor reset does not erase communication RAM. Give CRAMEN to the
     // host and read the word back through the integrated host callback.

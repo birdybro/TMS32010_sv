@@ -149,8 +149,14 @@ contains 85 cells, including five retained checks and the 12-cell decoder;
 both structural checks report zero problems. This establishes an inferable
 synchronous memory shape, not a Quartus M10K mapping or fitted timing result.
 
-The sixth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,259 abstract cells, 131
+The sixth checked-in script targets the storage-free
+`hard_drivin_sound_rom_path`. Yosys 0.67+111 reports 18 abstract combinational
+cells with three retained checks, no memory or latch, and zero structural
+problems. This qualifies only the tested block/address/presence and signed-byte
+mapping logic, not ROM content or access time.
+
+The seventh script applies the same pre-technology boundary to
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,290 abstract cells, 137
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
@@ -158,7 +164,7 @@ Both structural checks pass with zero problems. This proves hierarchy and
 memory retention only; it is not a technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
-The seventh script applies the pre-technology boundary to
+The eighth script applies the pre-technology boundary to
 `hard_drivin_sound_communication_path`. Yosys 0.67+111 retains its 512-by-16
 communication RAM as one `$mem_v2` and reports 82 abstract cells with seven
 retained checks. Both structural checks pass with zero problems. This proves

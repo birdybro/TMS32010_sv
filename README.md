@@ -40,11 +40,11 @@ loading while the DSP is reset, and refuses conflicting writes. These pieces
 are exhaustive-tested and synthesizable. They remain usable independently of
 the partial processor/RAM top and are not a 68000 bus bridge or complete
 sound-board wrapper.
-A partial board top now connects the processor, native decoder, and shared
-program RAM.
+A partial board top now connects the processor, native decoder, shared program
+RAM, communication path, and a storage-free parallel sample-ROM callback.
 It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
-bridge/latch decode, sound-ROM data path, BIO generator, and audio/control
+bridge/latch decode, actual sample storage, BIO generator, and audio/control
 peripherals remain absent.
 A separate synthesizable communication-path adapter now implements the
 primary-transcribed 512-by-16, CRAMEN-selected host/DSP storage relationship,
@@ -55,16 +55,18 @@ preload state; a memory-retaining Yosys target passes structural checks. The
 adapter is now connected to `hard_drivin_sound_mister`: a host callback
 preloads a synthetic communication word, processor port 1 reads it internally,
 and the full address/block side effects survive the expected execution/reset
-sequence. This is not a 68000 bus/latch implementation, physical HM6116
-timing, or sample-ROM implementation. Port 3 remains an unresolved
+sequence. This is not a 68000 bus/latch implementation or physical HM6116
+timing model. Port 3 remains an unresolved
 decoded `/CPORT` strobe with no loaded consumer found on Rev A and has no
 invented state effect.
 A044427 sheets 5–6 now define the remaining port-0 input as a parallel
 sample-ROM path: a present block and the pre-increment 16-bit sound address
 select one byte, which reaches the TMS as a signed byte shifted left seven.
 Pinned MAME omits the duplicated sign bit at TDI15 (`SC-026`). The board
-adapter is not implemented yet, and unpopulated-block reads remain explicitly
-unknown under `OQ-026`.
+adapter now routes port 0 to an authorized byte callback only for explicitly
+present blocks and stalls/reports invalid otherwise. Exhaustive standalone and
+integrated tests prove the exact mapping without embedding ROM content;
+unpopulated-block electrical values remain unknown under `OQ-026`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

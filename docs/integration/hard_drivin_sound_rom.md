@@ -106,3 +106,28 @@ behind the board wrapper. It must:
 
 These are digital wiring requirements, not ROM access-time, LS244 propagation,
 or complete MiSTer memory-system timing claims.
+
+## Implemented FPGA boundary
+
+`rtl/wrappers/hard_drivin_sound_rom_path.sv` is a storage-free combinational
+adapter implementing the requirements above. `sound_rom_present_i[11:0]`
+declares only the positions supplied by an authorized integration. A valid
+processor port-0 read exposes the exact block/address byte callback and waits
+for `sound_rom_byte_ready_i`; an uncleared address, uncleared block latch,
+block 12-15, or declared-absent block raises
+`sound_rom_selection_invalid_o` and is never acknowledged. The adapter does
+not guess an open-bus value.
+
+The standalone directed test exercises all sixteen nibble selections, every
+one of the 65,536 pre-increment addresses, all 256 byte values, presence and
+validity combinations, response stalls, and non-port-0 isolation. Yosys
+0.67+111 reports 18 abstract combinational cells including three retained
+checks, no memory, no latch, and zero structural problems.
+
+`hard_drivin_sound_mister` now uses this adapter for processor port 0 and the
+communication path for port 1; its generic external I/O read response cannot
+override either target. The integrated ROM-free smoke holds a block-3/address-
+`0x3457` callback unready for three clocks, returns byte `0xd5` as physical
+word `0xea80`, commits exactly once, and then advances the shared address. No
+Atari sample byte or game ROM is present: `0xd5` is project-authored synthetic
+test data.

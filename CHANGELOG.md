@@ -82,6 +82,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   twelve decoded 64K-byte positions, exact pre-increment addressing,
   population validity, and the physical signed-byte-left-seven TMS input
   mapping while isolating MAME's unsigned-shift discrepancy as `SC-026`.
+- A synthesizable, storage-free sample-ROM adapter with explicit twelve-block
+  presence metadata, exact block/address byte callback, invalid-selection
+  reporting, response stalls, and schematic-accurate duplicated-sign mapping.
+  The board top now routes processor port 0 internally without embedding or
+  accepting any copyrighted image in the repository.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -512,6 +517,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Exhaustive standalone sample-ROM coverage across all sixteen block values,
+  all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
+  response readiness, and non-port-0 isolation. Yosys reports 18 abstract
+  cells, three retained checks, no memory/latch, and zero structural problems.
+- Integrated port-0 ownership through a three-clock byte-response stall at
+  block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
+  commit, external-sentinel rejection, and shared-counter advance. The board
+  hierarchy retains three memories and passes Yosys at 2,290 abstract cells
+  with 137 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
@@ -533,8 +547,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,259 abstract
-  cells, 131 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,290 abstract
+  cells, 137 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -1005,7 +1019,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
 - The complete current regression passes 118 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 29
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 30
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -1014,10 +1028,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- The parallel sample-ROM path is primary-specified but not yet implemented in
-  `hard_drivin_sound_mister`. Exact population remains board/revision data,
-  and an absent block leaves the shown ROM data bus undriven; returning zero
-  would be a protective convention, not verified hardware (`OQ-026`).
+- The parallel sample-ROM callback is implemented, but exact population remains
+  board/revision data and authorized storage is external. An absent block
+  leaves the shown physical data bus undriven; the adapter reports and stalls
+  instead of returning a protective zero (`OQ-026`).
 - The communication-RAM/address adapter is connected to
   `hard_drivin_sound_mister`, but CRAMEN remains an external input and no
   68000 latch/bus bridge exists. Its registered response is an FPGA convention,
@@ -1025,9 +1039,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2; port 3 remains an
   unresolved decoded strobe (`OQ-023`–`OQ-025`).
-- `hard_drivin_sound_mister` is only the processor/program/communication-RAM
-  and physical-I/O callback boundary. It lacks the 68000 bridge and remaining
-  sound-ROM/compare/DAC/mute/IRQ/BIO peripheral implementations;
+- `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
+  sample-ROM-callback and physical-I/O boundary. It lacks the 68000 bridge,
+  actual sample storage, and compare/DAC/mute/IRQ/BIO peripheral implementations;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under
