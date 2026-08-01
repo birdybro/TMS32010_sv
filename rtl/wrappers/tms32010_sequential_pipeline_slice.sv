@@ -185,6 +185,7 @@ module tms32010_sequential_pipeline_slice (
   logic        table_transfer_step;
   logic        table_transfer_active;
   logic        table_prefetch_step;
+  logic        table_is_read;
   logic [15:0] table_read_sample;
   logic        interrupt_protected;
   logic        interrupt_vector_step;
@@ -467,9 +468,16 @@ module tms32010_sequential_pipeline_slice (
       : bio_i;
   always_comb begin
     core_program_data = execute_word_o;
-    if (control_target_step) begin
+    // Pipeline state already records that the nonexecutable branch operand
+    // was accepted. Table direction is retained when the transfer starts.
+    // These registered controls avoid routing the execute word through a
+    // second decode merely to select a previously sampled operand.
+    if (pipeline_state == PIPELINE_CONTROL_TARGET) begin
       core_program_data = branch_operand_word;
-    end else if (table_prefetch_step && execute_is_tblr) begin
+    end else if (
+      (pipeline_state == PIPELINE_TABLE_PREFETCH) &&
+      table_is_read
+    ) begin
       core_program_data = table_read_sample;
     end
   end
@@ -660,6 +668,7 @@ module tms32010_sequential_pipeline_slice (
       bioz_taken          <= 1'b0;
       io_read_sample       <= 16'h0000;
       table_read_sample    <= 16'h0000;
+      table_is_read        <= 1'b0;
       computed_target_address <= 12'h000;
       interrupt_protected  <= 1'b0;
     end else if (pipeline_boundary) begin
@@ -669,6 +678,7 @@ module tms32010_sequential_pipeline_slice (
         bioz_taken          <= 1'b0;
         io_read_sample       <= 16'h0000;
         table_read_sample    <= 16'h0000;
+        table_is_read        <= 1'b0;
         computed_target_address <= 12'h000;
         interrupt_protected  <= 1'b0;
       end else if (
@@ -703,6 +713,7 @@ module tms32010_sequential_pipeline_slice (
       end else if (core_execute_boundary && io_prefetch_step) begin
         pipeline_state <= PIPELINE_SEQUENTIAL;
       end else if (core_execute_boundary && table_start_step) begin
+        table_is_read <= execute_is_tblr;
         pipeline_state <= PIPELINE_TABLE_TRANSFER;
       end else if (core_execute_boundary && table_transfer_step) begin
         if (execute_is_tblr) begin
@@ -925,7 +936,8 @@ module tms32010_sequential_pipeline_slice (
         assert (execute_complete);
         assert (!program_write_o && !men_n_o);
         assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
-        if (execute_is_tblr) begin
+        assert (table_is_read == execute_is_tblr);
+        if (table_is_read) begin
           assert (core_program_data == table_read_sample);
         end
       end

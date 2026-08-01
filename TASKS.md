@@ -1324,6 +1324,9 @@ objective passing evidence.
   non-effect, no early state change, and invalid-carrier clamping. Seven covers
   reach solver step 10. This is a fixed legal common-clock sequence with the processor paused,
   not arbitrary event-spacing, raw-pin, collision, byte, or electrical proof.
+  The canonical runner sorts only top-level `formal/*.sby` sources; a repository
+  regression prevents recursively generated SymbiYosys outputs from becoming
+  accidental configurations.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, general
@@ -1355,14 +1358,20 @@ objective passing evidence.
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
   flip-flops/muxes. `make synth-yosys` now reproducibly checks both the
-  synthesis harness (16,281 generic cells/124 checks) and the directly
+  synthesis harness (16,506 generic cells/125 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,280 cells/124 checks), each with zero structural
-  problems. The Quartus harness now elaborates that explicit pipeline rather
-  than the legacy fail-closed wrapper: it fits in 2,504 ALMs/2,702 registers/
-  one DSP block, closes a 25 MHz constraint with +5.872 ns worst setup and
-  +0.166 ns worst hold slack, and reports 29.30 MHz worst slow-corner Fmax.
+  pipeline slice (16,506 generic cells/125 checks),
+  each with zero structural problems. The Quartus harness now elaborates that
+  explicit pipeline rather than the legacy fail-closed wrapper. A retained
+  table-direction bit and state-driven sampled-operand selection remove the
+  wrapper decoder from that mux cone without changing a processor boundary:
+  the fit uses 2,414 ALMs/2,703 registers/one DSP block, closes a 25 MHz
+  constraint with +10.000 ns worst setup and +0.165 ns worst hold slack, and
+  reports 33.33 MHz worst slow-corner Fmax. The reproducible full-path report
+  reduced the measured critical path from 33.464 ns/26 levels to 29.180 ns/19
+  levels; the remaining cone still includes core decode, asynchronous RAM,
+  shifting, and accumulator arithmetic.
   The board's primary-documented clock is 20 MHz. A rejected exploratory
   explicit-pipeline fit missed the old 50 MHz objective by -9.098 ns worst
   setup; 50 MHz closure is not claimed. All 415 non-clock harness pins remain
@@ -1426,8 +1435,8 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,330 generic
-  cells/131 checks with no structural problems. This is an IMPLEMENTING
+  unsupported-word parking, and reset recovery. Yosys reports 16,555 generic
+  cells/132 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a block-RAM-safe core, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
 

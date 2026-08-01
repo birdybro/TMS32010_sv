@@ -65,6 +65,14 @@ class RepositoryFoundationTests(unittest.TestCase):
         self.assertIn("make synth-yosys", workflow)
         self.assertNotIn("reference-cache", workflow)
 
+    def test_formal_config_discovery_is_nonrecursive_and_stable(self) -> None:
+        makefile = (ROOT / "Makefile").read_text(encoding="utf-8")
+        self.assertIn(
+            "find formal -maxdepth 1 -type f -name '*.sby' -print | sort",
+            makefile,
+        )
+        self.assertNotIn("find formal -type f -name '*.sby'", makefile)
+
 
 if __name__ == "__main__":
     unittest.main()

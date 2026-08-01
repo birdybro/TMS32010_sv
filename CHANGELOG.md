@@ -7,6 +7,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A reproducible Quartus full setup-path reporter that writes twenty detailed,
+  untracked paths with endpoints, logic depth, and routing/cell delay shares.
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
 - A ROM-free MAME instruction-boundary oracle adapter with strict debugger
@@ -620,6 +622,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The explicit phase wrapper now selects retained branch operands directly
+  from registered pipeline state and records TBLR/TBLW direction when the
+  table sequence starts. This removes a redundant wrapper decode from the
+  sampled-program-data mux while preserving every tested native phase and
+  retirement boundary; a prefetch assertion checks retained direction against
+  the still-owned instruction.
 - The common Yosys/Quartus synthesis harness now elaborates the explicit
   fetch/execute pipeline instead of the legacy fail-closed wrapper, so current
   resource and timing evidence actually includes CALA/RET. The Cyclone V
@@ -741,6 +749,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Formal configuration discovery is now sorted and top-level-only, so direct
+  SymbiYosys output left below `formal/` cannot be recursively mistaken for a
+  checked-in configuration on a later `make formal` run. A repository
+  regression locks this build contract.
 - The ROM-free MAME runner now rejects shell-script launchers before execution,
   preventing generated provenance from hashing only `/usr/bin/mame`-style
   wrappers while omitting the actual emulator binary bytes.
@@ -796,22 +808,26 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- The complete repository gates pass with 130 provenance/document/tool tests,
+- The complete repository gates pass with 131 provenance/document/tool tests,
   231 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 44 formal jobs from 22 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 2,504 ALMs, 2,702 registers, no block RAM, and one DSP
-  block. TimeQuest closes the 25 MHz internal constraint with +5.872 ns worst
-  setup and +0.166 ns worst hold slack, 29.30 MHz worst slow-corner Fmax, and
+  on `5CSEBA6U23I7` in 2,414 ALMs, 2,703 registers, no block RAM, and one DSP
+  block. TimeQuest closes the 25 MHz internal constraint with +10.000 ns worst
+  setup and +0.165 ns worst hold slack, 33.33 MHz worst slow-corner Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
-  warnings.
-- Yosys 0.67+111 reports 16,281 cells/124 checks for the synthesis harness,
-  16,280 cells/124 checks for the direct explicit pipeline, and 16,330 cells/
-  131 checks for the generic MiSTer adapter, all with clean structural checks.
+  warnings. The detailed 100 °C critical path improves from 33.464 ns/26
+  levels to 29.180 ns/19 levels; the remaining execution cone still traverses
+  core decode, asynchronous internal RAM, operand shift, and accumulation.
+- Yosys 0.67+111 reports 16,506 cells/125 checks for both the synthesis harness
+  and direct explicit pipeline, and 16,555 cells/132 checks for the generic
+  MiSTer adapter, all with clean structural checks. The generic count grows
+  while Cyclone V ALMs fall, so neither representation is reported as a proxy
+  for the other.
 - The address-driven bus-control regression reaches a mirrored GSP access,
   canonical MSP access with arbitrary external wait, mirrored DUART access
   with late external acknowledge, and ordinary expansion-bus `RVA`

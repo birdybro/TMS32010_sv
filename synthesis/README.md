@@ -28,9 +28,21 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
+After a Quartus fit, reproduce the detailed twenty-path setup report with:
+
+```sh
+cd synthesis/quartus
+/path/to/quartus/bin/quartus_sta -t report_setup.tcl
+```
+
+The ignored `build/quartus/setup_paths.rpt` records complete register-to-
+register paths, logic levels, and routing/cell delay shares. Current measured
+figures and the scope of the retained table-direction optimization are in
+`synthesis/qualification.md`.
+
 The command runs twenty-nine checked-in scripts. The main synthesis harness
 targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 16,281 generic cells and 124 retained
+`build/yosys/tms32010.json`; it reports 16,506 generic cells and 125 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -48,17 +60,20 @@ discarded-prefetch, program-transfer, and repeated-prefetch ownership, plus
 ABS, SST, and ADDH execution, the checkpoint was 15,686 generic cells.
 Explicit reset-time instruction qualification and the loop-free recognized-
 reset boundary brought the preceding checkpoint to 15,733 generic cells and
-103 retained checks. CALA/RET and their assertions bring the current direct
-pipeline checkpoint to 16,280 generic cells, 124 retained checks, and zero
-structural-check problems.
+103 retained checks. CALA/RET and their assertions brought the next direct
+pipeline checkpoint to 16,280 generic cells and 124 retained checks. Retained
+table direction and its consistency assertion bring the current checkpoint to
+16,506 cells, 125 checks, and zero structural-check problems. This generic
+increase coexists with the lower Cyclone V ALM count recorded by the fitter;
+the two representations are not interchangeable resource estimates.
 
 The third script directly targets the generic `tms32010_mister` adapter and
 writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 16,330 generic cells and 131 retained checks, with zero
-structural problems; 50 cells and seven checks are local to the adapter after
+Yosys 0.67+111 reports 16,555 generic cells and 132 retained checks, with zero
+structural problems; 49 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset.
 
 The fourth script targets the storage-free A044427 Rev-A

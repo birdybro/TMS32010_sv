@@ -60,7 +60,7 @@ lint: docs
 	fi
 
 formal:
-	@configs="$$(find formal -type f -name '*.sby' -print)"; \
+	@configs="$$(find formal -maxdepth 1 -type f -name '*.sby' -print | sort)"; \
 	if [ -n "$$configs" ]; then \
 	  command -v "$(SBY)" >/dev/null 2>&1 || { echo "ERROR: SymbiYosys is required"; exit 1; }; \
 	  mkdir -p build/formal; \

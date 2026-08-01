@@ -17,14 +17,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 2,504 ALMs (6%).
-- Registers: 2,702.
+- Logic: 2,414 ALMs (6%).
+- Registers: 2,703.
 - Memory: 0 bits, 0 RAM blocks.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +5.872 ns at 25 MHz.
-- Worst internal hold slack across analyzed corners: +0.166 ns.
-- Slow-corner internal Fmax: 29.30 MHz at 100 °C, 29.45 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +10.000 ns at 25 MHz.
+- Worst internal hold slack across analyzed corners: +0.165 ns.
+- Slow-corner internal Fmax: 33.48 MHz at 100 °C, 33.33 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -33,14 +33,44 @@ The future wrapper must replace every false path with real constraints.
 Quartus also labels timing paths involving virtual pins as estimates; the
 setup, hold, and Fmax figures above are scoped to internal register paths.
 
+### Critical-path characterization and operand-selection change
+
+The reproducible full-path report first measured the preceding 2,504-ALM
+checkpoint from registered `execute_word_o[3]` to `accumulator_o[10]`. Its
+33.464 ns data path had 26 logic levels: wrapper decode and program-data
+selection fed the core decoder, effective data-address selection, the
+asynchronous internal-RAM mux, operand shift, accumulator adder, and result
+selection. Interconnect contributed 69% of the measured data delay. This
+locates the principal limit in the broad single-boundary execution cone and
+the asynchronous RAM, not in CALA/RET target selection alone.
+
+The wrapper already retains accepted control operands and table-read data.
+It now selects the branch operand from the registered control-target state
+and retains one table-direction bit when a table transfer starts. An assertion
+checks that retained direction against the still-owned execute instruction at
+the TBLR/TBLW prefetch boundary. This removes a redundant wrapper decode from
+the sampled-operand mux without changing any native phase or retirement edge.
+
+The resulting worst 100 °C setup path is from registered
+`execute_word_o[11]` to `accumulator_o[28]`: 29.180 ns and 19 logic levels,
+with 64% interconnect delay. Relative to the preceding checkpoint, the fit
+uses 90 fewer ALMs and improves worst slow-corner Fmax from 29.30 MHz to
+33.33 MHz. A first intermediate experiment that retained a live TBLR decode
+in this mux was rejected after it regressed to 2,633 ALMs and 28.98 MHz. The
+accepted result still uses no block RAM; reaching materially higher internal
+clocks will require a separately verified phase-staging or synchronous-memory
+architecture, not an undocumented change to processor-cycle timing.
+
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
 not timing closure. The qualified 25 MHz constraint still exceeds the A044427
-Rev-A board's primary-documented 20 MHz input by 25%; the fitted 29.30 MHz
-worst slow-corner result is a 46.5% margin over the board frequency. The
+Rev-A board's primary-documented 20 MHz input by 25%; the fitted 33.33 MHz
+worst slow-corner result is a 66.65% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
-not a release requirement or a concealed pass.
+not a release requirement or a concealed pass. The retained-direction change
+raises the qualified worst slow-corner result to 33.33 MHz, but does not turn
+that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
 matching SDC exclusions. TimeQuest reported all 16 outputs unconstrained, so
@@ -100,15 +130,24 @@ Detailed hold-path diagnostics can be regenerated with:
   -t synthesis/quartus/report_hold.tcl
 ```
 
+The twenty worst internal setup paths, including full routing and logic-level
+detail, can be regenerated after a fit with:
+
+```sh
+cd synthesis/quartus
+/path/to/quartus/bin/quartus_sta -t report_setup.tcl
+```
+
+The generated `build/quartus/setup_paths.rpt` is intentionally untracked.
+
 ## Yosys status
 
 Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
-passes report zero problems; no latches are inferred, 124 RTL checks
-remain represented, and the synthesis-harness result contains 16,281 cells.
-The directly targeted pipeline differs by one harness cell at 16,280 cells
-with the same 124 checks. The
+passes report zero problems; no latches are inferred, 125 RTL checks
+remain represented, and both the synthesis harness and directly targeted
+pipeline contain 16,506 cells. The
 asynchronous 144-word read lowers the array to 2,304 enabled flip-flops and
 1,217 mux cells, leaving no inferred memories after generic synthesis. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -121,19 +160,22 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 124 RTL checks, and contains 16,280 generic
-cells. CALA/RET add 547 cells and 21 checks to the preceding 15,733-cell/
-103-check checkpoint. Reset-time instruction qualification and direct
-recognized-boundary derivation had added 47 cells to the earlier
+zero reported problems, retains 125 RTL checks, and contains 16,506 generic
+cells. The retained table-direction checkpoint adds 226 generic cells and one
+check to the 16,280-cell/124-check CALA/RET checkpoint even though Cyclone V
+technology mapping uses 90 fewer ALMs; generic cells are not a device-resource
+estimate. CALA/RET had added 547 cells and 21 checks to the preceding
+15,733-cell/103-check checkpoint. Reset-time instruction qualification and
+direct recognized-boundary derivation had added 47 cells to the earlier
 15,686-cell checkpoint without changing its retained-check count.
 The ADDH increment added 75
 cells without adding or removing retained checks; SST added 76 cells and ABS
-added 170 cells in the preceding checkpoints. This result is 604 cells and
-25 checks above the pre-table 15,129-cell/78-check checkpoint, 698 cells and
-36 checks above the IN/OUT 15,035-cell/67-check checkpoint, 955 cells/54 checks
-above the exact-CALL 14,778-cell/49-check checkpoint, 1,018 cells/56 checks
-above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,457 cells/61 checks
-above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,793 cells/71
+added 170 cells in the preceding checkpoints. This result is 1,377 cells and
+47 checks above the pre-table 15,129-cell/78-check checkpoint, 1,471 cells and
+58 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,728 cells/76 checks
+above the exact-CALL 14,778-cell/49-check checkpoint, 1,791 cells/78 checks
+above the exact-BIOZ 14,715-cell/47-check checkpoint, 2,230 cells/83 checks
+above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 2,566 cells/93
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
@@ -141,9 +183,9 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 131 checks, and reports 16,330 generic cells. The
-adapter itself contributes 50 cells and seven checks beyond the 16,280-cell,
-124-check pipeline checkpoint. This result covers the five-cycle synchronous
+with zero problems, retains 132 checks, and reports 16,555 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 16,506-cell,
+125-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
 pinout, I/O timing result, or evidence for unresolved PUSH/POP bus ownership.
