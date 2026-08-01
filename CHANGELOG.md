@@ -545,6 +545,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   separate 7406 branches deliver equal stable logic to RESET and HALT. A
   standalone synthesizable tick-domain reconstruction exposes both outputs,
   active hold, and trigger events without analog or real-time RTL.
+- Primary qualification of the SP-327/A044427 main-side sound-reset decode.
+  The new storage-free module preserves the write-only, `/AS`- and
+  `/RVAS`-qualified `0x84c000..0x84ffff` mirror without inventing lower
+  address or byte-strobe qualification.
 
 ### Changed
 
@@ -553,6 +557,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   calibration, firmware use, and the future MC68000-core interface. `SC-035`
   records that pinned MAME pulses only RESET immediately and is not a timing
   oracle for the paired physical source.
+- `SC-036` separates the physical 16 KiB `/SRES` alias window from pinned
+  MAME's canonical `0x84c000..0x84c001` handler. `OQ-036` retains the unknown
+  system `/RESET` driver and unresolved raw `/RVAS` timing/CDC boundary.
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
@@ -701,6 +708,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The main sound-reset decode regression exhausts all 1,024 `A23:A14` values
+  across eight strobe/direction combinations. Its one-step BMC passes and four
+  covers reach a canonical write, read isolation, inactive `/RVAS`, and a
+  nonexternal address. Yosys reports 16 cells/four retained checks with no
+  memory or latch.
 - The reset-source regression covers deterministic startup, exact six-tick
   release, paused ticks, direct `SOUND.RESET`, both falling-edge trigger
   sources, held-low behavior, an early ignored retrigger, and a post-inhibit
@@ -1417,6 +1429,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   129/231/38/46/5/10 regression split, strict lint across 34 modules, all 24
   Yosys targets, all 34 pinned reference hashes, and all 34 formal tasks from
   17 configurations.
+- The main sound-reset decode increment passes the complete
+  129/231/38/47/5/10 regression split, strict lint across 35 modules, all 25
+  Yosys targets, all 34 pinned reference hashes, and all 36 formal tasks from
+  18 configurations.
 
 ### Known Issues
 

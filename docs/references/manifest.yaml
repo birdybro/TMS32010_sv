@@ -278,7 +278,7 @@
       "notes": "Lawfully public engineer-hosted copy; access does not grant repository redistribution.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
+        "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 /SRES decode",
         "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
         "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
@@ -336,7 +336,11 @@
       "authority_level": 2,
       "notes": "Hosted by original Atari board engineer Jed Margolin.",
       "may_commit": false,
-      "sections_or_pages_used": [],
+      "sections_or_pages_used": [
+        "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode and registered /RVAS generation",
+        "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
+      ],
       "status": "acquired",
       "download": {
         "enabled": true,
@@ -753,7 +757,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component truth table for the two-level A044427 sound-ROM block decode",
+      "relevance": "Primary component truth table for A044427 sound-ROM and main-side /SRES decode",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
       "may_commit": false,

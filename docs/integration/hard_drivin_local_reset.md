@@ -50,6 +50,48 @@ instead pulses only the local CPU RESET line immediately from
 path [mame-harddriv-audio-030fefc, `hd68k_snd_reset_w`]. This secondary timing
 abstraction is isolated as `SC-035`.
 
+## Upstream `/MRES` and `/SRES`
+
+SP-327 sheet 7 shows main-board LS244 `210N` permanently enabled. It copies
+system `/RESET` without inversion to expansion-bus `/MRES` at J7-49. The same
+sheet copies `/RVAS` to `/ERVAS` at J7-28, `/EXTBUS` to `/EXTB` at J7-23, the
+main read/write direction, and address bits through A20. SP-327 sheet 4 makes
+`/EXTBUS` the active-low LS138 Y4 output for `/AS=0` and `A23:A21=100` and
+generates `/RVAS` through its 8 MHz bus-control flip-flop chain
+[atari-hard-drivin-schematic-package-sp327, sheets 4 and 7, PDF pp. 5 and 8].
+The package shows `/RESET` as a main-CPU input and RUN-indicator input, but the
+reviewed sheets do not establish its original driving source. That remaining
+system-level origin is `OQ-036`.
+
+A044427 sheet 1 reconstructs `/SRES` with LS32 gates and LS138 `20P`:
+
+```text
+/EXTBUS = 0 when /AS=0 and A23:A21=100
+G2B     = /EXTB OR /ERVAS
+G2A     = EA20 OR EA19 OR EA17 OR EA16
+G1      = EA18
+C:B:A   = main_read_not_write : EA15 : EA14
+/SRES   = Y3
+```
+
+Therefore stable `/SRES` assertion requires a write, `/AS=0`, `/RVAS=0`, and
+`A23:A14=1000010011`. Address bits A13:A0 and both byte strobes are absent
+from the logic cone. The physical byte-address mirror is consequently
+`0x84c000` through `0x84ffff`, not just one canonical word
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 1 of 10,
+PDF pp. 1-2; ti-sn74ls138-datasheet, printed pp. 1-2]. Pinned MAME installs
+`hd68k_snd_reset_w` only at `0x84c000..0x84c001`; `SC-036` records this
+secondary decode contraction.
+
+`hard_drivin_main_sound_reset_decode` implements this storage-free
+combinational boundary. Its address port contains only `A23:A14`, making the
+physical lower-bit alias explicit. Raw `/AS`, `/RVAS`, address, and direction
+must already obey a platform's same-clock or CDC policy; the block does not
+reconstruct the main-board 8 MHz bus sequencer. **Confidence: VERIFIED_PRIMARY
+for connectivity, address mirror, direction, and logical qualifiers;
+VERIFIED_SIMULATION/FORMAL for the combinational RTL; UNKNOWN for propagation
+margin, the original system `/RESET` source, and raw-pin CDC.**
+
 ## Digital one-shot boundary
 
 `hard_drivin_sound_local_reset_source` reconstructs the verified logical
@@ -120,6 +162,13 @@ BMC proves independent reference hold/inhibit counters and paired-output
 equations; a 14-step cover run reaches release, both accepted trigger sources,
 an ignored trigger, and direct test reset. Default-parameter Yosys reports 28
 cells and seven retained checks with no memory, latch, or generated clock.
+
+The main-side decode test exhausts all 1,024 values of `A23:A14` across all
+eight `/AS`/`/RVAS`/direction combinations (8,192 cases), then checks the
+canonical and top-mirror projections explicitly. A one-step proof covers an
+asserted canonical write, read isolation, inactive `/RVAS`, and a nonexternal
+address. Yosys reports 16 cells and four retained checks with no memory or
+latch.
 
 The interlock test exhausts all 32 combinations of initialization, raw RESET,
 raw HALT, storage selection, and readiness. The board regression additionally

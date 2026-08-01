@@ -66,6 +66,12 @@ pretending the nominal 47 kΩ/10 µF network, component tolerance, or raw
 asynchronous pins are FPGA clock cycles. It remains standalone until a
 platform qualifies the timebase and CDC.
 
+`rtl/wrappers/hard_drivin_main_sound_reset_decode.sv` reconstructs the
+SP-327/A044427 main-side `/SRES` decode from `A23:A14`, `/AS`, `/RVAS`, and
+direction. Its reduced address port intentionally exposes the physical
+`0x84c000..0x84ffff` mirror; the main-board timing sequencer and system
+`/RESET` origin remain external.
+
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address
 and port-6 control state. It exhaustively verifies CRAMEN ownership and every

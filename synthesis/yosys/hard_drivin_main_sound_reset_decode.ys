@@ -1,0 +1,10 @@
+read_verilog -sv rtl/wrappers/hard_drivin_main_sound_reset_decode.sv
+
+hierarchy -check -top hard_drivin_main_sound_reset_decode
+proc
+opt
+check -assert
+synth -top hard_drivin_main_sound_reset_decode
+check -assert
+stat
+write_json build/yosys/hard_drivin_main_sound_reset_decode.json

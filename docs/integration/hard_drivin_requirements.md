@@ -60,6 +60,18 @@ counts and is not board-top selected until its timebase and CDC are qualified.
 **Confidence: VERIFIED_PRIMARY for connectivity/polarity/nominal calculation;
 VERIFIED_SIMULATION/FORMAL for tick-domain RTL; UNKNOWN for production RC
 tolerance and power-up behavior.**
+
+The two-board upstream trace establishes the reset-write window independently
+of the local one-shot. SP-327 sheet 4 selects `/EXTBUS` for `/AS=0` and
+`A23:A21=100`; sheet 7 buffers that net, `/RVAS`, direction, and address to
+A044427 and copies main `/RESET` to `/MRES`. A044427 sheet 1 asserts LS138 Y3
+`/SRES` for a write with `A20:A14=0010011`. A13:A0 and UDS/LDS are not decoded,
+so every write in `0x84c000..0x84ffff` is a physical alias. The standalone
+`hard_drivin_main_sound_reset_decode` proves this combinational boundary;
+pinned MAME's single-word mapping is `SC-036`. The exact main `/RESET` origin
+and raw `/RVAS` timing remain `OQ-036`. **Confidence: VERIFIED_PRIMARY for
+decode and signal transport; VERIFIED_SIMULATION/FORMAL for RTL; UNKNOWN for
+system reset origin and raw-pin timing.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a

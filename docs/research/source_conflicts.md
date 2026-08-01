@@ -797,3 +797,27 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the populated Rev-A connectivity and
   nominal typical calculation; CORROBORATED for MAME's functional restart
   intent; UNKNOWN for production pulse limits and power-up behavior.
+
+## SC-036 — Physical `/SRES` mirror versus canonical emulator word
+
+- **Primary decode evidence:** SP-327 sheet 4 makes `/EXTBUS` active for
+  `/AS=0` and `A23:A21=100`; sheet 7 buffers it to `/EXTB` with `/RVAS`, R/W,
+  and address. A044427 sheet 1 enables LS138 `20P` only when `/EXTB=0`,
+  `/ERVAS=0`, `EA18=1`, and `EA20=EA19=EA17=EA16=0`; Y3 then selects write
+  direction with `EA15:EA14=11`. Neither A13:A0 nor UDS/LDS participates
+  [atari-hard-drivin-schematic-package-sp327, sheets 4 and 7, PDF pp. 5 and 8;
+  atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 1 of 10,
+  PDF pp. 1-2]. The resulting physical write mirror is
+  `0x84c000..0x84ffff`.
+- **Secondary abstraction:** pinned MAME installs `hd68k_snd_reset_w` only at
+  `0x84c000..0x84c001` [mame-harddriv-driver-030fefc,
+  `init_driver_sound`].
+- **Conflict:** the canonical software word agrees, but the emulator does not
+  expose the lower-address-bit aliases created by the TTL decode.
+- **Current treatment:** `hard_drivin_main_sound_reset_decode` implements the
+  complete primary-backed high-address/control equation and omits A13:A0 from
+  its interface. It remains standalone from the main-board bus sequencer and
+  local one-shot until raw timing and CDC are qualified.
+- **Confidence:** VERIFIED_PRIMARY for the physical address/control decode;
+  CORROBORATED for software use of the canonical word; UNKNOWN for whether
+  shipped firmware ever accesses an alias.

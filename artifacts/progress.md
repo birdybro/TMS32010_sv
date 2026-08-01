@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' local-MC68000 physical reset-source
+- **Current milestone:** Hard Drivin' main-side sound-reset decode
   qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
@@ -8,7 +8,7 @@
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 46 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 47 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -101,7 +101,9 @@
   A twenty-fourth target checks the tick-domain retriggerable local-MC68000
   reset source at 28 cells/seven retained checks, no memory/latch/generated
   clock, and zero structural problems.
-- **Formal status:** all 34 tasks from 17 SymbiYosys configurations pass with
+  A twenty-fifth target checks the storage-free main `/SRES` decode at 16
+  cells/four retained checks, no memory/latch, and zero structural problems.
+- **Formal status:** all 36 tasks from 18 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -797,6 +799,15 @@
   pass. Yosys reports 28 cells/seven checks. This is
   VERIFIED_PRIMARY for stable board logic and nominal calculation, verified
   only in the tick domain for RTL, and not analog/pin-timing equivalence.
+- **New upstream reset evidence:** SP-327 sheet 7 makes `/MRES` a permanently
+  enabled LS244 copy of system `/RESET` and transports `/EXTBUS`, `/RVAS`, R/W,
+  and address to A044427. SP-327 sheet 4 and A044427 sheet 1 together prove
+  `/SRES` is a write-only, `/AS`- and `/RVAS`-qualified
+  `0x84c000..0x84ffff` mirror; A13:A0 and UDS/LDS are not decoded. The
+  standalone module exhausts 8,192 cases, passes a one-step proof with four
+  covers, and synthesizes to 16 cells/four checks. Pinned MAME exposes only
+  `0x84c000..0x84c001` (`SC-036`). The original system `/RESET` source and raw
+  `/RVAS` timing remain `OQ-036`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -820,8 +831,8 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
-  local-MC68000 RC tolerance/power-up behavior, upstream `/MRES`/`/SRES`
-  source timing, platform tick calibration, and future-core reset CDC,
+  local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin and raw
+  `/RVAS` timing, platform tick calibration, and future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
   policy,
@@ -830,8 +841,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** trace the upstream `/MRES` connector/system source and decoded
-  `/SRES` access address/timing, keeping firmware use and physical pulse width
-  separate from the now-qualified LS123/RESET/HALT logic.
+- **Next task:** reconstruct or bound the SP-327 8 MHz `/RVAS` generator and
+  locate the system `/RESET` driver without conflating either with MAME's
+  functional reset callback.
 - **Latest committed baseline before this cycle:**
-  `284bd38`
+  `d210729`

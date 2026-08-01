@@ -1410,8 +1410,12 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `sim/bus/tb_hard_drivin_main_sound_reset_decode.sv`,
+  `sim/bus/tb_hard_drivin_sound_local_reset_source.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_interlock.sv`,
+  `formal/hard_drivin_main_sound_reset_decode.sby`,
   `formal/hard_drivin_sound_direct_io.sby`,
+  `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
@@ -1679,6 +1683,14 @@ objective passing evidence.
   paused ticks, exact expiry, early ignored retriggering, and later accepted
   retriggering; its 10-step BMC and 14-step five-class cover tasks pass, and
   default-parameter Yosys reports 28 cells/seven checks.
+  SP-327 sheets 4/7 and A044427 sheet 1 now trace `/MRES` to a buffered main
+  `/RESET` input and completely resolve `/SRES`: a write-only, `/AS`- and
+  `/RVAS`-qualified `0x84c000..0x84ffff` mirror with A13:A0 and UDS/LDS absent
+  from the decode. The standalone high-address module exhausts 8,192
+  address/control cases, passes a one-step proof with four covers, and
+  synthesizes to 16 cells/four checks. MAME's canonical-only mapping is
+  `SC-036`; the original system `/RESET` driver and raw `/RVAS` timing remain
+  `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.
