@@ -1302,8 +1302,9 @@ objective passing evidence.
   cells/six checks. A thirteenth script checks the port-3 LS374 adapter as 19
   cells/five checks. A fourteenth script checks both whole-word mailboxes and
   LS74 flags as 259 cells/ten checks. A fifteenth script checks the
-  storage-free `/READSTAT` mapper as 23 cells/eight checks. All four have no
-  memory/latch or structural problem.
+  storage-free `/READSTAT` mapper as 23 cells/eight checks. A sixteenth checks
+  the storage-free raw `/SWITCHES` mapper as 10 cells/six checks. All five have
+  no memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1370,7 +1371,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_host_control.sv`,
   `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`,
   `sim/bus/tb_hard_drivin_sound_mailboxes.sv`,
-  `sim/bus/tb_hard_drivin_sound_read_status.sv`
+  `sim/bus/tb_hard_drivin_sound_read_status.sv`,
+  `sim/bus/tb_hard_drivin_sound_switches.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1521,10 +1523,21 @@ objective passing evidence.
   drives its flag lanes from the mailboxes, retains raw external test/ready
   inputs, and passes exact data/mask checks through all integrated transitions.
   Pre-technology board synthesis reports 2,644 cells/194 checks/three
-  memories. The complete 125/231/38/37/5/10 regression
-  split, strict lint, all fifteen Yosys targets, all 30 pinned reference
+  memories. The complete 125/231/38/38/5/10 regression
+  split, strict lint, all sixteen Yosys targets, all 30 pinned reference
   hashes, and all 24 tasks from twelve formal configurations pass at this
   checkpoint.
+  A044427 sheet 3 plus TI's LS244 function table now establish the exact raw
+  `/SWITCHES` order: `J3-11`, `J3-9`, `J3-8`, and `J3-7` drive host
+  `D15:D12` without inversion. The storage-free adapter exhausts all sixteen
+  source nibbles and all sixteen validity masks, retains fixed driven mask
+  `0xf000`, and assigns no cabinet meaning or idle state under `OQ-032`.
+  Standalone Yosys reports 10 cells/six checks. Cross-checking pinned MAME
+  exposed its swapped `/SWITCHES`/`/320PORT` handler names and two zero stubs;
+  `SC-033` requires a future selector to follow Atari LS138 `30N`. Board-top
+  and complete 68000-read integration remain separate. The full
+  125/231/38/38/5/10 regression split, strict lint, all sixteen Yosys targets,
+  all 30 hashes, and all 24 formal tasks pass at this checkpoint.
 
 ## Milestone 22 — Release qualification
 

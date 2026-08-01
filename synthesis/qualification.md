@@ -213,6 +213,13 @@ This proves only the exhaustive-tested raw `D15:D12` mapping, driven mask, and
 source-validity carrier; it is not an open-bus policy, live peripheral proof,
 or completed 68000 read path.
 
+The sixteenth checked-in script targets the storage-free
+`hard_drivin_sound_switches`. Yosys 0.67+111 reports 10 combinational cells
+with six retained checks, no storage or latch, and zero structural problems.
+This proves only the exhaustive-tested raw connector order, driven mask, and
+per-source validity carrier; it is not cabinet-semantic, electrical-idle,
+open-bus, or completed 68000-read evidence.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite

@@ -353,10 +353,20 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "all 65,536 TMS words",
             "low-address TBLW",
             "not a physical open-bus claim",
+            "hard_drivin_sound_switches.sv",
+            "`J3-11/J3-9/J3-8/J3-7` lane order",
+            "all sixteen raw connector",
+            "10 abstract cells",
+            "six retained checks",
         ):
             self.assertIn(required, host_reads)
         self.assertIn("SC-030 — Populated `/CPORT` host latch", conflicts)
+        self.assertIn(
+            "SC-033 — Rev-A `/320PORT`/`/SWITCHES` quadrants",
+            conflicts,
+        )
         self.assertIn("OQ-030", questions)
+        self.assertIn("OQ-032", questions)
 
     def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
         mailboxes = (

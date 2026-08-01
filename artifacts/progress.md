@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' mailbox and `/READSTAT` board integration
+- **Current milestone:** Hard Drivin' raw `/SWITCHES` boundary qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 37 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 38 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -72,6 +72,9 @@
   problems.
   A fifteenth target checks the storage-free raw `/READSTAT` mapper at 23
   combinational cells, eight retained checks, no storage/latch, and zero
+  structural problems.
+  A sixteenth target checks the storage-free raw `/SWITCHES` mapper at 10
+  combinational cells, six retained checks, no storage/latch, and zero
   structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
@@ -598,6 +601,18 @@
   Pre-technology board synthesis retains three memories at 2,644 cells/194
   checks with zero structural problems. No byte policy, `/RVAS`, DTACK,
   physical collision priority, or open-bus value is inferred.
+- **New `/SWITCHES` evidence:** A044427 sheet 3 and TI's LS244 function table
+  establish the non-inverting order `J3-11/J3-9/J3-8/J3-7` on host
+  `D15:D12`; no connector source is drawn for `D11:D0`. The storage-free
+  mapper exhausts all sixteen raw nibbles against all sixteen validity masks
+  and exposes fixed driven mask `0xf000` without assigning cabinet functions
+  or idle levels. Standalone Yosys reports 10 cells/six checks with zero
+  structural problems. Cross-checking pinned MAME found its named
+  `/SWITCHES` and `/320PORT` read handlers reversed relative to Atari LS138
+  `30N`; both zero stubs conceal that difference. `SC-033` records the
+  conflict, and `OQ-032` retains connector semantics. The complete
+  125/231/38/38/5/10 regression split, strict lint, all sixteen Yosys targets,
+  all 30 hashes, and all 24 formal tasks pass at this checkpoint.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -618,14 +633,15 @@
   BIO power-up/reset-release phase and independent-clock coincidence,
   production Rev-A port-2 `TDI15:TDI0` electrical value,
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
+  exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify and implement the raw `/SWITCHES` driven-nibble
-  boundary, then compose a masked low-host-read target selector without
-  inventing undriven-lane or 68000 timing behavior.
+- **Next task:** compose a storage-free masked low-host-read target selector
+  using Atari LS138 `30N` order, while retaining each source's driven/valid
+  masks and leaving `/RVAS`, DTACK, byte lanes, and open-bus policy external.
 - **Latest committed baseline before this cycle:**
-  `3ad464c`
+  `27d35df`

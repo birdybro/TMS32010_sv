@@ -65,6 +65,14 @@ drives `D15:D0`; `/320PORT` drives only `D15:D8` from the TMS port-3 latch;
 filling a verified word. The complete trace is in
 `docs/integration/hard_drivin_host_reads.md`.
 
+The standalone storage-free `hard_drivin_sound_switches` mapper preserves the
+non-inverting order `{J3-11,J3-9,J3-8,J3-7}` on host `D15:D12`, fixed driven
+mask `0xf000`, and independent raw-input validity. All 256 value/validity
+combinations pass; Yosys reports 10 cells and six retained checks. No
+connector function or idle level is assigned under `OQ-032`. Pinned MAME's
+swapped `/320PORT`/`/SWITCHES` handler names and two zero stubs remain isolated
+as `SC-033`; a future selector must follow Atari LS138 `30N`.
+
 The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in
 `D15:D12`, with independent source validity and fixed driven mask `0xf000`.

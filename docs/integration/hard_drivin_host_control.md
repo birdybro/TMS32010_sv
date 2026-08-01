@@ -33,11 +33,16 @@ decode. `/IRQCLR` does not modify LS259 `80R`; it clocks grounded D into the
 separate 320IRQ LS74 as documented in `hard_drivin_sound_control.md`.
 **Confidence: VERIFIED_PRIMARY.**
 
-Pinned MAME independently maps these quadrants at `0xff0000` through
-`0xff3fff` and uses separate latch-write and IRQ-clear handlers
-[mame-harddriv-audio-030fefc, `driversnd_68k_map`,
-`hdsnd68k_latches_w`, and `hdsnd68k_irqclr_w`]. This corroborates the
-software-visible region assignment but is not host pin-timing evidence.
+Pinned MAME maps the same broad `0xff0000` through `0xff3fff` region and uses
+separate latch-write and IRQ-clear handlers. Its writes and the endpoint read
+quadrants agree, but its named `/SWITCHES` and `/320PORT` read handlers are
+attached to `0xff1000` and `0xff2000` respectively, opposite LS138 `30N`'s
+physical `01` and `10` read outputs. Both emulator handlers return zero, so
+the difference is normally invisible; `SC-033` records it before a functional
+host-read selector is added [mame-harddriv-audio-030fefc,
+`driversnd_68k_map`, `hdsnd68k_latches_w`, `hdsnd68k_switches_r`,
+`hdsnd68k_320port_r`, and `hdsnd68k_irqclr_w`]. This is not host pin-timing
+evidence.
 
 ## Address-encoded LS259 write
 

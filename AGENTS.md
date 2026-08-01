@@ -454,6 +454,14 @@ top feeds it from the mailbox flags plus explicit raw external test/ready
 inputs; it still implements no 68000 read cycle. Read
 `docs/integration/hard_drivin_host_reads.md` before changing or integrating the
 masked host-read paths.
+The standalone storage-free `hard_drivin_sound_switches` maps raw
+`{J3-11,J3-9,J3-8,J3-7}` to host `D15:D12` without inversion, exports fixed
+driven mask `0xf000`, and preserves one validity bit per connector source.
+It assigns no cabinet meanings or idle levels under `OQ-032`, and its low
+twelve zero carrier bits remain outside both masks under `OQ-030`. Pinned
+MAME's swapped `/320PORT`/`/SWITCHES` handler names and equal zero stubs are
+`SC-033`, not board decode evidence. The mapper is not yet board-top
+connected; future selection follows Atari LS138 `30N`.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

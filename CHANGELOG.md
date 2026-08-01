@@ -152,6 +152,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   completion callbacks, complete retained data/flag validity and conflict
   visibility, direct flag-to-status wiring, and explicit raw test/ready inputs
   without a 68000 bus or open-bus policy.
+- A standalone storage-free `/SWITCHES` mapper preserving the non-inverting
+  `J3-11/J3-9/J3-8/J3-7` order on host `D15:D12`, fixed driven lanes,
+  independent connector validity, and deterministic filler outside the masks.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -593,6 +596,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- All sixteen raw `/SWITCHES` connector nibbles against all sixteen validity
+  masks, including exact connector-to-lane order, non-inversion, invalid-source
+  clamping, fixed driven lanes, per-bit validity, and low-lane filler
+  separation. Standalone Yosys reports 10 cells/six checks, no storage/latch,
+  and zero structural problems. The full regression passes 125
+  repository/tool, 231 model/unit, 38 instruction RTL, 38 bus/wrapper, 5
+  interrupt, and 10 differential tests; strict lint, all sixteen Yosys
+  targets, all 30 hashes, and all 24 formal tasks pass.
 
 - Integrated nominal main-to-sound and sound-to-main word exchange, exact
   flag set/read-clear and raw-status mapping, both coincident write/read
@@ -1222,6 +1234,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   `D11:D0` remain unresolved under `OQ-030`; MAME's fixed
   test/ready/low-lane values are isolated as `SC-032` rather than promoted to
   board behavior.
+- The raw `/SWITCHES` mapper is standalone and assigns no cabinet functions or
+  inactive levels to `J3-11/J3-9/J3-8/J3-7` under `OQ-032`. Pinned MAME swaps
+  the `/SWITCHES` and `/320PORT` handler names relative to Atari LS138 `30N`
+  and returns zero from both; `SC-033` prevents either stub from defining a
+  future board selector. Physical `D11:D0` remain `OQ-030`.
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
   sample-ROM-callback/BIO-generator and qualified physical-I/O boundary. It
   lacks the 68000 bridge, actual sample storage, compare/DAC-analog

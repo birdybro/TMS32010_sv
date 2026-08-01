@@ -704,3 +704,29 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the raw high-nibble mapping;
   CORROBORATED only for MAME's software-visible flag positions; UNKNOWN for
   the complete physical word outside the driven lanes.
+
+## SC-033 — Rev-A `/320PORT`/`/SWITCHES` quadrants versus swapped MAME stubs
+
+- **Primary board evidence:** With the read-select input active, A044427
+  LS138 `30N` decodes `A13:A12=01` to `/320PORT` and `10` to `/SWITCHES`.
+  `/320PORT` enables LS374 `50L` onto `D15:D8`; `/SWITCHES` enables the first
+  half of non-inverting LS244 `10H`, mapping `J3-11`, `J3-9`, `J3-8`, and
+  `J3-7` to `D15:D12`
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3–4 of
+  10, PDF pp. 5–8; ti-snx4ls24x-datasheet, printed pp. 11–13].
+- **Secondary abstraction:** pinned MAME maps `hdsnd68k_switches_r` at
+  `0xff1000` and `hdsnd68k_320port_r` at `0xff2000`, the opposite named
+  order. Both handlers only log and return complete zero words
+  [mame-harddriv-audio-030fefc, `driversnd_68k_map`,
+  `hdsnd68k_switches_r`, and `hdsnd68k_320port_r`].
+- **Conflict:** the handler names disagree with the physical read-quadrant
+  wiring, and both stubs omit populated raw sources plus the selected
+  targets' undriven lanes. Their equal zero results conceal the swap.
+- **Current treatment:** future host-read selection follows LS138 `30N`.
+  `hard_drivin_sound_320_port_latch` and
+  `hard_drivin_sound_switches` remain distinct masked source adapters; no
+  emulator zero or handler order is promoted into the board wrapper. See
+  `OQ-030` and `OQ-032`.
+- **Confidence:** VERIFIED_PRIMARY for the physical decode and lane maps;
+  CORROBORATED for the pinned emulator's recorded software abstraction;
+  UNKNOWN for connector semantics and undriven host lanes.

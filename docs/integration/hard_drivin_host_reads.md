@@ -72,10 +72,24 @@ schematic path.
 The `/SWITCHES` half of LS244 `10H` drives `D15:D12` from four connector J3
 inputs, each shown with a 1 kOhm/0.1 uF conditioning network. The drawing does
 not assign enough board-level meaning to those connector signals to name
-their cabinet functions here. Pinned MAME's handler only logs and returns
-zero, so it is not wiring evidence
+their cabinet functions or idle levels here. The non-inverting lane order is:
+
+| connector input | host bit |
+|---|---:|
+| `J3-11` | 15 |
+| `J3-9` | 14 |
+| `J3-8` | 13 |
+| `J3-7` | 12 |
+
+Pinned MAME's handler only logs and returns zero, so it is not wiring
+evidence. It also assigns the names of its `/SWITCHES` and `/320PORT`
+read handlers to the opposite low-I/O quadrants from LS138 `30N`; because
+both handlers return zero, that secondary swap was software-invisible. This
+is `SC-033`; exact connector semantics remain `OQ-032`
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
-PDF pp. 5–6; mame-harddriv-audio-030fefc, `hdsnd68k_switches_r`].
+PDF pp. 5–6; ti-snx4ls24x-datasheet, SNx4LS244 logic/function table,
+printed pp. 11–13; mame-harddriv-audio-030fefc,
+`hdsnd68k_switches_r`, `hdsnd68k_320port_r`, and `driversnd_68k_map`].
 
 The `/READSTAT` half of LS244 `10K` drives:
 
@@ -94,6 +108,24 @@ undriven physical lanes or a live TMS5220 ready path
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
 PDF pp. 3–4; mame-harddriv-audio-030fefc, `hdsnd68k_status_r`].
 This live-versus-constant distinction is recorded as `SC-032`.
+
+## FPGA boundary for `/SWITCHES`
+
+`rtl/wrappers/hard_drivin_sound_switches.sv` is a storage-free raw connector
+mapper. Its four-bit input order is `{J3-11,J3-9,J3-8,J3-7}` and therefore
+maps directly, without inversion, to host `D15:D12`. It exports:
+
+- fixed driven mask `16'hf000`;
+- one validity bit for each connector input on the corresponding high lane;
+- invalid-source clamping only as a deterministic interface carrier; and
+- zero filler on `D11:D0` outside both masks.
+
+The adapter deliberately has no names such as coin, test, or service, no
+pull-state defaults, and no storage or reset. A later board wrapper supplies
+raw conditioned connector values and a host bridge supplies an explicit
+open-bus policy. **Confidence: VERIFIED_PRIMARY for connector-to-lane order
+and non-inversion; VERIFIED_SIMULATION for the masked FPGA convention;
+UNKNOWN for `OQ-032` connector semantics and idle state.**
 
 ## FPGA boundary for `/READSTAT`
 
@@ -165,3 +197,11 @@ checks exact status words and masks through nominal flag changes, both
 mailbox conflicts, external-source invalidity, requalification, and board
 reset. It still does not qualify a complete 68000 read cycle or choose an
 open-bus value.
+
+`tb_hard_drivin_sound_switches` likewise exhausts all sixteen raw connector
+nibbles against all sixteen connector-validity masks. It checks the exact
+`J3-11/J3-9/J3-8/J3-7` lane order, non-inverting values, constant driven mask,
+per-lane validity, invalid-source clamping, and low-lane filler separation.
+Standalone Yosys reports 10 abstract cells, six retained checks, no storage or
+latch, and zero structural problems. The mapper is not yet connected to the
+board top and proves neither connector semantics nor a 68000 read cycle.

@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs fifteen checked-in scripts. The main synthesis harness targets
+The command runs sixteen checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -129,6 +129,12 @@ The fifteenth script targets the storage-free
 retained checks, no storage or latch, and zero structural problems. This
 qualifies only the raw high-nibble mapping and masked digital carrier, not the
 undriven low twelve lanes or a complete 68000 read cycle.
+
+The sixteenth script targets the storage-free
+`hard_drivin_sound_switches`. It reports 10 combinational cells, six retained
+checks, no storage or latch, and zero structural problems. This qualifies only
+the raw connector-to-high-nibble mapping and masked carrier, not cabinet
+semantics, connector idle levels, undriven low lanes, or a 68000 read cycle.
 
 ## Quartus
 
