@@ -57,8 +57,10 @@ Q bit and per-bit validity, passes all eight selections/both values/reset and
 retention tests, and synthesizes to 53 cells with six retained checks. The
 board top can select Q4/Q3 behind an explicit opt-in, exports selected-control
 validity, and passes a synthetic program/communication-RAM handoff while
-opposite-valued external callbacks are ignored. `/RVF`/`/RVAS`, DTACK, the full 68000
-memory map, and physical host timing remain separate acceptance work. Complete
+opposite-valued external callbacks are ignored. The separate same-clock
+host-timing opt-in now supplies `/RVF`/`/RVAS`, DTACK, `/LATCHES`, and
+`/IRQCLR` logical sequencing; the full 68000 memory map, raw-pin CDC, and
+physical timing remain separate acceptance work. Complete
 details are in `docs/integration/hard_drivin_host_control.md` and
 `docs/integration/hard_drivin_host_timing.md`.
 
@@ -91,9 +93,10 @@ as `SC-033`; the implemented storage-free selector follows Atari LS138 `30N`.
 `hard_drivin_sound_host_read_mux` now composes all four low read sources in
 that primary `00/01/10/11` order while forwarding each source's data, driven
 mask, and valid mask. An invalid selection claims no lanes. The board top
-exposes the composed values and one-hot target but keeps mailbox read-clear as
-a separate completed-read callback. This does not implement `/RVF`/`/RVAS`,
-DTACK, byte handling, or open-bus behavior.
+exposes the composed values and one-hot target. In timing mode its selection
+comes from `/RVF`/`/RVAS`, and only the S7 `/SOUNDRD` completion clears the
+mailbox flag. This does not implement raw-pin CDC, physical partial-byte
+behavior, or an open-bus value.
 
 The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in
@@ -112,10 +115,13 @@ main system and the local sound 68000. LS74 `20S` asynchronously sets
 Board reset clears only the flags, not either word latch. The standalone
 `hard_drivin_sound_mailboxes` callback exhaustively verifies nominal
 whole-word exchange and explicitly invalidates unsourced coincident set/clear
-conditions. Byte-write behavior remains `SC-031`/`OQ-031`, and the adapter is
-now board-top connected only through explicit whole-word completion callbacks.
+conditions. Byte-write behavior remains `SC-031`/`OQ-031`. The main-system
+callbacks remain explicit; the local side can now use qualified S7
+`/SOUNDRD` and complete-word `/SOUNDWR`, while reporting and rejecting partial
+writes at the whole-word boundary.
 Both retained words, data validity, flag validity, conflicts, and raw
-`/READSTAT` masks remain visible. This is not a 68000 or main-system bus. See
+`/READSTAT` masks remain visible. This is not a raw-pin 68000 or main-system
+bus. See
 `docs/integration/hard_drivin_host_mailboxes.md`.
 
 ### Program-RAM ownership is a firmware protocol
@@ -490,7 +496,8 @@ physical board or game-ROM qualification.**
 The future non-ROM qualification sequence is:
 
 1. synthetic reset and address-0 fetch with schematic clock/reset ratios
-   (complete in the same-clock board wrapper; exact 68000 latch timing remains);
+   (complete in the same-clock board wrapper; local low-I/O S2-through-S7
+   sequencing is integrated, while raw-pin/electrical timing remains);
 2. synthetic 4K shared-program-RAM ownership and host-load sequence (complete
    in both the standalone adapter and processor-connected RTL wrapper;
    host-bus timing remains);

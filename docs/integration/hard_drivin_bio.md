@@ -110,7 +110,7 @@ claim a physical startup value; `selected_bio_valid_o=0` discloses that state.
 The integrated regression holds the external BIO sentinel high, generates and
 samples a qualified low board BIO, selects it, and proves that `BIOZ` takes the
 target before the next sampled release. Pre-technology synthesis of the full
-partial board top reports 2,737 abstract cells, 216 retained checks, three
+partial board top reports 2,962 abstract cells, 257 retained checks, three
 memories, and zero structural problems. The top still requires an external
 1 MHz clock-enable source and does not resolve `OQ-028` electrical phase or
 metastability behavior.

@@ -1292,8 +1292,8 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control/BIO/host-control/port-3-latch/mailbox/masked-read board top as
-  2,737 abstract cells, 216 checks, and three retained memories with zero
+  output-control/BIO/host-control/host-timing/port-3-latch/mailbox/masked-read
+  board top as 2,962 abstract cells, 257 checks, and three retained memories with zero
   structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
@@ -1306,7 +1306,8 @@ objective passing evidence.
   LS74 flags as 259 cells/ten checks. A fifteenth script checks the
   storage-free `/READSTAT` mapper as 23 cells/eight checks. A sixteenth checks
   the storage-free raw `/SWITCHES` mapper as 10 cells/six checks. A seventeenth
-  checks the masked low-host-read selector as 68 cells/13 checks. All six have
+  checks the masked low-host-read selector as 68 cells/13 checks. An eighteenth
+  checks the same-clock host-timing adapter as 142 cells/24 checks. All seven have
   no memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
@@ -1486,7 +1487,7 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,737 abstract cells/216 checks and retains the same three memories.
+  reports 2,962 abstract cells/257 checks and retains the same three memories.
   Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
@@ -1509,9 +1510,17 @@ objective passing evidence.
   `OQ-033`. The standalone same-clock logical adapter now uses explicit
   8 MHz and `/AS` events with no READY input. Its regression exhausts 8,192
   alias/address/direction/quadrant transactions and directs VPA, byte-strobe,
-  delayed-release, no-retry, and FPGA-initialization cases; Yosys reports 136
-  cells/21 checks with no latch or structural problem. It is not board-top
-  connected and does not claim raw-pin CDC or electrical closure. The current
+  delayed-release, no-retry, and FPGA-initialization cases; its pre-edge S7
+  event outputs keep same-clock state consumers on the physical trailing-edge
+  boundary. Yosys reports 142 cells/24 checks with no latch or structural
+  problem. The board-top opt-in now drives all four masked read quadrants and
+  routes S7 `/SOUNDRD`, whole-word `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` to
+  the existing adapters. Partial `/SOUNDWR` is disclosed and rejected under
+  `OQ-031`; `/SPEECH` remains a side-effect-free trace completion. Directed
+  integration checks external-callback isolation, all eight target quadrants,
+  exact masks, and S7 side effects. Integrated Yosys retains three memories at
+  2,962 cells/257 checks. It does not claim raw-pin CDC, open-bus policy, or
+  electrical closure. The current
   126/231/38/40/5/10 regression split, strict lint across 28 modules, all
   eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
   pass; the adapter has no dedicated formal harness yet. Atari TM-327 is now
@@ -1547,7 +1556,7 @@ objective passing evidence.
   MAME's fixed test/ready/low-lane values remain `SC-032`. The board top now
   drives its flag lanes from the mailboxes, retains raw external test/ready
   inputs, and passes exact data/mask checks through all integrated transitions.
-  Pre-technology board synthesis reports 2,737 cells/216 checks/three
+  Pre-technology board synthesis reports 2,962 cells/257 checks/three
   memories. The complete 125/231/38/39/5/10 regression
   split, strict lint, all seventeen Yosys targets, all 30 pinned reference
   hashes, and all 24 tasks from twelve formal configurations pass at this
@@ -1568,6 +1577,15 @@ objective passing evidence.
   `/RVF`/`/RVAS`/DTACK/open-bus integration remains separate. The full
   125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
   targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
+  The current timing-enabled board regression preserves external-callback
+  fallback, overrides only the selected local paths when opted in, reads all
+  four masked targets through S6, applies `/SOUNDRD`, complete-word
+  `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
+  and exposes `/SPEECH` without a side effect. The complete current
+  126/231/38/40/5/10 regression split and strict lint across 28 modules pass;
+  all eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
+  also pass at the latest verified checkpoint. The adapter still has no
+  dedicated formal harness.
 
 ## Milestone 22 — Release qualification
 

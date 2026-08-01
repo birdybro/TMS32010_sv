@@ -89,9 +89,9 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,737 abstract cells, 216 checks, and zero structural problems after
-the opt-in host-control, port-3 latch, mailbox, raw-source, and masked-selector
-integration.
+reports 2,962 abstract cells, 257 checks, and zero structural problems after
+the opt-in host-control, host-timing, port-3 latch, mailbox, raw-source, and
+masked-selector integration.
 This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
@@ -143,8 +143,8 @@ checks, no storage or latch, and zero structural problems. This qualifies the
 Atari quadrant order and exact mask forwarding only; it is not `/RVAS`, DTACK,
 side-effect, open-bus, or physical cycle evidence.
 
-The eighteenth script targets `hard_drivin_sound_host_timing`. It reports 136
-abstract cells, 21 retained checks, no memory or latch, and zero structural
+The eighteenth script targets `hard_drivin_sound_host_timing`. It reports 142
+abstract cells, 24 retained checks, no memory or latch, and zero structural
 problems. This qualifies the explicit-enable logical S2-through-S7 sequence,
 `/RVF` alias decode, VPA suppression, fixed completion, and no-retry contract;
 it is not a Cyclone V fit, raw-pin CDC, physical power-up result, or

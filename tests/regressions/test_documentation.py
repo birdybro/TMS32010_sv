@@ -180,7 +180,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         for required in (
             "partial, same-clock FPGA top",
-            "does not implement the 68000 bus/address decoder",
+            "does not implement a raw-pin/CDC 68000 boundary",
             "needless FPGA divergence",
             "neither storage path is acknowledged",
             "Communication-RAM host sequence",
@@ -195,8 +195,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "`host_irq_clear_commit_i` callback",
             "`LACK 0x5a` and `NOP`",
-            "2,737",
-            "216 checks",
+            "2,962",
+            "257 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -246,7 +246,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "connected to `hard_drivin_sound_mister` as an explicit opt-in",
             "external platform-independent raw BIO input remains the default",
             "selected_bio_valid_o=0",
-            "2,737 abstract cells",
+            "2,962 abstract cells",
             "52 cells",
             "seven retained checks",
         ):
@@ -294,7 +294,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "now instantiates the adapter behind `use_host_control_i`",
             "default false setting preserves external",
-            "`/IRQCLR` remains the distinct",
+            "The separate `use_host_timing_i` option",
+            "`/IRQCLR` remains distinct",
             "53 abstract cells",
             "six retained checks",
             "not a Cyclone V fit",
@@ -389,8 +390,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "cannot reassert merely",
             "hard_drivin_sound_host_timing.sv",
             "8,192 complete",
-            "136 abstract cells",
-            "21 checks",
+            "142 abstract cells",
+            "24 checks",
+            "Opt-in board-top composition",
+            "host_timing_partial_sound_write_o",
+            "2,962 abstract cells",
+            "257 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)
@@ -416,8 +421,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Ten retained RTL checks",
             "`hard_drivin_sound_mister` instantiates the standalone adapter",
             "both coincident write/read",
-            "2,737 abstract cells",
-            "216 retained\nchecks",
+            "2,962 abstract cells",
+            "257 retained\nchecks",
         ):
             self.assertIn(required, mailboxes)
         self.assertIn(

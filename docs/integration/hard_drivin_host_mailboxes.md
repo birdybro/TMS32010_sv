@@ -8,9 +8,11 @@ system and the board's local 68000 sound CPU; they are not TMS32010 registers.
 The TMS port-3 latch is a separate path documented in
 `hard_drivin_host_reads.md`.
 
-The implemented boundary accepts same-clock transaction-completion pulses. It
-does not yet implement the main-system bridge, local 68000 `/RVAS` decode,
-DTACK, byte-lane policy, interrupt-level connection, or physical strobe width.
+The standalone boundary accepts same-clock transaction-completion pulses. The
+board top can now derive the local 68000-side pulses from an opt-in logical
+`/RVAS`/DTACK adapter. It does not implement the main-system bridge, raw-pin
+CDC, a physical partial-byte policy, interrupt-level connection, or
+nanosecond strobe closure.
 
 ## Primary wiring
 
@@ -110,19 +112,26 @@ data latches.
 ## Board-top integration
 
 `hard_drivin_sound_mister` instantiates the standalone adapter behind four
-explicit decoded-completion callbacks: main-system write/read and local
-sound-CPU write/read. Each write callback accepts one complete word; each read
-callback clears only the opposite-side pending flag. The top exports both
+decoded-completion callbacks: main-system write/read and local sound-CPU
+write/read. The main-system side remains explicit. The local side selects
+either the original explicit callbacks or the same-clock host-timing adapter.
+In timing mode, S7 `/SOUNDRD` clears `MAINFLAG`; S7 `/SOUNDWR` captures the
+raw local bus word and sets `SOUNDFLAG` only when both byte strobes are active.
+A partial local write is reported and blocked from the whole-word callback
+under `OQ-031`. Each accepted write captures one complete word; each read
+clears only the opposite-side pending flag. The top exports both
 retained words, both data-valid bits, both flags, both flag-valid bits, and
 both conflict indications without assigning byte-lane or collision behavior.
 
 The integrated flags directly feed `hard_drivin_sound_read_status`, so raw
 `MAINFLAG` and `SOUNDFLAG` appear only on status bits 15 and 14 when their
 individual validity is true. `SOUND.TEST` and `/TIRDY` remain external raw
-inputs. No callback is described as `/RVAS`, UDS/LDS, DTACK, or a physical
-strobe edge; the complete 68000 and main-system bridges remain outside the
-top. **Confidence: VERIFIED_SIMULATION for the same-clock integration;
-UNKNOWN for the physical bus boundaries retained by `OQ-031`.**
+inputs. The same-clock S7 callbacks are explicitly derived from `/RVAS`,
+DTACK, and the captured byte strobes, while the default callbacks retain their
+older abstract contract. The main-system bridge, raw-pin CDC, and physical
+partial-byte result remain outside the top. **Confidence: VERIFIED_SIMULATION
+for the same-clock integration; UNKNOWN for the physical bus boundaries
+retained by `OQ-031`.**
 
 ## Verification and synthesis
 
@@ -139,9 +148,11 @@ latch, and zero structural problems. This is a pre-technology synthesis smoke,
 not 68000 bus timing or a Cyclone V fit.
 
 The integrated board regression additionally verifies nominal traffic in
-both directions, exact flag-to-status mapping, both coincident write/read
+both directions, exact timed S7 local read/write effects, explicit partial
+local-write rejection, external-callback isolation, exact flag-to-status
+mapping, both coincident write/read
 conflicts, independent flag invalidity and requalification, raw peripheral
 validity masks, and board-reset flag clear with both word latches retained.
-The complete board hierarchy reports 2,737 abstract cells, 216 retained
+The complete board hierarchy reports 2,962 abstract cells, 257 retained
 checks, three memories, and zero structural problems. It is not a 68000 bus
 or Cyclone V timing qualification.

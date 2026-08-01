@@ -26,8 +26,13 @@ module tb_hard_drivin_sound_host_timing;
   logic        read_select_valid;
   logic        write_select_valid;
   logic [23:1] latched_address;
+  logic        latched_upper_data_strobe_n;
+  logic        latched_lower_data_strobe_n;
   logic [1:0]  select_quadrant;
   logic [7:0]  target_select;
+  logic        cycle_complete_event;
+  logic        read_complete_event;
+  logic        write_complete_event;
   logic        cycle_complete;
   logic        read_complete;
   logic        write_complete;
@@ -56,8 +61,13 @@ module tb_hard_drivin_sound_host_timing;
     .read_select_valid_o         (read_select_valid),
     .write_select_valid_o        (write_select_valid),
     .latched_address_o           (latched_address),
+    .latched_upper_data_strobe_n_o(latched_upper_data_strobe_n),
+    .latched_lower_data_strobe_n_o(latched_lower_data_strobe_n),
     .select_quadrant_o           (select_quadrant),
     .target_select_o             (target_select),
+    .cycle_complete_event_o      (cycle_complete_event),
+    .read_complete_event_o       (read_complete_event),
+    .write_complete_event_o      (write_complete_event),
     .cycle_complete_o            (cycle_complete),
     .read_complete_o             (read_complete),
     .write_complete_o            (write_complete)
@@ -138,7 +148,14 @@ module tb_hard_drivin_sound_host_timing;
     rising_edge();      // S5 -> S6: end RVA but keep /RVAS selected.
     require(!rva && dtack_n && !rvas_n,
             "S6 deasserts RVA/DTACK while the hold stage keeps /RVAS low");
-    falling_edge(deassert_at_s7); // S6 -> S7: data latch and completion.
+    host_8mhz_fall = 1'b1;
+    address_strobe_deassert = deassert_at_s7;
+    #1;
+    require(cycle_complete_event,
+            "the pre-edge event qualifies same-clock S7 consumers");
+    tick();
+    host_8mhz_fall = 1'b0;
+    address_strobe_deassert = 1'b0;
     require(cycle_complete && rvas_n,
             "S7 emits one completion and releases /RVAS");
   endtask
@@ -176,6 +193,9 @@ module tb_hard_drivin_sound_host_timing;
                       "low-I/O quadrant is captured from A13:A12");
               require(latched_address == cycle_address,
                       "the adapter retains the complete stable bus address");
+              require(!latched_upper_data_strobe_n &&
+                      !latched_lower_data_strobe_n,
+                      "the adapter retains both asserted byte strobes");
 
               rising_edge();
               require(rva && !dtack_n && !rvas_n,
@@ -246,6 +266,9 @@ module tb_hard_drivin_sound_host_timing;
       require(rva && dtack_n && !rvas_n && target_select == 8'h80,
               "/VPA blocks DTACK without erasing the separate RVA decode pulse");
       falling_edge(1'b0);
+      require(!cycle_complete_event && !read_complete_event &&
+              !write_complete_event,
+              "CPU-space supplies no ordinary S7 completion event");
       rising_edge();
       require(!rva && dtack_n && rvas_n && !cycle_complete,
               "a VPA cycle never enters the normal /DTACK hold completion");

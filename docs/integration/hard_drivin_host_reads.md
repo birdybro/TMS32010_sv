@@ -4,9 +4,10 @@
 
 This document traces the four A044427 Rev-A low host-I/O read targets from
 their decoder to the 68000 `D15:D0` bus. It distinguishes a physically driven
-lane from a convenient complete software word. It does not implement the
-complete 68000 bus, `/RVF`/`/RVAS`, DTACK, connector conditioning, TMS5220 speech
-interface, or main-system bus bridge.
+lane from a convenient complete software word. It does not implement a
+raw-pin/CDC 68000 boundary, an open-bus policy, connector conditioning, the
+TMS5220 speech interface, or the main-system bus bridge. A same-clock logical
+`/RVF`/`/RVAS`/DTACK option is described below.
 
 ## Decode and driven lanes
 
@@ -194,10 +195,15 @@ open-bus value, or cause any side effect. In particular, selecting
 does so. **Confidence: VERIFIED_PRIMARY for target order and lane maps;
 VERIFIED_SIMULATION for storage-free masked composition.**
 
-`hard_drivin_sound_mister` now instantiates the raw switch mapper and this
-selector alongside the existing mailbox, port latch, and status mapper. It
-exports each source separately plus the composed result and one-hot target.
-This is a board source-selection boundary, not a 68000 cycle implementation.
+`hard_drivin_sound_mister` instantiates the raw switch mapper and this selector
+alongside the existing mailbox, port latch, status mapper, and qualified
+same-clock host-timing adapter. With `use_host_timing_i=0`, the original
+explicit read-select callback remains selected. With it high, the adapter's
+S4-through-S7 read-select and captured quadrant drive the mux, while the same
+S7 `/SOUNDRD` completion clears `MAINFLAG`. All four selected sources still
+export exact data, driven masks, and valid masks; the top does not synthesize
+a complete word for partial targets. This is logical same-clock bus-cycle
+composition, not raw-pin CDC or `OQ-030` open-bus resolution.
 
 ## Verification and synthesis
 
@@ -212,7 +218,7 @@ later low-address TBLW captures `0x30` from word `0xf230` and exposes
 `0x3000`, exactly once, without modifying program RAM. This verifies the
 same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
 Standalone Yosys reports 19 abstract cells and five retained checks; the
-integrated board hierarchy reports 2,737 cells, 216 checks, three memories,
+integrated board hierarchy reports 2,962 cells, 257 checks, three memories,
 and zero structural problems. Neither result is a Cyclone V fit.
 
 `tb_hard_drivin_sound_read_status` exhausts all sixteen raw source nibbles
@@ -225,8 +231,8 @@ inputs directly to the qualified mailboxes and retains raw external
 `SOUND.TEST`/`/TIRDY` inputs with their validity bits. The integrated test
 checks exact status words and masks through nominal flag changes, both
 mailbox conflicts, external-source invalidity, requalification, and board
-reset. It still does not qualify a complete 68000 read cycle or choose an
-open-bus value.
+reset. Its timing-enabled cases qualify the same-clock logical cycle but do
+not choose an open-bus value or establish a raw-pin boundary.
 
 `tb_hard_drivin_sound_switches` likewise exhausts all sixteen raw connector
 nibbles against all sixteen connector-validity masks. It checks the exact
@@ -243,4 +249,7 @@ driven lane of all four targets. Standalone Yosys reports 68 abstract cells,
 integrated board regression separately proves the same order with live source
 state, including MAME's swapped quadrant names, source validity propagation,
 selection without mailbox flag clear, and both observed `/320PORT` latch
-updates.
+updates. The integrated timing cases additionally exercise all four read
+quadrants from S4 through S7, confirm that the external selector is ignored
+only while opted in, preserve each source mask, and clear `MAINFLAG` only at
+the completed `/SOUNDRD` boundary.

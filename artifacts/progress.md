@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' same-clock local-68000 host timing adapter
+- **Current milestone:** Hard Drivin' opt-in same-clock local-68000 bridge
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 126 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains all three memories and passes at 2,737 abstract cells/216 checks
+  board top retains all three memories and passes at 2,962 abstract cells/257 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -80,7 +80,7 @@
   at 68 abstract cells, 13 retained checks, no storage/latch, and zero
   structural problems.
   An eighteenth target checks the standalone explicit-enable local-68000 host
-  timing adapter at 136 abstract cells, 21 retained checks, no memory/latch,
+  timing adapter at 142 abstract cells, 24 retained checks, no memory/latch,
   and zero structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
@@ -654,9 +654,17 @@
   `A22:A17` alias, `A23`, `A16:A14`, read/write, and quadrant combinations,
   then directs every UDS/LDS state, CPU-space VPA, delayed `/AS` release,
   held-`/AS` no-retry behavior, and mid-cycle deterministic FPGA
-  initialization. Yosys 0.67+111 reports 136 cells/21 checks with no
-  memory/latch or structural problem. It is standalone and does not close
-  `OQ-033` raw-pin CDC, TTL margin, or physical startup. The complete current
+  initialization. Pre-edge completion events preserve the S7 state-consumer
+  boundary while registered pulses remain available for tracing. Yosys
+  0.67+111 reports 142 cells/24 checks with no memory/latch or structural
+  problem. The board top now offers it as an explicit opt-in: all four masked
+  read quadrants remain selected through S6; S7 routes `/SOUNDRD`, whole-word
+  `/SOUNDWR`, `/LATCHES`, and `/IRQCLR`; partial mailbox writes are reported
+  and rejected; and `/SPEECH` remains visible without a side effect. External
+  callbacks remain the default and are explicitly isolated while opted in.
+  Integrated Yosys retains three memories at 2,962 cells/257 checks. This does
+  not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
+  raw-pin CDC, TTL margin, and physical startup. The complete current
   126/231/38/40/5/10 regression split, strict lint across 28 modules, all
   eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
   pass. The adapter itself has exhaustive simulation but no dedicated formal
@@ -689,9 +697,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** connect the qualified standalone timing outputs to the masked
-  read selector and existing whole-word completion callbacks behind an
-  explicit opt-in board-top interface, while keeping raw-pin CDC, open-bus,
-  byte-write policy, and `OQ-033` electrical closure outside the adapter.
+- **Next task:** add a bounded formal harness for the same-clock host-timing
+  adapter and board-routing contract under legal event assumptions, then
+  investigate the local-68000 program ROM/RAM decode needed for TM-327's
+  synthetic program-memory diagnostics without assigning an open-bus value.
 - **Latest committed baseline before this cycle:**
-  `332c479`
+  `b512ef1`

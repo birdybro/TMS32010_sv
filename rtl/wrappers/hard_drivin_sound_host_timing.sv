@@ -30,8 +30,13 @@ module hard_drivin_sound_host_timing (
   output logic        read_select_valid_o,
   output logic        write_select_valid_o,
   output logic [23:1] latched_address_o,
+  output logic        latched_upper_data_strobe_n_o,
+  output logic        latched_lower_data_strobe_n_o,
   output logic [1:0]  select_quadrant_o,
   output logic [7:0]  target_select_o,
+  output logic        cycle_complete_event_o,
+  output logic        read_complete_event_o,
+  output logic        write_complete_event_o,
   output logic        cycle_complete_o,
   output logic        read_complete_o,
   output logic        write_complete_o
@@ -78,6 +83,8 @@ module hard_drivin_sound_host_timing (
   assign read_select_valid_o = io_decode_active && read_not_write_q;
   assign write_select_valid_o = io_decode_active && !read_not_write_q;
   assign select_quadrant_o = latched_address_o[13:12];
+  assign latched_upper_data_strobe_n_o = upper_data_strobe_n_q;
+  assign latched_lower_data_strobe_n_o = lower_data_strobe_n_q;
 
   always_comb begin
     target_select_o = 8'h00;
@@ -89,6 +96,15 @@ module hard_drivin_sound_host_timing (
 
   assign normal_completion_condition =
     cycle_active_o && vpa_n_o && !rva_o && !dtack_seen_q;
+  // These pre-edge event forms let same-clock downstream storage consume the
+  // selected strobe's S7 trailing edge. The registered forms below remain
+  // available for trace/debug observation during the following clock.
+  assign cycle_complete_event_o =
+    host_8mhz_fall_i && normal_completion_condition;
+  assign read_complete_event_o =
+    cycle_complete_event_o && rvf_address_qualified && read_not_write_q;
+  assign write_complete_event_o =
+    cycle_complete_event_o && rvf_address_qualified && !read_not_write_q;
 
   always_ff @(posedge clk_i) begin
     if (initialize_i) begin
@@ -141,7 +157,7 @@ module hard_drivin_sound_host_timing (
       // at the MC68000 S7 data-latch boundary.
       if (host_8mhz_fall_i) begin
         dtack_seen_q <= dtack_n_o;
-        if (normal_completion_condition) begin
+        if (cycle_complete_event_o) begin
           cycle_complete_o <= 1'b1;
           read_complete_o <=
             rvf_address_qualified && read_not_write_q;
@@ -193,6 +209,14 @@ module hard_drivin_sound_host_timing (
               !(cycle_active_o && rvf_address_qualified));
       assert (dtack_n_o == !(vpa_n_o && rva_o));
       assert (rvas_n_o == (dtack_seen_q && !rva_o));
+      assert (cycle_complete_event_o ==
+              (host_8mhz_fall_i && normal_completion_condition));
+      assert (read_complete_event_o ==
+              (cycle_complete_event_o &&
+               rvf_address_qualified && read_not_write_q));
+      assert (write_complete_event_o ==
+              (cycle_complete_event_o &&
+               rvf_address_qualified && !read_not_write_q));
 
       if (previous_host_8mhz_rise) begin
         assert (rva_o == previous_as_seen);

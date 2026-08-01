@@ -101,7 +101,7 @@ raw Q bits and a separate validity bit for each:
 
 This commit-pulse model deliberately does not reproduce the physical LS259's
 level-sensitive interval or propagation delay. It is a same-clock integration
-convention suitable for a later host bridge.
+convention used by the opt-in same-clock host bridge below.
 
 `hard_drivin_sound_mister` now instantiates the adapter behind
 `use_host_control_i`. The default false setting preserves external
@@ -109,8 +109,11 @@ convention suitable for a later host bridge.
 valid by contract. The opt-in setting selects raw Q4 and Q3 respectively and
 exports validity for both selected controls. An invalid deterministic FPGA
 initialization bit is therefore never silently promoted to known physical
-state. `/IRQCLR` remains the distinct `host_irq_clear_commit_i` callback; the
-LS259 write cannot clear `320IRQ`.
+state. The separate `use_host_timing_i` option may generate `/LATCHES` and
+`/IRQCLR` completions from the qualified S7 write boundary; when disabled,
+both original explicit callbacks remain in control. `/LATCHES` uses captured
+`A4:A1` and remains independent of host data and byte strobes. `/IRQCLR`
+remains distinct from the LS259 write and only it can clear `320IRQ`.
 
 ## Verification and synthesis
 
@@ -124,8 +127,10 @@ The board-top test uses opposite-valued external sentinels while opted in,
 applies board reset, loads synthetic program and communication words under Q4
 and Q3 ownership, hands both memories to the DSP, executes two instructions,
 reasserts Q4 reset, and reads the preserved communication word back under Q3.
-This verifies the selection and handoff convention, not a 68000 address or
-DTACK waveform.
+The integrated timing case additionally proves S7 `/LATCHES` selects the
+captured address while ignoring an opposite external callback, and S7
+`/IRQCLR` clears a live 320IRQ without changing MUTE. This verifies the
+same-clock logical composition, not raw-pin CDC or electrical timing.
 
 Yosys 0.67+111 reports 53 abstract cells, six retained checks, no memory or
 latch, and zero structural problems. This is portable structural evidence,

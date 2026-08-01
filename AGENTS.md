@@ -415,7 +415,8 @@ or write, and do not describe the same-clock completion as the physical
 level-sensitive interval. Its board-top connection is opt-in, preserves the
 external reset/CRAMEN callbacks by default, exports selected-control validity,
 and keeps `/IRQCLR` separate. Read `docs/integration/hard_drivin_host_control.md`
-before modifying this path; full `/RVF`/`/RVAS`, DTACK, and 68000 timing remain
+before modifying this path. The separate host-timing opt-in may now generate
+`/LATCHES` and `/IRQCLR` at S7; raw-pin CDC and electrical timing remain
 outside it.
 The A044427 local 68000 host-cycle path is primary-transcribed in
 `docs/integration/hard_drivin_host_timing.md`. LS138 `30P` produces `/RVF`
@@ -427,15 +428,19 @@ arbitrarily stalled callback to this path, omit `/RVF`, or claim physical
 power-up/nanosecond equivalence while `OQ-033` remains open. The standalone
 `hard_drivin_sound_host_timing` implements only that logical sequence with
 explicit edge events, exact target/completion visibility, and deterministic
-FPGA-only idle initialization; it is not yet board-top connected. Read the
-timing document before changing or integrating it.
+FPGA-only idle initialization. The board top now selects it only behind
+`use_host_timing_i`, using its pre-edge S7 events for masked reads,
+whole-word `/SOUNDWR`, `/SOUNDRD`, `/LATCHES`, and `/IRQCLR`; partial mailbox
+writes are disclosed and rejected under `OQ-031`, while `/SPEECH` remains an
+observable unimplemented completion. Read the timing document before changing
+or integrating it.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
 alias execution test. It ties Rev-A INT inactive and selects between default
 external BIO and an explicit-validity board generator. It is not a 68000
-bridge, complete peripheral implementation, full MiSTer top, or board timing
-qualification.
+raw-pin/CDC bridge, complete peripheral implementation, full MiSTer top, or
+board electrical timing qualification.
 A044427 communication RAM is a separate 512-by-16 resource. Host latch
 `CRAMEN` selects either host read/write access or DSP port-1 read-only access;
 the DSP address comes from the low nine bits of a shared 16-bit LS191 counter.
@@ -452,8 +457,11 @@ complete 16-bit words through LS374 pairs; LS74 `20S` sets `MAINFLAG` and
 and clears both flags on board reset. Neither data latch has reset. The
 standalone `hard_drivin_sound_mailboxes` preserves independent data/flag
 validity and rejects coincident set/clear interpretation under `SC-031` and
-`OQ-031`. The board top now connects it only behind four explicit whole-word
-completion callbacks and exports all validity/conflict state. Read
+`OQ-031`. The board top connects it behind four selectable whole-word
+completion paths: the main-system callbacks remain explicit, while the local
+sound-CPU callbacks may come from the qualified S7 timing event. It exports
+all validity/conflict state and reports rather than merges partial local
+writes. Read
 `docs/integration/hard_drivin_host_mailboxes.md` before changing or integrating
 this path. Do not infer byte merging, LS74 collision priority, or a complete
 68000 bridge from the callback model.
@@ -464,8 +472,9 @@ zero carrier bits are not a physical open-bus value under `OQ-030`, and MAME's
 fixed test/ready values remain a secondary conflict under `SC-032`. The board
 top feeds it from the mailbox flags plus explicit raw external test/ready
 inputs; it still implements no 68000 read cycle. Read
-`docs/integration/hard_drivin_host_reads.md` before changing or integrating the
-masked host-read paths.
+`docs/integration/hard_drivin_host_reads.md` before changing or integrating
+the masked host-read paths. The timing opt-in now supplies a same-clock logical
+cycle, not a raw-pin boundary or open-bus value.
 The standalone storage-free `hard_drivin_sound_switches` maps raw
 `{J3-11,J3-9,J3-8,J3-7}` to host `D15:D12` without inversion, exports fixed
 driven mask `0xf000`, and preserves one validity bit per connector source.
@@ -475,9 +484,9 @@ MAME's swapped `/320PORT`/`/SWITCHES` handler names and equal zero stubs are
 `SC-033`, not board decode evidence. The board top connects this source to
 `hard_drivin_sound_host_read_mux`, which forwards all four low-read sources in
 Atari LS138 `30N` order with their exact driven/valid masks. Its qualified
-selection input is not `/RVF`, `/RVAS`, DTACK, or a read completion; `/SOUNDRD` flag
-clear remains a separate callback. Do not add an open-bus value or side effect
-to this storage-free composition.
+selection can come from the explicit callback or the opt-in timing adapter;
+only the separate S7 `/SOUNDRD` event clears the flag. Do not add an open-bus
+value or a combinational side effect to this storage-free composition.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

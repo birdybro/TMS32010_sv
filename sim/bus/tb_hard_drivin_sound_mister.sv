@@ -28,6 +28,38 @@ module tb_hard_drivin_sound_mister;
   logic        selected_dsp_reset_valid;
   logic        selected_communication_host_enable;
   logic        selected_communication_host_enable_valid;
+  logic        use_host_timing;
+  logic        host_8mhz_rise;
+  logic        host_8mhz_fall;
+  logic        host_address_strobe_assert;
+  logic        host_address_strobe_deassert;
+  logic [2:0]  host_function_code;
+  logic [23:1] host_bus_address;
+  logic        host_read_not_write;
+  logic        host_upper_data_strobe_n;
+  logic        host_lower_data_strobe_n;
+  logic [15:0] host_bus_write_data;
+  logic        host_timing_cycle_active;
+  logic        host_timing_rva;
+  logic        host_timing_vpa_n;
+  logic        host_timing_dtack_n;
+  logic        host_timing_rvas_n;
+  logic        host_timing_rvf_n;
+  logic        host_timing_read_write_strobe_n;
+  logic        host_timing_upper_write_enable_n;
+  logic        host_timing_lower_write_enable_n;
+  logic        host_timing_read_select_valid;
+  logic        host_timing_write_select_valid;
+  logic [23:1] host_timing_latched_address;
+  logic        host_timing_latched_upper_data_strobe_n;
+  logic        host_timing_latched_lower_data_strobe_n;
+  logic [1:0]  host_timing_select_quadrant;
+  logic [7:0]  host_timing_target_select;
+  logic        host_timing_cycle_complete;
+  logic        host_timing_read_complete;
+  logic        host_timing_write_complete;
+  logic        host_timing_speech_write_complete;
+  logic        host_timing_partial_sound_write;
   logic        host_program_select_n;
   logic        host_write;
   logic        host_commit;
@@ -180,6 +212,50 @@ module tb_hard_drivin_sound_mister;
     .selected_communication_host_enable_valid_o(
       selected_communication_host_enable_valid
     ),
+    .use_host_timing_i             (use_host_timing),
+    .host_8mhz_rise_i              (host_8mhz_rise),
+    .host_8mhz_fall_i              (host_8mhz_fall),
+    .host_address_strobe_assert_i  (host_address_strobe_assert),
+    .host_address_strobe_deassert_i(host_address_strobe_deassert),
+    .host_function_code_i          (host_function_code),
+    .host_bus_address_i            (host_bus_address),
+    .host_read_not_write_i         (host_read_not_write),
+    .host_upper_data_strobe_n_i    (host_upper_data_strobe_n),
+    .host_lower_data_strobe_n_i    (host_lower_data_strobe_n),
+    .host_bus_write_data_i         (host_bus_write_data),
+    .host_timing_cycle_active_o    (host_timing_cycle_active),
+    .host_timing_rva_o             (host_timing_rva),
+    .host_timing_vpa_n_o           (host_timing_vpa_n),
+    .host_timing_dtack_n_o         (host_timing_dtack_n),
+    .host_timing_rvas_n_o          (host_timing_rvas_n),
+    .host_timing_rvf_n_o           (host_timing_rvf_n),
+    .host_timing_read_write_strobe_n_o(
+      host_timing_read_write_strobe_n
+    ),
+    .host_timing_upper_write_enable_n_o(
+      host_timing_upper_write_enable_n
+    ),
+    .host_timing_lower_write_enable_n_o(
+      host_timing_lower_write_enable_n
+    ),
+    .host_timing_read_select_valid_o(host_timing_read_select_valid),
+    .host_timing_write_select_valid_o(host_timing_write_select_valid),
+    .host_timing_latched_address_o(host_timing_latched_address),
+    .host_timing_latched_upper_data_strobe_n_o(
+      host_timing_latched_upper_data_strobe_n
+    ),
+    .host_timing_latched_lower_data_strobe_n_o(
+      host_timing_latched_lower_data_strobe_n
+    ),
+    .host_timing_select_quadrant_o(host_timing_select_quadrant),
+    .host_timing_target_select_o  (host_timing_target_select),
+    .host_timing_cycle_complete_o (host_timing_cycle_complete),
+    .host_timing_read_complete_o  (host_timing_read_complete),
+    .host_timing_write_complete_o (host_timing_write_complete),
+    .host_timing_speech_write_complete_o(
+      host_timing_speech_write_complete
+    ),
+    .host_timing_partial_sound_write_o(host_timing_partial_sound_write),
     .host_program_select_n_i       (host_program_select_n),
     .host_write_i                  (host_write),
     .host_commit_i                 (host_commit),
@@ -492,6 +568,72 @@ module tb_hard_drivin_sound_mister;
     host_latch_write_commit = 1'b0;
   endtask
 
+  task automatic local_host_start(
+    input logic [1:0]  quadrant,
+    input logic        read_not_write_value,
+    input logic [3:0]  low_address,
+    input logic        upper_strobe_n,
+    input logic        lower_strobe_n,
+    input logic [15:0] write_data
+  );
+    host_bus_address = '0;
+    host_bus_address[23] = 1'b1;
+    host_bus_address[16:14] = 3'b100;
+    host_bus_address[13:12] = quadrant;
+    host_bus_address[4:1] = low_address;
+    host_function_code = 3'b101;
+    host_read_not_write = read_not_write_value;
+    host_upper_data_strobe_n = upper_strobe_n;
+    host_lower_data_strobe_n = lower_strobe_n;
+    host_bus_write_data = write_data;
+    host_address_strobe_assert = 1'b1;
+    tick();
+    host_address_strobe_assert = 1'b0;
+    require(host_timing_cycle_active && host_timing_vpa_n &&
+            !host_timing_rvf_n &&
+            host_timing_latched_address == host_bus_address &&
+            host_timing_select_quadrant == quadrant &&
+            host_timing_latched_upper_data_strobe_n == upper_strobe_n &&
+            host_timing_latched_lower_data_strobe_n == lower_strobe_n,
+            "opt-in host timing captures the qualified complete address");
+  endtask
+
+  task automatic local_host_rising_edge;
+    host_8mhz_rise = 1'b1;
+    tick();
+    host_8mhz_rise = 1'b0;
+  endtask
+
+  task automatic local_host_falling_edge;
+    host_8mhz_fall = 1'b1;
+    tick();
+    host_8mhz_fall = 1'b0;
+  endtask
+
+  task automatic local_host_finish(
+    input logic expected_read_complete,
+    input logic expected_write_complete
+  );
+    local_host_falling_edge();
+    require(host_timing_rva && !host_timing_dtack_n &&
+            !host_timing_rvas_n,
+            "S5 captures DTACK while preserving the selected target");
+    local_host_rising_edge();
+    require(!host_timing_rva && host_timing_dtack_n &&
+            !host_timing_rvas_n,
+            "S6 releases DTACK while holding the selected read/write path");
+    host_8mhz_fall = 1'b1;
+    host_address_strobe_deassert = 1'b1;
+    tick();
+    host_8mhz_fall = 1'b0;
+    host_address_strobe_deassert = 1'b0;
+    require(!host_timing_cycle_active && host_timing_rvas_n &&
+            host_timing_cycle_complete &&
+            host_timing_read_complete == expected_read_complete &&
+            host_timing_write_complete == expected_write_complete,
+            "S7 updates stateful consumers and emits the exact trace pulse");
+  endtask
+
   task automatic debug_write_word(
     input logic [7:0] address,
     input logic [15:0] data
@@ -598,6 +740,17 @@ module tb_hard_drivin_sound_mister;
     use_host_control = 1'b0;
     host_latch_write_commit = 1'b0;
     host_latch_address = 4'h0;
+    use_host_timing = 1'b0;
+    host_8mhz_rise = 1'b0;
+    host_8mhz_fall = 1'b0;
+    host_address_strobe_assert = 1'b0;
+    host_address_strobe_deassert = 1'b0;
+    host_function_code = 3'b101;
+    host_bus_address = '0;
+    host_read_not_write = 1'b1;
+    host_upper_data_strobe_n = 1'b1;
+    host_lower_data_strobe_n = 1'b1;
+    host_bus_write_data = 16'h0000;
     bio_one_mhz_rise = 1'b0;
     bio_counter_seed = 8'hff;
     bio_counter_seed_valid = 1'b1;
@@ -792,6 +945,152 @@ module tb_hard_drivin_sound_mister;
     main_mailbox_read_commit = 1'b0;
     tick();
 
+    // Opt into the qualified same-clock local-68000 bridge. The external
+    // low-read selector and local sound-side completion callbacks become
+    // sentinels; main-system mailbox callbacks remain a separate bus.
+    use_host_timing = 1'b1;
+    sound_cpu_low_read_select_valid = 1'b1;
+    sound_cpu_low_read_quadrant = 2'b11;
+
+    main_mailbox_write_data = 16'h6db6;
+    main_mailbox_write_commit = 1'b1;
+    tick();
+    main_mailbox_write_commit = 1'b0;
+    require(main_flag && sound_cpu_mailbox_read_data == 16'h6db6,
+            "main-system callback supplies a live word for timed /SOUNDRD");
+
+    local_host_start(2'b00, 1'b1, 4'h0, 1'b0, 1'b0, 16'h0000);
+    require(sound_cpu_low_read_target_select == 4'b0000,
+            "external read-selector sentinel is ignored before timed S4");
+    local_host_rising_edge();
+    require(
+      host_timing_read_select_valid && !host_timing_write_select_valid &&
+      host_timing_target_select == 8'h10 &&
+      sound_cpu_low_read_target_select == 4'b0001 &&
+      sound_cpu_low_read_data == 16'h6db6 &&
+      sound_cpu_low_read_driven_mask == 16'hffff &&
+      sound_cpu_low_read_valid_mask == 16'hffff && main_flag,
+      "timed S4 selects complete /SOUNDRD data without an early side effect"
+    );
+    local_host_finish(1'b1, 1'b0);
+    require(!main_flag && main_flag_valid &&
+            sound_cpu_mailbox_read_data == 16'h6db6,
+            "timed S7 /SOUNDRD clears MAINFLAG while retaining the word");
+    tick();
+
+    local_host_start(2'b01, 1'b1, 4'h0, 1'b0, 1'b0, 16'h0000);
+    local_host_rising_edge();
+    require(
+      host_timing_target_select == 8'h20 &&
+      sound_cpu_low_read_target_select == 4'b0010 &&
+      sound_cpu_low_read_data == 16'h0000 &&
+      sound_cpu_low_read_driven_mask == 16'hff00 &&
+      sound_cpu_low_read_valid_mask == 16'h0000,
+      "timed quadrant 01 forwards only the currently invalid /320PORT lanes"
+    );
+    local_host_finish(1'b1, 1'b0);
+    tick();
+
+    local_host_start(2'b10, 1'b1, 4'h0, 1'b0, 1'b0, 16'h0000);
+    local_host_rising_edge();
+    require(
+      host_timing_target_select == 8'h40 &&
+      sound_cpu_low_read_target_select == 4'b0100 &&
+      sound_cpu_low_read_data == 16'ha000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'hf000,
+      "timed quadrant 10 forwards the live raw switch nibble and mask"
+    );
+    local_host_finish(1'b1, 1'b0);
+    tick();
+
+    local_host_start(2'b11, 1'b1, 4'h0, 1'b0, 1'b0, 16'h0000);
+    local_host_rising_edge();
+    require(
+      host_timing_target_select == 8'h80 &&
+      sound_cpu_low_read_target_select == 4'b1000 &&
+      sound_cpu_low_read_data == 16'h2000 &&
+      sound_cpu_low_read_driven_mask == 16'hf000 &&
+      sound_cpu_low_read_valid_mask == 16'hf000,
+      "timed quadrant 11 forwards the live raw status nibble and mask"
+    );
+    local_host_finish(1'b1, 1'b0);
+    tick();
+
+    // The local LS374 callback is deliberately whole-word only. Both byte
+    // strobes accept the raw bus word; an asserted external callback carrying
+    // a different word must be ignored while the timing bridge is selected.
+    sound_cpu_mailbox_write_data = 16'hdead;
+    sound_cpu_mailbox_write_commit = 1'b1;
+    local_host_start(2'b00, 1'b0, 4'h0, 1'b0, 1'b0, 16'hb44b);
+    local_host_rising_edge();
+    require(
+      host_timing_write_select_valid && !host_timing_read_select_valid &&
+      host_timing_target_select == 8'h01 &&
+      !host_timing_read_write_strobe_n &&
+      !host_timing_upper_write_enable_n &&
+      !host_timing_lower_write_enable_n &&
+      sound_cpu_low_read_target_select == 4'b0000,
+      "timed S4 exposes the complete-word /SOUNDWR write path only"
+    );
+    local_host_finish(1'b0, 1'b1);
+    require(main_mailbox_read_data == 16'hb44b &&
+            main_mailbox_read_data_valid && sound_flag && sound_flag_valid &&
+            !host_timing_partial_sound_write,
+            "timed S7 captures raw local-host data instead of external sentinel"
+    );
+    sound_cpu_mailbox_write_commit = 1'b0;
+    tick();
+
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    main_mailbox_read_commit = 1'b0;
+    require(!sound_flag && sound_flag_valid,
+            "main-side callback clears SOUNDFLAG before partial-write test");
+    local_host_start(2'b00, 1'b0, 4'h0, 1'b0, 1'b1, 16'h1111);
+    local_host_rising_edge();
+    require(!host_timing_upper_write_enable_n &&
+            host_timing_lower_write_enable_n,
+            "timed write retains the asymmetric physical byte strobes");
+    local_host_finish(1'b0, 1'b1);
+    require(host_timing_partial_sound_write &&
+            main_mailbox_read_data == 16'hb44b && !sound_flag,
+            "partial /SOUNDWR is disclosed and cannot enter whole-word storage"
+    );
+    tick();
+    require(!host_timing_partial_sound_write,
+            "partial-write disclosure is exactly one trace clock");
+
+    // `/LATCHES` is address/data-independent of UDS/LDS on A044427. The
+    // external callback points at Q6 while the timed bus targets Q5=1.
+    host_latch_address = 4'b0110;
+    host_latch_write_commit = 1'b1;
+    local_host_start(2'b01, 1'b0, 4'b1101, 1'b1, 1'b0, 16'hffff);
+    local_host_rising_edge();
+    require(host_timing_target_select == 8'h02,
+            "timed write quadrant 01 selects only /LATCHES");
+    local_host_finish(1'b0, 1'b1);
+    require(host_latch_q[5] && host_latch_valid[5] &&
+            !host_latch_valid[6],
+            "timed /LATCHES uses A4:A1 and ignores the external callback");
+    host_latch_write_commit = 1'b0;
+    tick();
+
+    // The unimplemented speech endpoint remains observable and cannot be
+    // mistaken for any implemented write callback.
+    local_host_start(2'b10, 1'b0, 4'h0, 1'b0, 1'b0, 16'hcafe);
+    local_host_rising_edge();
+    require(host_timing_target_select == 8'h04,
+            "timed write quadrant 10 remains the distinct /SPEECH target");
+    local_host_finish(1'b0, 1'b1);
+    require(host_timing_speech_write_complete &&
+            !host_timing_partial_sound_write &&
+            main_mailbox_read_data == 16'hb44b && !sound_flag,
+            "unimplemented /SPEECH completion is visible without side effects"
+    );
+    tick();
+    use_host_timing = 1'b0;
+
     sound_cpu_low_read_quadrant = 2'b11;
     sound_test_valid = 1'b0;
     tirdy_n_valid = 1'b0;
@@ -945,11 +1244,16 @@ module tb_hard_drivin_sound_mister;
             !sound_rom_selection_invalid,
             "processor port 0 held and committed one internal ROM response");
 
-    host_irq_clear_commit = 1'b1;
-    tick();
-    host_irq_clear_commit = 1'b0;
+    use_host_timing = 1'b1;
+    local_host_start(2'b11, 1'b0, 4'h0, 1'b0, 1'b0, 16'h0000);
+    local_host_rising_edge();
+    require(host_timing_target_select == 8'h08 && irq_68000,
+            "timed write quadrant 11 selects /IRQCLR without clearing early");
+    local_host_finish(1'b0, 1'b1);
     require(!irq_68000 && !mute_net,
-            "host /IRQCLR clears only 320IRQ and preserves raw MUTE state");
+            "timed S7 /IRQCLR clears only 320IRQ and preserves raw MUTE state");
+    tick();
+    use_host_timing = 1'b0;
 
     // Processor reset does not erase communication RAM. Give CRAMEN to the
     // host and read the word back through the integrated host callback.

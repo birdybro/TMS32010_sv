@@ -5,13 +5,14 @@
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
 communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
-board-BIO and host-control paths, plus the two main/sound mailboxes, raw
-`/SWITCHES` and `/READSTAT` nibbles, and their masked low-host-read selector.
+board-BIO, host-control, and same-clock local-68000 timing paths, plus the two
+main/sound mailboxes, raw `/SWITCHES` and `/READSTAT` nibbles, and their masked
+low-host-read selector.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
 1 and routes port 0 through a present-block-aware byte callback.
-It does not implement the 68000 bus/address decoder, actual sample storage,
+It does not implement a raw-pin/CDC 68000 boundary, actual sample storage,
 the optional unpopulated compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
 clock-enable source, or a MiSTer framework top level.
 
@@ -21,8 +22,9 @@ The separately qualified `hard_drivin_sound_host_control` is connected behind
 board path instead uses LS259 Q4 and Q3. Raw latch state, per-bit validity, and
 validity of both selected controls remain visible. `/IRQCLR` is electrically
 separate from LS259 `80R` and remains the explicit
-`host_irq_clear_commit_i` callback. No `/RVAS` generator, 68000 address
-decoder, byte-lane logic, or DTACK path is implied by this opt-in selection.
+`host_irq_clear_commit_i` callback when host timing is disabled. The separate
+`use_host_timing_i` path can derive `/LATCHES` and `/IRQCLR` from the qualified
+same-clock S7 event without changing which LS259 outputs control ownership.
 
 ## Main/sound mailbox callbacks and masked host reads
 
@@ -39,17 +41,20 @@ while the integrated mapper exports data, driven mask `0xf000`, and per-lane
 valid mask. No callback contains a byte mask, and zero carrier bits outside a
 valid mask are not physical board values. `SC-031`/`OQ-031` retain byte and
 coincident-strobe uncertainty; `SC-032`/`OQ-030` retain MAME constant and
-open-bus differences. These callbacks do not constitute a `/RVAS` decoder,
-DTACK path, or either physical bus.
+open-bus differences. With `use_host_timing_i=1`, the local read and write
+callbacks instead come from the qualified S7 `/RVAS`/DTACK sequence. A local
+mailbox write enters this whole-word interface only with both byte strobes
+active; partial writes are surfaced explicitly and rejected under `OQ-031`.
+The main-system callbacks remain independent.
 
 Raw `{J3-11,J3-9,J3-8,J3-7}` inputs with per-bit validity feed the separate
 `/SWITCHES` mapper. A storage-free selector then composes `/SOUNDRD`,
-`/320PORT`, `/SWITCHES`, and `/READSTAT` from a caller-qualified two-bit
-quadrant in exact Atari LS138 `30N` order. The top exports source data/masks,
-the selected data/masks, and one-hot target visibility. Selection has no side
-effects: `sound_cpu_mailbox_read_commit_i` remains the only callback that
-clears `MAINFLAG`. No `/RVAS`, DTACK, byte-lane, or open-bus behavior is
-inferred from this combinational boundary.
+`/320PORT`, `/SWITCHES`, and `/READSTAT` from a qualified two-bit quadrant in
+exact Atari LS138 `30N` order. The top exports source data/masks, selected
+data/masks, and one-hot target visibility. The default mode uses the explicit
+caller selector and callback. Timing mode instead drives selection from S4
+through S7 and clears `MAINFLAG` only on completed `/SOUNDRD`. Neither mode
+chooses an open-bus value for undriven lanes.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -279,7 +284,8 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains three memories and reports 2,737
-abstract cells with 216 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,962
+abstract cells with 257 checks and zero structural problems after opt-in
+same-clock local-host timing integration. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

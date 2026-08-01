@@ -177,7 +177,9 @@ captures the complete stable `A23:A1`, function code, `RWN`, `/UDS`, and
 - global `/RWS`, `/WEU`, and `/WEL` write qualification;
 - exact active-high one-hot LS138 `30N` target visibility;
 - read/write selection and `A13:A12` quadrant state;
-- one-clock ordinary-cycle and qualified low-I/O read/write completion pulses;
+- pre-edge S7 completion events for same-clock stateful consumers plus
+  one-clock registered ordinary/read/write trace pulses;
+- retained `/UDS` and `/LDS` state for completion policy;
   and
 - the full captured address so high aliases are not discarded by the timing
   boundary.
@@ -192,6 +194,34 @@ VPA-owned sequence. `initialize_i` chooses idle `RVA=0`,
 **Confidence: VERIFIED_SIMULATION for this logical same-clock adaptation;
 not physical power-up or nanosecond timing evidence.**
 
+## Opt-in board-top composition
+
+`hard_drivin_sound_mister` instantiates the timing adapter behind
+`use_host_timing_i`. With that input false, every pre-existing explicit
+low-read, local-mailbox, host-control, and IRQ-clear callback remains the
+selected interface. With it true, the board top instead:
+
+- drives the masked low-read selector from the qualified S4-through-S7 read
+  target and raw `A13:A12` quadrant;
+- clears `MAINFLAG` on the S7 `/SOUNDRD` completion event;
+- captures local-host write data and sets `SOUNDFLAG` on an S7 `/SOUNDWR`
+  event only when both `/UDS` and `/LDS` are active;
+- routes S7 `/LATCHES` to the existing address-encoded LS259 adapter using
+  captured `A4:A1`, independently of host data and byte strobes;
+- routes S7 `/IRQCLR` to the existing 320IRQ clear callback; and
+- exposes an S7 `/SPEECH` trace pulse without assigning an unimplemented
+  speech-device side effect.
+
+The full-word `/SOUNDWR` restriction is an explicit FPGA interface policy at
+the `OQ-031` boundary. A partial-byte access emits
+`host_timing_partial_sound_write_o` and cannot silently enter the whole-word
+mailbox callback; this does not claim that the physical LS374 pair ignores or
+merges such a cycle. The main-system side of both mailboxes remains on its
+separate external callbacks. Read data remains accompanied by exact driven
+and valid masks, so the bridge still assigns no `OQ-030` open-bus value.
+**Confidence: VERIFIED_SIMULATION for same-clock composition; UNKNOWN for
+raw-pin CDC, partial-byte physical behavior, and electrical timing.**
+
 ## Verification and synthesis
 
 `tb_hard_drivin_sound_host_timing` exhausts all 64 combinations of physically
@@ -204,12 +234,21 @@ read/write pulses. Directed cases additionally check all `/UDS`/`/LDS`
 combinations, CPU-space `/VPA` suppression, delayed `/AS` release, absence of
 a held-`/AS` retry, and deterministic mid-cycle FPGA reinitialization.
 
-Twenty-one retained assertions cover legal event combinations, exact Boolean
-outputs, target uniqueness, state capture, rising/falling transition state,
-ordinary completion qualification, and `/AS` release ownership. Yosys
-0.67+111 reports 136 abstract cells, 21 checks, no inferred latch or memory,
+Twenty-four retained assertions cover legal event combinations, exact Boolean
+outputs and pre-edge completion events, target uniqueness, state capture,
+rising/falling transition state, ordinary completion qualification, and
+`/AS` release ownership. Yosys 0.67+111 reports 142 abstract cells, 24 checks,
+no inferred latch or memory,
 and zero structural problems. This is pre-technology portable synthesis, not
 a Cyclone V fit or `OQ-033` electrical closure.
+
+The integrated board regression runs all four timed read quadrants and all
+four timed write quadrants. It checks masked read data through S6, exact S7
+`/SOUNDRD`, whole-word `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` effects,
+external-callback isolation while opted in, explicit partial-mailbox
+rejection, and visible side-effect-free `/SPEECH` completion. Integrated
+Yosys retains three memories and reports 2,962 abstract cells, 257 checks,
+and zero structural problems.
 
 ## Diagnostic-software evidence
 

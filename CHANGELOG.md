@@ -174,6 +174,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/VPA`/`RVA`/`/DTACK`/`/RVAS`/`/RVF` outputs, global byte-write strobes,
   one-hot low-I/O selection, and qualified completion pulses. It deliberately
   has no READY input and labels deterministic initialization as FPGA-only.
+- An opt-in board-top composition of that timing path: all four masked read
+  quadrants are driven during the held selection interval, and pre-edge S7
+  events route `/SOUNDRD`, complete-word `/SOUNDWR`, `/LATCHES`, and
+  `/IRQCLR` to their existing stateful adapters. Partial mailbox writes are
+  explicitly reported and rejected under `OQ-031`; `/SPEECH` completion
+  remains visible without an invented device side effect.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -495,6 +501,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Added pre-edge S7 completion-event outputs to the host-timing adapter so
+  same-clock state consumers update on the documented trailing boundary; the
+  registered one-clock completion outputs remain available for trace/debug.
+- Preserved all explicit local-host callbacks as the default board-top mode
+  while making timing-derived reads and side effects a separate
+  `use_host_timing_i` opt-in.
 - Replaced the misleading serial-ROM shorthand with parallel sample-ROM
   terminology after tracing the direct `SA15:SA0` address and `SD14:SD7` data
   wiring in A044427.
@@ -1234,8 +1246,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The standalone host-timing regression passes 8,192 exhaustive
   alias/address/direction/quadrant transactions plus directed byte-strobe,
   VPA, delayed-release, held-`/AS` no-retry, and FPGA-reinitialization cases.
-  Yosys reports 136 abstract cells, 21 retained checks, no memory or latch,
-  and zero structural problems. The complete current regression passes 126
+  Yosys reports 142 abstract cells, 24 retained checks, no memory or latch,
+  and zero structural problems. The integrated board regression additionally
+  checks all four timed reads and writes, exact masked S4-through-S6 data,
+  S7 mailbox/control effects, partial-write rejection, unimplemented speech
+  visibility, and external-callback selection. Integrated Yosys retains three
+  memories at 2,962 cells/257 checks. The complete current regression passes 126
   repository/tool, 231 model/unit, 38 instruction RTL, 40 bus/wrapper, 5
   interrupt, and 10 differential tests; strict lint across 28 modules, all
   eighteen Yosys targets, all 32 reference hashes, and the existing 24 formal
@@ -1251,10 +1267,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
-- A044427's `RVA`/`/DTACK`/`/RVAS` logic is now qualified at logical bus-state
-  resolution, but its complete TTL propagation/loading margin and unreset
-  power-up transient are not. No raw 68000 transaction wrapper is claimed,
-  and a future board-faithful path cannot insert arbitrary callback stalls
+- A044427's `RVA`/`/DTACK`/`/RVAS` logic and same-clock board composition are
+  qualified at logical bus-state resolution, but complete TTL
+  propagation/loading margin, raw-pin CDC, and unreset power-up transient are
+  not. The board-faithful path cannot insert arbitrary callback stalls
   because the circuit has no READY input or held-`/AS` re-arm (`OQ-033`).
 - A production A044427 Rev-A port-2 word is electrically unqualified. The
   drawing routes only `CMPOUT` to `TDI15`, while the complete source and pull-up
