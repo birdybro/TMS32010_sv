@@ -1282,6 +1282,37 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "ti-dsp-microcomputer-patent-us4577282a",
+      "title": "Microcomputer System for Digital Signal Processing",
+      "author_or_organization": "Edward R. Caudel and Surendar S. Magar; assignee Texas Instruments Incorporated",
+      "publication_number": "US4577282A",
+      "publication_date": "1986-03-18",
+      "revision": "filed 1982-02-22",
+      "source_url": "https://patentimages.storage.googleapis.com/43/2d/34/6275cd4f90039c/US4577282.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "patents/US4577282A_Microcomputer_System_for_Digital_Signal_Processing.pdf",
+      "sha256": "b2507cb7ced751685a3985ed67dbf1b089f2c6974bab5a8fb8da17d480fcf7b4",
+      "document_type": "contemporary Texas Instruments patent",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Public patent record; redistribution status of the hosted scan not independently audited",
+      "relevance": "Direct architectural background for the 1982 TI DSP embodiment, including non-microcoded program control, quarter-cycle timing, ordinary fetch overlap, branch/CALL/RET/IN/OUT/TBL bus ownership, and internal PC/stack clocks",
+      "authority_level": 4,
+      "notes": "Patent evidence is background, not an original-TMS32010 production specification. Its disclosed Table A omits the later documented accumulator PUSH/POP opcodes and says all non-branch/call/table/I/O instructions are one state; it therefore cannot choose an OQ-016 bus hypothesis. Keep the scan only in the ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Figures 2A-2B and 3a-3dd, patent sheets 2-8 (PDF pages 2-8): program-control structure and quarter-cycle fetch/branch/RET/IN/OUT/table timing",
+        "System overview and external program access, patent columns 5-6 (PDF page 29): every-state active-low RCLK rule and DEN-/WE- exceptions",
+        "System timing, patent columns 15-18 (PDF pages 34-35): PC increment behavior, branch/CALL/RET discarded fetches, selected-target fetch, and PC hold during IN/OUT",
+        "Table A, patent columns 34-36 (PDF pages 43-44): disclosed instruction scope, encodings, word counts, and state counts",
+        "Figure 5p and PC/stack description, patent sheets 24-25 and columns 31-34 (PDF pages 24-25 and 42-43): PC source selection and quarter-cycle push/pop clocks used for call/return control"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

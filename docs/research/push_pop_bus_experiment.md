@@ -7,7 +7,7 @@ This experiment is intended to resolve `OQ-016`: the exact address and
 TMS32010 `PUSH` and `POP` instructions. It is not needed to verify their
 already documented stack transformations or two-cycle totals.
 
-The primary sources impose four useful constraints:
+The production primary sources impose four useful constraints:
 
 1. `PUSH` and `POP` are each one word and two cycles
    [ti-tms32010-users-guide-spru001b, `POP`/`PUSH`, printed pp. 3-49–3-50
@@ -27,6 +27,14 @@ The primary sources impose four useful constraints:
    [ti-tms32010-users-guide-spru001b, Table 2-4, printed p. 2-21
    (PDF p. 45)].
 
+A contemporary TI patent for a closely related DSP embodiment independently
+uses the same every-state external-program-read rule, but its Table A omits
+the production accumulator PUSH/POP opcodes. Its push/pop clocks only describe
+subroutine CALL/RET stack control. It reinforces constraint 4 but supplies no
+PUSH/POP address or word-validity evidence
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 31-36 (PDF
+pp. 29 and 42-44)].
+
 These facts make a completely inactive extra cycle inconsistent with the
 general pin contract. They do not establish which active-low `MEN` sample is
 accepted by the instruction pipeline, or whether the program address repeats.
@@ -40,8 +48,8 @@ instruction.
 
 | Hypothesis | First execution interval | Second execution interval | Present evidence |
 |---|---|---|---|
-| H1: inactive internal interval | `MEN` high; address unspecified or held | `MEN` low at `N+1`; word accepted | Independent IKA32010 behaves this way, but it conflicts with TI's every-cycle `MEN` rule. |
-| H2: repeated prefetch | `MEN` low at `N+1`; word discarded | `MEN` low again at `N+1`; word accepted | Reconciles the primary pin rule with the secondary implementation's PC hold, but no located TI waveform identifies the discard/repeat. |
+| H1: inactive internal interval | `MEN` high; address unspecified or held | `MEN` low at `N+1`; word accepted | Independent IKA32010 behaves this way, but it conflicts with the production guide and related TI patent's every-cycle read rule. |
+| H2: repeated prefetch | `MEN` low at `N+1`; word discarded | `MEN` low again at `N+1`; word accepted | Reconciles the production pin rule with the secondary implementation's PC hold, but neither TI source contains these accumulator opcodes in a control waveform. |
 | H3: advancing prefetch | `MEN` low at `N+1` | `MEN` low at another PC value, such as `N+2` | Compatible with full fetch/execute overlap in the abstract; exact PC ownership and word validity are not documented for PUSH/POP. |
 
 At pinned commit `51bc1f05a2a08a61c8815a9643d08a42e99779c6`, IKA32010

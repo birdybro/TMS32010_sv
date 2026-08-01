@@ -30,6 +30,41 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertTrue(citation_ids, "no source citations found")
         self.assertEqual(citation_ids - source_ids, set())
 
+    def test_ti_patent_claim_boundary_is_explicit(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        patent = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-dsp-microcomputer-patent-us4577282a"
+        )
+        research = (
+            DOCS / "research" / "ti_patent_us4577282a.md"
+        ).read_text(encoding="utf-8")
+        normalized_research = re.sub(r"\s+", " ", research)
+        push_pop = (
+            DOCS / "research" / "push_pop_bus_experiment.md"
+        ).read_text(encoding="utf-8")
+        ret_adr = (
+            DOCS / "decisions" / "ADR-0003-computed-control-prefetch.md"
+        ).read_text(encoding="utf-8")
+        normalized_push_pop = re.sub(r"\s+", " ", push_pop)
+        normalized_ret_adr = re.sub(r"\s+", " ", ret_adr)
+        self.assertEqual(patent["authority_level"], 4)
+        self.assertEqual(patent["status"], "acquired")
+        self.assertFalse(patent["may_commit"])
+        self.assertRegex(patent["sha256"], r"^[0-9a-f]{64}$")
+        for required in (
+            "not an original-TMS32010 production specification",
+            "does not contain the production TMS32010 accumulator `PUSH` or `POP`",
+            "no resolution of `OQ-016`",
+        ):
+            self.assertIn(required, normalized_research)
+        self.assertIn("supplies no PUSH/POP address", normalized_push_pop)
+        self.assertIn("CORROBORATED for RET", normalized_ret_adr)
+        self.assertIn("INFERRED for CALA", normalized_ret_adr)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

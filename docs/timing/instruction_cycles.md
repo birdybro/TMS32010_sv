@@ -50,12 +50,18 @@ pp. 3-22–3-23 and 4-55–4-56 (PDF pp. 51–52 and 136–137)]. **Confidence:
 VERIFIED_PRIMARY for the numeric cycle count and every-cycle `MEN`
 constraint; UNKNOWN for address and fetched-word ownership.**
 
+A contemporary TI patent independently states the same every-state external
+program-read rule, but its disclosed instruction table omits accumulator
+PUSH/POP. It therefore adds no missing program address or word ownership
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 34-36 (PDF
+pp. 29 and 43-44)].
+
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
 opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model/RTL tests assert
 that total and state transition while the logical model reports only the known
 opcode fetch. The explicit pipeline implements ADR-0003's discarded `PC+1`
-then selected-target read, derived from TI's general pipeline, PC-addressing,
-every-cycle `/MEN`, and analogous TBL redirect facts. Tests stall both reads,
+then selected-target read, derived for CALA from TI's general pipeline,
+PC-addressing, every-cycle `/MEN`, and analogous TBL redirect facts. Tests stall both reads,
 prove nonexecution and retirement-only stack mutation, and cover active-low
 interrupt arrival in either interval. That combined mapping remains
 `INFERRED` under `OQ-007`/`SC-037`
@@ -63,6 +69,12 @@ interrupt arrival in either interval. That combined mapping remains
 **Confidence: VERIFIED_PRIMARY for the numeric cycle count and state effects;
 INFERRED for the combined address/fetch sequence; UNKNOWN for physical
 confirmation.**
+
+US4577282A explicitly discloses the same discarded-sequential-then-target
+sequence for RET in a related TI embodiment. RET ownership is consequently
+CORROBORATED, while the production TMS32010's exact pin sequence remains
+unverified [ti-dsp-microcomputer-patent-us4577282a, patent cols. 17-18 (PDF
+p. 35), Figure 3u].
 
 ## Qualified timing tests
 

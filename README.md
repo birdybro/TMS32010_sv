@@ -20,8 +20,9 @@ instructions: `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, 
 `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
 boundary support the same set except POP and PUSH, for fifty-eight shared
-instructions. CALA/RET use ADR-0003's explicitly `INFERRED` discarded-
-`PC+1` then selected-target mapping; PUSH/POP external address ownership
+instructions. CALA/RET use ADR-0003's discarded-`PC+1` then selected-target
+mapping, CORROBORATED for RET by a related TI patent and `INFERRED` for CALA;
+PUSH/POP external address ownership
 remains unresolved under `OQ-016`.
 A redistribution-safe four-tap Q15 FIR program now verifies the complete local
 assemble/disassemble/model workflow against independently fixed opcodes,

@@ -61,8 +61,8 @@ through S7 and clears `MAINFLAG` only on completed `/SOUNDRD`. Neither mode
 chooses an open-bus value for undriven lanes.
 
 The wrapped processor still omits PUSH and POP from RTL. CALA/RET use
-ADR-0003's explicitly `INFERRED` external sequence, and the remaining timing
-and silicon uncertainties are retained in `docs/research/open_questions.md`.
+ADR-0003's CORROBORATED-RET/INFERRED-CALA external sequence, and the remaining
+timing and silicon uncertainties are retained in `docs/research/open_questions.md`.
 This wrapper is therefore not evidence that the project is instruction-
 complete, cycle-accurate, or release-ready.
 

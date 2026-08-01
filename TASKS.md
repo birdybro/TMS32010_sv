@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 45 pinned
+  until permission is demonstrated. The ignored cache now verifies 46 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -74,6 +74,10 @@ objective passing evidence.
   acknowledge boundary without transferring successor-only behavior.
   TI SDLS013A now qualifies the active-low B:A/Y0-Y3 truth table for both
   SP-327 LS139 subdecoders.
+  TI patent US4577282A is now integrity-pinned as non-committed architectural
+  background. Its explicit RET discard/pop/target timing corroborates
+  ADR-0003, while its omission of the production accumulator PUSH/POP opcodes
+  prevents it from resolving `OQ-016`.
 
 ## Milestone 3 — Architecture specification
 
@@ -99,7 +103,9 @@ objective passing evidence.
   per-cycle program-address/fetched-word ownership of single-word PUSH/POP
   under `OQ-016`. TI's every-cycle `MEN` rule narrows the strobe behavior, but
   does not distinguish a repeated/discarded next-word read from an advancing
-  prefetch; `SC-018` and the physical experiment preserve that boundary.
+  prefetch. Contemporary TI patent US4577282A independently corroborates the
+  general read rule but omits accumulator PUSH/POP; `SC-018` and the physical
+  experiment preserve that boundary.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
@@ -323,14 +329,17 @@ objective passing evidence.
   `CALA` pushes wrapped opcode-PC+1, discards the old stack bottom, selects
   `ACC[11:0]`, and counts two cycles. Directed tests cover upper-ACC
   exclusion, PC wrap, nested calls, state preservation, and the known opcode
-  fetch. RTL now implements ADR-0003's targeted `INFERRED` mapping of
+  fetch. RTL now implements ADR-0003's targeted mapping of
   discarded `PC+1` followed by selected-target fetch; physical confirmation
-  remains pending under `OQ-007`/`SC-037`.
+  remains pending under `OQ-007`/`SC-037`. This mapping remains INFERRED for
+  CALA.
   `RET` loads PC from the old stack top, shifts all lower levels upward,
   duplicates the old bottom, and counts the primary-defined two cycles. Its
   logical transaction trace deliberately includes only the known opcode
-  fetch. ADR-0003 now permits the same targeted inferred discarded-`PC+1` /
-  selected-target RTL mapping as CALA without upgrading it to primary proof;
+  fetch. ADR-0003 now permits the same targeted discarded-`PC+1` /
+  selected-target RTL mapping as CALA. Contemporary TI patent US4577282A
+  corroborates this RET ordering without upgrading it to production-primary
+  proof;
   directed bus, stall, interrupt-boundary, bounded-formal, and architectural
   differential tests now cover the combined CALA/RET path.
   A directed `EINT; RET` test proves RET completes before a pending request
@@ -997,7 +1006,8 @@ objective passing evidence.
   pop with old-bottom duplication, two-cycle total, state preservation, and
   protected execution after EINT before pending interrupt reentry. The model
   intentionally omits physical bus detail; the explicit wrapper implements
-  ADR-0003 at `INFERRED` confidence under `OQ-007`.
+  ADR-0003 at CORROBORATED confidence for RET under `OQ-007`; original-part
+  pin confirmation remains open.
   `CALA` now passes primary-cited exact decode, independent hand fixture,
   assembler/disassembler, model/RTL/differential, bus, stall, interrupt-
   boundary, and bounded-formal tests for its opcode-PC+1 stack
@@ -1031,8 +1041,8 @@ objective passing evidence.
   and low-half preservation are primary-verified; OV preservation and OVM
   independence remain CORROBORATED under resolved `SC-017`/`OQ-011`. Four
   model-qualified single-word/two-cycle stack instructions remain outside
-  RTL/native qualification. CALA/RET now implement the reversible `INFERRED`
-  ADR-0003 mapping; PUSH/POP remain blocked on address
+  RTL/native qualification. CALA/RET now implement ADR-0003's reversible
+  CORROBORATED-RET/INFERRED-CALA mapping; PUSH/POP remain blocked on address
   ownership under `OQ-016`. Maintain one subtask per timing family.
 
 ## Milestone 15 — Pipeline and cycle timing

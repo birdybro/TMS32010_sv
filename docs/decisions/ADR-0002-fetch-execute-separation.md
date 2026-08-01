@@ -92,8 +92,8 @@ their execution intervals to the explicit pipeline.
 - If MPY or MPYK occupies that protected slot, the ownership flag remains set
   through one additional instruction before its concurrent read becomes the
   dummy return-PC fetch.
-- CALA and RET are integrated under the reversible `INFERRED` ADR-0003
-  sequence. PUSH and POP remain outside native integration until their
+- CALA and RET are integrated under ADR-0003's reversible CORROBORATED-RET/
+  INFERRED-CALA sequence. PUSH and POP remain outside native integration until their
   unresolved external cycles are sourced.
 
 ## Evidence

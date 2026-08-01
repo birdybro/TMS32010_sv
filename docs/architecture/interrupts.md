@@ -72,8 +72,8 @@ recognized.
 The instruction-boundary model and RTL additionally verify the primary-
 described `EINT; RET` sequence: RET loads the saved PC and pops the stack
 before a previously pending request can schedule another dummy entry. Its
-explicit bus sequence follows ADR-0003 at `INFERRED` confidence under
-`OQ-007`.
+explicit bus sequence follows ADR-0003 at CORROBORATED confidence for RET
+under `OQ-007`; exact original-part pin behavior remains unverified.
 
 The explicit pipeline now qualifies Figure 2-12's basic EINT path. EINT
 captures exactly one protected instruction. That instruction executes while
@@ -110,7 +110,8 @@ stack, or enter service midinstruction. Selected-target capture completes the
 computed control flow, exactly one protected instruction retires, and only
 then do dummy/vector ownership and interrupt stack entry proceed
 [`sim/interrupt/tb_sequential_pipeline_interrupt_computed.sv`]. The external
-address mapping remains ADR-0003 `INFERRED`, not physical-pin proof.
+address mapping remains ADR-0003 CORROBORATED for RET and INFERRED for CALA,
+not original-part physical-pin proof.
 
 This remains an incomplete pipeline claim. The explicit tests do not cover
 DINT's provisional cancellation at every placement, physical

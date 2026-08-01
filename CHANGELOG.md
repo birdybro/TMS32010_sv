@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- An integrity-pinned, non-committed copy of TI patent US4577282A plus a
+  claim-boundary research note. Its related DSP embodiment explicitly
+  describes RET's discarded sequential fetch, stack pop, return-address fetch,
+  and target decode, while its omission of accumulator PUSH/POP prevents it
+  from resolving `OQ-016`.
 - Directed branch/table traces that inspect the retained core-program carrier
   at operand capture, across clock-enable stalls, and after replacement by the
   selected or repeated instruction fetch.
@@ -38,7 +43,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   seven orchestration tests; and generated hash/result metadata. Ten model
   steps match eleven live TMS320C10 boundary rows while `/MEN`, cycle, pin,
   original-part, and Atari-firmware claims remain explicitly excluded.
-- Reference-provenance policy, safe acquisition/hash tools, a 45-source
+- Reference-provenance policy, safe acquisition/hash tools, a 46-source
   integrity-pinned catalog, and living engineering backlog.
 - Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and
   MSP sheets plus TI's 1988 TMS34010 User's Guide. The drawings connect each
@@ -636,6 +641,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Raised ADR-0003's RET address ownership from INFERRED to CORROBORATED using
+  the related contemporary TI patent, while retaining CALA as INFERRED and
+  exact original-TMS32010 pin behavior as UNKNOWN. PUSH/POP remain excluded
+  from RTL because the patent does not contain those accumulator opcodes.
 - The explicit pipeline now retains instruction words, control operands, and
   TBLR program data in one context-owned core-program register. This replaces
   separate branch/table registers and their combinational state-selected mux;
@@ -770,8 +779,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
 - The model/tool boundary contains all 60 documented instructions while
-  RTL/differential covers 58. CALA/RET now use ADR-0003's explicitly
-  `INFERRED` external sequence; PUSH/POP cycles are not fabricated in model
+  RTL/differential covers 58. CALA/RET now use ADR-0003's CORROBORATED-RET/
+  INFERRED-CALA external sequence; PUSH/POP cycles are not fabricated in model
   transaction traces and remain outside RTL under `OQ-016`.
 - Timing documentation now follows TI's explicit opcode-prefetch convention:
   Figure 2-9/2-10 execution cycles begin after current-opcode prefetch and end
@@ -844,11 +853,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- The complete repository gates pass with 131 provenance/document/tool tests,
+- The complete repository gates pass with 132 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
-  Yosys targets synthesize; and all 45 acquired reference hashes verify.
+  Yosys targets synthesize; and all 46 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
   on `5CSEBA6U23I7` in 1,393 ALMs, 400 registers, one 144-by-16 M10K, and one
   DSP block. TimeQuest closes the 25 MHz internal constraint with +19.196 ns
@@ -1755,8 +1764,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   two-word/two-cycle table entries, and their operand/condition definitions,
   with directed simulation evidence under `OQ-007`.
 - CALA/RET state effects and numeric two-cycle totals are model/RTL-qualified.
-  Their explicit discarded-sequential/selected-target sequence remains
-  `INFERRED`, not original-pin proof, under `OQ-007`/`SC-037`.
+  Their explicit discarded-sequential/selected-target sequence is
+  CORROBORATED for RET by a related TI patent and remains INFERRED for CALA;
+  neither is original-part pin proof under `OQ-007`/`SC-037`.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.

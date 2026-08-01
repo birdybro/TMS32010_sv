@@ -1,0 +1,91 @@
+# TI patent US4577282A architectural evidence
+
+## Purpose and authority boundary
+
+US4577282A, *Microcomputer System for Digital Signal Processing*, was filed
+by Texas Instruments engineers Edward R. Caudel and Surendar S. Magar on
+1982-02-22. It describes a contemporary TI fixed-point DSP embodiment with a
+12-bit program counter, a four-level stack, two auxiliary registers, a 32-bit
+accumulator, a 16-by-16 multiplier, separate program and data paths, and
+quarter-cycle control. These characteristics make it useful architectural
+background for first-generation TMS320 research
+[ti-dsp-microcomputer-patent-us4577282a, abstract, Figures 1-3 and patent
+columns 5-18 (PDF pp. 1, 3-8, and 29-35)].
+
+The patent is not an original-TMS32010 production specification. Its
+preferred embodiment includes on-chip program ROM, uses some names and
+timings that differ from the production manuals, and describes an instruction
+table that is not the complete documented TMS32010 set. Project claims may
+therefore use it only as authority-level-4 background or corroboration. It
+cannot override SPRU001B, a production data sheet, an erratum, or original
+hardware observation.
+
+## Corroborated control facts
+
+The disclosed embodiment supplies unusually explicit logical timing:
+
+- External program read clock `RCLK-` is active for possible instruction
+  access in every machine state except states with active `DEN-` or `WE-`. This
+  independently matches SPRU001B's original-part `MEN` rule
+  [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 (PDF p. 29)].
+- An ordinary fetch starts as PC is loaded in Q3, is read during Q4/Q1, reaches
+  the program bus in Q2, and enters the decoders in Q3. Execution overlaps
+  later fetches [same source, patent cols. 15-16 (PDF p. 34)].
+- A taken branch prevents the already fetched address word from being decoded,
+  loads that word into PC, and decodes the selected target one state later.
+  `CALL` follows that sequence while pushing its return PC
+  [same source, patent cols. 17-18 (PDF p. 35)].
+- `RET` is described exactly: the sequential fetch started by the S1 PC
+  increment is discarded; the stack is popped into PC in Q3/S1; the return
+  target is fetched during Q4/S1-Q1/S2; and the target begins decode/execution
+  at Q3/S2 [same source, patent cols. 17-18 (PDF p. 35), Figure 3u].
+- `IN`/`OUT` hold the PC across their two states, while TBL suppresses execution
+  of the sequential word and redirects through the accumulator
+  [same source, patent cols. 17-18 (PDF p. 35), Figures 3y-3dd].
+
+These points corroborate the clean-room pipeline structure. In particular,
+the production-manual constraints plus the patent RET description raise the
+ADR-0003 RET sequence from a generic inference to **CORROBORATED**. They do
+not make its exact original-TMS32010 pin waveform `VERIFIED_PRIMARY`. CALA's
+matching RTL ownership remains `INFERRED`: the patent describes its state
+operation but does not give an equally explicit state-by-state CALA waveform.
+
+## Why PUSH/POP remains unresolved
+
+The patent's Table A contains `CALLA` and `RET`, but it does not contain the
+production TMS32010 accumulator `PUSH` or `POP` instructions. Searches of the
+full patent identify only subroutine-stack push/pop controls. They do not
+identify opcodes that move ACC to or from the stack. The prose also says that,
+within the disclosed Table A, only branches, calls, table lookup, and I/O take
+more than one state
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 11-12 and 34-36 (PDF
+pp. 32 and 43-44)].
+
+Consequently, this source strengthens the general active-read constraint but
+cannot distinguish the externally measurable `OQ-016` hypotheses:
+
+- an inactive first interval despite that general rule;
+- an active repeated/discarded read of `N+1`; or
+- an active advancing prefetch at another PC address.
+
+No accumulator PUSH/POP bus sequence will be derived from the patent. The
+original-device capture in `docs/research/push_pop_bus_experiment.md` remains
+the smallest evidence needed to choose among those hypotheses.
+
+## Known scope differences and cautions
+
+- The preferred embodiment has on-chip program ROM and mode/test behavior not
+  established for the original production TMS32010.
+- Table A is incomplete relative to the documented production instruction set;
+  accumulator PUSH/POP are a concrete omission.
+- OCR of Table A is poor and several encodings/names are visibly corrupted.
+  It must not supply opcode fixtures.
+- The prose's general one-state statement and Table A's two-state `SUBC` entry
+  are internally awkward and differ from the production TMS32010's documented
+  one-cycle SUBC. This is further reason not to merge the embodiments silently.
+- `RCLK-` is the patent embodiment's name. Repository native-interface claims
+  continue to use the production TMS32010 manual's `MEN` terminology.
+
+**Result:** useful contemporary TI corroboration for general fetch control and
+the RET discard/redirect sequence; no resolution of `OQ-016`; no production
+opcode or electrical-timing authority.

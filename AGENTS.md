@@ -365,9 +365,9 @@ wrapper samples a held-low request only at the enabled falling boundary from
 each modeled subphase, including a phase stall. The explicit pipeline
 additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
 sequence, including the MPY/MPYK protected-slot extension. Physical
-setup/synchronizer behavior, physical confirmation of the inferred CALA/RET
-sequence, PUSH/POP second-cycle sequencing, and the provisional
-DINT-at-final-boundary ordering remain outside the qualified boundary under
+setup/synchronizer behavior, original-part physical confirmation of the
+CORROBORATED RET/INFERRED CALA sequence, PUSH/POP second-cycle sequencing,
+and the provisional DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 For Atari integration specifically, production drawing A044427 Rev A holds the
 TMS32010 active-low interrupt input inactive through the `PR1`/`R26` 1 kΩ

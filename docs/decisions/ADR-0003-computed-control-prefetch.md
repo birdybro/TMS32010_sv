@@ -27,7 +27,12 @@ Neither `CALA` nor `RET` asserts `WE` or `DEN`. A located independent FPGA
 implementation instead makes its first microcycle bus-idle and reads the
 target in its second. That idle interval conflicts with the original-part
 every-cycle `/MEN` rule. MAME corroborates architectural state and numeric
-cycle totals but exposes no program-bus subcycles.
+cycle totals but exposes no program-bus subcycles. A contemporary TI patent
+for a related DSP embodiment explicitly describes RET as discarding its
+sequential S1 fetch, popping the return address into PC, and fetching that
+target for decode in S2. The patent is corroborating architectural background,
+not an original-TMS32010 production specification; it gives no equally
+explicit CALA timing sequence.
 
 ## Decision
 
@@ -43,10 +48,10 @@ The explicit fetch/execute wrapper may implement this sequence:
    instruction, applies the documented stack/PC transform, and captures the
    selected word as the next executable instruction.
 
-All tests, comments, and documentation for this combined mapping must label it
-`INFERRED`, not `VERIFIED_PRIMARY`. The opcode, state transform, two-cycle
-total, and requirement for active `/MEN` remain independently
-`VERIFIED_PRIMARY`.
+Tests, comments, and documentation must label RET's combined mapping
+`CORROBORATED` and CALA's mapping `INFERRED`, never `VERIFIED_PRIMARY`. The
+opcodes, state transforms, two-cycle totals, and requirement for active `/MEN`
+remain independently `VERIFIED_PRIMARY` from production documentation.
 
 The following competing hypotheses remain recorded:
 
@@ -62,13 +67,14 @@ not require inventing an executable placeholder.
 
 ## Consequences
 
-- CALA/RET RTL work can proceed without presenting an undocumented sequence
-  as silicon-verified.
+- CALA/RET RTL work can proceed without presenting a related patent embodiment
+  or the TBL analogy as production-silicon-verified.
 - Directed tests must assert both `/MEN` reads, stalls in both intervals,
   nonexecution of the discarded word, target-word capture, retirement-only
   stack mutation, and interrupt deferral until completion.
 - Instruction/cycle completeness and release readiness remain false while the
-  physical address sequence is only inferred.
+  exact original-part physical address sequence lacks primary or hardware
+  confirmation.
 - PUSH/POP remain outside this decision because they do not redirect PC and
   the available evidence does not select their second address.
 
@@ -84,7 +90,12 @@ not require inventing an executable placeholder.
   outputs, lines 1401-1461 and 166-228: idle-first implementation hypothesis.
 - MAME pinned TMS320C1x source, `cala()`/`ret()` and opcode table, lines
   501-505, 676-679, and 849: functional and numeric-cycle corroboration only.
+- TI US4577282A, patent columns 5-6 and 17-18 (PDF pp. 29 and 35), Figure
+  3u: related-embodiment every-state external read rule and explicit RET
+  sequential-fetch discard, stack pop, return-address fetch, and target decode.
 
 These sources are cataloged as `ti-tms32010-users-guide-spru001b`,
-`ika32010-rtl-51bc1f0`, and `mame-tms320c1x-core-030fefc` in the reference
-manifest. **Confidence: INFERRED for combined address/fetch ownership.**
+`ika32010-rtl-51bc1f0`, `mame-tms320c1x-core-030fefc`, and
+`ti-dsp-microcomputer-patent-us4577282a` in the reference manifest.
+**Confidence: CORROBORATED for RET and INFERRED for CALA combined
+address/fetch ownership; UNKNOWN for exact original-part pin confirmation.**

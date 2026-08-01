@@ -443,14 +443,18 @@ lines 222–228, 676–679, and 849]. **Confidence: CORROBORATED.**
 
 The instruction pages do not provide a dedicated RET pin waveform. The
 explicit pipeline uses ADR-0003 to map execution cycle 1 to a discarded
-`opcode-PC+1` read and cycle 2 to the old-stack-top target fetch, based on the
-same general TI constraints as CALA. Directed bus tests stall both intervals,
+`opcode-PC+1` read and cycle 2 to the old-stack-top target fetch. A related
+contemporary TI patent explicitly describes that RET ownership: discard the
+sequential S1 fetch, pop the return address in Q3/S1, fetch it during
+Q4/S1-Q1/S2, and begin target decode at Q3/S2
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 17-18 (PDF p. 35),
+Figure 3u]. Directed bus tests stall both intervals,
 prove no early pop, capture the return word only at retirement, and cover INT
 arrival in either interval. Architectural differential and the same 24-step
 actual-core BMC cover CALA/RET as a combined call/return path. The model still
 reports only the known opcode fetch, keeping the bus oracle independent. The
-mapping is a reversible hypothesis under `OQ-007`/`SC-037`, not original-pin proof.
-**Confidence: INFERRED for the combined mapping; UNKNOWN for physical
+mapping remains reversible under `OQ-007`/`SC-037` and is not original-part
+pin proof. **Confidence: CORROBORATED for the combined mapping; UNKNOWN for physical
 confirmation.**
 
 ## Qualified `IN`/`OUT` I/O slice

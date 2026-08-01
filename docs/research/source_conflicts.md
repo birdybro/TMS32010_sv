@@ -371,6 +371,14 @@ electrical result of an out-of-range access.
   `51bc1f05a2a08a61c8815a9643d08a42e99779c6` requests `BUSCTRL_STOP` and
   holds PC during PUSH/POP microcycle zero, then requests `OPCODE_READ` from
   PC during microcycle one [ika32010-rtl-51bc1f0, lines 690–731].
+- **Contemporary TI background:** US4577282A independently describes an
+  every-state active-low external program read clock except when `DEN-` or
+  `WE-` is active,
+  but its disclosed Table A contains only subroutine-stack CALLA/RET controls
+  and omits the production accumulator PUSH/POP instructions. It therefore
+  reinforces the general strobe constraint without supplying either missing
+  address [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and
+  34-36 (PDF pp. 29 and 43-44)].
 - **Conflict:** the secondary implementation supplies a useful PC-hold
   hypothesis but suppresses the first program transaction that the primary
   every-cycle `MEN` wording requires. Replacing that idle with an active
@@ -846,15 +854,24 @@ electrical result of an out-of-range access.
   opcode read at the selected target in its second. Its bus controller holds
   `/MEN`, `/DEN`, and `/WE` inactive throughout `BUSCTRL_STOP`
   [ika32010-rtl-51bc1f0, `IKA32010.sv`, lines 166-228 and 1401-1461].
+- **Contemporary TI RET timing:** US4577282A's related embodiment explicitly
+  discards the sequential S1 fetch, pops the old stack top into PC in Q3/S1,
+  fetches from that return address during Q4/S1-Q1/S2, and begins decoding the
+  return word at Q3/S2. The same source restates the every-state external read
+  rule. This is direct corroboration of ADR-0003's RET ordering, but the patent
+  is architectural background rather than an original-part production
+  specification [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and
+  17-18 (PDF pp. 29 and 35), Figure 3u].
 - **Conflict:** the idle interval is not compatible with the original TI
   every-cycle `/MEN` rule. The primary sources still do not state whether
   cycle 1 reads/discards `PC+1` or repeats the already selected target.
 - **Current treatment:** ADR-0003 chooses `PC+1` discard followed by selected
-  target fetch as an `INFERRED`, reversible implementation mapping. It is
-  analogous to the primary TBL redirect and preserves explicit
-  fetch/execute validity. No physical timing claim is made. MAME's functional
-  handlers and fixed totals cannot arbitrate because its instruction hook
-  exposes no bus subcycles.
+  target fetch as a reversible implementation mapping. It is CORROBORATED for
+  RET by the related TI patent and remains INFERRED for CALA from the primary
+  TBL analogy. No original-part physical timing claim is made. MAME's
+  functional handlers and fixed totals cannot arbitrate because its
+  instruction hook exposes no bus subcycles.
 - **Confidence:** VERIFIED_PRIMARY for the state transform, two-cycle total,
-  and active `/MEN` in both intervals; INFERRED for `PC+1` then target address
-  ownership; UNKNOWN for original-silicon confirmation.
+  and active `/MEN` in both intervals; CORROBORATED for RET and INFERRED for
+  CALA `PC+1`-then-target ownership; UNKNOWN for original-silicon
+  confirmation.

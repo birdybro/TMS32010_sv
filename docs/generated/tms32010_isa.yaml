@@ -2056,7 +2056,7 @@
       "addressing_modes": ["implied"],
       "registers_read": ["PC", "all four stack levels"],
       "registers_written": ["PC", "all four stack levels"],
-      "memory_accesses": ["instruction_fetch", "inferred_discarded_sequential_prefetch", "inferred_selected_target_fetch"],
+      "memory_accesses": ["instruction_fetch", "corroborated_discarded_sequential_prefetch", "corroborated_selected_target_fetch"],
       "status_flags_affected": [],
       "arithmetic_width_bits": null,
       "sign_extension_behavior": "not applicable",
@@ -2064,18 +2064,19 @@
       "overflow_behavior": "none; stack underflow is not detected",
       "result_behavior": "load PC from the old top of stack, then pop all four levels by shifting each lower level upward and duplicating the old bottom",
       "branch_behavior": "unconditional return to the 12-bit address held in the old top of stack",
-      "interrupt_interaction": "documented for use immediately after EINT; EINT protects RET from an already-pending interrupt until RET completes; directed RTL tests also defer arrivals in either execution interval under ADR-0003's INFERRED bus mapping",
+      "interrupt_interaction": "documented for use immediately after EINT; EINT protects RET from an already-pending interrupt until RET completes; directed RTL tests also defer arrivals in either execution interval under ADR-0003's CORROBORATED related-embodiment bus mapping",
       "documented_cycle_count": 2,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
         {"space": "program", "operation": "instruction_prefetch", "count": 1, "phase_detail": "normal opcode-PC read that enters the execute slot before the two execution intervals"},
-        {"space": "program", "operation": "inferred_discarded_sequential_prefetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 1 reads opcode PC plus one under MEN and marks the word nonexecutable; INFERRED, not an instruction-specific primary waveform"},
-        {"space": "program", "operation": "inferred_selected_target_fetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 2 reads the old stack top under MEN, retires RET, pops the stack, and captures the return word; INFERRED, not an instruction-specific primary waveform"}
+        {"space": "program", "operation": "corroborated_discarded_sequential_prefetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 1 reads opcode PC plus one under MEN and marks the word nonexecutable; CORROBORATED by a related TI patent embodiment, not an original-part instruction-specific production waveform"},
+        {"space": "program", "operation": "corroborated_selected_target_fetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 2 reads the old stack top under MEN, retires RET, pops the stack, and captures the return word; CORROBORATED by a related TI patent embodiment, not original-part pin proof"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.2, 2.9, Table 3-2, and RET instruction description", "printed_page": "2-14, 2-18 through 2-19, 3-6, and 3-51", "pdf_page": "38, 42-43, 56, and 101"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "RET instruction description", "printed_page": "3-51", "pdf_page": 72},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and RET instruction description", "printed_page": "4-10 and 4-57", "pdf_page": "89 and 138"}
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Table 4-2 and RET instruction description", "printed_page": "4-10 and 4-57", "pdf_page": "89 and 138"},
+        {"source_id": "ti-dsp-microcomputer-patent-us4577282a", "section": "related-embodiment RET timing and Figure 3u", "printed_page": "patent columns 17-18", "pdf_page": 35}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004", "OQ-007"]

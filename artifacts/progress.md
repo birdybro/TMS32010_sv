@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** qualified retained core-program carrier and Cyclone V
-  critical-path reduction
+- **Current milestone:** `OQ-016` PUSH/POP program-bus research and TI patent
+  claim scoping
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 131 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 132 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 45 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 46 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -965,12 +965,22 @@
   accepted fit uses 1,393 ALMs/400 registers, retains one M10K and one DSP, and
   moves the worst 100 °C path to the carrier-to-ACC cone at 20.034 ns/12
   levels. Worst slow-corner Fmax rises to 48.07 MHz.
+- **New architecture evidence:** TI patent US4577282A is integrity-pinned in
+  the ignored reference cache and scoped as authority-level-4 background. Its
+  related DSP embodiment explicitly discards RET's sequential S1 fetch, pops
+  the old stack top into PC, fetches that target, and begins target decode in
+  S2. This CORROBORATES ADR-0003 for RET but does not establish an exact
+  original-TMS32010 pin waveform. The patent's Table A omits accumulator
+  PUSH/POP, so `OQ-016` remains open; the every-state external-read rule is
+  independently reinforced without choosing repeated versus advancing PC
+  ownership.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
   physical interrupt setup/synchronizer
-  behavior, physical confirmation of the inferred CALA/RET discarded-`PC+1`
-  then target sequence, unsupported PUSH/POP arrival cycles,
+  behavior, original-part physical confirmation of the CORROBORATED-RET/
+  INFERRED-CALA discarded-`PC+1` then target sequence, unsupported PUSH/POP
+  arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, LST next-ARP precedence,
   PUSH/POP per-cycle program-address/fetched-word ownership, SUBC result availability and
@@ -999,10 +1009,10 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** preserve the now-qualified carrier boundary while returning
-  to `OQ-016` PUSH/POP program-address ownership research; do not implement a
-  native sequence without new source or physical evidence. Use the current
-  carrier-to-ACC report only for later timing work because the 20 MHz board
-  objective now has ample internal margin.
+- **Next task:** continue searching original TI development-system and device
+  control material for an accumulator PUSH/POP waveform; absent such evidence,
+  retain the existing original-NMOS capture as the smallest resolving action
+  and move to the next unblocked architecture task without implementing a
+  guessed native sequence.
 - **Latest committed baseline before this cycle:**
-  `a64dd2a`
+  `738fa76`

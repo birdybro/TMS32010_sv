@@ -11,8 +11,8 @@ address map or peripheral behavior.
 
 The wrapped processor is still partial. It supports the explicit-pipeline
 instruction and transaction set documented in ADR-0002/ADR-0003; PUSH and
-POP remain outside RTL, while CALA/RET use an explicitly `INFERRED` external
-sequence. The unresolved timing and silicon behaviors in
+POP remain outside RTL, while CALA/RET use ADR-0003's CORROBORATED-RET/
+INFERRED-CALA external sequence. The unresolved timing and silicon behaviors in
 `docs/research/open_questions.md` remain unresolved. This wrapper therefore
 does not make the project instruction-complete, cycle-accurate, or
 release-ready.

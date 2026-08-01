@@ -35,6 +35,13 @@ in `docs/research/push_pop_bus_experiment.md`. **Confidence:
 VERIFIED_PRIMARY for strobe activity; UNKNOWN for PUSH/POP address and word
 ownership.**
 
+US4577282A independently gives the same every-state external-read rule for a
+related contemporary TI DSP embodiment. Its instruction table omits the
+production accumulator PUSH/POP opcodes, so it corroborates the general
+control architecture without identifying either missing address
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 34-36 (PDF
+pp. 29 and 43-44)].
+
 The data sheet establishes falling `CLKOUT` as the input sampling boundary.
 Address transition begins after a falling edge, a read strobe asserts about
 one quarter-cycle later, and address/strobe remain stable through the next

@@ -170,9 +170,11 @@ one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, the six
 accumulator branches, ADR-0003 CALA/RET, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 
 - CALA and RET have model/RTL/differential-qualified state/cycle behavior. The
-  explicit pipeline implements ADR-0003's `INFERRED` discarded-`PC+1` then
+  explicit pipeline implements ADR-0003's discarded-`PC+1` then
   selected-target mapping, with stalls, nonexecution, retirement-only stack
-  effects, and all four interrupt-arrival intervals directed-tested. Physical
+  effects, and all four interrupt-arrival intervals directed-tested. A related
+  contemporary TI patent explicitly corroborates this RET sequence; CALA's
+  use of the same ownership remains `INFERRED`. Original-part physical
   confirmation and target-repeat remain open under `OQ-007` and `SC-037`; the
   legacy retirement-mapped wrapper deliberately rejects these words rather
   than imply the wrong bus sequence. For model-qualified `PUSH`/`POP`, TI's general
@@ -227,7 +229,9 @@ input synchronizer or setup aperture.
 A separate four-case explicit-pipeline test covers INT arrival in both CALA
 and RET intervals. It proves no midinstruction stack effect, selected-target
 completion before protection, one protected retirement, and the same
-dummy/vector sequence. The addresses remain ADR-0003 `INFERRED` behavior.
+dummy/vector sequence. RET's address order is CORROBORATED by a related TI
+patent; CALA remains
+INFERRED, and neither is original-part pin proof.
 
 Exact `BANZ` now has the same explicit two-interval ownership structure as B.
 Opcode-prefetch completion places `0xf400` in the execute slot. Its canonical

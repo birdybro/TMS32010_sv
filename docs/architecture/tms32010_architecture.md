@@ -164,7 +164,8 @@ documented mnemonics:
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
 differential support the same set except POP and PUSH, for 58 shared
 mnemonics. CALA/RET effects and totals are primary-qualified; their explicit
-bus ownership uses ADR-0003's reversible `INFERRED` mapping. PUSH/POP external
+bus ownership uses ADR-0003's reversible mapping, CORROBORATED for RET by a
+related contemporary TI patent and still `INFERRED` for CALA. PUSH/POP external
 address ownership remains unresolved under `OQ-016`. The 26 common-address data/table instructions plus SST's
 forced-page direct form have independent
 fixtures plus directed and

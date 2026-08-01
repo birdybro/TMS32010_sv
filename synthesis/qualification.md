@@ -4,8 +4,9 @@
 
 These results cover the fifty-eight-instruction explicit fetch/execute RTL,
 signed multiplier, 144-word internal data RAM, program-bus phase engine,
-native IN/OUT and TBLR/TBLW paths, CALA/RET under ADR-0003's `INFERRED`
-external mapping, and the partial interrupt request/entry sequencer.
+native IN/OUT and TBLR/TBLW paths, CALA/RET under ADR-0003's CORROBORATED-RET/
+INFERRED-CALA external mapping, and the partial interrupt request/entry
+sequencer.
 They are not complete-core resource or interface-timing results.
 
 - Tool: Quartus Prime Lite 17.0.2 Build 602, 2017-07-19.
