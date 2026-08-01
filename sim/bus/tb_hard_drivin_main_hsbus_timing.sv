@@ -178,6 +178,29 @@ module tb_hard_drivin_main_hsbus_timing;
     step(1'b0, 1'b0, 1'b1, 1'b0);
     end_hsbus_cycle();
 
+    // A044425 sheet 15 connects /MSPWAIT to the MSP TMS34010 HRDY output.
+    // Exercise that independently from the sheet-10 GSP source so the
+    // composed timing evidence covers both inputs of AS00 190E.
+    msp_wait_n = 1'b0;
+    begin_hsbus_cycle();
+    require(!rvas0_n && dtack_n && high_speed_dtack_term_n,
+            "asserted /MSPWAIT holds /DTACK inactive after S3");
+    step(1'b1, 1'b1, 1'b0, 1'b0);
+    step(1'b0, 1'b0, 1'b1, 1'b0);
+    step(1'b1, 1'b1, 1'b0, 1'b0);
+    require(dtack_n && sampled_dtack_n && !rvas0_n && !rvas_n,
+            "MSP wait extension retains both strobes without a false sample");
+    msp_wait_n = 1'b1;
+    step(1'b1, 1'b0, 1'b0, 1'b0);
+    require(!dtack_n && !high_speed_dtack_term_n,
+            "MSP HRDY release permits the live HSBUS acknowledgement");
+    step(1'b0, 1'b0, 1'b1, 1'b0);
+    require(!sampled_dtack_n,
+            "first falling edge after MSP ready records /DTACK low");
+    step(1'b1, 1'b1, 1'b0, 1'b0);
+    step(1'b0, 1'b0, 1'b1, 1'b0);
+    end_hsbus_cycle();
+
     $display("PASS tb_hard_drivin_main_hsbus_timing");
     $finish;
   end

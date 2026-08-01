@@ -130,8 +130,9 @@ module tb_hard_drivin_main_dtack_decode;
     require(!vpa_n && dtack_n,
             "CPU-space cycle asserts /VPA and suppresses ordinary /DTACK");
 
-    // The HSBUS route acknowledges only after both active-low wait terms are
-    // high; the raw naming is retained without assigning device semantics.
+    // The HSBUS route acknowledges only after both TMS34010 HRDY-derived
+    // active-low wait nets are high. An unselected TMS34010 drives HRDY high,
+    // so either selected GSP/MSP may independently extend the shared cycle.
     main_function_code = 3'b001;
     high_speed_bus_select_n = 1'b0;
     rvas0_n = 1'b0;
@@ -141,7 +142,11 @@ module tb_hard_drivin_main_dtack_decode;
     require(!dtack_n, "selected high-speed bus acknowledges with no wait");
     gsp_wait_n = 1'b0;
     #1;
-    require(dtack_n, "one asserted high-speed wait suppresses /DTACK");
+    require(dtack_n, "asserted GSP HRDY-derived wait suppresses /DTACK");
+    gsp_wait_n = 1'b1;
+    msp_wait_n = 1'b0;
+    #1;
+    require(dtack_n, "asserted MSP HRDY-derived wait suppresses /DTACK");
 
     high_speed_bus_select_n = 1'b1;
     rvas0_n = 1'b1;

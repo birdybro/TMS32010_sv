@@ -5,8 +5,10 @@ main-processor `/AS` into early `/RVAS0`, `RVA`, and held expansion-bus
 `/RVAS` strobes until the main-board `/DTACK` path has completed. It is
 distinct from the A044427 local sound-68000 timing in
 `hard_drivin_host_timing.md`. The complete combinational
-`/DTACK` cone is now transcribed separately from the sequential hold state;
-raw source timing, clock-domain crossing, and nanosecond timing margin remain
+`/DTACK` cone is now transcribed separately from the sequential hold state.
+Supplemental Atari sheets identify the two graphics-processor wait sources
+and TI defines their common host-ready protocol; device-internal response
+latency, raw clock-domain relationships, and nanosecond timing margin remain
 outside the implemented blocks.
 
 ## Primary logic trace
@@ -67,9 +69,25 @@ After the S7 falling edge, the MC68000 begins negating `/AS`. That releases
 the raw `/HSBUS` address decode and hence `/DTACK`; the following falling
 8 MHz edge samples the resulting high level and releases `/RVAS0` and
 `/RVAS`. An asserted `/GSPWAIT` or `/MSPWAIT` holds `/DTACK` high after
-`/RVAS0` assertion until both inputs return high. Which devices own those
-wait nets, their complete protocols, and their electrical timing remain
-unresolved; the RTL accepts the raw levels without assigning semantics.
+`/RVAS0` assertion until both inputs return high.
+
+Atari's supplemental Driver Main drawing connects `/GSP` to the GSP
+TMS34010 `HCS` input and `/GSPWAIT` directly to its `HRDY` output. The
+separate MSP sheet makes the corresponding `/MSP`-to-`HCS` and
+`/MSPWAIT`-to-`HRDY` connections
+[atari-hard-drivin-main-board-gsp-supplement, drawing A044425 Rev J, sheet
+10, PDF pp. 1-2; atari-hard-drivin-main-board-msp-supplement, drawing
+A044425 Rev J, sheet 15, PDF pp. 1-2]. TI defines `HCS` as active-low and
+`HRDY` as high when a host access may complete. `HRDY` is driven low when the
+host must wait, is always high while `HCS` is high, and returns high before
+the host ends a stalled access [ti-tms34010-users-guide-spvu001-1988, Table
+2-2, printed pp. 2-5-2-6; §10.3.2 and Figures 10-8-10-9, printed pp.
+10-8-10-10]. Thus the inactive or unselected graphics processor contributes
+a high level, while either selected processor may independently extend the
+shared `/HSBUS` cycle by driving its own wait net low. **Confidence:
+VERIFIED_PRIMARY for device ownership, direct connection, polarity, and the
+general host-ready protocol; UNKNOWN for the workload-dependent duration,
+cross-clock propagation, and electrical margin of a particular access.**
 
 ## Complete combinational `/DTACK` cone
 
@@ -104,9 +122,9 @@ ti-sn74als32-datasheet-sdas113b, printed pp. 1 and 4;
 ti-sn74f11-datasheet-sdfs040a, printed pp. 1 and 4]. SP-327 sheet 6 identifies
 `/DUDTACK` as the MC68681 acknowledgement output; the UART's internal timing
 is not modeled here [atari-hard-drivin-schematic-package-sp327, sheet 6,
-PDF p. 7]. **Confidence: VERIFIED_PRIMARY for the full Boolean cone;
-UNKNOWN for the external wait-source protocols and electrical propagation
-margin.**
+PDF p. 7]. **Confidence: VERIFIED_PRIMARY for the full Boolean cone and the
+TMS34010-derived wait-input semantics; UNKNOWN for peripheral-internal
+latency and electrical propagation margin.**
 
 For the sound-reset expansion write, the LS138 decode selects `/EXTBUS`, not
 `/HSBUS` or `/DUART`. A non-CPU-space cycle therefore uses the ordinary term:
@@ -136,9 +154,10 @@ from elapsed clocks or an abstract transaction commit. If `/DTACK` never
 samples low, the final F74 receives no later rising clock transition and
 `/RVAS` remains asserted. The new RTL deliberately preserves that stuck-hold
 case instead of adding a timeout. The equations that decide when the physical
-main-board `/DTACK` signal goes low and high are now implemented, while the
-specialized external wait inputs and their propagation remain unresolved
-integration work. **Confidence: VERIFIED_PRIMARY for the state dependency;
+main-board `/DTACK` signal goes low and high are now implemented. The
+graphics-ready and DUART acknowledgement inputs remain externally owned even
+though the two graphics-ready sources and polarity are now source-qualified.
+**Confidence: VERIFIED_PRIMARY for the state dependency;
 VERIFIED_SIMULATION/FORMAL for the discrete event model; UNKNOWN for the
 complete acknowledgement-path delay and fault behavior.**
 
@@ -160,8 +179,10 @@ same-clock enables. `initialize_i` chooses idle request, `RVA=0`, sampled
 `/DTACK=1`, `/RVAS0=1`, and `/RVAS=1`; this deterministic state is an FPGA
 convention, not physical power-up behavior. The block remains standalone from
 `hard_drivin_main_sound_reset_decode`; the directed test composition is not a
-new wrapper. A platform still must define external wait sources, raw
-levels/events, and the CDC contract.
+new wrapper. A platform still must provide the two TMS34010 `HRDY`-derived
+levels, the DUART acknowledgement, raw levels/events, and a qualified CDC
+contract; this project does not recreate either graphics processor inside the
+main-board gate block.
 
 `hard_drivin_main_dtack_decode` is combinational and storage-free. It exposes
 `/VPA`, `/RHSBUS`, `/RDUART`, all three acknowledgement terms, and final
@@ -188,11 +209,11 @@ CPU-space VPA, both high-speed wait states, and both DUART acknowledgement
 states. A composed bus test connects the timing, `/DTACK`, and sound-reset
 decode blocks and checks the complete synthetic `/AS` capture through `/SRES`
 release sequence. A separate HSBUS composition checks S3 early
-acknowledgement, GSP wait extension, S7 raw-select release, and the following
-sampled release edge.
+acknowledgement, independent GSP and MSP wait extensions, S7 raw-select
+release, and the following sampled release edge.
 
 Yosys 0.67+111 reports 93 cells/25 retained checks for the two-strobe hold
 state and 21 cells/eight retained checks for the combinational decode, with no memory,
 latch, generated clock, or structural problem. This is not a Cyclone V fit,
-raw-pin CDC proof, electrical timing calculation, specialized-peripheral
+raw-pin CDC proof, electrical timing calculation, TMS34010 host-interface
 model, or complete main-processor bus wrapper.

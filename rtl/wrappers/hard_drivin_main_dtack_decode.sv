@@ -38,8 +38,10 @@ module hard_drivin_main_dtack_decode (
   assign read_high_speed_bus_n_o = high_speed_bus_select_n_i || rvas0_n_i;
   assign read_duart_n_o = duart_select_n_i || rvas_n_i;
 
-  // AS00 190E and AS32 135K. The raw wait inputs are intentionally not
-  // renamed as ready signals; their board-level ownership remains external.
+  // AS00 190E and AS32 135K. A044425 connects these nets directly to the
+  // respective TMS34010 HRDY outputs. Keep them as external active-low board
+  // nets: the graphics processors, not this gate transcription, own when a
+  // selected host-register access is ready to complete.
   assign graphics_sound_wait_nand = !(gsp_wait_n_i && msp_wait_n_i);
   assign high_speed_dtack_term_n_o =
     read_high_speed_bus_n_o || graphics_sound_wait_nand;

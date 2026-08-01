@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 39 pinned
+  until permission is demonstrated. The ignored cache now verifies 42 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -66,7 +66,9 @@ objective passing evidence.
   mapping from board wiring. The exact TI LS20, AS00, combined ALS32/AS32,
   F04, F11, and F74 component documents now support SP-327 main-bus Boolean
   and future propagation analysis without treating a gate symbol as an
-  electrical specification.
+  electrical specification. Atari A044425 Rev-J supplemental GSP/MSP sheets
+  and TI SPVU001 now qualify both high-speed wait nets as direct TMS34010
+  `HRDY` outputs with high-ready/low-wait semantics.
 
 ## Milestone 3 — Architecture specification
 
@@ -1713,9 +1715,12 @@ objective passing evidence.
   proved in one step with six covers, and synthesize to 21 cells/eight checks.
   A composed test checks the synthetic sound-reset write from `/AS` capture
   through `/SRES` release. A second composition checks the S2/S3 early HSBUS
-  path, zero-wait acknowledgement, GSP wait extension, raw-select deassertion,
-  and later sampled release. The original system `/RESET` driver, specialized
-  peripheral protocols, raw CDC, and electrical timing remain `OQ-036`.
+  path, zero-wait acknowledgement, independent GSP/MSP wait extensions,
+  raw-select deassertion, and later sampled release. A044425 Rev-J sheets 10
+  and 15 plus TI SPVU001 qualify both wait inputs as direct TMS34010 `HRDY`
+  outputs and resolve their general polarity/selection protocol. The original
+  system `/RESET` driver, workload-specific peripheral latency, DUART
+  protocol, raw CDC, and electrical timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.

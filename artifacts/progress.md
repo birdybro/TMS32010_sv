@@ -1,6 +1,7 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board `/RVAS0` phase qualification
+- **Current milestone:** Hard Drivin' main-board GSP/MSP wait-source
+  qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -13,7 +14,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 39 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 42 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -833,10 +834,10 @@
   are also represented. The same-clock event model preserves continued hold
   if the low sample is missed, passes directed simulation and 12/16-step
   BMC/cover, and synthesizes to 93 cells/25 checks. A composed HSBUS test
-  verifies zero-wait ACK, GSP wait extension, raw-select release, and the
-  later sampled release. The original system `/RESET` source, specialized
-  source protocols, raw CDC, electrical margin, and physical power-up state
-  remain `OQ-036`.
+  verifies zero-wait ACK, independent GSP/MSP wait extensions, raw-select
+  release, and the later sampled release. The original system `/RESET`
+  source, peripheral response latency, raw CDC, electrical margin, and
+  physical power-up state remain `OQ-036`.
 - **New main acknowledgement evidence:** the full sheet-4 gate cone is now
   pinned to TI's LS20, AS00, combined ALS32/AS32, F11, F04, and F74 data.
   `/VPA` blocks the ordinary term for function-code-7 CPU space; ordinary
@@ -848,6 +849,15 @@
   pinned total to 39; TI's AS32 URL is byte-identical to the existing combined
   SDAS113B source. Specialized peripheral/AC timing remains open rather than
   inferred.
+- **New graphics-wait evidence:** Atari A044425 Rev-J supplemental sheets 10
+  and 15 connect `/GSPWAIT` and `/MSPWAIT` directly to the respective GSP and
+  MSP TMS34010 `HRDY` pins while `/GSP` and `/MSP` drive `HCS`. TI SPVU001
+  defines high `HRDY` as ready-to-complete, low as wait, and forces high while
+  active-low `HCS` is inactive. The gate model therefore correctly retains
+  both signals as peripheral-owned inputs; the composed test now exercises
+  each wait source independently. The two Atari drawings and TI guide bring
+  the pinned total to 42. Workload-specific host-interface latency, the full
+  chip-select address decode, propagation margin, and CDC remain open.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -872,8 +882,8 @@
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
-  specialized main-bus peripheral protocols and
-  raw-CDC/electrical timing, platform tick calibration, and
+  main-bus peripheral response latency, complete GSP/MSP selection decode,
+  DUART protocol, and raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
@@ -883,8 +893,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** trace the SP-327 GSP/MSP wait-source protocols or locate the
-  system `/RESET` driver, keeping DUART timing and raw CDC/electrical behavior
-  explicit rather than inferred from the qualified digital phase model.
+- **Next task:** locate the SP-327 system `/RESET` driver or qualify the
+  MC68681 `/DUDTACK` protocol, keeping raw CDC/electrical behavior explicit
+  rather than inferred from the qualified digital phase model.
 - **Latest committed baseline before this cycle:**
-  `feae0a0`
+  `04ea494`

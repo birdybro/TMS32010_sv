@@ -1106,6 +1106,88 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "atari-hard-drivin-main-board-gsp-supplement",
+      "title": "Hard Drivin' Main Board GSP Section",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "A044425",
+      "publication_date": "1989",
+      "revision": "J; supplemental scan posted by original board engineer",
+      "source_url": "https://www.jmargolin.com/schem/gspmain.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/Hard_Drivin_Main_Board_GSP_Section.pdf",
+      "sha256": "32ea924cc5821530fa702f8202633edaa504b092e836aac53eddbb779e782a58",
+      "document_type": "primary supplemental schematic scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari drawing; redistribution permission not established",
+      "relevance": "Previously omitted Main Board GSP circuitry and host /GSPWAIT source",
+      "authority_level": 2,
+      "notes": "Revision-J Driver Main drawing A044425 sheets 10-14. Hosted by original Atari board engineer Jed Margolin, who states that this circuit was deliberately omitted from the published package. Keep only in ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Drawing A044425 revision J, sheet 10, PDF pages 1-2: TMS34010 host-interface /GSP, /GSPIRQ, and /GSPWAIT connections; /GSPWAITB buffer; 48 MHz clock"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-hard-drivin-main-board-msp-supplement",
+      "title": "Hard Drivin' Main Board MSP Section",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "A044425",
+      "publication_date": "1989",
+      "revision": "J; supplemental scan posted by original board engineer",
+      "source_url": "https://www.jmargolin.com/schem/mspmain.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/Hard_Drivin_Main_Board_MSP_Section.pdf",
+      "sha256": "0dbd06d3d3f9b2d35c0e35c48470e89f5ea894174032d24788238a0e654dd3f8",
+      "document_type": "primary supplemental schematic scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari drawing; redistribution permission not established",
+      "relevance": "Previously omitted Main Board MSP circuitry and host /MSPWAIT source",
+      "authority_level": 2,
+      "notes": "Revision-J Driver Main drawing A044425 sheet 15. Hosted by original Atari board engineer Jed Margolin, who states that the second TMS34010 MSP was also omitted from the published Hard Drivin' package. Keep only in ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Drawing A044425 revision J, sheet 15, PDF pages 1-2: TMS34010 host-interface /MSP, /MSPIRQ, and /MSPWAIT connections; 50 MHz clock"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-tms34010-users-guide-spvu001-1988",
+      "title": "TMS34010 User's Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SPVU001",
+      "publication_date": "1988",
+      "revision": "1988 edition",
+      "source_url": "https://www.bitsavers.org/components/ti/TMS340xx/1988_TI_TMS34010_Users_Guide.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SPVU001_TMS34010_Users_Guide_1988.pdf",
+      "sha256": "e5f9f50c609ce44deb9dbe4ac79c591e03ff2d0ee2d71d571d0d7f150753ed64",
+      "document_type": "primary device user guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Primary host-interface authority for the GSP and MSP HRDY wait outputs used by Hard Drivin' Driver Main",
+      "authority_level": 1,
+      "notes": "Peripheral-device authority only; Atari drawing A044425 remains the authority for board wiring and signal names. Keep only in ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Section 2.2 and Table 2-2, printed pages 2-5 through 2-6: active-low HCS selection and HRDY ready/wait polarity",
+        "Sections 10.1 through 10.3.2 and Figures 10-1 through 10-9, printed pages 10-2 through 10-10: host register selection, access strobes, HCS-qualified HRDY behavior, and read/write wait timing"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

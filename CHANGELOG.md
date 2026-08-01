@@ -9,8 +9,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 33-source
+- Reference-provenance policy, safe acquisition/hash tools, a 42-source
   integrity-pinned catalog, and living engineering backlog.
+- Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and
+  MSP sheets plus TI's 1988 TMS34010 User's Guide. The drawings connect each
+  `/GSPWAIT`/`/MSPWAIT` net directly to its processor's `HRDY` output; TI
+  qualifies high as ready, low as wait, and high whenever active-low `HCS` is
+  inactive.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
   instruction, and timing research baselines.
@@ -733,7 +738,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   231 model/unit tests, 38 instruction/decode RTL tests, 51 bus/integration
   tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
   checks 37 modules; all 40 formal jobs from 20 configurations pass; all 27
-  Yosys targets synthesize; and all 39 acquired reference hashes verify.
+  Yosys targets synthesize; and all 42 acquired reference hashes verify.
 - The `/DTACK` decode regression exhausts all 4,096 raw input combinations;
   its one-step BMC proves every intermediate/final equation and six covers
   reach ordinary ACK, CPU-space VPA, both HSBUS wait states, and both DUART
@@ -745,9 +750,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   continued hold when `/DTACK` never samples low, later recovery, and FPGA
   reinitialization. Its independent 12-step BMC passes; 16-step cover reaches
   seven timing classes. The HSBUS composition additionally checks early
-  zero-wait ACK, active-low GSP wait extension, raw-select deassertion, and
-  delayed sampled release. Yosys reports 93 cells/25 retained checks with no
-  memory, latch, generated clock, or structural problem.
+  zero-wait ACK, independent active-low GSP and MSP wait extensions,
+  raw-select deassertion, and delayed sampled release. Yosys reports 93
+  cells/25 retained checks with no memory, latch, generated clock, or structural
+  problem.
 - The main sound-reset decode regression exhausts all 1,024 `A23:A14` values
   across eight strobe/direction combinations. Its one-step BMC passes and four
   covers reach a canonical write, read isolation, inactive `/RVAS`, and a

@@ -82,13 +82,18 @@ a composed test checks the complete synthetic reset-write sequence. The
 separate `/RVAS0` F74 is also phase-qualified: normal S2 `/AS` assertion
 presets it on S3 falling before S4 `RVA`, while a low-phase assertion presets
 it immediately; the sampled release clock is shared with `/RVAS` and active
-preset has priority. An HSBUS composition checks zero-wait and GSP-wait
-paths. External wait/peripheral protocols and raw CDC remain external.
+preset has priority. Supplemental A044425 Rev-J sheets now identify
+`/GSPWAIT` and `/MSPWAIT` as the direct `HRDY` outputs of the GSP and MSP
+TMS34010 host interfaces; TI defines low `HRDY` as wait and requires high
+while the corresponding active-low `HCS` is inactive. An HSBUS composition
+checks zero-wait plus independent GSP- and MSP-wait paths. The graphics
+processors' internal access latency, DUART protocol, electrical propagation,
+and raw CDC remain external.
 See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
-for decode, transport, and both logical hold chains; VERIFIED_SIMULATION/FORMAL
-for the three standalone RTL blocks; UNKNOWN for system reset origin,
-specialized-source protocols, acknowledgement-path electrical timing, and
-raw-pin CDC.**
+for decode, transport, both logical hold chains, graphics-wait ownership, and
+graphics-ready polarity; VERIFIED_SIMULATION/FORMAL for the three standalone
+RTL blocks; UNKNOWN for system reset origin, peripheral response latency,
+acknowledgement-path electrical timing, and raw-pin CDC.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
