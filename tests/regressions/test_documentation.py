@@ -192,6 +192,62 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("## SC-010", conflicts)
         self.assertIn("physical probe", conflicts)
 
+    def test_dint_race_preserves_ti_timing_conflict_and_physical_boundary(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        original_pages = " ".join(
+            by_id["ti-tms32010-users-guide-spru001b"]["sections_or_pages_used"]
+        )
+        assembly_pages = " ".join(
+            by_id["ti-tms32010-assembly-guide-spru002b"]["sections_or_pages_used"]
+        )
+        family_pages = " ".join(
+            by_id["ti-first-generation-users-guide-1987"]["sections_or_pages_used"]
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "dint_interrupt_race_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        interrupts = (
+            DOCS / "architecture" / "interrupts.md"
+        ).read_text(encoding="utf-8")
+        for required in ("Appendix A.3.2", "PDF page 184"):
+            self.assertIn(required, assembly_pages)
+        for required in ("Section 2.14", "PDF page 48", "external CLKOUT-clocked"):
+            self.assertIn(required, original_pages)
+        for required in (
+            "Figures 3-19 through 3-20",
+            "PDF pages 60-63",
+            "retained as a conflict",
+        ):
+            self.assertIn(required, family_pages)
+        for required in (
+            "The repository assigns no passing expected sequence",
+            "MAME must not be cited as a same-boundary oracle",
+            "0033, 001c, 0011, 0022",
+            "entry-wins",
+            "at least 32 resets",
+            "external NMOS synchronizer requirement is corroborated",
+            "internal polarity error",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("## SC-039", conflicts)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-039`)", questions)
+        self.assertIn("PARTIALLY RESOLVED_PRIMARY/CONFLICT (`SC-039`)", questions)
+        self.assertNotIn("is synchronized internally", interrupts)
+        self.assertIn("does not claim an analog synchronizer", interrupts)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

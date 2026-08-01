@@ -161,12 +161,18 @@ deferral, return-PC stack push, vector-2 selection, entry masking, and pending
 clear. The model reports the non-instruction entry boundary as mnemonic
 `INTERRUPT` with one `interrupt_dummy_fetch` transaction so single stepping
 does not pretend the discarded word executed
-[ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
+[ti-tms32010-users-guide-spru001b, §2.10 and `DINT`/`EINT`, printed
 pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
 **Confidence: VERIFIED_PRIMARY for those architectural effects and the tested
 fetch order; VERIFIED_SIMULATION for the basic protected/discard/vector
 ownership path and MPY/MPYK protected-slot extension. The complete
 multicycle-arrival matrix remains `OQ-004`.**
+
+“Immediately” establishes the architectural INTM state after DINT retires; it
+does not settle a same-boundary interrupt grant already forming through the
+original Figure 2-12 pipeline. The current cancellation policy remains
+PROVISIONAL under `OQ-019`/`SC-039`; the related physical probe records both
+port order and stacked return PC.
 
 ## Addressing
 

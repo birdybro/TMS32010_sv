@@ -822,7 +822,9 @@ objective passing evidence.
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/differential/test_interrupt_model_rtl.py`,
-  `sim/instruction/tb_bioz_rtl.sv`
+  `sim/instruction/tb_bioz_rtl.sv`,
+  `tests/asm/dint_interrupt_race_probe.asm`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_dint_interrupt_race_probe_image_is_stable`
 - **Notes:** Primary sources establish an internally latched request from a
   high-to-low transition or low level, mask persistence, exact
   `DINT=0x7f81`/`EINT=0x7f82` words, one-cycle INTM effects, and EINT's
@@ -853,6 +855,12 @@ objective passing evidence.
   protected slot now explicitly extend service through one more instruction;
   directed checks cover signed results, internal-read versus program-only bus
   shape, stalls, dummy discard, return-PC ownership, and vector deferral.
+  Original SPRU001B and later mixed-family SPRU013 now have a recorded
+  protected-N+1/dummy-N+1 timing conflict (`SC-039`). Both guides require or
+  recommend external NMOS asynchronous conditioning. MAME cannot model the
+  exact DINT race and pinned IKA predicts
+  entry-wins. An exact synthetic program plus pulse/address/stacked-PC capture
+  procedure now defines the original-NMOS evidence needed for `OQ-019`.
   Physical setup/synchronizer behavior, PUSH/POP arrival cycles, physical
   confirmation of ADR-0003, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete

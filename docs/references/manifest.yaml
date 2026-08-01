@@ -22,6 +22,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Sections 2.1-2.10, printed pages 2-1 through 2-19 (PDF pages 25-43)",
+        "Section 2.14 and Figure 2-17, printed page 2-24 (PDF page 48): recommended external CLKOUT-clocked synchronization for asynchronous NMOS interrupt input",
         "Sections 3.3-3.4, Table 3-2, and ABS/ADD/ADDH/ADDS/AND/APAC/B/BANZ/BGEZ/BGZ/BIOZ/BLEZ/BLZ/BNZ/BV/BZ/CALA/CALL/DINT/DMOV/EINT/IN/LAC/LACK/LAR/LARK/LARP/LDP/LDPK/LST/LT/LTA/LTD/MAR/MPY/MPYK/OR/OUT/PAC/POP/PUSH/RET/SACH/SACL/SAR/SPAC/SST/SUB/SUBC/SUBH/SUBS/XOR/ZALH/ZALS instruction pages, printed pages 3-1 through 3-44, 3-46 through 3-51, 3-53 through 3-63, 3-68, and 3-70 through 3-71 (PDF pages 51-94, 96-101, 103-113, 118, and 120-121)",
         "Section 2.12 clock/oscillator, printed page 2-20 (PDF page 44), and Appendix A pin assignments, clock characteristics, and AC timing tables, especially printed data-sheet pages 10-20 (PDF pages 366-376)"
       ],
@@ -51,7 +52,8 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LDP, LST, LT, LTA, LTD, MPY, MPYK, OUT, PAC, POP, PUSH, RET, SPAC, SUBC, and SUBH assembler syntax, operation, encoding, and examples, printed pages 3-14 through 3-30, 3-36, 3-38 through 3-41, 3-43, 3-44, 3-47 through 3-51, 3-58, and 3-61 through 3-62 (PDF pages 35-51, 57, 59-62, 64, 65, 68-72, 79, and 82-83); sections 4.3-4.7 BIOZ polling, BANZ loop, LTD filter, SUBC divide, and CALA examples, printed pages 4-2 through 4-7 (PDF pages 84-86 and 98-100)",
-        "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)"
+        "MAR assembler syntax, operation, encoding, examples, and LARP alias note, printed page 3-42 (PDF page 63)",
+        "Appendix A.3.2 interrupt architecture, printed page A-2 (PDF page 184): INTM inhibition, grant effects, multiply protection, and multicycle completion"
       ],
       "status": "acquired",
       "download": {
@@ -86,6 +88,7 @@
         "Section 3.5.3 multiplier behavior, printed page 3-21 (PDF page 50)",
         "Section 3.4.3 data movement, printed page 3-13 (PDF page 42)",
         "Section 3.6.3 status register, printed pages 3-24 through 3-26 (PDF pages 53-55)",
+        "Section 3.8 and Figures 3-19 through 3-20, printed pages 3-31 through 3-34 (PDF pages 60-63): mixed-family interrupt logic, NMOS external-synchronizer note corroborating original Section 2.14, and N/dummy-N+1/vector fetch sequence retained as a conflict with original Figure 2-12",
         "ABS, ADD, ADDH, ADDS, AND, APAC, B, BANZ, BGEZ, BGZ, BIOZ, BLEZ, BLZ, BNZ, BV, BZ, CALA, CALL, DINT, DMOV, EINT, IN, LAR, LDP, LST, LT, LTA, LTD, MAR, MPY, MPYK, OR, OUT, PAC, POP, PUSH, RET, SAR, SPAC, SST, SUB, SUBC, SUBH, SUBS, and XOR instruction descriptions, printed pages 4-14 through 4-35, 4-38, 4-41, 4-43 through 4-50, 4-52, 4-54 through 4-58, 4-61 through 4-70, and 4-73 (PDF pages 95-116, 119, 122, 124-131, 133, 135-139, 142-151, and 154)",
         "Section 5.3.2 Subroutine Calls, printed page 5-17 (PDF page 174)",
         "Section 5.7.2 unsigned divide using repeated SUBC, printed page 5-37 (PDF page 194)",
@@ -1310,6 +1313,7 @@
         "System overview and external program access, patent columns 5-6 (PDF page 29): every-state active-low RCLK rule and DEN-/WE- exceptions",
         "System timing, patent columns 15-18 (PDF pages 34-35): PC increment behavior, branch/CALL/RET discarded fetches, selected-target fetch, and PC hold during IN/OUT",
         "SUBC instruction and accumulator/status circuitry, patent columns 13-14 and 21-24 (PDF pages 33 and 37-38), Figure 5c: two-state related-embodiment timing, unshifted ALU result, following-state accumulator-local shift, and ALU-derived status path; inspected only as related-embodiment background",
+        "DINT/EINT mask-latch prose, patent columns 13-14 (PDF page 33): related-embodiment mask/unmask function without normal-interrupt boundary timing",
         "RAM decoder overview and move-cell implementation, patent columns 17-18 and 25-26 (PDF pages 35 and 39), Figures 5i-5j: internally inconsistent row/column capacity statements, adjacent-column transfer, even/odd select complement, and odd-address row increment; inspected only as related-embodiment background",
         "Table A, patent columns 34-36 (PDF pages 43-44): disclosed instruction scope, encodings, word counts, and state counts",
         "Figure 5p and PC/stack description, patent sheets 24-25 and columns 31-34 (PDF pages 24-25 and 42-43): PC source selection and quarter-cycle push/pop clocks used for call/return control"

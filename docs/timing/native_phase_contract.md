@@ -375,6 +375,13 @@ Both wrappers sample their input only at enabled falling-edge boundaries; a
 later integration wrapper must provide explicit CDC logic if `INT` originates
 in another FPGA clock domain.
 
+This digital boundary is an implementation contract, not physical
+metastability conditioning. Original SPRU001B draws an internal logical Sync
+FF but separately recommends an external CLKOUT-clocked flip-flop for an
+asynchronous input; later SPRU013 requires the same NMOS conditioning. Its
+different N/dummy-N+1/vector sequence remains `SC-039`, and the original-
+device experiment is needed to constrain that timing conflict.
+
 The directed native INT sampling test starts a low level in each of modeled
 phases 0 through 3 and retains it through an enabled phase-3-to-phase-0
 falling boundary. It requires the pending latch and architectural cycle count

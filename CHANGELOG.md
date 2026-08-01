@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-039` and an exact original-NMOS DINT/interrupt-race probe. The source
+  conflict preserves original SPRU001B's executed N+1/dummy N+2 sequence
+  against later mixed-family SPRU013's dummy N+1 sequence and separately
+  records both guides' external-NMOS-synchronizer requirement/recommendation.
+  It also isolates SPRU001B's self-contradictory set-INTM polarity sentence as
+  a typo rather than race evidence.
+  The synthetic handler exports its stacked return
+  PC so cancellation, N+2 entry, and earlier N+1 entry remain distinguishable.
 - Two stable, noncopyrighted original-NMOS SUBC probe images and a physical
   capture protocol. One distinguishes old, unshifted-intermediate, and final
   ACC visibility in TI-prohibited successor scheduling; the other isolates
@@ -879,6 +887,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The DINT race fixture assembles deterministically to an exact sparse 28-word
+  image with fixed vector, arm, race, resume, handler, and hold symbols.
+  Documentation regressions require the TI source conflict, MAME/IKA scope,
+  no expected hardware sequence, and external-synchronizer nonclaim.
 - The SUBC dependency and overflow-stage probes assemble deterministically to
   exact 26- and 34-word images with fixed observation points and symbols.
   Documentation regressions require the related-patent claim boundary, the
@@ -887,7 +899,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 137 provenance/document/tool tests,
+- The complete repository gates pass with 139 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
@@ -1805,8 +1817,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   CORROBORATED for RET by a related TI patent and remains INFERRED for CALA;
   neither is original-part pin proof under `OQ-007`/`SC-037`.
 - DINT in the already-pipelined final slot currently cancels entry while
-  retaining the request. That ordering is targeted-tested but PROVISIONAL
-  under `OQ-019`.
+  retaining the request. Original and later TI guides conflict on whether N+1
+  executes before entry; both require or recommend external conditioning for
+  asynchronous NMOS input. MAME cannot
+  express the exact overlap, while pinned IKA predicts entry-wins. That
+  ordering is targeted-tested but PROVISIONAL under `OQ-019`/`SC-039`, with a
+  stable physical experiment now defined.
 - Formal evidence currently covers four fixed interrupt-entry programs,
   one fixed CALA/RET call/return program,
   at 12-, 14-, and two 20-step bounds, one standalone ownership register, and

@@ -129,6 +129,55 @@ class ToolchainSliceTests(unittest.TestCase):
                 self.assertEqual(result.words, dict(enumerate(expected_words)))
                 self.assertEqual(result.symbols, expected_symbols)
 
+    def test_dint_interrupt_race_probe_image_is_stable(self) -> None:
+        result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "dint_interrupt_race_probe.asm"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0x000: 0xF900,
+                0x001: 0x0010,
+                0x002: 0xF900,
+                0x003: 0x0030,
+                0x010: 0x6E00,
+                0x011: 0x7E11,
+                0x012: 0x5000,
+                0x013: 0x7E22,
+                0x014: 0x5001,
+                0x015: 0x7E33,
+                0x016: 0x5002,
+                0x017: 0x7F82,
+                0x018: 0x7F80,
+                0x019: 0x4F02,
+                0x01A: 0x7F80,
+                0x01B: 0x7F81,
+                0x01C: 0x4F01,
+                0x01D: 0xF900,
+                0x01E: 0x001F,
+                0x01F: 0xF900,
+                0x020: 0x001F,
+                0x030: 0x7F9D,
+                0x031: 0x5003,
+                0x032: 0x7F9C,
+                0x033: 0x4F03,
+                0x034: 0x4F00,
+                0x035: 0x7F82,
+                0x036: 0x7F8D,
+            },
+        )
+        self.assertEqual(
+            result.symbols,
+            {
+                "ARM_WINDOW": 0x01A,
+                "HOLD": 0x01F,
+                "INIT": 0x010,
+                "ISR": 0x030,
+                "RACING_DINT": 0x01B,
+                "RESUME_N_PLUS_2": 0x01C,
+            },
+        )
+
     def test_mame_stack_control_smoke_image_is_stable(self) -> None:
         result = self.assembler.assemble_file(
             ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"

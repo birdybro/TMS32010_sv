@@ -39,10 +39,16 @@ fixed encodings `0x7f81` and `0x7f82`. `DINT` writes one to `INTM`, disabling
 maskable interrupt service immediately after DINT executes. `EINT` writes zero
 to `INTM`, enabling maskable interrupts subject to the service deferral below.
 Neither instruction changes an already latched interrupt request
-[ti-tms32010-users-guide-spru001b, §2.4.1 and `DINT`/`EINT`, printed
+[ti-tms32010-users-guide-spru001b, §2.10 and `DINT`/`EINT`, printed
 pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79);
 ti-first-generation-users-guide-1987, `DINT`/`EINT`, printed pp. 4-32 and
 4-34 (PDF pp. 113 and 115)]. **Confidence: VERIFIED_PRIMARY.**
+
+That post-retirement mask state does not resolve simultaneous grant priority.
+Original SPRU001B executes a protected N+1 before entry, while later
+mixed-family SPRU013 dummy-fetches N+1. If DINT occupies the original N+1
+slot, cancellation remains PROVISIONAL under `OQ-019`/`SC-039`; see
+`docs/research/dint_interrupt_race_experiment.md`.
 
 Although `EINT` clears the architectural `INTM` bit when it executes, TI says
 interrupt service remains inhibited until the following instruction

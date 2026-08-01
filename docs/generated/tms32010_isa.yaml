@@ -257,15 +257,16 @@
       "overflow_behavior": "none",
       "result_behavior": "INTM receives 1",
       "branch_behavior": "none",
-      "interrupt_interaction": "disables maskable interrupt service immediately after execution; does not clear a latched interrupt request",
+      "interrupt_interaction": "disables maskable interrupt service immediately after execution and does not clear a latched request; whether that write cancels a grant already forming at original Figure 2-12's protected N+1 boundary remains OQ-019/SC-039",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
         {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; a DINT in the final protected slot provisionally cancels entry while retaining the request under OQ-019"}
       ],
       "source_citations": [
-        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1 and DINT instruction description", "printed_page": "2-18 through 2-19 and 3-27", "pdf_page": "42-43 and 77"},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "DINT instruction description", "printed_page": "4-32", "pdf_page": 113}
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.4.1, Figures 2-11 through 2-12, and DINT instruction description", "printed_page": "2-18 through 2-19 and 3-27", "pdf_page": "42-43 and 77"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "Appendix A.3.2 interrupt architecture", "printed_page": "A-2", "pdf_page": 184},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "Section 3.8 mixed-family interrupt timing conflict and DINT instruction description", "printed_page": "3-31 through 3-34 and 4-32", "pdf_page": "60-63 and 113"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004: complete overlapped execute ownership", "OQ-019: DINT at final protected boundary"]

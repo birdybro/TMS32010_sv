@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-017`/`OQ-018` SUBC pipeline/overflow research and
-  reproducible original-device probes
+- **Current milestone:** `OQ-019` DINT/interrupt-grant ordering research and
+  reproducible original-device probe
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 137 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 139 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1000,6 +1000,20 @@
   now distinguish these hypotheses on original NMOS hardware without assigning
   a result to the forbidden sequence. `OQ-017` remains RESEARCHING and
   `OQ-018` remains PROVISIONAL, NARROWED.
+- **New DINT/interrupt evidence:** original SPRU001B Figure 2-12 executes N and
+  N+1 before dummy N+2/vector entry, while later mixed-family SPRU013 Figure
+  3-20 executes only N and dummy-fetches N+1. The later guide also requires
+  external synchronization for an asynchronous NMOS TMS32010 input; original
+  Section 2.14 independently recommends the same conditioning despite its
+  simplified internal logical Sync FF. MAME
+  has no overlapping boundary; pinned IKA evaluates old-mask `int_rq` while
+  DINT sets the mask and therefore predicts entry-wins. `SC-039` preserves the
+  conflict and isolates SPRU001B's contradictory set-INTM-valid sentence as a
+  polarity typo, not priority evidence. A stable sparse 28-word fixture emits
+  an armed marker, places DINT
+  at original N+1, and exports the stacked return PC plus entry/resume markers
+  to distinguish cancellation, N+2 entry, and earlier N+1 entry. No silicon
+  result is assigned; `OQ-019` remains RESEARCHING/CONFLICT.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1035,9 +1049,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** investigate `OQ-019` DINT versus already-active interrupt-entry
-  ordering in original TI control/timing material, compare independent
-  implementations only as secondary hypotheses, and define the smallest
-  original-device capture if production documentation remains silent.
+- **Next task:** investigate `OQ-015` indirect-LST next-ARP precedence using
+  original control-path evidence and define a minimal original-NMOS state/
+  status capture if the later-guide/MAME corroboration cannot be upgraded.
 - **Latest committed baseline before this cycle:**
-  `317187b`
+  `047a549`

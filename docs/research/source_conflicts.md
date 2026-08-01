@@ -936,3 +936,52 @@ electrical result of an out-of-range access.
   effects.
 - **Confidence:** VERIFIED_PRIMARY for the 144-word implemented range;
   UNKNOWN for every access beyond it and for the boundary move outcome.
+
+## SC-039 — Original versus later-family interrupt pipeline boundary
+
+- **Original production guide:** SPRU001B Figure 2-12 shows fetches N, N+1,
+  dummy N+2, and vector 2 aligned with execution of N, N+1, a dummy slot, and
+  vector 2. Its Figure 2-11 places a synchronization flip-flop inside the
+  simplified TMS32010 boundary and gates interrupt-active with enabled INTM
+  [ti-tms32010-users-guide-spru001b, Section 2.10 and Figures 2-11-2-12,
+  printed pp. 2-18-2-19 (PDF pp. 42-43)].
+- **Original internal polarity typo:** prose on printed page 2-19 says a set
+  INTM validates interrupt-active, contradicting Figure 2-11's enabled
+  complement, its zero-enabled legend, and the same page's statement that
+  DINT sets INTM to disable interrupts. Later SPRU013 correctly states that
+  active becomes valid at INTM zero. The project treats the isolated word as
+  a polarity error; it supplies no DINT/grant priority evidence
+  [ti-tms32010-users-guide-spru001b, Section 2.10, printed p. 2-19 (PDF p. 43);
+  ti-first-generation-users-guide-1987, Section 3.8, printed p. 3-31 (PDF
+  p. 60)].
+- **Later mixed-family guide:** SPRU013 Figure 3-20 instead shows fetch N,
+  dummy N+1, and vector 2 aligned with execute N, dummy, and vector 2. Its
+  Section 3.8 says asynchronous NMOS TMS32010 INT needs external
+  synchronization and labels Figure 3-19's internal circuitry as CMOS-family
+  behavior. Original SPRU001B Section 2.14 independently recommends the same
+  external CLKOUT-clocked conditioning despite its simplified internal Sync
+  FF. The DINT page says masking begins immediately after DINT executes
+  [ti-tms32010-users-guide-spru001b, Section 2.14 and Figure 2-17, printed
+  p. 2-24 (PDF p. 48); ti-first-generation-users-guide-1987, Section 3.8,
+  Figures 3-19-3-20, and
+  `DINT`, printed pp. 3-31-3-34 and 4-32 (PDF pp. 60-63 and 113)].
+- **Conflict:** the later sequence does not execute N+1 before service and
+  therefore cannot answer the original Figure 2-12 case where N+1 is DINT.
+  That trace discrepancy could reflect a correction, a CMOS-family
+  generalization, or multiple recognition apertures; no located erratum
+  identifies which. External synchronization for asynchronous NMOS input is
+  not disputed: both guides require or recommend it.
+- **Independent implementations:** pinned MAME has no overlapping N/N+1
+  fetch/execute state and cannot express the race. Pinned IKA32010 evaluates
+  an old-mask `int_rq` while DINT sets the mask at the same FPGA edge, yielding
+  entry-wins when the request is already active. Neither resolves production
+  silicon.
+- **Current treatment:** SPRU001B remains the original-device timing authority
+  for qualified normal entry. DINT cancellation at its protected N+1 boundary
+  remains PROVISIONAL, and internal analog synchronization is not claimed.
+  `docs/research/dint_interrupt_race_experiment.md` defines the stable
+  original-NMOS pulse/address/stacked-PC capture required to resolve `OQ-019`
+  and further constrain `OQ-004`.
+- **Confidence:** VERIFIED_PRIMARY that the two TI publications differ;
+  CORROBORATED_PRIMARY for external asynchronous conditioning; UNKNOWN for
+  original-silicon DINT priority beyond published setup/pulse requirements.

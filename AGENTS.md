@@ -371,10 +371,13 @@ wrapper samples a held-low request only at the enabled falling boundary from
 each modeled subphase, including a phase stall. The explicit pipeline
 additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
 sequence, including the MPY/MPYK protected-slot extension. Physical
-setup/synchronizer behavior, original-part physical confirmation of the
+setup/synchronizer behavior, the original-versus-later TI interrupt-sequence
+conflict `SC-039`, original-part physical confirmation of the
 CORROBORATED RET/INFERRED CALA sequence, PUSH/POP second-cycle sequencing,
 and the provisional DINT-at-final-boundary ordering remain outside the
 qualified boundary under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+Read `docs/research/dint_interrupt_race_experiment.md` before changing DINT
+grant priority; MAME cannot express that boundary and IKA predicts entry-wins.
 TI EVM breakpoint behavior corroborates that PUSH/POP expose the following
 program address during their multicycle context, but it does not identify a
 `MEN` phase, repetition, or subsequent address and must not be used to choose

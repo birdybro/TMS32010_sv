@@ -201,6 +201,12 @@ after the handler returns
 [ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed p. 2-19
 (PDF p. 43)]. **Confidence: VERIFIED_PRIMARY.**
 
+Later mixed-family SPRU013 Figure 3-20 instead fetches N, dummy N+1, then
+vector 2 and executes no protected N+1 word. That material conflict is
+`SC-039`; original-specific SPRU001B remains the current implementation
+authority, but same-boundary DINT priority and physical recognition require
+the probe in `docs/research/dint_interrupt_race_experiment.md`.
+
 The partial phase wrapper now verifies the external program sequence and
 architectural entry state. Its implementation state allows one more
 instruction retirement, performs a non-retiring program read at the return

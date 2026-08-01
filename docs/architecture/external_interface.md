@@ -157,7 +157,8 @@ changes at the falling-edge retirement boundary. It now exposes active-low
 previously-disabled following-instruction protection. The generic core
 diagnostic `interrupt_pending_o` is not a physical TMS32010 pin
 [ti-tms32010-users-guide-spru001b, `DINT` and `EINT`, printed pp. 3-27 and
-3-29 (PDF pp. 77 and 79)]. **Confidence: VERIFIED_PRIMARY.**
+3-29 (PDF pp. 77 and 79)]. **Confidence: VERIFIED_PRIMARY for architectural
+INTM effects; PROVISIONAL for same-boundary DINT/grant priority.**
 
 For ordinary interrupt entry, Figure 2-12 shows normal program reads at N and
 N+1, a dummy read at return address N+2, and a read at vector `0x002`. The
@@ -175,7 +176,9 @@ external fetch order and entry effects; VERIFIED_SIMULATION for the basic
 explicit ownership path, MPY/MPYK protected-slot extension, matching 32-case
 core/explicit arrival matrices, and four CALA/RET explicit arrival cases.
 Physical sampling, PUSH/POP cycles, and physical confirmation of ADR-0003
-remain `OQ-004`/`OQ-007`/`OQ-016`.**
+remain `OQ-004`/`OQ-007`/`OQ-016`.** Later mixed-family Figure 3-20 omits the
+protected N+1 execution shown here; `SC-039` prevents using it to overwrite
+the original-part contract silently.
 
 `LST` retains the ordinary external program fetch while exposing one internal
 logical data read. The loaded status fields commit at the falling-edge sample;

@@ -152,9 +152,12 @@ MEN/DEN/WE ownership, no midinstruction entry, one protected retirement,
 dummy discard, stack entry, acknowledge state, and vector capture.
 A four-case native test also checks the enabled falling-boundary sample from
 each modeled subphase, including a stalled phase. Complete fetch/execute
-overlap, physical pin setup/synchronizer behavior, PUSH/POP cycles, physical
+overlap, the later-family Figure 3-20 conflict, physical pin setup/synchronizer
+behavior, PUSH/POP cycles, physical
 confirmation of CALA/RET address ownership, and the provisional
-DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
+DINT-at-final-boundary ordering remain outside any cycle-accuracy claim. A
+stable original-NMOS probe records armed/entry/resume markers and the stacked
+return PC without assigning an expected result.
 ADR-0002 and a standalone synthesizable fetch/execute register now establish
 the required distinct fetched-word and execute-slot validity/address state.
 Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy

@@ -2,12 +2,20 @@
 
 ## Interrupt input
 
-The active-low `INT` input is synchronized internally. TI describes a request
-as a high-to-low transition or a low level and latches a pending request even
-while interrupts are masked. Service pushes the current PC, loads program
-address 2, sets `INTM`, and clears the internal interrupt flag
-[ti-tms32010-users-guide-spru001b, §2.4.1 and Figure 2-11, printed
-pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY.**
+The active-low `INT` input recognizes a high-to-low transition or low level and
+latches a pending request even while interrupts are masked. Service pushes the
+current PC, loads program address 2, sets `INTM`, and clears the internal flag
+[ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-11, printed
+pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY for the
+logical request and service effects.** Original SPRU001B draws a logical Sync
+FF inside the simplified TMS32010 boundary but Section 2.14 also recommends an
+external CLKOUT-clocked flip-flop for asynchronous input. Later mixed-family
+SPRU013 likewise requires external NMOS synchronization. The portable core
+exposes a digital sampling boundary and does not claim an analog synchronizer;
+`SC-039` separately records the guides' conflicting instruction sequence
+[ti-tms32010-users-guide-spru001b, Section 2.14 and Figure 2-17, printed
+p. 2-24 (PDF p. 48); ti-first-generation-users-guide-1987, Section 3.8,
+printed pp. 3-31-3-34 (PDF pp. 60-63)].
 
 Recognition is delayed until:
 
@@ -114,17 +122,21 @@ address mapping remains ADR-0003 CORROBORATED for RET and INFERRED for CALA,
 not original-part physical-pin proof.
 
 This remains an incomplete pipeline claim. The explicit tests do not cover
-DINT's provisional cancellation at every placement, physical
-synchronizer/setup behavior, PUSH/POP cycles, physical confirmation of
+DINT's provisional cancellation at every placement, the `SC-039` original-
+versus-later interrupt sequence, external synchronization, physical setup
+behavior, PUSH/POP cycles, physical confirmation of
 ADR-0003, or analog input timing (`CTRL-002`, `OQ-004`,
 `OQ-007`, `OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected
 slot cancels entry, retains the request, and leaves it masked. Figure 2-11's
-mode gate and pinned MAME behavior corroborate that ordering, but the located
-original prose does not explicitly order DINT's write against an already
-active internal interrupt processor. The policy and targeted test are
-therefore PROVISIONAL under `OQ-019`, not a silicon-verified fact.
+mode gate supports that ordering, but the located original prose does not
+explicitly order DINT's write against an already active internal interrupt
+processor. MAME cannot express the overlapping Figure 2-12 boundary; pinned
+IKA instead represents entry-wins from its old-mask combinational request.
+The stable original-device program and capture procedure are in
+`docs/research/dint_interrupt_race_experiment.md`. The policy is therefore
+PROVISIONAL under `OQ-019`, not a silicon-verified fact.
 
 The pin must be low at least 50 ns before falling `CLKOUT`, and a guaranteed
 pulse is at least one full `CLKOUT` period. The external fetch trace is now

@@ -102,6 +102,10 @@ at their owning boundaries. If MPY or MPYK occupies that protected slot, the
 wrapper retains protection through one additional instruction; directed tests
 cover both signed products, internal-read versus program-only activity,
 stalls, dummy discard, and the post-following stacked PC.
+The current protected-slot DINT cancellation remains PROVISIONAL. Original
+SPRU001B executes N+1, later mixed-family SPRU013 dummy-fetches it, MAME lacks
+the overlap, and pinned IKA represents entry-wins (`SC-039`, `OQ-019`). The
+physical probe, not these RTL checks, is the resolving evidence.
 The explicit wrapper also retains TBLR/TBLW through Figure 2-10's discarded
 PC+1 read, ACC-addressed program transfer, and repeated PC+1 read. TBLR
 carries sampled program data from the transfer boundary to retirement; TBLW

@@ -199,6 +199,10 @@ multicycle families. PUSH/POP second-cycle sequencing, physical confirmation
 of ADR-0003, and provisional DINT-at-final-boundary ordering
 remain outside a cycle-accuracy claim under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+Later mixed-family SPRU013 also conflicts with original Figure 2-12 by
+dummy-fetching N+1 rather than executing it and by requiring external NMOS
+interrupt synchronization. `SC-039` preserves that conflict; the stable DINT
+race probe has no expected silicon result.
 PUSH and POP have primary-cited model/tool state and two-cycle evidence, but
 their second native program cycles and all RTL/differential behavior remain
 outside the qualified boundary under `OQ-016`.

@@ -158,6 +158,11 @@ on EINT, protected instruction, one non-retiring entry cycle, and vector word
 state; the native program addresses agree with Figure 2-12. These assertions
 qualify the retirement-mapped partial core, not a complete overlapped
 fetch/execute pipeline (`OQ-004`).
+The same-edge case where DINT is that protected word remains PROVISIONAL:
+later mixed-family Figure 3-20 does not execute N+1 at all, MAME lacks the
+overlap, and IKA represents entry-wins. The exact original-NMOS fixture in
+`docs/research/dint_interrupt_race_experiment.md` records port order and
+stacked return PC (`OQ-019`, `SC-039`).
 A 32-case directed core matrix additionally samples a one-cycle request at
 each represented machine cycle of B, BANZ, BV, BIOZ, CALL, the six
 accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each
@@ -172,6 +177,9 @@ a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin
 setup aperture or a physical asynchronous synchronizer.
+SPRU013's later instruction sequence conflicts with the original guide under
+`SC-039`; its external-synchronizer note instead corroborates original Section
+2.14. Neither is passing timing evidence for this implementation.
 Directed `LST` tests assert one-cycle direct/indirect reads, old-DP and
 old-ARP address selection, post-read nine-bit counter updates, `INTM`
 preservation, all four loaded status fields, clock-enable hold, and
