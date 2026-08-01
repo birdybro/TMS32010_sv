@@ -42,6 +42,14 @@ control architecture without identifying either missing address
 [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 34-36 (PDF
 pp. 29 and 43-44)].
 
+TI's TMS32010 EVM further rejects a breakpoint at the word after PUSH/POP,
+and its breakpoint RAM is indexed by the processor program-address bus. This
+corroborates external `N+1` visibility in the multicycle context, but the
+address-driven breakpoint circuit and manual provide no `MEN` phase, repeat
+count, or next address. It does not select an RTL sequence
+[ti-tms32010-evm-users-guide-spru005a, SB note 7, printed p. 3-58 (PDF
+p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)].
+
 The data sheet establishes falling `CLKOUT` as the input sampling boundary.
 Address transition begins after a falling edge, a read strobe asserts about
 one quarter-cycle later, and address/strobe remain stable through the next

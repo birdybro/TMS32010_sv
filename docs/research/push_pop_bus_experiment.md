@@ -35,6 +35,17 @@ PUSH/POP address or word-validity evidence
 [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 31-36 (PDF
 pp. 29 and 42-44)].
 
+TI's original-device EVM supplies an additional address-level clue. Its
+monitor rejects a breakpoint at the word immediately after PUSH or POP, while
+§9.3 says a 4K-by-1 breakpoint RAM is indexed directly from the TMS32010
+program-address bus and substitutes NOP data when the address matches. This
+corroborates external visibility of `N+1` in the multicycle context, but the
+breakpoint logic is address-driven and the manual gives no `MEN` phase,
+repeat count, or later address
+[ti-tms32010-evm-users-guide-spru005a, SB note 7, printed p. 3-58 (PDF
+p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)]. See
+`docs/research/evm_breakpoint_evidence.md`.
+
 These facts make a completely inactive extra cycle inconsistent with the
 general pin contract. They do not establish which active-low `MEN` sample is
 accepted by the instruction pipeline, or whether the program address repeats.

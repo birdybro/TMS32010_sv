@@ -367,8 +367,12 @@ additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
 sequence, including the MPY/MPYK protected-slot extension. Physical
 setup/synchronizer behavior, original-part physical confirmation of the
 CORROBORATED RET/INFERRED CALA sequence, PUSH/POP second-cycle sequencing,
-and the provisional DINT-at-final-boundary ordering remain outside the qualified boundary under
-`OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+and the provisional DINT-at-final-boundary ordering remain outside the
+qualified boundary under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
+TI EVM breakpoint behavior corroborates that PUSH/POP expose the following
+program address during their multicycle context, but it does not identify a
+`MEN` phase, repetition, or subsequent address and must not be used to choose
+an RTL sequence.
 For Atari integration specifically, production drawing A044427 Rev A holds the
 TMS32010 active-low interrupt input inactive through the `PR1`/`R26` 1 kΩ
 pull-up. Its board-generated `/320BIO` signal is resampled by `CLKOUT` into

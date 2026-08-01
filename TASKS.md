@@ -105,7 +105,10 @@ objective passing evidence.
   does not distinguish a repeated/discarded next-word read from an advancing
   prefetch. Contemporary TI patent US4577282A independently corroborates the
   general read rule but omits accumulator PUSH/POP; `SC-018` and the physical
-  experiment preserve that boundary.
+  experiment preserve that boundary. TI's EVM breakpoint restriction now
+  corroborates external `N+1` visibility during the multicycle context, but
+  its address-driven logic supplies no exact phase, repeat count, or later
+  address and therefore does not choose a hypothesis.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
@@ -1025,7 +1028,9 @@ objective passing evidence.
   constraint is VERIFIED_PRIMARY, while `SC-018` records the conflict with an
   independent implementation's idle first microcycle. A stable synthetic
   program and original-device capture procedure now define the evidence
-  needed to resolve it.
+  needed to resolve it. The primary EVM's refusal to place a breakpoint at the
+  following word corroborates `N+1` address visibility but does not assign it
+  to an interval or distinguish repeated from advancing prefetch.
   `SUBH` now passes primary-cited common-address decode/fixture/tool support,
   TI-example and boundary model/RTL tests, one-cycle native retirement, and
   seeded differential coverage. Tests distinguish ordinary/wrapped low-half

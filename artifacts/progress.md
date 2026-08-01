@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-016` PUSH/POP program-bus research and TI patent
-  claim scoping
+- **Current milestone:** `OQ-016` PUSH/POP program-bus research and primary
+  EVM breakpoint evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 132 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 133 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -974,6 +974,11 @@
   PUSH/POP, so `OQ-016` remains open; the every-state external-read rule is
   independently reinforced without choosing repeated versus advancing PC
   ownership.
+- **New EVM evidence:** SPRU005A rejects a breakpoint at the word following
+  PUSH/POP. Section 9.3 proves the breakpoint RAM observes the TMS32010
+  program-address bus and substitutes NOP data on a match. This corroborates
+  `N+1` visibility during the multicycle context but does not expose `MEN`
+  phase, repetition, or a subsequent address; OQ-016 H1-H3 all remain live.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1015,4 +1020,4 @@
   and move to the next unblocked architecture task without implementing a
   guessed native sequence.
 - **Latest committed baseline before this cycle:**
-  `738fa76`
+  `df183d6`

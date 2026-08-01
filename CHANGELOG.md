@@ -12,6 +12,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   describes RET's discarded sequential fetch, stack pop, return-address fetch,
   and target decode, while its omission of accumulator PUSH/POP prevents it
   from resolving `OQ-016`.
+- A primary-cited EVM breakpoint analysis showing that the word after
+  PUSH/POP is externally address-visible in a multicycle context, plus an
+  explicit proof boundary: the address-driven breakpoint circuit supplies no
+  `MEN` phase, repetition count, or later address and cannot choose OQ-016's
+  three hypotheses.
 - Directed branch/table traces that inspect the retained core-program carrier
   at operand capture, across clock-enable stalls, and after replacement by the
   selected or repeated instruction fetch.
@@ -645,6 +650,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   the related contemporary TI patent, while retaining CALA as INFERRED and
   exact original-TMS32010 pin behavior as UNKNOWN. PUSH/POP remain excluded
   from RTL because the patent does not contain those accumulator opcodes.
+- Narrowed PUSH/POP research with TI EVM evidence without promoting a bus
+  guess: `N+1` visibility is now corroborated, while H1 inactive, H2 repeated,
+  and H3 advancing remain separately measurable.
 - The explicit pipeline now retains instruction words, control operands, and
   TBLR program data in one context-owned core-program register. This replaces
   separate branch/table registers and their combinational state-selected mux;
@@ -853,7 +861,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- The complete repository gates pass with 132 provenance/document/tool tests,
+- The complete repository gates pass with 133 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29

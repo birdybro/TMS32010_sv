@@ -56,6 +56,13 @@ PUSH/POP. It therefore adds no missing program address or word ownership
 [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and 34-36 (PDF
 pp. 29 and 43-44)].
 
+The original-device EVM rejects an address breakpoint at the word following
+PUSH/POP, while its breakpoint RAM observes the TMS32010 program-address bus
+directly. This corroborates `N+1` visibility during the multicycle context but
+does not locate it in either interval, count repetitions, or reveal a later
+address [ti-tms32010-evm-users-guide-spru005a, SB note 7, printed p. 3-58
+(PDF p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)].
+
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
 opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model/RTL tests assert
 that total and state transition while the logical model reports only the known

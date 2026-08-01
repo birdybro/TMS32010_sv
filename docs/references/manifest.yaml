@@ -603,7 +603,10 @@
       "notes": "Immutable GitHub source at b-wave/TMS32010-Evaluation-Module commit c090b4e21153b208216ca3eba9d6de008fd0ce3b; keep only in ignored cache.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Section 3.3.2 register display/modify workflow, including direct ACC, OV, and OVM access, printed pages 3-4 through 3-5 and command pages 3-53 through 3-54"
+        "Section 3.3.2 register display/modify workflow, including direct ACC, OV, and OVM access, printed pages 3-4 through 3-5 and command pages 3-53 through 3-54",
+        "SB command breakpoint restrictions, printed page 3-58 (PDF page 99): the address immediately after PUSH, POP, CALA, RET, IN, OUT, TBRD, or TBWR is rejected as an EVM breakpoint",
+        "Section 9.3 Program Execution and Breakpoint Logic, printed pages 9-2 through 9-3 (PDF pages 179-180): address-indexed breakpoint RAM, program-data-to-NOP switching, and captured TMS32010 address",
+        "Appendix A schematic drawing D96214 sheet 3 (PDF page 188): TMS32010, program-memory, breakpoint-RAM, and start/stop connections; inspected for gating but not used as undocumented phase proof"
       ],
       "status": "acquired",
       "download": {

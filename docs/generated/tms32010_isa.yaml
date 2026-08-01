@@ -2106,12 +2106,13 @@
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
         {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
-        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-016"}
+        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the general original-part rule requires MEN activity and EVM breakpoint logic corroborates N+1 address visibility somewhere in the multicycle context, but no source assigns N+1, repetition, or a later address to an exact interval under OQ-016"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.2, Table 3-2, and POP instruction description", "printed_page": "2-14, 3-7, and 3-49", "pdf_page": "38, 57, and 99"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "POP instruction description", "printed_page": "3-49", "pdf_page": 70},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and POP instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-55", "pdf_page": "52-53, 90, and 136"}
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and POP instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-55", "pdf_page": "52-53, 90, and 136"},
+        {"source_id": "ti-tms32010-evm-users-guide-spru005a", "section": "SB breakpoint restriction and address-indexed breakpoint hardware", "printed_page": "3-58 and 9-2 through 9-3", "pdf_page": "99 and 179-180"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004", "OQ-016"]
@@ -2141,12 +2142,13 @@
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
         {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
-        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-016"}
+        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the general original-part rule requires MEN activity and EVM breakpoint logic corroborates N+1 address visibility somewhere in the multicycle context, but no source assigns N+1, repetition, or a later address to an exact interval under OQ-016"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.1, Table 3-2, and PUSH instruction description", "printed_page": "2-13, 3-7, and 3-50", "pdf_page": "37, 57, and 100"},
         {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "PUSH instruction description", "printed_page": "3-50", "pdf_page": 71},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and PUSH instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-56", "pdf_page": "52-53, 90, and 137"}
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.1, Table 4-2, and PUSH instruction description", "printed_page": "3-23 through 3-24, 4-11, and 4-56", "pdf_page": "52-53, 90, and 137"},
+        {"source_id": "ti-tms32010-evm-users-guide-spru005a", "section": "SB breakpoint restriction and address-indexed breakpoint hardware", "printed_page": "3-58 and 9-2 through 9-3", "pdf_page": "99 and 179-180"}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
       "unresolved_questions": ["OQ-004", "OQ-016"]

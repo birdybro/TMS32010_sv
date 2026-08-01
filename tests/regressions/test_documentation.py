@@ -65,6 +65,42 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("CORROBORATED for RET", normalized_ret_adr)
         self.assertIn("INFERRED for CALA", normalized_ret_adr)
 
+    def test_evm_breakpoint_clue_does_not_resolve_push_pop(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        evm = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-tms32010-evm-users-guide-spru005a"
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "evm_breakpoint_evidence.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        used_pages = " ".join(evm["sections_or_pages_used"])
+        for required in (
+            "printed page 3-58",
+            "PDF page 99",
+            "PDF pages 179-180",
+            "PDF page 188",
+        ):
+            self.assertIn(required, used_pages)
+        for required in (
+            "breakpoint RAM is indexed by the TMS32010 program address",
+            "does not reveal",
+            "cannot choose `OQ-016` H1, H2, or H3",
+            "no new native bus sequence",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("all three hypotheses survive", questions)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

@@ -367,6 +367,14 @@ electrical result of an out-of-range access.
   [ti-first-generation-users-guide-1987, §3.6.1, Figure 3-12, and
   `POP`/`PUSH`, printed pp. 3-22–3-23 and 4-55–4-56 (PDF pp. 51–52 and
   136–137)].
+- **Original-device EVM evidence:** TI's EVM monitor rejects an address
+  breakpoint at the word immediately after PUSH or POP. Its hardware uses the
+  TMS32010 program-address bus to index a 4K-by-1 breakpoint RAM, substitutes
+  NOP data on a match, and captures the processor address. This corroborates
+  external visibility of `N+1` during the multicycle context, but the manual
+  gives neither `MEN` qualification nor the following address
+  [ti-tms32010-evm-users-guide-spru005a, SB note 7, printed p. 3-58 (PDF
+  p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)].
 - **Independent FPGA implementation:** pinned IKA32010 commit
   `51bc1f05a2a08a61c8815a9643d08a42e99779c6` requests `BUSCTRL_STOP` and
   holds PC during PUSH/POP microcycle zero, then requests `OPCODE_READ` from
@@ -386,8 +394,9 @@ electrical result of an out-of-range access.
   relationship without a waveform.
 - **Current treatment:** do not copy either external sequence into the RTL.
   Preserve H1 inactive, H2 repeated/discarded `N+1`, and H3 advancing
-  prefetch as separately measurable hypotheses. The synthetic fixture and
-  original-device capture criteria are in
+  prefetch as separately measurable hypotheses. The EVM clue is consistent
+  with all three because each exposes `N+1` at some point. The synthetic
+  fixture and original-device capture criteria are in
   `docs/research/push_pop_bus_experiment.md`; see `OQ-016`.
 - **MAME functional check:** the ROM-free `make mame-synthetic` workflow runs
   a separate combined stack/computed-control fixture in MAME's Hard Drivin'
