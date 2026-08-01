@@ -146,21 +146,24 @@ gate topology.
 Normal read, table, I/O, and reset pin sequences are transcribed in
 `docs/timing/native_phase_contract.md`. Their bus order is qualified,
 but exact pipeline ownership remains to be resolved except for sequential
-one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, and the six
-accumulator branches, plus `IN`/`OUT` and `TBLR`/`TBLW`:
+one-cycle instructions, exact `B`/`BANZ`/`BV`/`BIOZ`/`CALL`, the six
+accumulator branches, ADR-0003 CALA/RET, plus `IN`/`OUT` and `TBLR`/`TBLW`:
 
-- CALA and RET have model-qualified state/cycle behavior. ADR-0003 permits a
-  future explicit `INFERRED` discarded-`PC+1` then selected-target mapping;
-  physical confirmation and target-repeat remain open under `OQ-007` and
-  `SC-037`. For model-qualified `PUSH`/`POP`, TI's general
+- CALA and RET have model/RTL/differential-qualified state/cycle behavior. The
+  explicit pipeline implements ADR-0003's `INFERRED` discarded-`PC+1` then
+  selected-target mapping, with stalls, nonexecution, retirement-only stack
+  effects, and all four interrupt-arrival intervals directed-tested. Physical
+  confirmation and target-repeat remain open under `OQ-007` and `SC-037`; the
+  legacy retirement-mapped wrapper deliberately rejects these words rather
+  than imply the wrong bus sequence. For model-qualified `PUSH`/`POP`, TI's general
   pin rule requires `MEN` on both non-I/O execution cycles and its
   architecture prose says PC always addresses program memory, but no located
   waveform identifies address progression or fetched-word validity. The
   conflict with an independent implementation's idle first microcycle and a
   reproducible pin-capture plan are recorded under `SC-018`/`OQ-016`;
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
-  vector path, MPY/MPYK protected-slot extension, and matching 32-case
-  core/explicit arrival matrices for the 15 supported multicycle families
+  vector path, MPY/MPYK protected-slot extension, matching 32-case
+  core/explicit arrival matrices, and four CALA/RET explicit arrival cases
   (`OQ-004`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
@@ -200,6 +203,11 @@ families, IN, OUT, TBLR, and TBLW. The explicit matrix checks native strobes,
 no midinstruction entry, one protected retirement, dummy discard, stack and
 acknowledge effects, and vector capture. Neither matrix models a physical
 input synchronizer or setup aperture.
+
+A separate four-case explicit-pipeline test covers INT arrival in both CALA
+and RET intervals. It proves no midinstruction stack effect, selected-target
+completion before protection, one protected retirement, and the same
+dummy/vector sequence. The addresses remain ADR-0003 `INFERRED` behavior.
 
 Exact `BANZ` now has the same explicit two-interval ownership structure as B.
 Opcode-prefetch completion places `0xf400` in the execute slot. Its canonical

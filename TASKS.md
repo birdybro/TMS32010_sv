@@ -143,7 +143,8 @@ objective passing evidence.
   regression-checked. A one-step symbolic RTL harness independently exhausts
   all 65,536 input words against a compact family/field-validity predicate,
   checks meaningful operand projections, and reaches eight classification
-  boundaries. It proves the partial decoder's 21,891-word acceptance set;
+  boundaries. It proves the partial decoder's 21,893-word acceptance set,
+  including CALA/RET while retaining PUSH/POP rejection;
   mnemonic identity remains grounded in the database, fixtures, and exhaustive
   simulation rather than the formal predicate. The primary-documentation
   partition is complete, but
@@ -322,14 +323,16 @@ objective passing evidence.
   `CALA` pushes wrapped opcode-PC+1, discards the old stack bottom, selects
   `ACC[11:0]`, and counts two cycles. Directed tests cover upper-ACC
   exclusion, PC wrap, nested calls, state preservation, and the known opcode
-  fetch. ADR-0003 now permits a targeted `INFERRED` RTL mapping of discarded
-  `PC+1` followed by selected-target fetch; implementation and physical
-  confirmation remain pending under `OQ-007`/`SC-037`.
+  fetch. RTL now implements ADR-0003's targeted `INFERRED` mapping of
+  discarded `PC+1` followed by selected-target fetch; physical confirmation
+  remains pending under `OQ-007`/`SC-037`.
   `RET` loads PC from the old stack top, shifts all lower levels upward,
   duplicates the old bottom, and counts the primary-defined two cycles. Its
   logical transaction trace deliberately includes only the known opcode
   fetch. ADR-0003 now permits the same targeted inferred discarded-`PC+1` /
-  selected-target RTL mapping as CALA without upgrading it to primary proof.
+  selected-target RTL mapping as CALA without upgrading it to primary proof;
+  directed bus, stall, interrupt-boundary, bounded-formal, and architectural
+  differential tests now cover the combined CALA/RET path.
   A directed `EINT; RET` test proves RET completes before a pending request
   schedules reentry.
   `PUSH` copies ACC[11:0] onto the top-first stack and discards the old
@@ -350,9 +353,9 @@ objective passing evidence.
   updates at completion, and count three cycles.
   Out-of-range
   original-RAM addresses and unsupported words trap. Complete
-  overlapped pipeline timing, RTL/native
-  CALA/RET/PUSH/POP timing, and untested interrupt arrival combinations
-  remain unimplemented.
+  overlapped pipeline timing, RTL/native PUSH/POP timing, and untested
+  interrupt arrival combinations remain unimplemented. CALA/RET retain
+  `INFERRED` rather than physical timing confidence.
 
 ## Milestone 6 — Assembler and test-program workflow
 
@@ -416,7 +419,7 @@ objective passing evidence.
 - **Notes:** Initial 32-bit accumulator, 16-bit T register, 32-bit P register,
   two 16-bit ARs,
   ARP, DP, OV/OVM, and 144-word internal RAM exist for the
-  fifty-six-instruction slice. `ABS` verifies zero, positive, ordinary
+  fifty-eight-instruction slice. `ABS` verifies zero, positive, ordinary
   negative, and most-negative accumulator values under both OVM modes while
   preserving incoming OV. `LAC`
   verifies sign extension and left shifts; `SACH` verifies its output-shifter
@@ -504,11 +507,13 @@ objective passing evidence.
   `sim/bus/tb_sequential_pipeline_bv.sv`,
   `sim/bus/tb_sequential_pipeline_bioz.sv`,
   `sim/bus/tb_sequential_pipeline_call.sv`,
+  `sim/bus/tb_sequential_pipeline_cala_ret.sv`,
   `sim/bus/tb_sequential_pipeline_io.sv`,
   `sim/bus/tb_sequential_pipeline_table.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt_computed.sv`,
   `sim/bus/tb_sequential_pipeline_differential.sv`,
   `sim/unit/tb_fetch_execute.sv`, `sim/instruction/tb_sequencer.sv`,
   `formal/tms32010_decode.sby`, `formal/sequencer/`
@@ -560,7 +565,7 @@ objective passing evidence.
   synthesis. The separate `tms32010_sequential_pipeline_slice` now connects
   it to the core for reset priming, decoded one-cycle operation families, and
   exact B, BANZ, BV, BIOZ, CALL, and the six accumulator-conditional
-  branches, plus exact IN/OUT and TBLR/TBLW execution ownership. All branches retain
+  branches, ADR-0003 CALA/RET, plus exact IN/OUT and TBLR/TBLW execution ownership. All branches retain
   execute ownership across a nonexecutable PC+1 operand
   fetch and the selected target/fallthrough-instruction fetch, retire only as
   that instruction enters the execute slot, and cannot apply its effects until
@@ -637,6 +642,10 @@ objective passing evidence.
   decision after operand completion, deferred counter mutation, and no early
   fetched-instruction execution. CALL also verifies no early push, selected-
   target retirement, nested stack shifting, and non-stack state preservation.
+  CALA/RET retain ownership across an explicitly nonexecutable sequential read
+  and the accumulator/old-TOS target read, commit stack/PC effects only at
+  selected-target capture, and stall in either interval. The legacy wrapper
+  rejects them rather than imply this provisional sequence.
   IN/OUT additionally retain execute ownership through Figure 2-9's distinct
   transfer and following-prefetch intervals, including independent stalls,
   mutually exclusive DEN/WE then MEN, sampled/held data, retirement-only
@@ -648,14 +657,13 @@ objective passing evidence.
   captured. Interrupt testing adds Figure 2-12's
   protected instruction, return-PC dummy read, and vector-2 read. Matching
   32-case logical-core and explicit-pipeline matrices test each represented
-  multicycle arrival boundary;
+  multicycle arrival boundary; four more explicit cases cover both intervals
+  of CALA and RET;
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
-  indirect-call/return,
-  unsupported CALA/RET/PUSH/POP interrupt ownership,
-  cycles
-  remain. Do not collapse Harvard
+  PUSH/POP interrupt ownership and cycles remain. Physical confirmation of
+  ADR-0003 also remains. Do not collapse Harvard
   spaces in the native interface.
 
 ## Milestone 10 — Data-memory interface
@@ -796,6 +804,10 @@ objective passing evidence.
   asserts the family-specific logical/native bus shape, no midinstruction entry,
   exactly one protected retirement, the resolved-return-PC dummy fetch, stack
   state, acknowledge effects, and vector-2 selection.
+  Four additional explicit cases pulse INT in both CALA and RET intervals and
+  prove no early stack effect or service, selected-target completion, one
+  protected retirement, and subsequent dummy/vector ownership under the
+  `INFERRED` ADR-0003 address sequence.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -804,8 +816,8 @@ objective passing evidence.
   protected slot now explicitly extend service through one more instruction;
   directed checks cover signed results, internal-read versus program-only bus
   shape, stalls, dummy discard, return-PC ownership, and vector deferral.
-  Physical setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP
-  arrival cycles, RTL/native RET behavior, and provisional DINT cancellation
+  Physical setup/synchronizer behavior, PUSH/POP arrival cycles, physical
+  confirmation of ADR-0003, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete
   interrupt-cycle claim is made.
 
@@ -964,17 +976,19 @@ objective passing evidence.
   no data-memory transaction. Its retirement can end generic multiply
   deferral; SPAC-specific interrupt arrivals remain future coverage.
   `RET` now passes primary-cited exact decode, hand fixture, assembler/
-  disassembler, and directed model tests for its old-TOS PC load, four-level
+  disassembler, model/RTL/differential, bus, stall, interrupt-boundary, and
+  bounded-formal tests for its old-TOS PC load, four-level
   pop with old-bottom duplication, two-cycle total, state preservation, and
   protected execution after EINT before pending interrupt reentry. The model
-  intentionally omits the unknown second external transaction; RTL/native and
-  differential support remain deferred under `OQ-007`.
+  intentionally omits physical bus detail; the explicit wrapper implements
+  ADR-0003 at `INFERRED` confidence under `OQ-007`.
   `CALA` now passes primary-cited exact decode, independent hand fixture,
-  assembler/disassembler, and directed model tests for its opcode-PC+1 stack
+  assembler/disassembler, model/RTL/differential, bus, stall, interrupt-
+  boundary, and bounded-formal tests for its opcode-PC+1 stack
   push, `ACC[11:0]` target, upper-ACC exclusion, PC wrap, nested old-bottom
   loss, state preservation, and two-cycle total. Its model trace intentionally
-  omits the unknown second external transaction; RTL/native and differential
-  support remain deferred under `OQ-007`.
+  remains abstract while the explicit wrapper uses the `INFERRED` ADR-0003
+  bus mapping under `OQ-007`.
   `PUSH` and `POP` now pass primary-cited exact decode, independent hand
   fixtures, assembler/disassembler, and directed model tests for low-12-bit
   push, zero-extending pop, full four-level shifts, old-bottom
@@ -1000,9 +1014,9 @@ objective passing evidence.
   pipeline-offset, and seeded differential tests. Its high-half modulo result
   and low-half preservation are primary-verified; OV preservation and OVM
   independence remain CORROBORATED under resolved `SC-017`/`OQ-011`. Four
-  model-qualified single-word/two-cycle stack/control instructions remain
-  outside RTL/native qualification. CALA/RET may now proceed only under the
-  reversible `INFERRED` ADR-0003 mapping; PUSH/POP remain blocked on address
+  model-qualified single-word/two-cycle stack instructions remain outside
+  RTL/native qualification. CALA/RET now implement the reversible `INFERRED`
+  ADR-0003 mapping; PUSH/POP remain blocked on address
   ownership under `OQ-016`. Maintain one subtask per timing family.
 
 ## Milestone 15 — Pipeline and cycle timing
@@ -1023,13 +1037,12 @@ objective passing evidence.
   common-address data instructions plus SST's forced-page status store is
   asserted through the partial native-phase
   integration. Figure 2-12 interrupt program reads, entry effects, EINT
-  deferral, multiply deferral, and a 32-case matrix over every represented
-  cycle of all 15 supported multicycle families are directed-tested in both
-  the core and explicit pipeline. A
+  deferral, multiply deferral, a 32-case matrix, and four CALA/RET arrival
+  cases over all represented intervals of 17 supported multicycle families
+  are directed-tested. A
   four-case native test additionally proves digital falling-boundary ownership
   from each modeled subphase, including a stalled phase 2, while physical
-  setup/CDC and unsupported CALA/RET/PUSH/POP
-  arrivals remain.
+  setup/CDC, PUSH/POP arrivals, and physical confirmation of ADR-0003 remain.
   BANZ's two-word/two-cycle opcode and following-target
   normal reads, taken/untaken selection, second-cycle stall, and retirement
   are asserted. B's unconditional two-word/two-cycle target load and the same
@@ -1058,11 +1071,13 @@ objective passing evidence.
   opcode-PC+2 only at selected-target retirement.
   The mappings are INFERRED from primary component facts and directed-tested,
   not presented as dedicated primary pin waveforms.
-  Other control flow remains. CALA/RET are model-asserted as
-  primary-confirmed one-word/two-cycle computed control operations. ADR-0003
-  now selects discarded `PC+1` then selected-target read as a reversible
-  `INFERRED` explicit-pipeline mapping; implementation and physical
-  confirmation remain open under `OQ-007`/`SC-037`. PUSH/POP are model-asserted as
+  CALA/RET are primary-confirmed one-word/two-cycle computed control
+  operations. The explicit pipeline implements ADR-0003's reversible
+  `INFERRED` discarded-`PC+1` then selected-target mapping. Directed tests
+  cover both stalls, nonexecution, target capture, retirement-only stack
+  effects, differential state/cycles, interrupt arrivals, and a bounded core
+  proof; physical confirmation remains open under `OQ-007`/`SC-037`.
+  PUSH/POP are model-asserted as
   primary-confirmed one-word/two-cycle instructions with exact state effects.
   `MEN` activity in both execution intervals is constrained by TI's general
   pin rule, but the address and fetched-word ownership remain open under
@@ -1164,6 +1179,10 @@ objective passing evidence.
   A focused CALL differential compares two nested calls, every opcode/target
   read, second-cycle retirement, cumulative cycles, PC, and all four stack
   levels at each commit.
+  A focused CALA/RET differential compares model and RTL PC, ACC, all four
+  stack levels, retirement, and cumulative cycles through a complete computed
+  call/return path. The model bus trace stays abstract; the independent
+  explicit-pipeline bus test owns ADR-0003 address evidence.
   A focused IN/OUT differential compares direct and indirect transfers,
   opcode-plus-I/O transaction order, exact two-cycle totals, RAM results,
   port/data direction, PC, and AR/ARP post-updates.
@@ -1200,7 +1219,7 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Four actual-core configurations pass bounded checks over
+- **Notes:** Five actual-core configurations pass bounded checks over
   arbitrary clock-enable sequences. The 12-step
   EINT/protected-LACK/dummy/vector fixture
   reaches vector execution at step 6. The 14-step
@@ -1216,7 +1235,11 @@ objective passing evidence.
   configurations check initialization, pending retention, MPY/MPYK
   extension, program-only entry, stack/vector/INTM effects, bus exclusion,
   relatching, and stall stability.
-  A fifth standalone 12-step BMC leaves all fetch/execute register inputs
+  A 24-step actual-core CALA/RET configuration checks both boundaries,
+  opcode-PC+1 push, old-top pop/target, target and returned instructions,
+  program-only ownership, no early stack effect, and arbitrary clock-enable
+  stalls; its complete call/return cover reaches step 9.
+  A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
   non-boundary stability, incomplete retention, completion/replacement,
@@ -1274,9 +1297,9 @@ objective passing evidence.
   A twelfth one-step decoder configuration leaves all 16 instruction bits
   arbitrary and proves the exact partial-RTL valid predicate against a compact
   family/field formula, plus dense-operation and meaningful operand-projection
-  invariants. Eight covers reach legal direct/indirect, primary-reserved,
-  simultaneous-update, pattern-mismatch, primary-unlisted, model-only CALA,
-  and MPYK-extreme words at step 0. This does not prove mnemonic identity,
+  invariants. Nine covers reach legal direct/indirect, primary-reserved,
+  simultaneous-update, pattern-mismatch, primary-unlisted, RTL-supported
+  CALA/RET, and MPYK-extreme words at step 0. This does not prove mnemonic identity,
   execution, timing, unsupported silicon behavior, or the four deferred native
   cycles.
   A thirteenth 16-step standalone configuration leaves the Driver Sound host
@@ -1300,7 +1323,7 @@ objective passing evidence.
   not arbitrary event-spacing, raw-pin, collision, byte, or electrical proof.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
-  placement/length, formal multicycle-arrival coverage, RET, general
+  placement/length, formal multicycle-arrival coverage, general
   FSM and remaining integrated decode/RAM/arithmetic properties, and
   liveness
   assumptions remain.
@@ -1319,7 +1342,8 @@ objective passing evidence.
   paths; versions, warnings, resources, Fmax, and critical paths are recorded.
 - **Documentation:** `synthesis/README.md`, `artifacts/synthesis/`
 - **Tests:** `make synth-yosys`, `make synth-quartus`
-- **Notes:** Fifty-six-instruction RTL, phase engine, multiplier, and
+- **Notes:** Fifty-eight-instruction RTL, explicit fetch/execute phase engine,
+  multiplier, and
   144-word RAM are
   qualified in both synthesis flows; exact current utilization, internal Fmax,
   slack, warning scope, and generic-cell totals are recorded in
@@ -1327,11 +1351,20 @@ objective passing evidence.
   TimeQuest reports zero unconstrained categories; this is still not wrapper
   I/O closure. Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite passes
   structural/generic synthesis, lowering the asynchronous RAM to
-  flip-flops/muxes. `make synth-yosys` now reproducibly checks both the legacy
-  harness (13,877 generic cells/26 checks) and the
+  flip-flops/muxes. `make synth-yosys` now reproducibly checks both the
+  synthesis harness (16,281 generic cells/124 checks) and the directly
+  targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (15,733 cells/103 checks), each with zero structural
-  problems. A fourth standalone script exhaustively tests and synthesizes the
+  pipeline slice (16,280 cells/124 checks), each with zero structural
+  problems. The Quartus harness now elaborates that explicit pipeline rather
+  than the legacy fail-closed wrapper: it fits in 2,504 ALMs/2,702 registers/
+  one DSP block, closes a 25 MHz constraint with +5.872 ns worst setup and
+  +0.166 ns worst hold slack, and reports 29.30 MHz worst slow-corner Fmax.
+  The board's primary-documented clock is 20 MHz. A rejected exploratory
+  explicit-pipeline fit missed the old 50 MHz objective by -9.098 ns worst
+  setup; 50 MHz closure is not claimed. All 415 non-clock harness pins remain
+  virtual/false-pathed and TimeQuest reports zero unconstrained categories.
+  A fourth standalone script exhaustively tests and synthesizes the
   A044427 storage-free bus decoder to 15 generic combinational cells with no
   structural problems. A fifth script retains the 4K-by-16 board adapter as
   one synchronous-read, single-write-port abstract memory with 85 total cells
@@ -1360,8 +1393,9 @@ objective passing evidence.
   checks the same-clock host-timing adapter as 142 cells/24 checks. A
   nineteenth checks the storage-free local-68000 memory decoder as 56
   cells/17 checks. A twentieth composes that decoder into the storage-free
-  timing/callback bridge as 305 hierarchy cells/40 checks. All nine have no
-  memory/latch or structural problem.
+  timing/callback bridge as 305 hierarchy cells/40 checks. Nine additional
+  Hard Drivin' targets bring the reproducible command to 29 scripts; their
+  current counts and scopes are recorded in `synthesis/qualification.md`.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1389,8 +1423,8 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 15,782 generic
-  cells/110 checks with no structural problems. This is an IMPLEMENTING
+  unsupported-word parking, and reset recovery. Yosys reports 16,330 generic
+  cells/131 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a block-RAM-safe core, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
 

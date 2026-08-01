@@ -162,10 +162,10 @@ documented mnemonics:
 `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`,
 `POP`, `PUSH`, `RET`, `ROVM`, `SACL`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`,
 `TBLR`, `TBLW`, `XOR`, `ZAC`, `ZALH`, and `ZALS`. RTL and seeded
-differential support the same set except CALA, POP, PUSH, and RET, for 56
-shared mnemonics. Their architectural effects and two-cycle totals are
-model-qualified, while their second external cycles remain unresolved under
-`OQ-007`/`OQ-016`. The 26 common-address data/table instructions plus SST's
+differential support the same set except POP and PUSH, for 58 shared
+mnemonics. CALA/RET effects and totals are primary-qualified; their explicit
+bus ownership uses ADR-0003's reversible `INFERRED` mapping. PUSH/POP external
+address ownership remains unresolved under `OQ-016`. The 26 common-address data/table instructions plus SST's
 forced-page direct form have independent
 fixtures plus directed and
 seeded tests for direct/indirect address selection, reads or writes,
@@ -192,10 +192,10 @@ dummy-fetch the return PC, push it, mask and clear the request, and select
 vector 2. Directed native testing verifies the Figure 2-12 external address
 order, and the explicit pipeline qualifies its basic protected-word/
 discarded-N+2/vector ownership plus MPY/MPYK extension through one additional
-instruction. Matching core and explicit-pipeline matrices cover all 32
-represented request-arrival intervals across the 15 supported multicycle
-families. Native/RTL CALA/RET sequencing, PUSH/POP
-second-cycle sequencing, and provisional DINT-at-final-boundary ordering
+instruction. The existing core/explicit matrices plus four CALA/RET explicit
+cases cover all 36 represented request-arrival intervals across 17 supported
+multicycle families. PUSH/POP second-cycle sequencing, physical confirmation
+of ADR-0003, and provisional DINT-at-final-boundary ordering
 remain outside a cycle-accuracy claim under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 PUSH and POP have primary-cited model/tool state and two-cycle evidence, but

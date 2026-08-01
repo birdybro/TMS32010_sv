@@ -6,9 +6,10 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/packages/tms32010_pkg.s
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_internal_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_multiplier.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_fetch_execute.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_core.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_program_bus.sv
-set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/wrappers/tms32010_phase_slice.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/wrappers/tms32010_sequential_pipeline_slice.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../common/tms32010_synth_top.sv
 set_global_assignment -name SDC_FILE tms32010.sdc
 set_global_assignment -name NUM_PARALLEL_PROCESSORS ALL
@@ -57,6 +58,10 @@ set_instance_assignment -name VIRTUAL_PIN ON -to den_n_o
 set_instance_assignment -name VIRTUAL_PIN ON -to we_n_o
 set_instance_assignment -name VIRTUAL_PIN ON -to sample_o
 set_instance_assignment -name VIRTUAL_PIN ON -to native_active_o
+set_instance_assignment -name VIRTUAL_PIN ON -to execute_valid_o
+set_instance_assignment -name VIRTUAL_PIN ON -to "execute_address_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to "execute_word_o[*]"
+set_instance_assignment -name VIRTUAL_PIN ON -to pipeline_blocked_o
 set_instance_assignment -name VIRTUAL_PIN ON -to "data_address_o[*]"
 set_instance_assignment -name VIRTUAL_PIN ON -to data_read_o
 set_instance_assignment -name VIRTUAL_PIN ON -to data_write_o

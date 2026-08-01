@@ -450,18 +450,20 @@ phase transition relation, synchronous assertion boundary, release delay,
 address-1 cover reaches step 34. This remains digital wrapper evidence, not
 electrical-timing or physical-silicon proof
 [`formal/tms32010_program_bus_reset.sby`].
-`tms32010_phase_slice` now integrates these phases with the current
-one-cycle sequential execution subset and the qualified two-cycle branch
-paths: directed tests
+`tms32010_phase_slice` integrates these phases with the current one-cycle
+sequential subset and qualified two-cycle following-word branch paths. It
+deliberately rejects ADR-0003 CALA/RET because it cannot represent their
+discarded sequential prefetch; the explicit pipeline owns those paths.
+Directed tests
 verify synchronized PC/native-address advancement, ordinary same-boundary
 retirement, branch target-word fetch and second-boundary retirement, stalls,
-traps, and recognized reset. It has not been qualified for indirect call/return,
-other unimplemented multi-cycle operations, or the complete fetch/execute
+traps, and recognized reset. It is not the complete fetch/execute
 pipeline. Table, I/O, and the cited interrupt program-read sequence now have
 directed native-phase tests, including INT ownership at the enabled falling
 boundary for all four modeled arrival phases. The basic EINT/protected-word/
 discarded-N+2/vector sequence also has explicit fetch/execute ownership;
 MPY/MPYK in the protected slot explicitly extend ownership through one
 additional instruction. Matching core and explicit-pipeline matrices cover
-all 32 represented execution intervals of the 15 supported multicycle
-families.
+all 32 represented matrix intervals; four additional explicit cases cover
+both intervals of CALA and RET. Physical confirmation of ADR-0003 remains
+open.

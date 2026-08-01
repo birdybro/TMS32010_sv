@@ -1575,6 +1575,98 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
                 trace.state_after["cycle_count"],
             )
 
+    def test_cala_ret_architectural_boundaries_match_model(self) -> None:
+        words = [
+            0x7E06,  # LACK 6
+            0x7F8C,  # CALA -> 6
+            0x7EEE,  # return-address instruction
+            0x7F80,
+            0x7F80,
+            0x7F80,
+            0x7E44,  # CALA target
+            0x7F8D,  # RET -> 2
+            0x7EDD,  # discarded sequential word
+        ]
+        data_words = [0] * 144
+        model = Tms32010Model()
+        model.reset_at_instruction_boundary()
+        model.load_words(words)
+        expected = [model.step() for _ in range(5)]
+        machine_cycles = sum(trace.cycles for trace in expected)
+
+        self.assertEqual(
+            [trace.mnemonic for trace in expected],
+            ["LACK", "CALA", "LACK", "RET", "LACK"],
+        )
+        self.assertEqual([trace.cycles for trace in expected], [1, 2, 1, 2, 1])
+        self.assertEqual(machine_cycles, 7)
+
+        with tempfile.TemporaryDirectory() as directory:
+            image = Path(directory) / "program.hex"
+            data_image = Path(directory) / "data.hex"
+            image.write_text(
+                "".join(f"{word:04x}\n" for word in words),
+                encoding="ascii",
+            )
+            data_image.write_text(
+                "".join(f"{word:04x}\n" for word in data_words),
+                encoding="ascii",
+            )
+            result = subprocess.run(
+                [
+                    str(self.build / "Vtb_model_rtl_slice"),
+                    f"+IMAGE={image}",
+                    f"+DATA={data_image}",
+                    f"+COUNT={machine_cycles}",
+                ],
+                cwd=ROOT,
+                text=True,
+                capture_output=True,
+                check=False,
+            )
+
+        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+        fields = [
+            line.split()
+            for line in result.stdout.splitlines()
+            if line.startswith("TRACE ")
+        ]
+        self.assertEqual(len(fields), machine_cycles)
+        self.assertEqual(
+            [int(field[1], 16) for field in fields],
+            [0, 1, 2, 6, 7, 8, 2],
+            "core logical PC exposes nonretiring sequential slots",
+        )
+        self.assertEqual(
+            [int(field[11], 16) for field in fields],
+            [1, 0, 1, 1, 0, 1, 1],
+            "CALA/RET retire only on their second boundaries",
+        )
+        self.assertTrue(all(not int(field[12], 16) for field in fields))
+        self.assertTrue(all(int(field[34], 16) for field in fields))
+        self.assertTrue(
+            all(
+                not any(int(field[index], 16) for index in (15, 16, 31, 32, 35))
+                for field in fields
+            ),
+            "computed control uses no data/I/O/program-write operation",
+        )
+
+        cumulative_cycles = 0
+        for trace in expected:
+            cumulative_cycles += trace.cycles
+            rtl = fields[cumulative_cycles - 1]
+            self.assertEqual(int(rtl[3], 16), trace.state_after["pc"])
+            self.assertEqual(int(rtl[4], 16), trace.state_after["acc"])
+            self.assertEqual(
+                [int(field, 16) for field in rtl[26:30]],
+                trace.state_after["stack"],
+            )
+            self.assertEqual(
+                int(rtl[13], 16),
+                trace.state_after["cycle_count"],
+            )
+
     def test_accumulator_branch_family_trace_matches_model(self) -> None:
         cases = [
             ("BLZ", 0xFA00, 0x2000, True),

@@ -173,7 +173,9 @@ module tb_phase_slice_integration;
     program_memory[43] = 16'h7f88;  // ABS
     program_memory[44] = 16'h7c0f;  // SST 15 -> forced page-one address 0x8f
     program_memory[45] = 16'h6003;  // ADDH 3
-    program_memory[46] = 16'h7f83;  // unsupported and not a silent NOP
+    // ADR-0003 computed control is intentionally disabled in this legacy
+    // retirement-mapped wrapper; the explicit pipeline owns CALA/RET.
+    program_memory[46] = 16'h7f8c;  // CALA must park here, not execute
 
     initialize   = 1'b1;
     rs           = 1'b1;
@@ -658,11 +660,13 @@ module tb_phase_slice_integration;
     require(pc == 12'h02e && cycle_count == 32'd46,
             "ADDH consumes one native instruction cycle");
     require(!data_read && !data_write && !data_address_valid,
-            "unsupported boundary performs no internal data transaction");
+            "legacy-disabled CALA performs no internal data transaction");
 
     advance_to_sample();
-    require(sample && !retired && illegal, "unsupported word traps at sample");
-    require(!instruction_valid, "unsupported word remains visibly invalid");
+    require(sample && !retired && illegal,
+            "legacy-disabled CALA traps at sample");
+    require(!instruction_valid,
+            "legacy-disabled CALA remains visibly invalid");
     require(pc == 12'h02e, "trap holds architectural PC");
     require(program_address == 12'h02e, "trap holds native program address");
     require(cycle_count == 32'd46, "trap does not count as retired cycle");

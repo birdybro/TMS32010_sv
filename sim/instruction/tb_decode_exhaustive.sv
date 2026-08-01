@@ -73,6 +73,8 @@ module tb_decode_exhaustive;
       logic expected_bv;
       logic expected_bioz;
       logic expected_call;
+      logic expected_cala;
+      logic expected_ret;
       logic expected_b;
       logic expected_accumulator_branch;
       instruction = word[15:0];
@@ -395,6 +397,8 @@ module tb_decode_exhaustive;
       expected_bv = instruction == 16'hf500;
       expected_bioz = instruction == 16'hf600;
       expected_call = instruction == 16'hf800;
+      expected_cala = instruction == 16'h7f8c;
+      expected_ret = instruction == 16'h7f8d;
       expected_b = instruction == 16'hf900;
       expected_accumulator_branch =
         (instruction[15:8] >= 8'hfa) &&
@@ -415,6 +419,7 @@ module tb_decode_exhaustive;
         expected_abs ||
         expected_dint || expected_eint || expected_lst || expected_sst ||
         expected_banz || expected_bv || expected_bioz || expected_call ||
+        expected_cala || expected_ret ||
         expected_b ||
         expected_accumulator_branch ||
         ((instruction & 16'hfffe) == 16'h6880) ||
@@ -658,6 +663,12 @@ module tb_decode_exhaustive;
       if (expected_call && operation != OP_CALL) begin
         $fatal(1, "CALL decode mismatch at %04x", word);
       end
+      if (expected_cala && operation != OP_CALA) begin
+        $fatal(1, "CALA decode mismatch at %04x", word);
+      end
+      if (expected_ret && operation != OP_RET) begin
+        $fatal(1, "RET decode mismatch at %04x", word);
+      end
       if (expected_b && operation != OP_B) begin
         $fatal(1, "B decode mismatch at %04x", word);
       end
@@ -707,8 +718,8 @@ module tb_decode_exhaustive;
         end
       end
     end
-    if (valid_count != 21891) begin
-      $fatal(1, "expected 21891 supported words, got %0d", valid_count);
+    if (valid_count != 21893) begin
+      $fatal(1, "expected 21893 supported words, got %0d", valid_count);
     end
     $display("PASS tb_decode_exhaustive");
     $finish;

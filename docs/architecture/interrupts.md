@@ -69,10 +69,10 @@ boundary, checks a stalled phase-2 hold, and then verifies the same protected,
 dummy, and vector sequence. These are digital phase-engine assertions, not an
 analog claim that a transition without the documented 50 ns setup is
 recognized.
-The instruction-boundary model additionally verifies the primary-described
-`EINT; RET` sequence: RET loads the saved PC and pops the stack before a
-previously pending request can schedule another dummy entry. RET remains
-absent from the RTL because its second external cycle is unresolved under
+The instruction-boundary model and RTL additionally verify the primary-
+described `EINT; RET` sequence: RET loads the saved PC and pops the stack
+before a previously pending request can schedule another dummy entry. Its
+explicit bus sequence follows ADR-0003 at `INFERRED` confidence under
 `OQ-007`.
 
 The explicit pipeline now qualifies Figure 2-12's basic EINT path. EINT
@@ -93,7 +93,7 @@ discard, the post-following stacked PC, vector capture, and deferred vector
 execution
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
 
-The 32-case explicit-pipeline matrix now pulses active-low INT in every
+The 32-case explicit-pipeline matrix pulses active-low INT in every
 represented execution interval of B, BANZ, BV, BIOZ, CALL, all six
 accumulator branches, IN, OUT, TBLR, and TBLW. It checks the family-specific
 MEN/DEN/WE shape, no midinstruction entry, completion before service, one
@@ -103,10 +103,19 @@ same interval coverage at the architectural interface
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
 `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`].
 
+A separate four-case explicit-pipeline test pulses INT in each of CALA's and
+RET's two execution intervals. It proves that the request may latch during the
+discarded sequential or selected-target read but cannot retire, mutate the
+stack, or enter service midinstruction. Selected-target capture completes the
+computed control flow, exactly one protected instruction retires, and only
+then do dummy/vector ownership and interrupt stack entry proceed
+[`sim/interrupt/tb_sequential_pipeline_interrupt_computed.sv`]. The external
+address mapping remains ADR-0003 `INFERRED`, not physical-pin proof.
+
 This remains an incomplete pipeline claim. The explicit tests do not cover
 DINT's provisional cancellation at every placement, physical
-synchronizer/setup behavior, unsupported CALA/RET/PUSH/POP cycles, native/RTL
-return through `RET`, or analog input timing (`CTRL-002`, `OQ-004`,
+synchronizer/setup behavior, PUSH/POP cycles, physical confirmation of
+ADR-0003, or analog input timing (`CTRL-002`, `OQ-004`,
 `OQ-007`, `OQ-016`).
 
 The current behavior when `DINT` occupies the already-pipelined protected

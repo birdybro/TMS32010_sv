@@ -56,9 +56,10 @@ Tests also prove that an EINT executed while already enabled does not add a
 second deferral. The warning against placing EINT before branch remains a
 software restriction. The explicit pipeline now qualifies the basic
 EINT/protected-word/discarded-N+2/vector path and MPY/MPYK protected-slot
-extension. Matching core and explicit-pipeline matrices cover all 32
-represented arrival intervals across the 15 supported multicycle families;
-physical sampling and unsupported instruction cycles remain `OQ-004`.
+extension. The existing core/explicit matrices plus four CALA/RET explicit
+cases cover all 36 represented arrival intervals across 17 supported
+multicycle families; physical sampling, PUSH/POP cycles, and physical
+confirmation of ADR-0003 remain `OQ-004`/`OQ-007`/`OQ-016`.
 
 ## Qualified `LST` functional slice
 
@@ -384,11 +385,14 @@ and `CALA`, printed pp. 4-10 and 4-30 (PDF pp. 89 and 111)].
 **Confidence: VERIFIED_PRIMARY for opcode, architectural effects, word count,
 and cycle total.**
 
-The independent model, assembler, and disassembler implement only those
-facts. Directed tests cover accumulator upper-bit exclusion, PC+1 wrap,
+The independent model, assembler, disassembler, decoder, core, and explicit
+pipeline implement those facts. Directed tests cover accumulator upper-bit exclusion, PC+1 wrap,
 nested calls, old-bottom loss, preserved state, exact implied-word round
 trips, two-cycle totals, and a logical trace containing only the known opcode
-fetch. Pinned MAME independently corroborates the push, accumulator-derived
+fetch. A focused architectural differential matches model and RTL PC, ACC,
+stack, retirement, and cycle boundaries through CALA/RET; the explicit bus
+test separately prevents the model's intentionally abstract trace from
+becoming circular bus evidence. Pinned MAME independently corroborates the push, accumulator-derived
 target, and fixed two-cycle total
 [mame-tms320c1x-core-030fefc, `cala()` and `s_opcode_7F`, lines 501–505 and
 849]. **Confidence: CORROBORATED for functional behavior and total.**
@@ -397,8 +401,12 @@ The instruction pages do not provide a dedicated CALA pin waveform. TI's
 general pipeline, PC-addressing, every-cycle `/MEN`, and analogous TBL
 redirect constraints nevertheless support a reversible implementation
 hypothesis: discard `opcode-PC+1` in execution cycle 1, then fetch the
-ACC-selected target in cycle 2. ADR-0003 permits future RTL to use only that
-explicitly `INFERRED` mapping; target-repeat remains possible, and IKA's idle
+ACC-selected target in cycle 2. The explicit pipeline now implements that
+`INFERRED` mapping. Directed tests stall both reads, prove that the discarded
+word cannot execute, defer stack mutation to target capture, and cover INT
+arrival in either interval. A 24-step actual-core BMC checks PC, stack,
+side-bus exclusion, and arbitrary clock-enable stalls. Target-repeat remains
+possible, and IKA's idle
 first interval conflicts with the primary `/MEN` rule under `SC-037`.
 **Confidence: INFERRED for the combined mapping; UNKNOWN for physical
 confirmation.**
@@ -417,8 +425,8 @@ ti-first-generation-users-guide-1987, Table 4-2 and `RET`, printed
 pp. 4-10 and 4-57 (PDF pp. 89 and 138)]. **Confidence: VERIFIED_PRIMARY for
 opcode, architectural effects, and cycle total.**
 
-The instruction-boundary model, assembler, and disassembler implement those
-facts. A directed model test also places `RET` immediately after `EINT` with
+The instruction-boundary model, assembler, disassembler, decoder, core, and
+explicit pipeline implement those facts. A directed model test also places `RET` immediately after `EINT` with
 an already-pending request: RET completes and selects the saved PC before
 the next interrupt-entry dummy step. This is the use explicitly described
 by TI in §2.9
@@ -433,12 +441,15 @@ only; MAME does not expose the second pin-level program cycle
 [mame-tms320c1x-core-030fefc, `POP_STACK()`/`ret()` and `s_opcode_7F`,
 lines 222–228, 676–679, and 849]. **Confidence: CORROBORATED.**
 
-The instruction pages do not provide a dedicated RET pin waveform. ADR-0003
-permits future explicit-pipeline RTL to map execution cycle 1 to a discarded
+The instruction pages do not provide a dedicated RET pin waveform. The
+explicit pipeline uses ADR-0003 to map execution cycle 1 to a discarded
 `opcode-PC+1` read and cycle 2 to the old-stack-top target fetch, based on the
-same general TI constraints as CALA. The model still reports only the known
-opcode fetch until that RTL/differential increment exists. The mapping is a
-reversible hypothesis under `OQ-007`/`SC-037`, not original-pin proof.
+same general TI constraints as CALA. Directed bus tests stall both intervals,
+prove no early pop, capture the return word only at retirement, and cover INT
+arrival in either interval. Architectural differential and the same 24-step
+actual-core BMC cover CALA/RET as a combined call/return path. The model still
+reports only the known opcode fetch, keeping the bus oracle independent. The
+mapping is a reversible hypothesis under `OQ-007`/`SC-037`, not original-pin proof.
 **Confidence: INFERRED for the combined mapping; UNKNOWN for physical
 confirmation.**
 

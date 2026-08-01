@@ -22,17 +22,32 @@ LACK, supported fixed controls, and exact-low-byte two-word controls.
 
 Additional assertions bound the dense partial-RTL operation value and check
 immediate, shift, port, auxiliary-register, indirect, and address-field
-projections where those fields are meaningful. The four model/tool-only exact
-words CALA, RET, PUSH, and POP are required to remain invalid until their
-native second-cycle ownership is qualified. Eight step-0 covers independently
+projections where those fields are meaningful. Exact CALA/RET are included;
+the two model/tool-only exact words PUSH and POP remain invalid until their
+native second-cycle ownership is qualified. Nine step-0 covers independently
 reach legal direct/indirect words, a primary-reserved indirect field,
 simultaneous increment/decrement, a branch-pattern mismatch, a primary-unlisted
-fixed-control gap, model-only CALA, and the upper MPYK boundary.
+fixed-control gap, CALA, RET, and the upper MPYK boundary.
 
 This proves the partial RTL's validity predicate and field-safety invariants.
 It does not replace the primary-cited ISA database or hand fixtures as the
 mnemonic/operand authority, qualify silicon behavior for unsupported words,
 or prove execution, timing, or bus behavior.
+
+## Computed-control core harness
+
+`tms32010_computed_control.sby` checks the actual portable core with a 24-step
+BMC and cover. Its fixed `LACK 6; CALA; LACK 0x44; RET; LACK 0xee` path checks
+both machine-cycle boundaries of CALA and RET, opcode-PC+1 push, old-top target
+and pop, target/return execution, cycle count, program-only ownership, and
+absence of early stack mutation. `clock_enable_i` remains arbitrary, so the
+same proof asserts architectural and logical-output stability through stalls
+in either half. The complete call/return path reaches cover step 9.
+
+This is bounded state/transaction-class evidence for the actual core. It does
+not prove the explicit wrapper's physical program addresses, interrupt timing,
+or original-silicon prefetch order. ADR-0003's discarded-sequential/selected-
+target address sequence remains `INFERRED` and simulation-asserted.
 
 ## Exhaustive multiplier harness
 
@@ -153,8 +168,8 @@ Assertions check:
 
 The bound and fixture do not prove general interrupt behavior. In particular,
 they exclude DINT cancellation, multiply extension, multicycle arrival
-positions, held-low relatching, RET, the complete fetch/execute pipeline, and
-electrical timing. The next harness covers two of those gaps, but this first
+positions, held-low relatching, the complete fetch/execute pipeline, and
+electrical timing. Other harnesses cover several of those gaps, but this first
 fixture remains intentionally independent.
 
 ## Multiply-extension and held-low harness
@@ -387,8 +402,8 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The sixteen harnesses leave DINT ordering, formal coverage of the represented
-multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
+The twenty-two configurations leave DINT ordering, formal coverage of the
+represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,

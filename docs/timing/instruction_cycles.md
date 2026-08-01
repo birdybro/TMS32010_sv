@@ -51,12 +51,14 @@ VERIFIED_PRIMARY for the numeric cycle count and every-cycle `MEN`
 constraint; UNKNOWN for address and fetched-word ownership.**
 
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
-opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model tests assert
-that total and state transition while reporting only the known opcode fetch.
-ADR-0003 permits a future explicit-pipeline mapping of discarded `PC+1` then
-selected-target read, derived from TI's general pipeline, PC-addressing,
-every-cycle `/MEN`, and analogous TBL redirect facts. That combined mapping
-remains `INFERRED` under `OQ-007`/`SC-037`
+opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model/RTL tests assert
+that total and state transition while the logical model reports only the known
+opcode fetch. The explicit pipeline implements ADR-0003's discarded `PC+1`
+then selected-target read, derived from TI's general pipeline, PC-addressing,
+every-cycle `/MEN`, and analogous TBL redirect facts. Tests stall both reads,
+prove nonexecution and retirement-only stack mutation, and cover active-low
+interrupt arrival in either interval. That combined mapping remains
+`INFERRED` under `OQ-007`/`SC-037`
 [ti-tms32010-users-guide-spru001b, `CALA`, printed p. 3-25 (PDF p. 75)].
 **Confidence: VERIFIED_PRIMARY for the numeric cycle count and state effects;
 INFERRED for the combined address/fetch sequence; UNKNOWN for physical
@@ -71,8 +73,8 @@ retirement-mapped wrapper; they do not independently qualify TI's overlapped
 execute-slot ownership.
 
 The current native-phase integration tests observe one complete four-subphase
-program-read cycle for every one-cycle instruction in the
-fifty-six-instruction RTL subset, then check retirement on the falling-edge
+program-read cycle for every one-cycle instruction in the partial RTL subset,
+then check retirement on the falling-edge
 sample boundary. Directed `ADD`,
 `ABS`, `ADDH`, `ADDS`, `AND`, `DMOV`, `LAC`, `LAR`, `OR`, `SACL`, `SACH`, `SAR`, `SST`, `SUB`, `SUBH`, `SUBS`, `XOR`,
 `ZALH`, and `ZALS` RTL tests separately check one architectural cycle for
@@ -294,17 +296,22 @@ printed pp. 2-13–2-14, 3-6, and 3-26
 facts; INFERRED for the combined execute-interval mapping;
 VERIFIED_SIMULATION for explicit and legacy implementations.**
 
-Directed model tests assert RET's two-cycle total, old-TOS PC load, complete
+Directed model/RTL tests assert RET's two-cycle total, old-TOS PC load, complete
 four-level pop with old-bottom duplication, and EINT protection through RET
 before pending interrupt reentry
 [ti-tms32010-users-guide-spru001b, §§2.6.2 and 2.9, Table 3-2, and `RET`,
 printed pp. 2-14, 2-18–2-19, 3-6, and 3-51
 (PDF pp. 38, 42–43, 56, and 101)]. The primary instruction pages do not
-identify the address or `MEN` behavior of the second cycle, so there is no
-native-phase or RTL timing claim for RET and its logical model trace reports
-only the opcode fetch. **Confidence: VERIFIED_PRIMARY for the numeric cycle
-total and architectural boundary; UNKNOWN for the second external cycle
-under `OQ-007`.**
+identify the address or `MEN` behavior of the second cycle. ADR-0003 therefore
+maps execution cycle 1 to a discarded `PC+1` read and cycle 2 to the old-TOS
+target read at `INFERRED` confidence. Explicit bus tests stall both intervals,
+defer pop/PC/retirement until target capture, prevent discarded-word execution,
+and cover active-low interrupt arrival at either boundary. Architectural
+differential and a 24-step bounded core proof check the same two-cycle commit
+sequence while the logical model trace intentionally reports only the opcode
+fetch. **Confidence: VERIFIED_PRIMARY for the numeric cycle total and
+architectural boundary; INFERRED for the external address sequence; UNKNOWN
+for physical confirmation under `OQ-007`.**
 
 Directed legacy `IN`/`OUT` tests assert an opcode `MEN` transaction followed
 by exactly one port transaction, then resumption at opcode PC+1. The opcode
@@ -341,13 +348,13 @@ VERIFIED_SIMULATION for explicit and legacy implementations.**
   one-cycle `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBS`/`XOR`/`ZALH`/
   `ZALS` reads and `SACL`/`SACH`/`SAR` writes, plus the qualified second-cycle
   `IN` write and `OUT` read;
-- unsupported CALA/RET/PUSH/POP arrival sequencing, native/RTL
-  CALA/RET sequencing, physical interrupt
+- unsupported PUSH/POP arrival sequencing, physical confirmation of
+  ADR-0003 CALA/RET ownership, physical interrupt
   setup/synchronizer behavior, and the provisional DINT-at-final-boundary
   ordering (`OQ-004`, `OQ-007`, `OQ-016`, `OQ-019`); the basic Figure 2-12
   protected/dummy/vector path, MPY/MPYK protected-slot extension, table
-  repeated-prefetch ownership, and all 32 represented arrival intervals in
-  both the core and explicit pipeline are qualified;
+  repeated-prefetch ownership, all 32 represented matrix intervals, and all
+  four CALA/RET explicit intervals are qualified;
 - electrical wrapper constraints for the primary-resolved 48.78–150 ns
   TMS32010-20 master-clock and 47.5–52.5% pulse envelope.
 

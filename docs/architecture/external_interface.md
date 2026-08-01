@@ -157,9 +157,10 @@ interrupt-acknowledge output; TI's acknowledge is internal
 [ti-tms32010-users-guide-spru001b, §2.10 and Figure 2-12, printed
 pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY for the
 external fetch order and entry effects; VERIFIED_SIMULATION for the basic
-explicit ownership path, MPY/MPYK protected-slot extension, and matching
-32-case core/explicit arrival matrices for the supported multicycle
-families. Physical sampling and unsupported cycles remain `OQ-004`.**
+explicit ownership path, MPY/MPYK protected-slot extension, matching 32-case
+core/explicit arrival matrices, and four CALA/RET explicit arrival cases.
+Physical sampling, PUSH/POP cycles, and physical confirmation of ADR-0003
+remain `OQ-004`/`OQ-007`/`OQ-016`.**
 
 `LST` retains the ordinary external program fetch while exposing one internal
 logical data read. The loaded status fields commit at the falling-edge sample;

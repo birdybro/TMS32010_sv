@@ -1,6 +1,6 @@
 `default_nettype none
 
-// Synthesis-only harness for the sequential native-phase integration slice.
+// Synthesis-only harness for the explicit fetch/execute native-phase slice.
 module tms32010_synth_top (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -43,6 +43,10 @@ module tms32010_synth_top (
   output logic        we_n_o,
   output logic        sample_o,
   output logic        native_active_o,
+  output logic        execute_valid_o,
+  output logic [11:0] execute_address_o,
+  output logic [15:0] execute_word_o,
+  output logic        pipeline_blocked_o,
   output logic [7:0]  data_address_o,
   output logic        data_read_o,
   output logic        data_write_o,
@@ -58,7 +62,7 @@ module tms32010_synth_top (
   output logic        program_write_o,
   output logic [15:0] program_write_data_o
 );
-  tms32010_phase_slice phase_slice (
+  tms32010_sequential_pipeline_slice pipeline_slice (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .rs_i                          (rs_i),
@@ -78,6 +82,10 @@ module tms32010_synth_top (
     .we_n_o                        (we_n_o),
     .sample_o                      (sample_o),
     .bus_active_o                  (native_active_o),
+    .execute_valid_o               (execute_valid_o),
+    .execute_address_o             (execute_address_o),
+    .execute_word_o                (execute_word_o),
+    .pipeline_blocked_o            (pipeline_blocked_o),
     .data_address_o                (data_address_o),
     .data_read_o                   (data_read_o),
     .data_write_o                  (data_write_o),

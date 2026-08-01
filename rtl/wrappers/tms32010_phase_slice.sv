@@ -2,8 +2,10 @@
 
 // Integration wrapper for the qualified one-cycle sequential slice, two-cycle
 // control-flow reads, native I/O transfers, three-cycle table transfers, and
-// the Figure 2-12 interrupt program-read order. This is not yet the complete
-// TMS32010 fetch/execute pipeline.
+// the Figure 2-12 interrupt program-read order. ADR-0003 CALA/RET is rejected
+// here because this retirement-mapped wrapper cannot represent its discarded
+// sequential prefetch; use tms32010_sequential_pipeline_slice instead. This is
+// not yet the complete TMS32010 fetch/execute pipeline.
 module tms32010_phase_slice (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -109,7 +111,9 @@ module tms32010_phase_slice (
   assign program_write_o = logical_program_write;
   assign program_write_data_o = logical_program_write_data;
 
-  tms32010_core core (
+  tms32010_core #(
+    .ENABLE_INFERRED_COMPUTED_CONTROL (1'b0)
+  ) core (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .reset_i                       (core_reset),

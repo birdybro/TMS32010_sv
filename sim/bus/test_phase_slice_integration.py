@@ -84,6 +84,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_call_pushes_only_when_selected_fetch_completes(self) -> None:
         self._run_testbench("tb_sequential_pipeline_call")
 
+    def test_cala_ret_discard_sequential_prefetch_before_target(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_cala_ret")
+
     def test_io_transfer_precedes_following_instruction_prefetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_io")
 
@@ -97,6 +100,9 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         self,
     ) -> None:
         self._run_testbench("tb_sequential_pipeline_interrupt_multicycle")
+
+    def test_computed_control_arrivals_defer_until_target_capture(self) -> None:
+        self._run_testbench("tb_sequential_pipeline_interrupt_computed")
 
     def test_table_transfer_repeats_following_prefetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_table")

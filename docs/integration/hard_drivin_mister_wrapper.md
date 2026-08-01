@@ -60,8 +60,9 @@ caller selector and callback. Timing mode instead drives selection from S4
 through S7 and clears `MAINFLAG` only on completed `/SOUNDRD`. Neither mode
 chooses an open-bus value for undriven lanes.
 
-The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
-the timing and silicon uncertainties in `docs/research/open_questions.md`.
+The wrapped processor still omits PUSH and POP from RTL. CALA/RET use
+ADR-0003's explicitly `INFERRED` external sequence, and the remaining timing
+and silicon uncertainties are retained in `docs/research/open_questions.md`.
 This wrapper is therefore not evidence that the project is instruction-
 complete, cycle-accurate, or release-ready.
 

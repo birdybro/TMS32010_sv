@@ -2,7 +2,8 @@
 
 // ADR-0002 integration slice for reset priming, sequential one-cycle
 // instructions, exact B/BANZ/BV/BIOZ/CALL, the exact
-// accumulator-conditional branch family, exact IN/OUT and TBLR/TBLW transfer
+// accumulator-conditional branch family, ADR-0003's INFERRED CALA/RET
+// discarded-prefetch/target sequence, exact IN/OUT and TBLR/TBLW transfer
 // ownership, and Figure 2-12 protected/dummy/vector ownership. Program fetch
 // owns a separate address from the core PC. Other multicycle, reserved, and
 // invalid-data-address instructions park the wrapper before execution; the
@@ -91,6 +92,8 @@ module tms32010_sequential_pipeline_slice (
   localparam logic [5:0] OP_ABS  = 6'd53;
   localparam logic [5:0] OP_SST  = 6'd54;
   localparam logic [5:0] OP_ADDH = 6'd55;
+  localparam logic [5:0] OP_CALA = 6'd56;
+  localparam logic [5:0] OP_RET  = 6'd57;
   localparam logic [5:0] OP_MPY  = 6'd25;
   localparam logic [5:0] OP_MPYK = 6'd26;
   localparam logic [5:0] OP_DINT = 6'd33;
@@ -136,7 +139,8 @@ module tms32010_sequential_pipeline_slice (
     PIPELINE_IO_PREFETCH,
     PIPELINE_INTERRUPT_VECTOR,
     PIPELINE_TABLE_TRANSFER,
-    PIPELINE_TABLE_PREFETCH
+    PIPELINE_TABLE_PREFETCH,
+    PIPELINE_COMPUTED_TARGET
   } pipeline_state_t;
 
   pipeline_state_t pipeline_state;
@@ -158,6 +162,12 @@ module tms32010_sequential_pipeline_slice (
   logic        execute_is_bv;
   logic        execute_is_bioz;
   logic        execute_is_call;
+  logic        execute_is_cala;
+  logic        execute_is_ret;
+  logic        execute_computed_supported;
+  logic        computed_start_step;
+  logic        computed_target_step;
+  logic [11:0] computed_target_address;
   logic        execute_is_in;
   logic        execute_is_out;
   logic        execute_io_supported;
@@ -292,6 +302,9 @@ module tms32010_sequential_pipeline_slice (
       next_fetch_address = program_bus_address + 12'h001;
       if (interrupt_dummy_fetch_step) begin
         next_fetch_address = 12'h002;
+      end else if (computed_start_step) begin
+        next_fetch_address =
+          execute_is_cala ? accumulator_o[11:0] : stack_top_o;
       end else if (table_start_step) begin
         next_fetch_address = accumulator_o[11:0];
       end else if (table_transfer_step) begin
@@ -366,6 +379,14 @@ module tms32010_sequential_pipeline_slice (
     execute_valid_o &&
     execute_decoded_valid &&
     (execute_decoded_operation == OP_CALL);
+  assign execute_is_cala =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_CALA);
+  assign execute_is_ret =
+    execute_valid_o &&
+    execute_decoded_valid &&
+    (execute_decoded_operation == OP_RET);
   assign execute_is_in =
     execute_valid_o &&
     execute_decoded_valid &&
@@ -384,6 +405,7 @@ module tms32010_sequential_pipeline_slice (
     (execute_decoded_operation == OP_TBLW);
   assign execute_io_supported = execute_is_in || execute_is_out;
   assign execute_table_supported = execute_is_tblr || execute_is_tblw;
+  assign execute_computed_supported = execute_is_cala || execute_is_ret;
   assign execute_control_supported =
     execute_is_banz ||
     execute_is_b ||
@@ -397,6 +419,12 @@ module tms32010_sequential_pipeline_slice (
   assign control_target_step =
     execute_control_supported &&
     (pipeline_state == PIPELINE_CONTROL_TARGET);
+  assign computed_start_step =
+    execute_computed_supported &&
+    (pipeline_state == PIPELINE_SEQUENTIAL);
+  assign computed_target_step =
+    execute_computed_supported &&
+    (pipeline_state == PIPELINE_COMPUTED_TARGET);
   assign io_transfer_step =
     execute_io_supported &&
     (pipeline_state == PIPELINE_SEQUENTIAL);
@@ -452,6 +480,8 @@ module tms32010_sequential_pipeline_slice (
       execute_one_cycle_supported ||
       control_operand_step ||
       control_target_step ||
+      computed_start_step ||
+      computed_target_step ||
       io_transfer_step ||
       io_prefetch_step ||
       table_start_step ||
@@ -463,6 +493,7 @@ module tms32010_sequential_pipeline_slice (
     (
       execute_one_cycle_supported ||
       control_target_step ||
+      computed_target_step ||
       io_prefetch_step ||
       table_prefetch_step
     );
@@ -511,6 +542,7 @@ module tms32010_sequential_pipeline_slice (
           !execute_valid_o ||
           execute_one_cycle_supported ||
           control_target_step ||
+          computed_target_step ||
           io_prefetch_step ||
           table_prefetch_step
         )
@@ -628,6 +660,7 @@ module tms32010_sequential_pipeline_slice (
       bioz_taken          <= 1'b0;
       io_read_sample       <= 16'h0000;
       table_read_sample    <= 16'h0000;
+      computed_target_address <= 12'h000;
       interrupt_protected  <= 1'b0;
     end else if (pipeline_boundary) begin
       if (rs_i) begin
@@ -636,12 +669,19 @@ module tms32010_sequential_pipeline_slice (
         bioz_taken          <= 1'b0;
         io_read_sample       <= 16'h0000;
         table_read_sample    <= 16'h0000;
+        computed_target_address <= 12'h000;
         interrupt_protected  <= 1'b0;
       end else if (
         core_execute_boundary &&
         interrupt_dummy_fetch_step
       ) begin
         pipeline_state <= PIPELINE_INTERRUPT_VECTOR;
+      end else if (core_execute_boundary && computed_start_step) begin
+        computed_target_address <=
+          execute_is_cala ? accumulator_o[11:0] : stack_top_o;
+        pipeline_state <= PIPELINE_COMPUTED_TARGET;
+      end else if (core_execute_boundary && computed_target_step) begin
+        pipeline_state <= PIPELINE_SEQUENTIAL;
       end else if (core_execute_boundary && control_operand_step) begin
         branch_operand_word <= program_data_i;
         bioz_taken <=
@@ -718,6 +758,11 @@ module tms32010_sequential_pipeline_slice (
           assert (core_program_address == pc_o);
           assert (core_program_next_address == 12'h002);
           assert (program_bus_address == 12'h002);
+        end else if (computed_target_step) begin
+          assert (pc_o == execute_address_o + 12'h001);
+          assert (core_program_address == pc_o);
+          assert (core_program_next_address == computed_target_address);
+          assert (program_bus_address == computed_target_address);
         end else if (control_target_step) begin
           assert (pc_o == execute_address_o + 12'h001);
           assert (core_program_address == pc_o);
@@ -775,6 +820,13 @@ module tms32010_sequential_pipeline_slice (
           assert (program_bus_address == pc_o);
           assert (core_program_address == accumulator_o[11:0]);
           assert (core_program_next_address == pc_o);
+        end else if (computed_start_step) begin
+          assert (execute_address_o == pc_o);
+          assert (core_program_address == execute_address_o);
+          assert (
+            core_program_next_address ==
+            (execute_is_cala ? accumulator_o[11:0] : stack_top_o)
+          );
         end else begin
           assert (execute_address_o == pc_o);
           assert (core_program_address == execute_address_o);
@@ -808,6 +860,23 @@ module tms32010_sequential_pipeline_slice (
       if (control_target_step && fetch_boundary) begin
         assert (fetched_instruction);
         assert (execute_complete);
+      end
+      if (computed_start_step && fetch_boundary) begin
+        assert (!fetched_instruction);
+        assert (!execute_complete);
+        assert (!retired_o);
+        assert (program_bus_address == execute_address_o + 12'h001);
+        assert (
+          next_fetch_address ==
+          (execute_is_cala ? accumulator_o[11:0] : stack_top_o)
+        );
+        assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
+      end
+      if (computed_target_step && fetch_boundary) begin
+        assert (fetched_instruction || interrupt_dummy_fetch_step);
+        assert (execute_complete);
+        assert (program_bus_address == computed_target_address);
+        assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
       end
       if (io_transfer_step && fetch_boundary) begin
         assert (!fetched_instruction);

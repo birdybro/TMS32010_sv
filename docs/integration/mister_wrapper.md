@@ -10,8 +10,9 @@ and deterministic debug/state ports. It contains no Hard Drivin'-specific
 address map or peripheral behavior.
 
 The wrapped processor is still partial. It supports the explicit-pipeline
-instruction and transaction set documented in ADR-0002; CALA, RET, PUSH, and
-POP remain outside RTL, and the unresolved timing and silicon behaviors in
+instruction and transaction set documented in ADR-0002/ADR-0003; PUSH and
+POP remain outside RTL, while CALA/RET use an explicitly `INFERRED` external
+sequence. The unresolved timing and silicon behaviors in
 `docs/research/open_questions.md` remain unresolved. This wrapper therefore
 does not make the project instruction-complete, cycle-accurate, or
 release-ready.

@@ -1,20 +1,21 @@
 # Progress summary
 
-- **Current milestone:** CALA/RET computed-control cycle research
+- **Current milestone:** CALA/RET computed-control RTL and qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
-  architectural-reset RTL units; 38 RTL
+  architectural-reset RTL units; 39 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 54 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 56 native bus/phase/wrapper tests, including CALA/RET bus/stall and
+  four-boundary interrupt qualification,
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
   final RAM words; 45 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
-  CALL, and all six accumulator-conditional-branch model/RTL traces; focused
+  CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
   EINT/protected-instruction/dummy-entry/vector model/RTL differential; 32
@@ -28,28 +29,30 @@
   live synthetic MAME smoke matching five model steps across six boundary rows
   without copyrighted ROM content
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
-  the fifty-six-instruction partial core, multiplier, 144-word RAM, and
-  program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,188
-  ALMs, 2,588 registers, 0 RAM blocks, 1 DSP block, 57.66 MHz worst
-  slow-corner internal Fmax, +2.656 ns setup slack, and +0.166 ns worst hold
-  slack at 50 MHz. TimeQuest
+  the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
+  RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
+  2,504 ALMs, 2,702 registers, 0 RAM blocks, 1 DSP block, 29.30 MHz worst
+  slow-corner internal Fmax, +5.872 ns setup slack, and +0.166 ns worst hold
+  slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
+  fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
+  claimed. TimeQuest
   reports zero
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 13,877 generic cells with 26 retained checks and lowering the
+  producing 16,281 generic cells with 124 retained checks and lowering the
   asynchronous RAM to registers/muxes; its technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
   is not installed on the host path. The fetch/execute register separately
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
-  `make synth-yosys` now also runs the sequential pipeline script, which
-  independently passes at 15,733 generic cells with 103 retained checks and
+  `make synth-yosys` also runs the sequential pipeline script, which
+  independently passes at 16,280 generic cells with 124 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 15,782 generic cells
-  with 110 retained checks and zero structural problems, including 49 cells
+  Yosys at 16,330 generic cells
+  with 131 retained checks and zero structural problems, including 50 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
@@ -121,7 +124,7 @@
   the two held strobes, and the complete `/DTACK` cone at 185 hierarchy
   cells/64 retained checks, with no memory, latch, generated clock, or
   structural problem.
-- **Formal status:** all 42 tasks from 21 SymbiYosys configurations pass with
+- **Formal status:** all 44 tasks from 22 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -133,7 +136,11 @@
   LT/LAR/LARP/EINT/NOP/MPY/LACK/dummy/vector cover reaches completed entry at
   step 12 after proving old address `0x8f`, product `0xffff0000`, AR0
   decrement from `0xaa8f` to `0xaa8e`, and ARP replacement. This is bounded
-  scenario evidence, not a complete interrupt or core proof. A separate
+  scenario evidence, not a complete interrupt or core proof. A fifth
+  24-step actual-core CALA/RET BMC proves both execution boundaries,
+  retirement-only push/pop, target/return PC selection, no side-bus activity,
+  and arbitrary clock-enable stalls; its complete call/return cover reaches
+  step 9. A separate
   12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -175,9 +182,9 @@
   remain outside that proof. A twelfth one-step decoder BMC leaves all 16
   instruction bits arbitrary and proves the partial RTL's exact valid set
   against a compact family/field predicate, operation bounds, and meaningful
-  operand projections. Eight step-0 covers reach legal direct/indirect,
+  operand projections. Nine step-0 covers reach legal direct/indirect,
   primary-reserved, simultaneous-update, pattern-mismatch, primary-unlisted,
-  model-only CALA, and upper-MPYK cases. Mnemonic authority remains with the
+  RTL-supported CALA/RET, and upper-MPYK cases. Mnemonic authority remains with the
   database/fixtures; execution, timing, and unsupported-silicon behavior are
   excluded. A thirteenth 16-step standalone host-timing BMC checks arbitrary
   address/control values and stalls under explicit alternating-edge and
@@ -437,14 +444,15 @@
   and leaves PC at PC+1 so the following word is fetched again; RET is exact
   word `0x7f8d`, one word/two cycles, loads PC from old TOS, shifts the
   remaining stack upward with old-bottom duplication, and is protected after
-  EINT before a pending interrupt can reenter; RET's second external address
-  and MEN behavior remain unknown, so model/tool support does not imply
-  RTL/native qualification; CALA is exact word `0x7f8c`, one word/two cycles,
+  EINT before a pending interrupt can reenter; CALA is exact word `0x7f8c`,
+  one word/two cycles,
   pushes wrapped opcode-PC+1 while discarding the old stack bottom, and loads
   PC from `ACC[11:0]`; directed model tests cover upper-ACC exclusion, PC
-  wrap, state preservation, and nested old-bottom loss, while its unknown
-  second external address and MEN behavior keep it outside RTL/native
-  qualification; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
+  wrap, state preservation, and nested old-bottom loss; model/RTL/
+  differential, bus/stall, interrupt-arrival, and bounded-formal tests now
+  qualify both computed-control instructions under ADR-0003's discarded-
+  `PC+1` then selected-target mapping, while physical pin confirmation remains
+  explicitly `UNKNOWN`; PUSH and POP are exact words `0x7f9c`/`0x7f9d`,
   one word/two cycles, with low-12-bit push/old-bottom discard and
   zero-extending pop/old-bottom duplication respectively; model/tool tests
   cover repeated overflow/underflow and PC wrap; TI's original pin table
@@ -915,8 +923,7 @@
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
   MPY/MPYK interrupt extension; physical interrupt setup/synchronizer
   behavior, physical confirmation of the inferred CALA/RET discarded-`PC+1`
-  then target sequence and native/RTL implementation, unsupported
-  CALA/RET/PUSH/POP arrival cycles,
+  then target sequence, unsupported PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
   control-flow traces, LST next-ARP precedence,
   PUSH/POP per-cycle program-address/fetched-word ownership, SUBC result availability and
@@ -945,8 +952,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement CALA/RET decode, retirement-only stack/PC effects,
-  and explicit discarded-`PC+1`/target ownership under provisional ADR-0003,
-  with stalls, nonexecution, interrupt-boundary, and differential tests.
+- **Next task:** extend the ROM-free MAME boundary oracle with a synthetic
+  CALA/RET call/return fixture, while keeping device-variant and pin-timing
+  claims separate; then investigate the explicit pipeline's slow critical
+  path without changing the qualified 20 MHz board behavior.
 - **Latest committed baseline before this cycle:**
-  `4117efd`
+  `349f41f`

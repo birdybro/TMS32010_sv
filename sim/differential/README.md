@@ -8,6 +8,11 @@ checks unconditional two-cycle control flow. A family trace checks taken and
 untaken cases for all six accumulator conditions; a BV trace checks its
 taken-path OV clear and untaken path. A BIOZ differential checks both raw
 active-low input levels, and a CALL trace checks nested return-address pushes.
+A focused CALA/RET trace compares both two-cycle totals, selected target and
+return PCs, return-address push, old-top pop, and all four stack levels at
+retirement. It deliberately leaves physical program-address evidence to the
+separate explicit-pipeline bus test because the independent architectural
+model does not encode ADR-0003's inferred pin mapping.
 The tests check
 pre-execution PC/opcode,
 post-execution PC, accumulator, T, P, overflow flag/mode, retirement, illegal
@@ -130,7 +135,7 @@ MAME exports neither the `/MEN` waveform nor per-cycle program addresses, so
 it does not resolve the original TMS32010 `OQ-016` bus question.
 
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/BIOZ/BV/CALL/family/IN/OUT/TBLR/TBLW differentials supply logical
+B/BANZ/BIOZ/BV/CALL/CALA/RET/family/IN/OUT/TBLR/TBLW differentials supply logical
 per-cycle evidence; their separate native phase tests supply the physical
 subphase relationship. Neither result nor the MAME architectural-boundary
 adapter qualifies the remaining pipeline or pin timing.

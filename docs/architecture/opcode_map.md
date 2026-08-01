@@ -64,9 +64,9 @@ not represented as original-silicon behavior.
 
 A separate one-step symbolic RTL proof exhausts all 65,536 input words against
 a compact documented-family and canonical-field predicate. It proves the
-partial decoder's exact 21,891-word valid boundary, including continued
-rejection of the four model/tool-only CALA/RET/PUSH/POP words, and checks
-meaningful operand-field projections. Eight covers reach legal, reserved,
+partial decoder's exact 21,893-word valid boundary, including CALA/RET and
+continued rejection of the two model/tool-only PUSH/POP words, and checks
+meaningful operand-field projections. Nine covers reach legal, reserved,
 simultaneous-update, pattern-mismatch, primary-unlisted, model-only, and MPYK
 boundaries independently [`formal/tms32010_decode.sby`]. This is decoder
 implementation evidence: the database/fixtures remain the opcode authority,

@@ -366,8 +366,9 @@ fetch sequences
 are transcribed and have directed native-phase tests. Remaining work must
 identify:
 
-- branch/call/return prefetch address order;
+- physical confirmation of the implemented `INFERRED` branch/call/return
+  prefetch address order;
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
-  discarded-N+2/vector path, MPY/MPYK extension, and the matching 32-case
-  core/explicit matrices for the 15 supported multicycle families;
+  discarded-N+2/vector path, MPY/MPYK extension, the matching 32-case
+  core/explicit matrices, and four CALA/RET explicit arrival cases;
 - any internal conflict that changes an otherwise normal read.

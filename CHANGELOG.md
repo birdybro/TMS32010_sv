@@ -39,6 +39,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   fetch. It preserves the original every-cycle `/MEN` rule, the conflicting
   IKA idle-first sequence, and target-repeat as separate hypotheses; physical
   original-part confirmation remains open.
+- CALA/RET decode and two-boundary core execution with retirement-only stack
+  and PC effects, plus explicit-pipeline discarded-sequential/selected-target
+  ownership under ADR-0003. Directed instruction, both-interval stall/bus,
+  four-case interrupt-arrival, architectural differential, legacy-wrapper
+  rejection, and 24-step bounded-formal checks preserve the mapping's
+  `INFERRED` confidence and keep PUSH/POP out of RTL.
 - A reproducible original-NMOS PUSH/POP pin-trace experiment, including a
   deterministic synthetic assembly image, stable opcode regression, competing
   bus hypotheses, required analyzer signals, artifact provenance, and explicit
@@ -213,7 +219,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   explicitly reported and rejected under `OQ-031`; `/SPEECH` completion
   remains visible without an invented device side effect.
 - Portable SystemVerilog package, exhaustive partial decoder, and
-  clock-enable execution core for the fifty-six-instruction slice.
+  clock-enable execution core for the fifty-eight-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
   512-instruction model/RTL differential trace.
 - A 32-case interrupt-arrival matrix covering every represented machine cycle
@@ -229,6 +235,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   IN/OUT, plus all three TBLR/TBLW intervals. It checks native strobe
   ownership, no midinstruction entry, one protected retirement, dummy
   discard, stack entry, acknowledge state, and vector capture.
+- A separate four-case explicit-pipeline interrupt-arrival test covering both
+  CALA and RET intervals, no midinstruction stack effect or entry, selected-
+  target completion, protected retirement, dummy/vector ownership, and
+  resolved return-PC stacking.
 - Fetch/execute-separation ADR and a standalone synthesizable pipeline register
   with explicit word/address validity, completion, stall, and flush ownership;
   directed tests cover Figure 2-2 priming/overlap and Figure 2-12
@@ -610,6 +620,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The common Yosys/Quartus synthesis harness now elaborates the explicit
+  fetch/execute pipeline instead of the legacy fail-closed wrapper, so current
+  resource and timing evidence actually includes CALA/RET. The Cyclone V
+  internal target is 25 MHz, 25% above the A044427 board's documented 20 MHz
+  TMS32010 clock. A rejected 50 MHz fit remains disclosed with its setup
+  failure rather than being described as closure.
 - `OQ-035` now separates resolved Rev-A connectivity and nominal timing from
   unresolved RC tolerance, power-up behavior, raw-input CDC, platform tick
   calibration, firmware use, and the future MC68000-core interface. `SC-035`
@@ -705,7 +721,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 - Physical reset and deterministic initialization are separate controls.
   Unlisted physical-reset state receives no arbitrary assigned value, while
   its FPGA retention behavior remains provisional under OQ-012.
-- The qualified model/tool/RTL boundary now covers fifty-six of 60 documented
+- The qualified model/tool/RTL boundary now covers fifty-eight of 60 documented
   mnemonics: twenty-five common-address internal-data families, SST's
   forced-page status store, two
   common-address I/O families, and two table-transfer families.
@@ -713,10 +729,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   non-instruction `INTERRUPT` step with an `interrupt_dummy_fetch`
   transaction. This preserves deterministic single stepping without claiming
   that the discarded return-PC word executed.
-- The model/tool boundary now contains all 60 documented instructions while
-  RTL/differential remains at 56. CALA/RET/PUSH/POP second external cycles are not fabricated
-  in model transaction traces and remain outside RTL under
-  `OQ-007`/`OQ-016`.
+- The model/tool boundary contains all 60 documented instructions while
+  RTL/differential covers 58. CALA/RET now use ADR-0003's explicitly
+  `INFERRED` external sequence; PUSH/POP cycles are not fabricated in model
+  transaction traces and remain outside RTL under `OQ-016`.
 - Timing documentation now follows TI's explicit opcode-prefetch convention:
   Figure 2-9/2-10 execution cycles begin after current-opcode prefetch and end
   with next-instruction prefetch. Legacy bus-order evidence is separated from
@@ -725,6 +741,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Exposed execute-slot validity/address/word and pipeline-blocked diagnostics
+  through the synthesis harness after the first explicit-pipeline Quartus
+  elaboration reported all four output groups unconnected. Analysis/synthesis
+  now returns zero connectivity warnings and the new virtual pins have exact
+  harness-only timing exclusions.
 - The low-host-read selector now clamps arbitrary bits outside each selected
   source-valid mask instead of requiring unqualified storage to power up at
   zero. Raw source outputs and physical driven-lane masks remain unchanged;
@@ -773,10 +794,21 @@ Changelog, and the project follows semantic versioning once releases begin.
 ### Verified
 
 - The complete repository gates pass with 129 provenance/document/tool tests,
-  231 model/unit tests, 38 instruction/decode RTL tests, 54 bus/integration
-  tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
-  checks 39 modules; all 42 formal jobs from 21 configurations pass; all 29
+  231 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
+  tests, 5 interrupt RTL tests, and 24 differential/oracle tests. Verilator lint
+  checks 39 modules; all 44 formal jobs from 22 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
+- Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
+  on `5CSEBA6U23I7` in 2,504 ALMs, 2,702 registers, no block RAM, and one DSP
+  block. TimeQuest closes the 25 MHz internal constraint with +5.872 ns worst
+  setup and +0.166 ns worst hold slack, 29.30 MHz worst slow-corner Fmax, and
+  zero unconstrained categories across 415 explicitly virtual/false-pathed
+  harness pins. The three remaining full-flow warnings are harness-only pin/
+  Lite-license notices; analysis/synthesis and TimeQuest each report zero
+  warnings.
+- Yosys 0.67+111 reports 16,281 cells/124 checks for the synthesis harness,
+  16,280 cells/124 checks for the direct explicit pipeline, and 16,330 cells/
+  131 checks for the generic MiSTer adapter, all with clean structural checks.
 - The address-driven bus-control regression reaches a mirrored GSP access,
   canonical MSP access with arbitrary external wait, mirrored DUART access
   with late external acknowledge, and ordinary expansion-bus `RVA`
@@ -1539,6 +1571,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- The explicit pipeline closes the current 25 MHz Cyclone V internal target
+  but not the exploratory 50 MHz target; the rejected fit has -9.098 ns worst
+  slow-corner setup slack. This still exceeds the Driver Sound board's 20 MHz
+  processor clock, but further pipelining/critical-path work is required before
+  any higher-frequency claim.
 - The optional FPGA local SRAM needs 8,192 clocks to invalidate metadata after
   `initialize_i`. This is an integration convention, not physical 6264 reset
   or wait behavior. The wrapper gates exported local RESET/HALT release, but a
@@ -1613,9 +1650,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   production ECO/variant difference unresolved; only raw `data[15:4]` is
   primary-qualified and implemented. Analog/sample interpretation remains
   unresolved.
-- All 60 documented instruction mnemonics have model/tool evidence; fifty-six
-  also have RTL/differential evidence. CALA, RET, PUSH, and POP remain outside
-  RTL/native qualification because their second external cycles are unresolved.
+- All 60 documented instruction mnemonics have model/tool evidence; fifty-eight
+  also have RTL/differential evidence. PUSH and POP remain outside RTL/native
+  qualification because their external address ownership is unresolved.
 - The exhaustive primary-documentation partition contains 28,656
   `PRIMARY_UNLISTED_ENCODING` words and 372 simultaneous-update words under
   `OQ-010`. It is not a completed reserved-behavior map: TI's complete
@@ -1653,28 +1690,26 @@ Changelog, and the project follows semantic versioning once releases begin.
   in the core and explicit pipeline;
   the current wrapper's four digital subphases now have falling-boundary
   sampling assertions. Physical
-  setup/synchronizer behavior, unsupported CALA/RET/PUSH/POP cycles, and
-  native/RTL RET-based resumption remain under
-  `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`. RET's functional model behavior is
-  qualified, but TI's located instruction pages do not identify its second
-  cycle's external address or `MEN` behavior.
+  setup/synchronizer behavior, PUSH/POP cycles, and physical confirmation of
+  ADR-0003 remain under `CTRL-002`/`OQ-004`/`OQ-007`/`OQ-016`.
 - No dedicated original-part branch pin waveform has been located. Exact B,
   BANZ, BV, BIOZ, CALL, and the six accumulator-branch explicit
   execute-interval mappings are INFERRED from Figure 2-2, the
   two-word/two-cycle table entries, and their operand/condition definitions,
   with directed simulation evidence under `OQ-007`.
-- CALA's state effects and numeric two-cycle total are model/tool-qualified,
-  but its located pages likewise do not identify the second cycle's external
-  address or `MEN` behavior; RTL/native qualification remains `OQ-007`.
+- CALA/RET state effects and numeric two-cycle totals are model/RTL-qualified.
+  Their explicit discarded-sequential/selected-target sequence remains
+  `INFERRED`, not original-pin proof, under `OQ-007`/`SC-037`.
 - DINT in the already-pipelined final slot currently cancels entry while
   retaining the request. That ordering is targeted-tested but PROVISIONAL
   under `OQ-019`.
-- Formal evidence currently covers only four fixed interrupt-entry programs
+- Formal evidence currently covers four fixed interrupt-entry programs,
+  one fixed CALA/RET call/return program,
   at 12-, 14-, and two 20-step bounds, one standalone ownership register, and
   fixed direct-TBLR and direct-TBLW integrated-pipeline programs at 40 steps.
   It excludes DINT, the other indirect MPY control/update cases, arbitrary
   multiply-chain placement/length, formal coverage of the represented
-  multicycle-arrival matrix, indirect table addressing, RET, the general
+  multicycle-arrival matrix, indirect table addressing, the general
   pipeline, general external-memory behavior, and broad decode/datapath
   properties.
 - Original-part ADDH status behavior is resolved only at CORROBORATED

@@ -2020,7 +2020,7 @@
       "addressing_modes": ["accumulator_indirect_program"],
       "registers_read": ["PC", "ACC[11:0]", "old top three stack levels"],
       "registers_written": ["PC", "all four stack levels"],
-      "memory_accesses": ["instruction_fetch", "unresolved_second_cycle_program_activity"],
+      "memory_accesses": ["instruction_fetch", "inferred_discarded_sequential_prefetch", "inferred_selected_target_fetch"],
       "status_flags_affected": [],
       "arithmetic_width_bits": null,
       "sign_extension_behavior": "not applicable; ACC[11:0] is used as an unsigned 12-bit program address",
@@ -2028,12 +2028,13 @@
       "overflow_behavior": "none; stack overflow is not detected and the old bottom level is discarded",
       "result_behavior": "push wrapped opcode PC plus one onto the four-level 12-bit stack, shifting old entries one level deeper and discarding the old bottom",
       "branch_behavior": "unconditional computed subroutine call to the program address in ACC[11:0]",
-      "interrupt_interaction": "no instruction-specific exception documented; exact interrupt arrival within the unresolved second cycle remains outside the model boundary",
+      "interrupt_interaction": "no instruction-specific exception documented; directed RTL tests defer active-low interrupt arrivals in either execution interval until selected-target capture, under ADR-0003's INFERRED bus mapping",
       "documented_cycle_count": 2,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
-        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior under OQ-007"}
+        {"space": "program", "operation": "instruction_prefetch", "count": 1, "phase_detail": "normal opcode-PC read that enters the execute slot before the two execution intervals"},
+        {"space": "program", "operation": "inferred_discarded_sequential_prefetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 1 reads opcode PC plus one under MEN and marks the word nonexecutable; INFERRED, not an instruction-specific primary waveform"},
+        {"space": "program", "operation": "inferred_selected_target_fetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 2 reads ACC[11:0] under MEN, retires CALA, and captures the target word; INFERRED, not an instruction-specific primary waveform"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.1, Table 3-2, and CALA instruction description", "printed_page": "2-13, 3-6, and 3-25", "pdf_page": "37, 56, and 75"},
@@ -2055,7 +2056,7 @@
       "addressing_modes": ["implied"],
       "registers_read": ["PC", "all four stack levels"],
       "registers_written": ["PC", "all four stack levels"],
-      "memory_accesses": ["instruction_fetch", "unresolved_second_cycle_program_activity"],
+      "memory_accesses": ["instruction_fetch", "inferred_discarded_sequential_prefetch", "inferred_selected_target_fetch"],
       "status_flags_affected": [],
       "arithmetic_width_bits": null,
       "sign_extension_behavior": "not applicable",
@@ -2063,12 +2064,13 @@
       "overflow_behavior": "none; stack underflow is not detected",
       "result_behavior": "load PC from the old top of stack, then pop all four levels by shifting each lower level upward and duplicating the old bottom",
       "branch_behavior": "unconditional return to the 12-bit address held in the old top of stack",
-      "interrupt_interaction": "documented for use immediately after EINT; EINT protects RET from an already-pending interrupt until RET completes",
+      "interrupt_interaction": "documented for use immediately after EINT; EINT protects RET from an already-pending interrupt until RET completes; directed RTL tests also defer arrivals in either execution interval under ADR-0003's INFERRED bus mapping",
       "documented_cycle_count": 2,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
-        {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal program read at opcode PC"},
-        {"space": "program", "operation": "unresolved_second_cycle", "count": 1, "phase_detail": "the primary instruction pages establish a second cycle but do not identify its external address or MEN behavior; a discarded sequential prefetch is only a pipeline-based hypothesis under OQ-007"}
+        {"space": "program", "operation": "instruction_prefetch", "count": 1, "phase_detail": "normal opcode-PC read that enters the execute slot before the two execution intervals"},
+        {"space": "program", "operation": "inferred_discarded_sequential_prefetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 1 reads opcode PC plus one under MEN and marks the word nonexecutable; INFERRED, not an instruction-specific primary waveform"},
+        {"space": "program", "operation": "inferred_selected_target_fetch", "count": 1, "phase_detail": "ADR-0003 execution cycle 2 reads the old stack top under MEN, retires RET, pops the stack, and captures the return word; INFERRED, not an instruction-specific primary waveform"}
       ],
       "source_citations": [
         {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.6.2, 2.9, Table 3-2, and RET instruction description", "printed_page": "2-14, 2-18 through 2-19, 3-6, and 3-51", "pdf_page": "38, 42-43, 56, and 101"},

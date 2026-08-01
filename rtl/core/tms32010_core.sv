@@ -1,6 +1,10 @@
 `default_nettype none
 
-module tms32010_core (
+module tms32010_core #(
+  // ADR-0003 assigns an INFERRED physical prefetch sequence to CALA/RET.
+  // Wrappers that cannot preserve that sequence must turn the family off.
+  parameter bit ENABLE_INFERRED_COMPUTED_CONTROL = 1'b1
+) (
   input  logic        clk_i,
   input  logic        initialize_i,
   input  logic        reset_i,
@@ -112,6 +116,8 @@ module tms32010_core (
   localparam logic [5:0] OP_ABS  = 6'd53;
   localparam logic [5:0] OP_SST  = 6'd54;
   localparam logic [5:0] OP_ADDH = 6'd55;
+  localparam logic [5:0] OP_CALA = 6'd56;
+  localparam logic [5:0] OP_RET  = 6'd57;
 
   function automatic logic is_two_word_control_flow(input logic [5:0] operation);
     case (operation)
@@ -127,6 +133,16 @@ module tms32010_core (
       OP_BNZ,
       OP_BZ: is_two_word_control_flow = 1'b1;
       default: is_two_word_control_flow = 1'b0;
+    endcase
+  endfunction
+
+  function automatic logic is_computed_control_flow(
+    input logic [5:0] operation
+  );
+    case (operation)
+      OP_CALA,
+      OP_RET: is_computed_control_flow = 1'b1;
+      default: is_computed_control_flow = 1'b0;
     endcase
   endfunction
 
@@ -196,6 +212,10 @@ module tms32010_core (
   logic        spac_overflow;
   logic        control_operand_pending;
   logic [5:0]  pending_control_operation;
+  logic        computed_control_pending;
+  logic [5:0]  pending_computed_operation;
+  logic [11:0] pending_computed_target;
+  logic [11:0] pending_computed_return_address;
   logic        io_pending;
   logic [5:0]  pending_io_operation;
   logic [2:0]  pending_io_port;
@@ -246,6 +266,7 @@ module tms32010_core (
       data_address_o = pending_io_data_address;
     end else if (
       !control_operand_pending &&
+      !computed_control_pending &&
       decoded_valid &&
       (
         (decoded_operation == OP_LAC) ||
@@ -327,6 +348,8 @@ module tms32010_core (
     program_next_address_o = pc_o;
     if (interrupt_entry_pending) begin
       program_next_address_o = 12'h002;
+    end else if (computed_control_pending) begin
+      program_next_address_o = pending_computed_target;
     end else if (control_operand_pending) begin
       if (program_data_i[15:12] == 4'h0) begin
         case (pending_control_operation)
@@ -377,7 +400,13 @@ module tms32010_core (
       // The program prefetch address already points at PC while the physical
       // address pins may carry an I/O port or table address.
     end else if (instruction_valid_o) begin
-      program_next_address_o = pc_o + 12'h001;
+      if (decoded_operation == OP_CALA) begin
+        program_next_address_o = accumulator_o[11:0];
+      end else if (decoded_operation == OP_RET) begin
+        program_next_address_o = stack_top_o;
+      end else begin
+        program_next_address_o = pc_o + 12'h001;
+      end
     end
   end
   assign program_read_o =
@@ -568,6 +597,10 @@ module tms32010_core (
   always_comb begin
     if (initialize_i || reset_i || interrupt_entry_pending) begin
       instruction_valid_o = 1'b0;
+    end else if (computed_control_pending) begin
+      instruction_valid_o =
+        ENABLE_INFERRED_COMPUTED_CONTROL &&
+        is_computed_control_flow(pending_computed_operation);
     end else if (control_operand_pending) begin
       instruction_valid_o =
         (program_data_i[15:12] == 4'h0) &&
@@ -592,6 +625,10 @@ module tms32010_core (
     end else begin
       instruction_valid_o =
         decoded_valid &&
+        (
+          ENABLE_INFERRED_COMPUTED_CONTROL ||
+          !is_computed_control_flow(decoded_operation)
+        ) &&
         (
           (
             (decoded_operation != OP_LAC) &&
@@ -685,7 +722,10 @@ module tms32010_core (
     retirement_boundary = 1'b0;
     retiring_operation = decoded_operation;
     if (!interrupt_entry_pending) begin
-      if (control_operand_pending) begin
+      if (computed_control_pending) begin
+        retiring_operation = pending_computed_operation;
+        retirement_boundary = instruction_valid_o;
+      end else if (control_operand_pending) begin
         retiring_operation = pending_control_operation;
         retirement_boundary = instruction_valid_o;
       end else if (table_pending) begin
@@ -698,6 +738,7 @@ module tms32010_core (
       end else if (
         instruction_valid_o &&
         !is_two_word_control_flow(decoded_operation) &&
+        !is_computed_control_flow(decoded_operation) &&
         (decoded_operation != OP_IN) &&
         (decoded_operation != OP_OUT) &&
         (decoded_operation != OP_TBLR) &&
@@ -744,6 +785,10 @@ module tms32010_core (
       cycle_count_o                <= 32'h0000_0000;
       control_operand_pending       <= 1'b0;
       pending_control_operation     <= OP_B;
+      computed_control_pending      <= 1'b0;
+      pending_computed_operation    <= OP_CALA;
+      pending_computed_target       <= 12'h000;
+      pending_computed_return_address <= 12'h000;
       io_pending                    <= 1'b0;
       pending_io_operation          <= OP_IN;
       pending_io_port               <= 3'h0;
@@ -775,6 +820,10 @@ module tms32010_core (
       cycle_count_o    <= 32'h0000_0000;
       control_operand_pending   <= 1'b0;
       pending_control_operation <= OP_B;
+      computed_control_pending      <= 1'b0;
+      pending_computed_operation    <= OP_CALA;
+      pending_computed_target       <= 12'h000;
+      pending_computed_return_address <= 12'h000;
       io_pending                  <= 1'b0;
       pending_io_operation        <= OP_IN;
       pending_io_port             <= 3'h0;
@@ -813,6 +862,27 @@ module tms32010_core (
         interrupt_entry_pending  <= 1'b0;
         illegal_o                <= 1'b0;
         cycle_count_o            <= cycle_count_o + 32'h0000_0001;
+      end else if (computed_control_pending) begin
+        if (instruction_valid_o) begin
+          pc_o <= pending_computed_target;
+          if (pending_computed_operation == OP_CALA) begin
+            stack_top_o     <= pending_computed_return_address;
+            stack_level_1_o <= stack_top_o;
+            stack_level_2_o <= stack_level_1_o;
+            stack_bottom_o  <= stack_level_2_o;
+          end else if (pending_computed_operation == OP_RET) begin
+            stack_top_o     <= stack_level_1_o;
+            stack_level_1_o <= stack_level_2_o;
+            stack_level_2_o <= stack_bottom_o;
+            stack_bottom_o  <= stack_bottom_o;
+          end
+          computed_control_pending <= 1'b0;
+          retired_o                <= 1'b1;
+          illegal_o                <= 1'b0;
+          cycle_count_o            <= cycle_count_o + 32'h0000_0001;
+        end else begin
+          illegal_o <= 1'b1;
+        end
       end else if (control_operand_pending) begin
         if (instruction_valid_o) begin
           case (pending_control_operation)
@@ -975,7 +1045,15 @@ module tms32010_core (
         pc_o          <= pc_o + 12'h001;
         illegal_o     <= 1'b0;
         cycle_count_o <= cycle_count_o + 32'h0000_0001;
-        if (is_two_word_control_flow(decoded_operation)) begin
+        if (is_computed_control_flow(decoded_operation)) begin
+          computed_control_pending   <= 1'b1;
+          pending_computed_operation <= decoded_operation;
+          pending_computed_target    <=
+            (decoded_operation == OP_CALA)
+              ? accumulator_o[11:0]
+              : stack_top_o;
+          pending_computed_return_address <= pc_o + 12'h001;
+        end else if (is_two_word_control_flow(decoded_operation)) begin
           control_operand_pending   <= 1'b1;
           pending_control_operation <= decoded_operation;
         end else if (
@@ -1219,6 +1297,10 @@ module tms32010_core (
           end
           OP_CALL: begin
           end
+          OP_CALA: begin
+          end
+          OP_RET: begin
+          end
           OP_IN: begin
           end
           OP_OUT: begin
@@ -1362,6 +1444,12 @@ module tms32010_core (
           io_read_o ||
           io_write_o
         ));
+      end
+      if (computed_control_pending) begin
+        assert (ENABLE_INFERRED_COMPUTED_CONTROL);
+        assert (!(data_read_o || data_write_o || io_read_o || io_write_o));
+        assert (program_read_o && !program_write_o);
+        assert (program_next_address_o == pending_computed_target);
       end
       if (io_pending) begin
         assert (!program_read_o);

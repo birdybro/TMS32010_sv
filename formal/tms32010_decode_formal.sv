@@ -95,6 +95,8 @@ module tms32010_decode_formal (
         16'h7f89,
         16'h7f8a,
         16'h7f8b,
+        16'h7f8c,
+        16'h7f8d,
         16'h7f8e,
         16'h7f8f,
         16'h7f90: is_supported_fixed_control = 1'b1;
@@ -153,9 +155,9 @@ module tms32010_decode_formal (
 
     // This one-step symbolic check exhausts the complete 16-bit word space.
     assert (valid == expected_valid);
-    // The partial RTL operation enum is currently dense from 0 through 55;
+    // The partial RTL operation enum is currently dense from 0 through 57;
     // the exhaustive simulation separately guards its package name mapping.
-    assert (operation <= 6'd55);
+    assert (operation <= 6'd57);
     assert (immediate_13 == instruction_i[12:0]);
 
     // Operand projections are checked independently of mnemonic selection.
@@ -187,11 +189,10 @@ module tms32010_decode_formal (
       assert (immediate == instruction_i[7:0]);
     end
 
-    // Model/tool support for these four exact opcodes must not silently cross
-    // into RTL before their native second-cycle ownership is qualified.
-    if ((instruction_i == 16'h7f8c) || // CALA
-        (instruction_i == 16'h7f8d) || // RET
-        (instruction_i == 16'h7f9c) || // PUSH
+    // PUSH/POP remain model/tool-only until their native address ownership is
+    // qualified under OQ-016. CALA/RET cross this boundary only through the
+    // explicitly INFERRED ADR-0003 mapping.
+    if ((instruction_i == 16'h7f9c) || // PUSH
         (instruction_i == 16'h7f9d)) begin // POP
       assert (!valid);
     end
@@ -202,7 +203,8 @@ module tms32010_decode_formal (
     cover (instruction_i == 16'h00b0 && !valid);
     cover (instruction_i == 16'hf401 && !valid);
     cover (instruction_i == 16'h7f83 && !valid);
-    cover (instruction_i == 16'h7f8c && !valid);
+    cover (instruction_i == 16'h7f8c && valid && (operation == 6'd56));
+    cover (instruction_i == 16'h7f8d && valid && (operation == 6'd57));
     cover (instruction_i == 16'h9fff && valid &&
            (immediate_13 == 13'h1fff));
   end

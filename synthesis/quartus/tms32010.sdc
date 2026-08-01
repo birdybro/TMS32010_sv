@@ -1,4 +1,8 @@
-create_clock -name clk_i -period 20.000 [get_ports {clk_i}]
+# The Driver Sound board supplies the original part with 20 MHz. The explicit
+# four-phase FPGA engine is qualified here at 25 MHz, leaving a 25% internal
+# margin. The earlier exploratory 50 MHz constraint does not close for this
+# hierarchy and remains documented as a rejected checkpoint.
+create_clock -name clk_i -period 40.000 [get_ports {clk_i}]
 derive_clock_uncertainty
 
 # This is an internal-timing synthesis harness, not an integration wrapper.
@@ -21,6 +25,8 @@ set_false_path -to \
               retired_o illegal_o \
               cycle_count_o[*] phase_o[*] clkout_o native_address_o[*] \
               men_n_o den_n_o we_n_o sample_o native_active_o \
+              execute_valid_o execute_address_o[*] execute_word_o[*] \
+              pipeline_blocked_o \
               data_address_o[*] \
               data_read_o data_write_o data_address_valid_o \
               data_write_address_o[*] data_write_address_valid_o \

@@ -1,6 +1,6 @@
 # Synthesis qualification
 
-The checked-in projects synthesize the current fifty-six-instruction
+The checked-in projects synthesize the current fifty-eight-instruction
 execution slice, signed multiplier, 144-word data RAM, and program phase
 engine only. They do not establish
 resource or timing characteristics of an instruction-complete TMS32010.
@@ -15,9 +15,11 @@ The script elaborates the portable package, decoder, execution core, program
 bus, and sequential phase wrapper through a synthesis-only harness; runs
 hierarchy and structural checks; performs generic synthesis; and writes an
 ignored JSON netlist below `build/yosys/`. The integration is qualified only
-for the current 41 one-cycle instructions, eleven qualified two-cycle
-control-flow paths, two native IN/OUT paths, and two three-cycle table-transfer
-paths.
+for the current 41 one-cycle instructions, eleven qualified two-word
+control-flow paths, two one-word computed-control paths, two native IN/OUT
+paths, and two three-cycle table-transfer paths. CALA/RET use ADR-0003's
+explicitly `INFERRED` discarded-sequential/selected-target mapping; synthesis
+does not raise that mapping's architectural confidence.
 Yosys 0.67+111 from
 the 2026-07-29 OSS CAD Suite is the currently verified open-source synthesis
 baseline; see `synthesis/qualification.md` for the exact invocation and
@@ -26,9 +28,10 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs twenty checked-in scripts. The main synthesis harness targets
-the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
-The second directly targets `tms32010_sequential_pipeline_slice` and writes
+The command runs twenty-nine checked-in scripts. The main synthesis harness
+targets the explicit fetch/execute pipeline and writes
+`build/yosys/tms32010.json`; it reports 16,281 generic cells and 124 retained
+checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
 Quartus resource or timing result and qualifies only the pipeline subset
@@ -44,8 +47,9 @@ was 15,129 generic cells and 78 retained checks. With exact TBLR/TBLW
 discarded-prefetch, program-transfer, and repeated-prefetch ownership, plus
 ABS, SST, and ADDH execution, the checkpoint was 15,686 generic cells.
 Explicit reset-time instruction qualification and the loop-free recognized-
-reset boundary bring the current checkpoint to 15,733 generic cells, 103
-retained checks, and zero
+reset boundary brought the preceding checkpoint to 15,733 generic cells and
+103 retained checks. CALA/RET and their assertions bring the current direct
+pipeline checkpoint to 16,280 generic cells, 124 retained checks, and zero
 structural-check problems.
 
 The third script directly targets the generic `tms32010_mister` adapter and
@@ -53,8 +57,8 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 15,782 generic cells and 110 retained checks, with zero
-structural problems; 49 cells and seven checks are local to the adapter after
+Yosys 0.67+111 reports 16,330 generic cells and 131 retained checks, with zero
+structural problems; 50 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset.
 
 The fourth script targets the storage-free A044427 Rev-A
@@ -193,8 +197,11 @@ make synth-quartus \
   QUARTUS_SH=/path/to/quartus/bin/quartus_sh
 ```
 
-The 50 MHz constraint is an FPGA implementation objective, not an emulated
-TMS32010 crystal frequency. The current synthesis-only harness explicitly
+The explicit-pipeline harness closes a 25 MHz internal constraint, providing
+25% margin over the Driver Sound board's documented 20 MHz TMS32010 clock.
+An exploratory 50 MHz run failed slow-corner setup and is retained as rejected
+evidence in `synthesis/qualification.md`; 50 MHz closure is not claimed. The
+current synthesis-only harness explicitly
 false-paths its non-clock ports because no board-level memory/host wrapper yet
 defines their timing. This qualifies internal register timing only. The
 integrated wrapper must replace every exclusion with real I/O or

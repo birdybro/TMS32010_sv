@@ -470,6 +470,18 @@ class RtlInitialSliceTests(unittest.TestCase):
             ],
         )
 
+    def test_cala_ret_stack_effects_and_two_cycle_timing(self) -> None:
+        self._run_testbench(
+            "tb_cala_ret_rtl",
+            [
+                PACKAGE,
+                DECODE,
+                INTERNAL_RAM,
+                CORE,
+                ROOT / "sim" / "instruction" / "tb_cala_ret_rtl.sv",
+            ],
+        )
+
     def test_io_two_cycle_transfers_addressing_and_stalls(self) -> None:
         self._run_testbench(
             "tb_io_rtl",

@@ -19,9 +19,10 @@ instructions: `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, 
 `IN`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `PAC`, `ROVM`, `SACL`,
 `POP`, `PUSH`, `RET`, `SACH`, `SAR`, `SOVM`, `SPAC`, `SST`, `SUB`, `SUBC`, `SUBH`, `SUBS`, `TBLR`, `TBLW`,
 `XOR`, `ZAC`, `ZALH`, and `ZALS`. The partial RTL and seeded differential
-boundary support the same set except CALA, POP, PUSH, and RET,
-for fifty-six shared instructions; their second external cycles remain
-unresolved under `OQ-007`/`OQ-016`.
+boundary support the same set except POP and PUSH, for fifty-eight shared
+instructions. CALA/RET use ADR-0003's explicitly `INFERRED` discarded-
+`PC+1` then selected-target mapping; PUSH/POP external address ownership
+remains unresolved under `OQ-016`.
 A redistribution-safe four-tap Q15 FIR program now verifies the complete local
 assemble/disassemble/model workflow against independently fixed opcodes,
 numeric results, twelve instruction cycles, and logical transaction traces.
@@ -138,15 +139,16 @@ program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK
 deferrals, dummy-fetches and stacks the return PC, masks and clears the
 request, and selects vector 2. A native-phase test matches TI Figure 2-12's
-external read order. Matching 32-case core and explicit-pipeline matrices
-exhaust request arrival at every represented execution interval of all 15
-currently supported multicycle families. The explicit matrix checks native
+external read order. The existing 32-case core/explicit matrices plus a
+four-case CALA/RET explicit-pipeline test exhaust request arrival at all
+represented intervals of 17 currently supported multicycle families. The
+explicit tests check native
 MEN/DEN/WE ownership, no midinstruction entry, one protected retirement,
 dummy discard, stack entry, acknowledge state, and vector capture.
 A four-case native test also checks the enabled falling-boundary sample from
 each modeled subphase, including a stalled phase. Complete fetch/execute
-overlap, physical pin setup/synchronizer behavior, unsupported
-CALA/RET/PUSH/POP cycles, RET resumption, and the provisional
+overlap, physical pin setup/synchronizer behavior, PUSH/POP cycles, physical
+confirmation of CALA/RET address ownership, and the provisional
 DINT-at-final-boundary ordering remain outside any cycle-accuracy claim.
 ADR-0002 and a standalone synthesizable fetch/execute register now establish
 the required distinct fetched-word and execute-slot validity/address state.
@@ -154,8 +156,8 @@ Directed tests cover priming, overlap, stalls, branch flush, interrupt dummy
 suppression, vector capture, and reset.
 The separate `tms32010_sequential_pipeline_slice` connects that register to
 the core for reset priming, sequential one-cycle instructions, exact B,
-exact BANZ, exact BV, exact BIOZ, exact CALL, and the six
-accumulator-conditional branches, plus exact IN/OUT execution ownership. Its
+exact BANZ, exact BV, exact BIOZ, exact CALL, the six accumulator-conditional
+branches, ADR-0003 CALA/RET, plus exact IN/OUT execution ownership. Its
 fetch address stays one word ahead of the execute PC for ordinary sequential
 execution,
 all 46 words in the existing 41-family one-cycle stream match the previously
@@ -166,7 +168,10 @@ only at branch retirement; the accumulator branches select from the unchanged
 full 32-bit ACC; BV selects from unchanged OV and clears it only at taken
 retirement; BIOZ samples raw active-low BIO at operand completion and holds
 the resulting decision through the selected fetch; CALL pushes opcode-PC+2
-only when its selected target fetch completes. The combined interval mappings
+only when its selected target fetch completes. CALA/RET discard the sequential
+prefetch, retain execute ownership through the accumulator/old-TOS target
+fetch, and commit stack/PC effects only when that target is captured. The
+combined interval mappings
 are source-derived INFERRED behavior because no dedicated original-part
 branch/call pin waveform has been located. Figure 2-9 directly defines the
 I/O mapping: cycle 1 asserts only DEN or WE at the encoded port, cycle 2
@@ -189,15 +194,15 @@ Beneath two explicit sequencer assumptions, a 12-step bounded proof checks the
 standalone register's transition relation for arbitrary fetch words and
 boundaries, with a prime/stall/replace/flush/target cover reached at step 7.
 Bounded actual-core formal harnesses check fixed EINT entry,
-MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain, and
-indirect-MPY/address-update slices across arbitrary clock-enable stalls. Their
-12/14/20/20-step bounds and reachable covers are documented in
+MPYK-extension/held-low-relatch, direct-MPY/repeated-multiply-chain,
+indirect-MPY/address-update, and CALA/RET stack/PC slices across arbitrary
+clock-enable stalls. Their 12/14/20/20/24-step bounds and reachable covers are documented in
 `formal/README.md`. A one-step standalone proof exhaustively checks all 2^32
 signed multiplier operand pairs, including TI's unique most-negative-square
 exception; this is a combinational RTL result, not physical-timing evidence.
 A second one-step symbolic proof exhausts all 65,536 decoder inputs against a
-compact legal-family predicate and keeps CALA/RET/PUSH/POP outside RTL until
-their native second cycles are qualified; opcode identity still comes from
+compact legal-family predicate. It includes CALA/RET and keeps PUSH/POP
+outside RTL until their native second cycles are qualified; opcode identity still comes from
 the primary-cited database, hand fixtures, and exhaustive simulation.
 A 10-step actual-core reset harness separately proves the
 documented reset controls and explicitly provisional unlisted-state retention,
@@ -258,10 +263,13 @@ path is disclosed as `SC-015`.
 At the second normal program-read sample it pushes opcode-PC+2 onto the
 four-level 12-bit stack and selects the target. Nested-call, stack-overflow,
 target-stall, return-address-wrap, and malformed-target cases are automated.
-`CALA=0x7f8c` has primary-cited model/tool coverage for pushing opcode-PC+1
-and selecting `ACC[11:0]` in two cycles. Its second external program cycle is
-unknown, so it has no RTL/native or differential qualification under
-`OQ-007`.
+`CALA=0x7f8c` pushes opcode-PC+1 and selects `ACC[11:0]` in two cycles;
+`RET=0x7f8d` selects the old stack top and then pops the stack. Both have
+primary-cited architectural effects, model/RTL/differential qualification,
+and explicit bus/stall/interrupt tests. Their physical program-address
+ownership follows ADR-0003's reversible discarded-`PC+1` then selected-target
+mapping at `INFERRED` confidence; original-part pin confirmation remains open
+under `OQ-007`/`SC-037`.
 `PUSH=0x7f9c` and `POP=0x7f9d` now have primary-cited model/tool coverage for
 their complete four-level stack effects and two-cycle totals. Their second
 external program cycle is unknown, so neither has RTL/native or differential
@@ -285,9 +293,11 @@ summary but are not called reserved. Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses currently trap as a
 conservative project policy, not a claim about original-silicon behavior. A
 separate native-phase wrapper qualifies the normal reads for all 41 supported
-one-cycle instructions, eleven two-cycle control-flow instructions, and the two
-qualified I/O instructions, plus both three-cycle table transfers; it is not
-a general pipeline or cycle-accuracy claim.
+one-cycle instructions, eleven two-word control-flow instructions, the two
+one-word computed-control instructions, and the two qualified I/O
+instructions, plus both three-cycle table transfers; it is not a general
+pipeline or cycle-accuracy claim. The legacy multicycle wrapper rejects
+CALA/RET because it cannot represent ADR-0003's discarded prefetch.
 
 ## Design principles
 
