@@ -102,11 +102,25 @@ both opcode/target reads, no first-cycle retirement, cumulative cycles, target
 PC, and `[top, level_1, level_2, bottom]` stack state at each instruction
 commit.
 
+The ROM-free MAME adapter generates a strict debugger `trace` action, parses
+PC/ACC/P/T/AR/STR/stack boundary state, normalizes MAME's bottom-to-top stack
+array into the project's top-first convention, and compares model post-state
+N with MAME pre-state N+1. Seven synthetic regressions verify parsing, width
+and format rejection, status extraction, stack ordering, mandatory
+following-row alignment, exact row counts, interrupt-pseudo-step rejection,
+strict model state widths/types, safe command generation, mismatch
+diagnostics, and successful CLI operation. The adapter records the exact
+pinned source commit and separately hashes the installed
+`0.287 (mame0287-dirty)` package binary. It does not claim that binary is a
+build of the pinned commit. An actual Hard Drivin' trace remains unrun because
+no authorized ROM set is present. See `tools/reference/README.md` and
+`artifacts/mame_oracle.md`.
+
 The 512-instruction stream is model/RTL functional evidence only. The focused
 B/BANZ/BIOZ/BV/CALL/family/IN/OUT/TBLR/TBLW differentials supply logical
 per-cycle evidence; their separate native phase tests supply the physical
-subphase relationship. Neither result qualifies the remaining pipeline. MAME
-comparison is not yet implemented.
+subphase relationship. Neither result nor the MAME architectural-boundary
+adapter qualifies the remaining pipeline or pin timing.
 
 Failing seeds must be preserved as regression fixtures when randomized
 coverage expands.

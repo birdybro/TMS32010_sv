@@ -1162,10 +1162,17 @@ objective passing evidence.
   A focused TBLR/TBLW differential compares opcode, discarded, table, and
   repeated-following program addresses, three-cycle retirement, MEN/WE
   direction, RAM and program-memory effects, PC, and all four stack levels.
-  MAME comparison and
-  legal randomized full-ISA streams
-  remain. MAME disagreement
-  creates research work, not an automatic oracle verdict.
+  A strict ROM-free MAME debugger-trace adapter now compares pre-PC alignment
+  and following-boundary PC/ACC/P/T/AR0/AR1/stack/OV/OVM/INTM/ARP/DP state,
+  with synthetic tests for parsing, state normalization, sentinel alignment,
+  safe command generation, and mismatch diagnostics. It records pinned-source
+  commit `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` separately from the local
+  packaged `0.287 (mame0287-dirty)` executable and does not treat that binary
+  as an exact-commit build. MAME identifies Hard Drivin's device as a 20 MHz
+  TMS320C10, so it remains a secondary functional oracle, not original-part
+  or timing proof. An actual trace and legal randomized full-ISA streams
+  remain; no authorized Hard Drivin' ROM is present. MAME disagreement creates
+  research work, not an automatic oracle verdict.
 
 ## Milestone 18 — Formal verification
 

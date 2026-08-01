@@ -9,6 +9,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
+- A ROM-free MAME instruction-boundary oracle adapter with strict debugger
+  command generation, PC/post-state alignment, original-part width checks,
+  explicit MAME stack-order normalization, deterministic diagnostics, seven
+  synthetic differential regressions including exact-row and strict
+  model-state validation, explicit interrupt-hook limitations, and separate
+  pinned-source versus local dirty-binary provenance. It deliberately does not
+  launch MAME, obtain ROMs, or claim cycle/pin evidence.
 - Reference-provenance policy, safe acquisition/hash tools, a 45-source
   integrity-pinned catalog, and living engineering backlog.
 - Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and

@@ -9,6 +9,7 @@
 !/build/.gitkeep
 /artifacts/*
 !/artifacts/progress.md
+!/artifacts/mame_oracle.md
 !/artifacts/.gitkeep
 *.vcd
 *.fst

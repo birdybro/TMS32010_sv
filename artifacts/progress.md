@@ -1,7 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board address-driven bus-control
-  composition
+- **Current milestone:** MAME instruction-boundary differential adapter
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -21,7 +20,11 @@
   EINT/protected-instruction/dummy-entry/vector model/RTL differential; 32
   directed request-arrival cases across every represented machine cycle
   of all 15 currently supported multicycle core families; four native
-  subphase arrivals with a stalled phase-2 case and falling-boundary ownership
+  subphase arrivals with a stalled phase-2 case and falling-boundary ownership;
+  plus seven ROM-free MAME-adapter tests covering strict parsing, original-part
+  widths, state normalization, strict model-state validation, pre/post boundary
+  alignment, safe debugger command generation, and deterministic mismatch
+  reporting
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-six-instruction partial core, multiplier, 144-word RAM, and
   program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`: 2,188
@@ -890,6 +893,19 @@
   `/DUDTACK`, and ordinary expansion-bus `RVA` acknowledgement through each
   release sequence. Strict lint and 185-cell/64-check hierarchical synthesis
   pass; constituent formal bounds remain unchanged.
+- **New MAME-oracle evidence:** the strict debugger-action adapter now parses
+  the exact PC/ACC/P/T/AR0/AR1/STR/STK0-STK3 marker, enforces original-part
+  widths, reverses MAME's bottom-to-top backing array into the model's
+  top-first stack order, and aligns model post-state N with MAME's
+  pre-instruction marker N+1. Seven ROM-free synthetic tests pass. The pinned
+  source remains exact commit `030fefcbd14e47c01ec9d67655be90f64a1dc8ab`;
+  the separately inspected local binary is package `0.287-2.1`, reports
+  `0.287 (mame0287-dirty)`, and has SHA-256
+  `e8732a07ffc6995e31e5526fbf1f72e6ce55fb92cf2a1373b6a76e27cdc7dd91`.
+  It is not claimed as an exact-commit build. MAME names the 20 MHz nested
+  device TMS320C10, and no authorized Hard Drivin' ROM is present, so actual
+  execution comparison, device equivalence, cycles, and pin timing remain
+  unqualified.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -929,4 +945,4 @@
   backlog and qualify the remaining unsupported instruction ownership/timing
   boundary before extending the partial sequential core.
 - **Latest committed baseline before this cycle:**
-  `5bbb42a`
+  `d0a24e0`
