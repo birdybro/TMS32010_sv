@@ -5,13 +5,16 @@
 This document traces the four A044427 Rev-A low host-I/O read targets from
 their decoder to the 68000 `D15:D0` bus. It distinguishes a physically driven
 lane from a convenient complete software word. It does not implement the
-complete 68000 bus, `/RVAS`, DTACK, connector conditioning, TMS5220 speech
+complete 68000 bus, `/RVF`/`/RVAS`, DTACK, connector conditioning, TMS5220 speech
 interface, or main-system bus bridge.
 
 ## Decode and driven lanes
 
-With `/RVAS` active, LS138 `30N` decodes a host read from `RWN=1` and
-`A13:A12`. The four targets and their physically driven lanes are
+With both active-low `/RVF` and `/RVAS` active, LS138 `30N` decodes a host
+read from `RWN=1` and `A13:A12`. `/RVF` is LS138 `30P` Y4 from the asserted
+`/AS`, `A23=1`, `A16:A14=100` high-address qualification; `/RVAS` supplies the
+held S4-through-S7 transaction interval. The full derivation is in
+`hard_drivin_host_timing.md`. The four targets and their physically driven lanes are
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 2–4 of 10,
 PDF pp. 3–8]:
 
@@ -185,7 +188,7 @@ qualified masked sources in Atari LS138 `30N` order:
 these source selections. When it is false, the output data and masks are all
 zero and no target is claimed. When true, the mux forwards the selected
 source's data, driven mask, and valid mask without widening any physical lane.
-It does not generate `/RVAS`, sample 68000 strobes, produce DTACK, choose an
+It does not generate `/RVF` or `/RVAS`, sample 68000 strobes, produce DTACK, choose an
 open-bus value, or cause any side effect. In particular, selecting
 `/SOUNDRD` does not clear `MAINFLAG`; only the separate completed-read callback
 does so. **Confidence: VERIFIED_PRIMARY for target order and lane maps;

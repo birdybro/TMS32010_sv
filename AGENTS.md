@@ -415,8 +415,17 @@ or write, and do not describe the same-clock completion as the physical
 level-sensitive interval. Its board-top connection is opt-in, preserves the
 external reset/CRAMEN callbacks by default, exports selected-control validity,
 and keeps `/IRQCLR` separate. Read `docs/integration/hard_drivin_host_control.md`
-before modifying this path; full `/RVAS`, DTACK, and 68000 timing remain
+before modifying this path; full `/RVF`/`/RVAS`, DTACK, and 68000 timing remain
 outside it.
+The A044427 local 68000 host-cycle path is now primary-transcribed in
+`docs/integration/hard_drivin_host_timing.md`. LS138 `30P` produces `/RVF`
+only for asserted `/AS`, `A23=1`, and `A16:A14=100`; LS138 `30N` requires both
+`/RVF` and the held `/RVAS` interval. The shared-8-MHz F74 sequence asserts a
+one-period `RVA`/`/DTACK` at S4 and uses falling-edge state to retain `/RVAS`
+through S7. It has no READY input or held-`/AS` retry. Do not connect an
+arbitrarily stalled callback to this path, omit `/RVF`, or claim physical
+power-up/nanosecond equivalence while `OQ-033` remains open. Read the timing
+document before adding any host transaction adapter.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
@@ -463,7 +472,7 @@ MAME's swapped `/320PORT`/`/SWITCHES` handler names and equal zero stubs are
 `SC-033`, not board decode evidence. The board top connects this source to
 `hard_drivin_sound_host_read_mux`, which forwards all four low-read sources in
 Atari LS138 `30N` order with their exact driven/valid masks. Its qualified
-selection input is not `/RVAS`, DTACK, or a read completion; `/SOUNDRD` flag
+selection input is not `/RVF`, `/RVAS`, DTACK, or a read completion; `/SOUNDRD` flag
 clear remains a separate callback. Do not add an open-bus value or side effect
 to this storage-free composition.
 The standalone `hard_drivin_sound_communication_path` now implements that

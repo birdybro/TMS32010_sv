@@ -17,6 +17,9 @@
   Rev-A nonpopulation, and MAME zero-stub boundary.
 - `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
   state, board-reset effects, and standalone FPGA callback boundary.
+- `hard_drivin_host_timing.md`: primary-transcribed local 68000 `RVA`,
+  `/DTACK`, `/RVAS`, `/RVF`, zero-wait phase sequence, and future FPGA timing
+  boundary.
 - `hard_drivin_host_reads.md`: complete and partial 68000 read targets,
   driven-lane validity, and the TMS port-3 host latch.
 - `hard_drivin_host_mailboxes.md`: bidirectional main/sound word latches,
@@ -71,7 +74,7 @@ peripheral.
 `hard_drivin_host_control.md` qualifies the LS259 whose raw Q3/Q4 outputs are
 `CRAMEN` and `/320RES`. Its standalone RTL uses an explicit decoded host
 completion and per-bit validity. The board top can opt into Q3/Q4 and exports
-selected-control validity; the full `/RVAS`/DTACK bridge remains future work.
+  selected-control validity; the full `/RVF`/`/RVAS`/DTACK bridge remains future work.
 `hard_drivin_host_mailboxes.md` qualifies the two complete-word LS374 paths
 and LS74 `MAINFLAG`/`SOUNDFLAG` handshake. Its standalone RTL preserves
 reset-independent data, read-cleared flags, and explicit invalidity for

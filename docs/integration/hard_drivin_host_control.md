@@ -4,16 +4,19 @@
 
 This document qualifies A044427 Rev-A LS259 `80R`, its low host-address
 selection, and the immediately related `/IRQCLR` decode. It does not implement
-the complete 68000 bus, `/RVAS` generation, DTACK timing, ROM/RAM map, byte
+the complete 68000 bus, `/RVF`/`/RVAS` generation, DTACK timing, ROM/RAM map, byte
 lanes, speech hardware, or firmware sequencing. The FPGA adapter accepts an
 explicit decoded completion pulse so those unimplemented electrical details
 remain outside its evidence boundary.
 
 ## Low host control decode
 
-LS138 `30N` is enabled by `/RVAS`; its select inputs are `RWN`, `A13`, and
-`A12`. The active-low outputs therefore select one read or write function in
-each 4 KiB quadrant of the board's valid host-I/O region
+LS138 `30N` is enabled only while both `/RVF` and `/RVAS` are active. `/RVF`
+is the LS138 `30P` Y4 high-address qualification for asserted `/AS`, `A23=1`,
+and `A16:A14=100`; `/RVAS` is the held transaction window described in
+`hard_drivin_host_timing.md`. Its select inputs are `RWN`, `A13`, and `A12`.
+The active-low outputs therefore select one read or write function in each
+4 KiB quadrant of the qualified host-I/O region
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
 PDF pp. 5–6]:
 

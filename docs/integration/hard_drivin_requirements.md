@@ -37,8 +37,11 @@ qualified.**
 
 ### 68000 low-I/O and control latch
 
-Within the valid host-I/O region, LS138 `30N` decodes `RWN` plus `A13:A12`
-into four write strobes and four read strobes. The write quadrants are
+LS138 `30P` first qualifies asserted `/AS`, `A23=1`, and `A16:A14=100` as
+active-low `/RVF`; bits `A22:A17` are not decoded and therefore create
+physical aliases. Within that qualified region and the held `/RVAS` interval,
+LS138 `30N` decodes `RWN` plus `A13:A12` into four write strobes and four read
+strobes. The write quadrants are
 `/SOUNDWR`, `/LATCHES`, `/SPEECH`, and `/IRQCLR`; the matching read quadrants
 are `/SOUNDRD`, `/320PORT`, `/SWITCHES`, and `/READSTAT`. During a
 `/LATCHES` write, LS259 `80R` takes its selected bit from `A3:A1` and its new
@@ -54,9 +57,21 @@ Q bit and per-bit validity, passes all eight selections/both values/reset and
 retention tests, and synthesizes to 53 cells with six retained checks. The
 board top can select Q4/Q3 behind an explicit opt-in, exports selected-control
 validity, and passes a synthetic program/communication-RAM handoff while
-opposite-valued external callbacks are ignored. `/RVAS`, DTACK, the full 68000
+opposite-valued external callbacks are ignored. `/RVF`/`/RVAS`, DTACK, the full 68000
 memory map, and physical host timing remain separate acceptance work. Complete
-details are in `docs/integration/hard_drivin_host_control.md`.
+details are in `docs/integration/hard_drivin_host_control.md` and
+`docs/integration/hard_drivin_host_timing.md`.
+
+The local MC68000 and the A044427 host-cycle sequencer share `8MHZ`. An
+`/AS` assertion sets a first LS74; the first following 8 MHz rise asserts a
+one-period `RVA` pulse and `/DTACK`. LS74 `50S` samples `/DTACK` on falling
+edges so `/RVAS` remains active after `RVA` deasserts and through the later
+S7 read-data latch edge. This is a fixed zero-wait logical sequence with no
+READY input or held-`/AS` re-arm. The complete edge table, CPU-space `/VPA`
+suppression, and unresolved nanosecond timing margin are in
+`hard_drivin_host_timing.md` and `OQ-033`. **Confidence: VERIFIED_PRIMARY for
+the logic and processor edge definitions; INFERRED for zero-wait design
+intent; UNKNOWN for complete electrical timing closure.**
 
 The four host read targets do not all drive a complete word. `/SOUNDRD`
 drives `D15:D0`; `/320PORT` drives only `D15:D8` from the TMS port-3 latch;
@@ -77,8 +92,8 @@ as `SC-033`; the implemented storage-free selector follows Atari LS138 `30N`.
 that primary `00/01/10/11` order while forwarding each source's data, driven
 mask, and valid mask. An invalid selection claims no lanes. The board top
 exposes the composed values and one-hot target but keeps mailbox read-clear as
-a separate completed-read callback. This does not implement `/RVAS`, DTACK,
-byte handling, or open-bus behavior.
+a separate completed-read callback. This does not implement `/RVF`/`/RVAS`,
+DTACK, byte handling, or open-bus behavior.
 
 The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in
@@ -439,6 +454,18 @@ The complete primary transcription, `SC-028` MAME abstraction boundary,
 directed verification are in `docs/integration/hard_drivin_bio.md`.
 
 ## Integration acceptance path
+
+### Published sound-board diagnostics
+
+Atari's 1989 TM-327 operator manual identifies separate local-68000 tests for
+program ROM, program RAM, and TMS32010 program RAM, and a TMS32010-driven
+communication-RAM test. Its synthetic `320` exercises include a sine sweep,
+tune, IRQ generation, DAC ramp, walking DAC ones, and increasing sound-block
+latch addresses [atari-hard-drivin-manual-tm327-third, printed pp. 2-18
+through 2-20, PDF pp. 31-33]. These primary-published test roles are future
+qualification targets and corroborate the ownership already transcribed from
+A044427. The copyrighted diagnostic firmware is not included, and the manual
+does not define bus timing. **Confidence: VERIFIED_PRIMARY for test roles.**
 
 ### ROM-free smoke evidence
 

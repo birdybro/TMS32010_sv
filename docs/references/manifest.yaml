@@ -279,8 +279,8 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block and PR1/PR5 pull-ups",
-        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
-        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): host read/write decode, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
+        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock and /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
+        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
       ],
@@ -649,6 +649,63 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Instruction-set summary, ADDH encoding and one-cycle/one-word classification on scan page 1"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-hard-drivin-manual-tm327-third",
+      "title": "Hard Drivin' Operator's Manual with Illustrated Parts List",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "TM-327",
+      "publication_date": "1989",
+      "revision": "3rd printing",
+      "source_url": "https://www.jmargolin.com/schem/HD_TM-327_3rd.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/TM-327_Hard_Drivin_Manual_3rd_Printing.pdf",
+      "sha256": "4f3d1e209239d0bde7e171366175211014c787d9431eb45138f5b930b97975bf",
+      "document_type": "primary game service manual scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
+      "relevance": "Service-level board interconnect, test, adjustment, and troubleshooting context for Hard Drivin' and its Driver Sound board",
+      "authority_level": 2,
+      "notes": "Direct engineer-hosted mirror linked by the acquired Jed Margolin source index. Copyright page carries printing code 3T. Keep only in the ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Cover and copyright page, PDF pp. 1 and 4: title, publisher, 1989 date, and third-printing code",
+        "Sound Board diagnostic descriptions, printed pp. 2-18 through 2-20 (PDF pp. 31-33): self-test memory ownership and synthetic TMS32010 sound/DAC/IRQ/block-latch exercises"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "motorola-m68000-users-manual-ninth",
+      "title": "M68000 8-/16-/32-Bit Microprocessors User's Manual",
+      "author_or_organization": "Motorola, Inc.; archived by NXP Semiconductors",
+      "publication_number": "MC68000UM",
+      "publication_date": "1993",
+      "revision": "Ninth Edition",
+      "source_url": "https://www.nxp.com/docs/en/reference-manual/MC68000UM.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "motorola/M68000UM_Ninth_Edition.pdf",
+      "sha256": "89b690b1923f8a3cff508567090bcab0bcd07511c2deff8ffa393a08efda18e1",
+      "document_type": "primary microprocessor user manual",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Motorola/Freescale/NXP manual; redistribution permission not established",
+      "relevance": "Manufacturer authority for the 68000 /AS, R/W, UDS/LDS, /DTACK, function-code, asynchronous bus, and synchronous bus-cycle behavior used by Atari A044427",
+      "authority_level": 2,
+      "notes": "Title page says Ninth Edition and copyright 1993; the archived PDF was modified in 2006. This later manual covers the original MC68000 and compatible family members; use only original-MC68000 sections and keep the board schematic authoritative for Atari wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Section 4.1.1 read-cycle states, printed pp. 4-1 through 4-3",
+        "Sections 5.7-5.8 asynchronous and synchronous operation, printed pp. 5-32 through 5-36",
+        "MC68000 electrical timing table and Figure 10-5 read-cycle timing, printed pp. 10-24 through 10-26"
       ],
       "status": "acquired",
       "download": {

@@ -57,10 +57,12 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 22 pinned
-  sources, including the 1983 AMD manufacturer data book needed to interpret
-  the A044427 Am6012 path and the pinned MAME DAC support sources needed to
-  distinguish emulator sample mapping from board wiring.
+  until permission is demonstrated. The ignored cache now verifies 32 pinned
+  sources, including Atari TM-327 for published Sound Board diagnostic roles,
+  Motorola M68000UM Ninth Edition for local-host bus-state timing, the 1983 AMD
+  manufacturer data book needed to interpret A044427's Am6012 path, and the
+  pinned MAME DAC support sources needed to distinguish emulator sample
+  mapping from board wiring.
 
 ## Milestone 3 — Architecture specification
 
@@ -1358,6 +1360,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_bio.md`,
   `docs/integration/hard_drivin_compare.md`,
   `docs/integration/hard_drivin_host_control.md`,
+  `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
   `docs/integration/hard_drivin_host_mailboxes.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
@@ -1494,8 +1497,19 @@ objective passing evidence.
   reset-over-write priority; Yosys reports 53 cells/six checks. The board-top
   opt-in preserves external defaults, exposes selected Q4/Q3 validity, and
   passes a synthetic program/communication-memory handoff while opposite
-  external sentinels are ignored. Full `/RVAS`/DTACK decode and 68000 timing
-  remain. The new standalone `hard_drivin_sound_320_port_latch` exhausts all
+  external sentinels are ignored. Sheet 3 and Motorola M68000UM Ninth Edition now
+  establish the missing high-address and timing gates: LS138 `30P` Y4 makes
+  `/RVF` from asserted `/AS`, `A23=1`, and `A16:A14=100`; LS138 `30N` requires
+  both `/RVF` and `/RVAS`; and the shared-8-MHz F74 sequence creates one
+  `RVA`/`/DTACK` period at S4 while holding `/RVAS` through the S7 data-latch
+  edge. The path has no READY input or held-`/AS` retry. Its exact edge table
+  and FPGA requirements are cited in `hard_drivin_host_timing.md`; complete
+  electrical propagation/loading margin and unreset power-up transients remain
+  `OQ-033`, so no RTL transaction wrapper is claimed yet. Atari TM-327 is now
+  pinned and records local-68000 program/program-RAM tests plus TMS32010
+  communication-RAM, IRQ, DAC, tune/sweep, and block-latch diagnostics as
+  future synthetic qualification targets. The new standalone
+  `hard_drivin_sound_320_port_latch` exhausts all
   65,536 words and every non-target/commit/direction case, preserves explicit
   invalid startup state, and exports fixed driven mask `0xff00` separately
   from captured-data validity. Its Yosys target reports 19 cells/five checks.
@@ -1542,7 +1556,7 @@ objective passing evidence.
   The standalone mux checks invalid selection, exact one-hot order, distinct
   masks, and every driven lane; Yosys reports 68 cells/13 checks. Integrated
   tests use live source state and prove selection has no side effect. Complete
-  `/RVAS`/DTACK/open-bus integration remains separate. The full
+  `/RVF`/`/RVAS`/DTACK/open-bus integration remains separate. The full
   125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
   targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
 

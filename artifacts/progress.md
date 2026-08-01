@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' masked low-host-read composition
+- **Current milestone:** Hard Drivin' local-68000 host-cycle timing research
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -13,7 +13,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 30 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 32 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -628,6 +628,20 @@
   completed-read, byte, or open-bus behavior is inferred. The complete
   125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
   targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
+- **New local-host timing evidence:** the ignored cache now pins Atari TM-327
+  third printing and Motorola M68000UM Ninth Edition, bringing the manifest to 32
+  acquired sources. Cross-sheet tracing corrects the earlier abbreviated
+  decode description: LS138 `30N` requires active `/RVF` as well as `/RVAS`;
+  LS138 `30P` produces `/RVF` only for asserted `/AS`, `A23=1`, and
+  `A16:A14=100`, leaving `A22:A17` as physical aliases. The shared-8-MHz F74
+  chain is now accounted for from S2 through S7: `/AS` arms the sequence, S4
+  asserts a one-period `RVA` and `/DTACK`, falling-edge F74 `50S` holds
+  `/RVAS` across S6, and the target releases after the S7 data-latch edge.
+  There is no READY input or held-`/AS` acknowledgement retry. TM-327 also
+  supplies primary-published future test roles for local-68000 program/program
+  RAM, TMS32010 communication/program RAM, IRQ, DAC, tune/sweep, and block
+  latch diagnostics. No RTL was added: full TTL propagation/loading margin
+  and unreset power-up transients remain explicit `OQ-033` work.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -650,13 +664,16 @@
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
+  local-68000 host-cycle TTL timing margin and unreset power-up transient,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the A044427 68000 `/RVAS` and DTACK read-cycle
-  boundary before adding any transaction wrapper; preserve masked sources and
-  keep electrical timing distinct from same-clock FPGA completion policy.
+- **Next task:** implement and exhaustively verify a standalone same-clock
+  logical `RVA`/`/DTACK`/`/RVAS` plus `/RVF` adapter using explicit 8 MHz edge
+  enables, fixed zero-wait completion, deterministic FPGA-only initialization,
+  and no arbitrary ready input; keep `OQ-033` electrical timing outside its
+  claim.
 - **Latest committed baseline before this cycle:**
-  `9db238a`
+  `4a3d908`

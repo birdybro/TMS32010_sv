@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 30-source
+- Reference-provenance policy, safe acquisition/hash tools, a 32-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -159,6 +159,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/SOUNDRD`, `/320PORT`, `/SWITCHES`, and `/READSTAT` in primary Atari LS138
   order, forwarding exact data/driven/valid masks and one-hot target state
   without generating a bus cycle or read-clear side effect.
+- Primary acquisition of Atari TM-327 third printing and Motorola M68000UM
+  Ninth Edition. TM-327 identifies the published local-68000/TMS32010 Sound Board
+  diagnostic roles; M68000UM supplies the processor S2-through-S7 bus-state
+  and electrical timing contract used to interpret A044427.
+- A pin-level host-cycle timing transcription for A044427: LS138 `30P` Y4
+  qualifies `/RVF` from `/AS`, `A23`, and `A16:A14`; the shared-8-MHz F74
+  chain produces one-period `RVA`/`/DTACK`; and falling-edge state holds
+  `/RVAS` through the S7 read-data latch boundary. It records the lack of
+  READY/retry behavior and separates the resolved logical sequence from the
+  still-open electrical margin and power-up transient under `OQ-033`.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -1212,6 +1222,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
+- The ignored reference cache verifies both newly acquired primary documents
+  by SHA-256. Cross-sheet pin tracing now checks that low-I/O LS138 `30N`
+  requires `/RVF` as well as `/RVAS`, and the documented MC68000 edge table
+  accounts for every F74 transition from `/AS` assertion through S7.
 - The complete current regression passes 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase/wrapper tests including the exhaustive mailbox test and
@@ -1223,6 +1237,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- A044427's `RVA`/`/DTACK`/`/RVAS` logic is now qualified at logical bus-state
+  resolution, but its complete TTL propagation/loading margin and unreset
+  power-up transient are not. No raw 68000 transaction wrapper is claimed,
+  and a future board-faithful path cannot insert arbitrary callback stalls
+  because the circuit has no READY input or held-`/AS` re-arm (`OQ-033`).
 - A production A044427 Rev-A port-2 word is electrically unqualified. The
   drawing routes only `CMPOUT` to `TDI15`, while the complete source and pull-up
   sheet is not loaded; pinned MAME's `0x0000` handler is a deterministic stub,
