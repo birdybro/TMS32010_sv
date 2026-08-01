@@ -11,6 +11,14 @@ one supported one-cycle instruction. Unsupported words, undocumented SACH
 shifts, and common-address data accesses outside the verified 144-word RAM
 assert `illegal_o` and do not advance the PC.
 
+`tms32010_decode` also emits `data_addressed_o`, an implementation-only
+family qualifier used to shorten the core's effective-address and legality
+cones. It is not an architectural instruction attribute and has no standalone
+meaning: every caller must combine it with `valid_o`, because an invalid word
+inside a recognized family envelope may still assert the qualifier. The
+exhaustive decoder test visits all 65,536 words and independently checks every
+valid encoding; the one-step formal decoder proof covers the same valid space.
+
 `tms32010_internal_ram` supplies the original-part 144 by 16-bit data store.
 Its default asynchronous read lets the standalone single-boundary execution
 slice consume an operand without inventing another architectural cycle. The

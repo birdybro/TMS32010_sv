@@ -495,6 +495,13 @@ objective passing evidence.
   and now guards a separate requirement: global clock-enable pauses must hold
   read data and forwarding metadata. Exact synthesis evidence is under
   SYNTH-001.
+  Decoder family metadata was retained only after simulation visited all
+  65,536 words and compared every valid internal-data classification, the full
+  instruction/bus/differential/formal regressions retained their expectations,
+  Quartus preserved one M10K and one DSP, and the accepted full-path report
+  improved from 24.217 ns/16 levels to 21.399 ns/14 levels. Invalid encodings
+  may assert family metadata but remain behaviorless because every consumer
+  must also require decoder validity.
 
 ## Milestone 8 — RTL program sequencer
 
@@ -1368,21 +1375,24 @@ objective passing evidence.
   structural/generic synthesis. Generic technology mapping still lowers the
   registered array to flip-flops/muxes, while Quartus recognizes one M10K.
   `make synth-yosys` now reproducibly checks both the
-  synthesis harness (17,017 generic cells/125 checks) and the directly
+  synthesis harness (16,996 generic cells/125 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,923 generic cells/125 checks),
+  pipeline slice (16,949 generic cells/125 checks),
   each with zero structural problems. The Quartus harness now elaborates that
   explicit pipeline rather than the legacy fail-closed wrapper. A retained
   table-direction bit and state-driven sampled-operand selection remove the
   wrapper decoder from that mux cone without changing a processor boundary:
   ADR-0004 then phase-stages internal-RAM reads and forwards same-address
-  writes. The accepted fit uses 1,416 ALMs/417 registers/one M10K/one DSP,
-  closes a 25 MHz constraint with +15.331 ns worst setup and +0.164 ns worst
-  hold slack, and reports 40.54 MHz worst slow-corner Fmax. The reproducible
-  full-path report now measures 24.217 ns/16 levels from execute-word decode to
-  a multiplier input enable, down from 29.180 ns/19 levels at the preceding
-  checkpoint.
+  writes. Decoder-provided internal-data-family metadata then replaces two
+  reconstructed core operation whitelists; its 65,536-word simulation and
+  one-step symbolic checks make the optimization independently reviewable.
+  The accepted fit uses 1,414 ALMs/417 registers/one M10K/one DSP, closes a
+  25 MHz constraint with +17.698 ns worst setup and +0.153 ns worst hold
+  slack, and reports 44.84 MHz worst slow-corner Fmax. The reproducible
+  full-path report now measures 21.399 ns/14 levels from retained table state
+  to stack-bottom enable, after removing the preceding 24.217 ns/16-level
+  execute-decode-to-multiplier-enable cone.
   An unforwarded M10K experiment failed the back-to-back IN/OUT data contract;
   an in-process bypass experiment lost RAM inference. Both were rejected.
   The board's primary-documented clock is 20 MHz. A rejected exploratory
@@ -1401,8 +1411,8 @@ objective passing evidence.
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
   output-control/BIO/host-control/host-timing/port-3-latch/mailbox/masked-read
-  board top as 2,966 abstract cells, 257 checks, and three retained memories with zero
-  structural problems. A tenth
+  board top; its current six-memory count is recorded below and in
+  `synthesis/qualification.md`. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. An eleventh script
@@ -1421,9 +1431,9 @@ objective passing evidence.
   timing/callback bridge as 305 hierarchy cells/40 checks. Nine additional
   Hard Drivin' targets bring the reproducible command to 29 scripts; their
   current counts and scopes are recorded in `synthesis/qualification.md`.
-  This is not a
-  Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
-  pipeline, pin-level wrapper constraints, and final timing remain.
+  This is not a Quartus mapping or completed sound-board fit.
+  Instruction-complete resources, pin-level wrapper constraints, and final
+  board timing remain.
 
 ## Milestone 20 — MiSTer-compatible wrapper
 
@@ -1448,7 +1458,7 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,972 generic
+  unsupported-word parking, and reset recovery. Yosys reports 16,998 generic
   cells/132 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
@@ -1754,7 +1764,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,809 abstract cells/406
+  Integrated Yosys retains six memories and reports 3,786 abstract cells/406
   checks with no structural problem. Partial lower-Y5 and Y6 writes are
   reported and rejected because their unselected physical data lane remains
   unresolved under `OQ-022`/`OQ-024`.
@@ -1774,7 +1784,7 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,809 cells/
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,786 cells/
   406 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and

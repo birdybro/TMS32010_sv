@@ -10,7 +10,11 @@ module tms32010_decode (
   output logic [3:0]  shift_o,
   output logic [2:0]  port_o,
   output logic        indirect_o,
-  output logic [6:0]  addressing_field_o
+  output logic [6:0]  addressing_field_o,
+  // High for internal-data-address instruction families. Callers must still
+  // qualify this family metadata with valid_o; invalid encodings have no
+  // architectural behavior.
+  output logic        data_addressed_o
 );
   // Keep the module boundary a packed vector: Ubuntu 24.04's Yosys 0.33
   // cannot elaborate a package-qualified enum port. The exhaustive decoder
@@ -84,11 +88,13 @@ module tms32010_decode (
     port_o               = instruction_i[10:8];
     indirect_o           = instruction_i[7];
     addressing_field_o   = instruction_i[6:0];
+    data_addressed_o      = 1'b0;
 
     if (
       (instruction_i[15:12] == 4'h0) ||
       (instruction_i[15:12] == 4'h1)
     ) begin
+      data_addressed_o = 1'b1;
       operation_o =
         (instruction_i[15:12] == 4'h0) ? OP_ADD : OP_SUB;
       if (!instruction_i[7]) begin
@@ -101,6 +107,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:12] == 4'h2) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LAC;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -115,6 +122,7 @@ module tms32010_decode (
       (instruction_i[15:11] == 5'b01000) ||
       (instruction_i[15:11] == 5'b01001)
     ) begin
+      data_addressed_o = 1'b1;
       operation_o =
         (instruction_i[15:11] == 5'b01000) ? OP_IN : OP_OUT;
       if (!instruction_i[7]) begin
@@ -127,6 +135,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:9] == 7'b0011000) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_SAR;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -138,6 +147,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:9] == 7'b0011100) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LAR;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -149,6 +159,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h50) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_SACL;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -167,6 +178,7 @@ module tms32010_decode (
         (instruction_i[10:8] == 3'd4)
       )
     ) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_SACH;
       shift_o     = {1'b0, instruction_i[10:8]};
       if (!instruction_i[7]) begin
@@ -185,6 +197,7 @@ module tms32010_decode (
       (instruction_i[15:8] == 8'h63) ||
       (instruction_i[15:8] == 8'h64)
     ) begin
+      data_addressed_o = 1'b1;
       case (instruction_i[15:8])
         8'h60: operation_o = OP_ADDH;
         8'h61: operation_o = OP_ADDS;
@@ -207,6 +220,7 @@ module tms32010_decode (
       (instruction_i[15:8] == 8'h67) ||
       (instruction_i[15:8] == 8'h7d)
     ) begin
+      data_addressed_o = 1'b1;
       case (instruction_i[15:8])
         8'h65: operation_o = OP_ZALH;
         8'h66: operation_o = OP_ZALS;
@@ -227,6 +241,7 @@ module tms32010_decode (
       (instruction_i[15:8] == 8'h79) ||
       (instruction_i[15:8] == 8'h7a)
     ) begin
+      data_addressed_o = 1'b1;
       case (instruction_i[15:8])
         8'h78: operation_o = OP_XOR;
         8'h79: operation_o = OP_AND;
@@ -242,6 +257,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h7b) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LST;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -253,6 +269,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h7c) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_SST;
       if (!instruction_i[7]) begin
         // Original TMS32010 direct SST always selects the sixteen-word
@@ -283,6 +300,7 @@ module tms32010_decode (
         end
       end
     end else if (instruction_i[15:8] == 8'h6f) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LDP;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -294,6 +312,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h69) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_DMOV;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -305,6 +324,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h6a) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LT;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -316,6 +336,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h6b) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LTD;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -327,6 +348,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h6c) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_LTA;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;
@@ -338,6 +360,7 @@ module tms32010_decode (
         valid_o = 1'b1;
       end
     end else if (instruction_i[15:8] == 8'h6d) begin
+      data_addressed_o = 1'b1;
       operation_o = OP_MPY;
       if (!instruction_i[7]) begin
         valid_o = 1'b1;

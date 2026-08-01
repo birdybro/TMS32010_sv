@@ -228,6 +228,7 @@ module tms32010_sequential_pipeline_slice (
   logic [2:0]  execute_decoded_port;
   logic        unused_execute_indirect;
   logic [6:0]  unused_execute_addressing_field;
+  logic        unused_execute_data_addressed;
   logic [15:0] unused_core_program_write_data;
   /* verilator lint_on UNUSEDSIGNAL */
 
@@ -577,7 +578,8 @@ module tms32010_sequential_pipeline_slice (
     .shift_o             (unused_execute_shift),
     .port_o              (execute_decoded_port),
     .indirect_o          (unused_execute_indirect),
-    .addressing_field_o  (unused_execute_addressing_field)
+    .addressing_field_o  (unused_execute_addressing_field),
+    .data_addressed_o    (unused_execute_data_addressed)
   );
 
   tms32010_fetch_execute fetch_execute (

@@ -13,6 +13,7 @@ module tb_decode_exhaustive;
   logic [2:0]           port;
   logic                 indirect;
   logic [6:0]           addressing_field;
+  logic                 data_addressed;
   int unsigned          valid_count;
 
   tms32010_decode dut (
@@ -25,7 +26,8 @@ module tb_decode_exhaustive;
     .shift_o       (shift),
     .port_o        (port),
     .indirect_o    (indirect),
-    .addressing_field_o (addressing_field)
+    .addressing_field_o (addressing_field),
+    .data_addressed_o (data_addressed)
   );
 
   initial begin
@@ -77,6 +79,7 @@ module tb_decode_exhaustive;
       logic expected_ret;
       logic expected_b;
       logic expected_accumulator_branch;
+      logic expected_data_addressed;
       instruction = word[15:0];
       #1;
       expected_lac =
@@ -430,8 +433,21 @@ module tb_decode_exhaustive;
         (instruction == 16'h7f89) ||
         (instruction == 16'h7f8a) ||
         (instruction == 16'h7f8b);
+      expected_data_addressed =
+        expected_lac || expected_in || expected_out ||
+        expected_sacl || expected_sach ||
+        expected_zalh || expected_zals || expected_tblr || expected_tblw ||
+        expected_addh || expected_adds ||
+        expected_xor || expected_and || expected_or || expected_add ||
+        expected_sub || expected_subh || expected_subs || expected_subc ||
+        expected_lar || expected_sar || expected_ldp || expected_dmov ||
+        expected_lt || expected_ltd || expected_lta || expected_mpy ||
+        expected_lst || expected_sst;
       if (valid !== expected_valid) begin
         $fatal(1, "decode validity mismatch at %04x", word);
+      end
+      if (valid && (data_addressed !== expected_data_addressed)) begin
+        $fatal(1, "data-address family mismatch at %04x", word);
       end
       if (valid) begin
         valid_count++;

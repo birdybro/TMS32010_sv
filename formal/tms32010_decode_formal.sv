@@ -16,6 +16,7 @@ module tms32010_decode_formal (
   logic [2:0]  port;
   logic        indirect;
   logic [6:0]  addressing_field;
+  logic        data_addressed;
   logic        expected_valid;
 
   function automatic logic is_common_address_envelope(
@@ -136,7 +137,8 @@ module tms32010_decode_formal (
     .shift_o                (shift),
     .port_o                 (port),
     .indirect_o             (indirect),
-    .addressing_field_o     (addressing_field)
+    .addressing_field_o     (addressing_field),
+    .data_addressed_o       (data_addressed)
   );
 
   always_comb begin
@@ -159,6 +161,15 @@ module tms32010_decode_formal (
     // the exhaustive simulation separately guards its package name mapping.
     assert (operation <= 6'd57);
     assert (immediate_13 == instruction_i[12:0]);
+    if (valid) begin
+      assert (
+        data_addressed ==
+        (
+          is_common_address_envelope(instruction_i) &&
+          (instruction_i[15:8] != 8'h68)
+        )
+      );
+    end
 
     // Operand projections are checked independently of mnemonic selection.
     if (valid && is_common_address_envelope(instruction_i)) begin

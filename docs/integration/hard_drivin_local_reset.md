@@ -217,6 +217,6 @@ reset/halt assertion covers.
 
 Interlock Yosys reports 13 cells and seven retained checks with no storage,
 latch, or structural problem. The board hierarchy retains six memories and
-reports 3,809 abstract cells and 406 checks before technology mapping. Neither
+reports 3,786 abstract cells and 406 checks before technology mapping. Neither
 result, and neither one-shot result, is an MC68000 raw-pin CDC, production RC
 tolerance, Cyclone V fit, or TimeQuest qualification.

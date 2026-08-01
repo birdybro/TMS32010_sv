@@ -17,14 +17,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,416 ALMs (3%).
+- Logic: 1,414 ALMs (3%).
 - Registers: 417.
 - Memory: 2,304 used bits in one M10K block.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +15.331 ns at 25 MHz.
-- Worst internal hold slack across analyzed corners: +0.164 ns.
-- Slow-corner internal Fmax: 40.54 MHz at 100 °C, 40.93 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +17.698 ns at 25 MHz.
+- Worst internal hold slack across analyzed corners: +0.153 ns.
+- Slow-corner internal Fmax: 45.36 MHz at 100 °C, 44.84 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -74,25 +74,40 @@ clear. That checkpoint used 1,420 ALMs and reported 22.988 ns/15 levels and
 read capture with the wrapper subphase enable restores the existing stall
 invariant and produces the accepted figures below.
 
-The accepted fit maps all 2,304 bits into one M10K, reducing the full hierarchy
-from 2,414 to 1,416 ALMs and from 2,703 to 417 registers. Its worst 100 °C
-setup path is now from registered `execute_word_o[14]` to a multiplier input
-enable: 24.217 ns, 16 logic levels, and 65% interconnect delay. Worst
-slow-corner Fmax rises from 33.33 to 40.54 MHz. Directed traces preserve
+The accepted RAM-staging fit maps all 2,304 bits into one M10K, reducing the
+full hierarchy from 2,414 to 1,416 ALMs and from 2,703 to 417 registers. Its
+worst 100 °C setup path was from registered `execute_word_o[14]` to a
+multiplier input enable: 24.217 ns, 16 logic levels, and 65% interconnect
+delay. Worst slow-corner Fmax rose from 33.33 to 40.54 MHz. Directed traces
+preserve
 phase-1 operand availability, phase-0 same-address forwarding, every native
 program/I/O/table edge, stalls, retirement, and cycle counts; the new
 five-step inductive proof covers all 144 RAM words and both forwarding ports.
+
+The next accepted optimization adds one implementation-only decoder qualifier
+for instruction families that address internal data memory. The core consumes
+that qualifier in its address and validity cones instead of duplicating two
+long instruction-family lists. The qualifier has no architectural effect and
+must be combined with the decoder's valid result. Simulation visits all 65,536
+instruction words and independently checks every valid encoding; the one-step
+decoder proof covers the same valid space. The current fit retains one M10K
+and one DSP,
+uses 1,414 ALMs and 417 registers, and removes the preceding execute-word-to-
+multiplier path from the twenty worst setup paths. The current worst 100 °C
+path is from the retained table-prefetch state to `stack_bottom_o[2]`:
+21.399 ns, 14 logic levels, and 61% interconnect delay. Worst slow-corner
+Fmax is now 44.84 MHz.
 
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
 not timing closure. The qualified 25 MHz constraint still exceeds the A044427
-Rev-A board's primary-documented 20 MHz input by 25%; the fitted 40.54 MHz
-worst slow-corner result is a 102.7% margin over the board frequency. The
+Rev-A board's primary-documented 20 MHz input by 25%; the fitted 44.84 MHz
+worst slow-corner result is a 124.2% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
-not a release requirement or a concealed pass. The retained-direction change
-and RAM-staging changes raise the qualified worst slow-corner result to
-40.54 MHz, but do not turn
+not a release requirement or a concealed pass. The retained-direction,
+RAM-staging, and decoder-qualification changes raise the qualified worst slow-
+corner result to 44.84 MHz, but do not turn
 that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
@@ -170,7 +185,7 @@ synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 125 RTL checks
 remain represented, and both the synthesis harness and directly targeted
-pipeline contain 17,017 and 16,923 cells respectively. The
+pipeline contain 16,996 and 16,949 cells respectively. The
 registered array and forwarding logic lower to flip-flops and muxes under
 generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -183,8 +198,9 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 125 RTL checks, and contains 16,923 generic
-cells. ADR-0004 adds 421 generic cells beyond the 16,506-cell retained-table-
+zero reported problems, retains 125 RTL checks, and contains 16,949 generic
+cells. ADR-0004 and the decoder family qualifier add 443 generic cells beyond
+the 16,506-cell retained-table-
 direction checkpoint because target-neutral Yosys maps the memory and bypass
 to gates rather than a Cyclone V M10K. The retained table-direction checkpoint
 had added 226 generic cells and one
@@ -209,8 +225,8 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 132 checks, and reports 16,972 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 16,923-cell,
+with zero problems, retains 132 checks, and reports 16,998 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 16,949-cell,
 125-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
@@ -248,7 +264,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,809 abstract cells, 406
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,786 abstract cells, 406
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,

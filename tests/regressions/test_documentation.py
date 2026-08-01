@@ -60,6 +60,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         qualification = (
             ROOT / "synthesis" / "qualification.md"
         ).read_text(encoding="utf-8")
+        rtl_boundary = (ROOT / "rtl" / "README.md").read_text(
+            encoding="utf-8"
+        )
         self.assertRegex(
             architecture,
             r"not yet a complete implementation\s+specification",
@@ -82,6 +85,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("It does not raise confidence", ram_adr)
         self.assertIn("ADR-0004-phase-staged-internal-ram.md", governance)
         self.assertIn("not passing evidence", qualification)
+        for required in (
+            "data_addressed_o",
+            "every caller must combine it with `valid_o`",
+            "visits all 65,536 words",
+        ):
+            self.assertIn(required, rtl_boundary)
 
     def test_no_native_ready_protocol_is_claimed(self) -> None:
         interface = (
@@ -231,7 +240,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,809",
+            "3,786",
             "406 checks",
             "Cyclone V",
         ):
@@ -440,7 +449,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,809 abstract cells",
+            "3,786 abstract cells",
             "406 checks",
         ):
             self.assertIn(required, host_timing)

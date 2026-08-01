@@ -14,6 +14,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A directed registered-RAM test and a five-step symbolic proof covering all
   144 words, both write sources, untouched-word persistence, and same-address
   forwarding while leaving initial contents arbitrary.
+- Decoder-provided internal-data-family metadata. Simulation visits all 65,536
+  instruction words and compares every valid encoding; a one-step symbolic
+  check covers the same valid space. Invalid encodings remain behaviorless and
+  must still be qualified by the decoder valid output.
 - A reproducible Quartus full setup-path reporter that writes twenty detailed,
   untracked paths with endpoints, logic depth, and routing/cell delay shares.
 - Repository governance, build, research, model, RTL, verification, formal,
@@ -639,6 +643,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   complete operand/forwarding output holds during a global pause and advances
   with phase 0 to phase 1, independently of the core's architectural execute
   pulse.
+- The core now consumes the decoder's internal-data-family qualifier for
+  address selection and validity instead of rebuilding two long operation
+  whitelists. This is functionally neutral decode metadata; it changes no
+  instruction, native phase, retirement boundary, or confidence level.
 - The explicit phase wrapper now selects retained branch operands directly
   from registered pipeline state and records TBLR/TBLW direction when the
   table sequence starts. This removes a redundant wrapper decode from the
@@ -835,16 +843,19 @@ Changelog, and the project follows semantic versioning once releases begin.
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 1,416 ALMs, 417 registers, one 144-by-16 M10K, and one
-  DSP block. TimeQuest closes the 25 MHz internal constraint with +15.331 ns
-  worst setup and +0.164 ns worst hold slack, 40.54 MHz worst slow-corner Fmax, and
+  on `5CSEBA6U23I7` in 1,414 ALMs, 417 registers, one 144-by-16 M10K, and one
+  DSP block. TimeQuest closes the 25 MHz internal constraint with +17.698 ns
+  worst setup and +0.153 ns worst hold slack, 44.84 MHz worst slow-corner
+  Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
   warnings. The detailed 100 °C critical path improves from the original
-  33.464 ns/26 levels through 29.180 ns/19 levels to 24.217 ns/16 levels.
-- Yosys 0.67+111 reports 17,017 cells/125 checks for the synthesis harness,
-  16,923 cells/125 checks for the direct pipeline, and 16,972 cells/132 checks for the generic
+  33.464 ns/26 levels through 29.180 ns/19 levels and 24.217 ns/16 levels to
+  21.399 ns/14 levels.
+- Yosys 0.67+111 reports 16,996 cells/125 checks for the synthesis harness,
+  16,949 cells/125 checks for the direct pipeline, and 16,998 cells/132 checks
+  for the generic
   MiSTer adapter, all with clean structural checks. The generic count grows
   while Cyclone V ALMs fall, so neither representation is reported as a proxy
   for the other.
@@ -894,7 +905,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   readiness combinations, and board simulation proves an actual sequential
   scrub clamps both processor inputs until validity address `0x1fff` clears.
   Its one-step BMC and four covers pass; standalone Yosys reports 13 cells/
-  seven checks, and the six-memory board hierarchy reports 3,809 cells/406
+  seven checks, and the six-memory board hierarchy reports 3,786 cells/406
   checks with no structural problem. The updated board-routing proof passes.
 - The direct-I/O decoder passes exhaustive simulation across all 4,096 read
   aliases and all 4,096 write addresses plus a one-step symbolic BMC over

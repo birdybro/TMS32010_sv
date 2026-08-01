@@ -190,6 +190,7 @@ module tms32010_core #(
   logic [2:0] decoded_port;
   logic       decoded_indirect;
   logic [6:0] decoded_addressing_field;
+  logic       decoded_data_addressed;
   logic       decoded_valid;
   logic       ram_address_valid;
   logic       ram_write_address_valid;
@@ -260,7 +261,8 @@ module tms32010_core #(
     .shift_o       (decoded_shift),
     .port_o        (decoded_port),
     .indirect_o    (decoded_indirect),
-    .addressing_field_o (decoded_addressing_field)
+    .addressing_field_o (decoded_addressing_field),
+    .data_addressed_o (decoded_data_addressed)
   );
 
   always_comb begin
@@ -275,37 +277,7 @@ module tms32010_core #(
       !control_operand_pending &&
       !computed_control_pending &&
       decoded_valid &&
-      (
-        (decoded_operation == OP_LAC) ||
-        (decoded_operation == OP_SACL) ||
-        (decoded_operation == OP_SACH) ||
-        (decoded_operation == OP_ZALH) ||
-        (decoded_operation == OP_ZALS) ||
-        (decoded_operation == OP_ADDH) ||
-        (decoded_operation == OP_ADDS) ||
-        (decoded_operation == OP_XOR) ||
-        (decoded_operation == OP_AND) ||
-        (decoded_operation == OP_OR) ||
-        (decoded_operation == OP_ADD) ||
-        (decoded_operation == OP_SUB) ||
-        (decoded_operation == OP_SUBH) ||
-        (decoded_operation == OP_SUBS) ||
-        (decoded_operation == OP_SUBC) ||
-        (decoded_operation == OP_LAR) ||
-        (decoded_operation == OP_SAR) ||
-        (decoded_operation == OP_LDP) ||
-        (decoded_operation == OP_DMOV) ||
-        (decoded_operation == OP_LT) ||
-        (decoded_operation == OP_LTD) ||
-        (decoded_operation == OP_LTA) ||
-        (decoded_operation == OP_MPY) ||
-        (decoded_operation == OP_LST) ||
-        (decoded_operation == OP_SST) ||
-        (decoded_operation == OP_IN) ||
-        (decoded_operation == OP_OUT) ||
-        (decoded_operation == OP_TBLR) ||
-        (decoded_operation == OP_TBLW)
-      )
+      decoded_data_addressed
     ) begin
       if (decoded_indirect) begin
         data_address_o =
@@ -640,37 +612,7 @@ module tms32010_core #(
           !is_computed_control_flow(decoded_operation)
         ) &&
         (
-          (
-            (decoded_operation != OP_LAC) &&
-            (decoded_operation != OP_SACL) &&
-            (decoded_operation != OP_SACH) &&
-            (decoded_operation != OP_ZALH) &&
-            (decoded_operation != OP_ZALS) &&
-            (decoded_operation != OP_ADDH) &&
-            (decoded_operation != OP_ADDS) &&
-            (decoded_operation != OP_XOR) &&
-            (decoded_operation != OP_AND) &&
-            (decoded_operation != OP_OR) &&
-            (decoded_operation != OP_ADD) &&
-            (decoded_operation != OP_SUB) &&
-            (decoded_operation != OP_SUBH) &&
-            (decoded_operation != OP_SUBS) &&
-            (decoded_operation != OP_SUBC) &&
-            (decoded_operation != OP_LAR) &&
-            (decoded_operation != OP_SAR) &&
-            (decoded_operation != OP_SST) &&
-            (decoded_operation != OP_LDP) &&
-            (decoded_operation != OP_DMOV) &&
-            (decoded_operation != OP_LT) &&
-            (decoded_operation != OP_LTD) &&
-            (decoded_operation != OP_LTA) &&
-            (decoded_operation != OP_MPY) &&
-            (decoded_operation != OP_LST) &&
-            (decoded_operation != OP_IN) &&
-            (decoded_operation != OP_OUT) &&
-            (decoded_operation != OP_TBLR) &&
-            (decoded_operation != OP_TBLW)
-          ) ||
+          !decoded_data_addressed ||
           (
             ram_address_valid &&
             (
