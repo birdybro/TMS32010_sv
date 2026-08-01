@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 42 pinned
+  until permission is demonstrated. The ignored cache now verifies 44 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -69,6 +69,9 @@ objective passing evidence.
   electrical specification. Atari A044425 Rev-J supplemental GSP/MSP sheets
   and TI SPVU001 now qualify both high-speed wait nets as direct TMS34010
   `HRDY` outputs with high-ready/low-wait semantics.
+  Motorola's exact 1985 MC68681 advance information and the official archived
+  MC68HC681 successor manual now qualify the independently clocked DUART
+  acknowledge boundary without transferring successor-only behavior.
 
 ## Milestone 3 — Architecture specification
 
@@ -1417,6 +1420,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
   `sim/bus/tb_hard_drivin_main_dtack_decode.sv`,
+  `sim/bus/tb_hard_drivin_main_duart_timing.sv`,
   `sim/bus/tb_hard_drivin_main_hsbus_timing.sv`,
   `sim/bus/tb_hard_drivin_main_rvas_timing.sv`,
   `sim/bus/tb_hard_drivin_main_sound_reset_decode.sv`,
@@ -1718,9 +1722,13 @@ objective passing evidence.
   path, zero-wait acknowledgement, independent GSP/MSP wait extensions,
   raw-select deassertion, and later sampled release. A044425 Rev-J sheets 10
   and 15 plus TI SPVU001 qualify both wait inputs as direct TMS34010 `HRDY`
-  outputs and resolve their general polarity/selection protocol. The original
-  system `/RESET` driver, workload-specific peripheral latency, DUART
-  protocol, raw CDC, and electrical timing remain `OQ-036`.
+  outputs and resolve their general polarity/selection protocol. SP-327 sheet
+  6 plus Motorola ADI988R1 now qualify `/RDUART` as MC68681 `CS`, the
+  3.6864 MHz device clock, and pulled-up active-low open-drain `/DUDTACK`.
+  The composed DUART test preserves arbitrary external latency, late ACK,
+  raw-select release with a still-low device pin, and sampled hold release.
+  The original system `/RESET` driver, workload-specific TMS34010 latency,
+  exact cross-clock phase, raw CDC, and electrical timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
   is not pin-level reset timing.

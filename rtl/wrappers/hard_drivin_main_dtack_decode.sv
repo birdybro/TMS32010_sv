@@ -45,6 +45,11 @@ module hard_drivin_main_dtack_decode (
   assign graphics_sound_wait_nand = !(gsp_wait_n_i && msp_wait_n_i);
   assign high_speed_dtack_term_n_o =
     read_high_speed_bus_n_o || graphics_sound_wait_nand;
+
+  // SP-327 connects /RDUART to MC68681 CS and /DUDTACK to its pulled-up,
+  // active-low open-drain DTACK output. The DUART's independent 3.6864 MHz
+  // clock owns acknowledgement latency, so retain the pin level as an
+  // external input rather than inventing a main-clock delay here.
   assign duart_dtack_term_n_o = read_duart_n_o || duart_dtack_n_i;
 
   // F11 140K merges three independently active-low acknowledgement terms.

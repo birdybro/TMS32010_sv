@@ -87,12 +87,19 @@ preset has priority. Supplemental A044425 Rev-J sheets now identify
 TMS34010 host interfaces; TI defines low `HRDY` as wait and requires high
 while the corresponding active-low `HCS` is inactive. An HSBUS composition
 checks zero-wait plus independent GSP- and MSP-wait paths. The graphics
-processors' internal access latency, DUART protocol, electrical propagation,
-and raw CDC remain external.
+processors' internal access latency remains external. SP-327 sheet 6 and
+Motorola ADI988R1 now also establish the DUART boundary: `/RDUART` drives
+MC68681 `CS`, `/DUDTACK` is its active-low open-drain `DTACK` output with a
+4.7 kΩ pull-up, and the device derives recognition from an independent
+3.6864 MHz crystal. A composed test accepts arbitrary peripheral wait, then
+checks late acknowledge, raw-select release while `/DUDTACK` remains low, and
+the later sampled `/RVAS` release. No fixed 8 MHz latency is inferred.
+Electrical propagation and raw CDC remain external.
 See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
-for decode, transport, both logical hold chains, graphics-wait ownership, and
-graphics-ready polarity; VERIFIED_SIMULATION/FORMAL for the three standalone
-RTL blocks; UNKNOWN for system reset origin, peripheral response latency,
+for decode, transport, both logical hold chains, graphics-wait ownership,
+graphics-ready polarity, and the generic MC68681 acknowledge contract;
+VERIFIED_SIMULATION/FORMAL for the three standalone RTL blocks; UNKNOWN for
+system reset origin, per-cycle cross-clock response phase,
 acknowledgement-path electrical timing, and raw-pin CDC.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the

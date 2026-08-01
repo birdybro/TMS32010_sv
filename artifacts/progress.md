@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board GSP/MSP wait-source
+- **Current milestone:** Hard Drivin' main-board MC68681 acknowledge
   qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
@@ -8,13 +8,13 @@
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 51 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 52 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 42 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 44 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -858,6 +858,16 @@
   each wait source independently. The two Atari drawings and TI guide bring
   the pinned total to 42. Workload-specific host-interface latency, the full
   chip-select address decode, propagation margin, and CDC remain open.
+- **New DUART acknowledge evidence:** SP-327 sheet 6 connects `/RDUART`
+  directly to MC68681 `CS`, uses a dedicated 3.6864 MHz crystal, and pulls
+  pin-9 `/DUDTACK` high through 4.7 kΩ. Motorola ADI988R1 defines that pin as
+  active-low open-drain `DTACK`; recognition is tied to X1 and may move one
+  device cycle when `CS` misses setup. The gate input therefore remains
+  peripheral-owned. A new composition proves arbitrary external wait, late
+  acknowledge, raw-select removal while the device pin is still low, and the
+  later sampled release of both held strobes. The exact-device and official
+  successor publications bring the pinned total to 44; successor-only write
+  behavior is not transferred to Atari's part.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -883,7 +893,7 @@
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
   main-bus peripheral response latency, complete GSP/MSP selection decode,
-  DUART protocol, and raw-CDC/electrical timing, platform tick calibration, and
+  exact DUART/main-clock phase and raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
@@ -893,8 +903,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** locate the SP-327 system `/RESET` driver or qualify the
-  MC68681 `/DUDTACK` protocol, keeping raw CDC/electrical behavior explicit
-  rather than inferred from the qualified digital phase model.
+- **Next task:** qualify the complete SP-327 sheet-4 main address decoder,
+  including the broad `/DUART` and `/GSP`/`/MSP` mirrors, before composing it
+  with the already verified acknowledge blocks.
 - **Latest committed baseline before this cycle:**
-  `04ea494`
+  `58d7d5b`

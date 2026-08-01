@@ -94,9 +94,10 @@ must already obey a platform's same-clock or CDC policy. The standalone
 and `hard_drivin_main_dtack_decode` provides the verified complete
 combinational acknowledgement cone. The timing adapter now also reconstructs
 the phase-sensitive early `/RVAS0` state. Supplemental A044425 sheets qualify
-the external wait inputs as TMS34010 `HRDY` outputs, but the standalone
-boundary does not implement either graphics-processor host interface or
-raw-pin CDC.
+the external wait inputs as TMS34010 `HRDY` outputs. SP-327 and Motorola's
+exact MC68681 publication also qualify the external `/DUDTACK` ownership,
+polarity, independent clock, and general acknowledge protocol. The standalone
+boundary implements neither peripheral nor raw-pin CDC.
 **Confidence: VERIFIED_PRIMARY
 for connectivity, address mirror, direction, and logical qualifiers;
 VERIFIED_SIMULATION/FORMAL for the combinational RTL; UNKNOWN for propagation
@@ -194,10 +195,13 @@ proves every gate equation and one-step cover reaches all six path classes.
 Yosys reports 21 cells/eight checks. A composed test joins the timing, DTACK,
 and reset-decode blocks and verifies `/AS` capture, ordinary-RVA
 acknowledgement, held `/RVAS`/`/SRES`, and sampled release. These results do
-not resolve peripheral latency, electrical margin, raw CDC, or the system
-`/RESET` source. A separate HSBUS composition verifies the S3 early strobe,
-zero-wait acknowledgement, independent TMS34010-derived GSP and MSP wait
-extensions, raw-select deassertion, and the later sampled release.
+not resolve workload-specific latency, electrical margin, raw CDC, or the
+system `/RESET` source. A separate HSBUS composition verifies the S3 early
+strobe, zero-wait acknowledgement, independent TMS34010-derived GSP and MSP
+wait extensions, raw-select deassertion, and the later sampled release. A
+DUART composition verifies `/RVAS` selection, arbitrary peripheral wait, late
+MC68681 `/DUDTACK`, raw select removal while the open-drain pin remains low,
+and the final sampled hold release.
 
 The interlock test exhausts all 32 combinations of initialization, raw RESET,
 raw HALT, storage selection, and readiness. The board regression additionally

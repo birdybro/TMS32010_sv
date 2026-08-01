@@ -6,10 +6,11 @@ main-processor `/AS` into early `/RVAS0`, `RVA`, and held expansion-bus
 distinct from the A044427 local sound-68000 timing in
 `hard_drivin_host_timing.md`. The complete combinational
 `/DTACK` cone is now transcribed separately from the sequential hold state.
-Supplemental Atari sheets identify the two graphics-processor wait sources
-and TI defines their common host-ready protocol; device-internal response
-latency, raw clock-domain relationships, and nanosecond timing margin remain
-outside the implemented blocks.
+Supplemental Atari sheets identify the two graphics-processor wait sources,
+and TI defines their common host-ready protocol. SP-327 plus Motorola's exact
+MC68681 publication likewise qualify the DUART acknowledge boundary.
+Device-internal response latency, raw clock-domain relationships, and
+nanosecond timing margin remain outside the implemented blocks.
 
 ## Primary logic trace
 
@@ -89,6 +90,38 @@ VERIFIED_PRIMARY for device ownership, direct connection, polarity, and the
 general host-ready protocol; UNKNOWN for the workload-dependent duration,
 cross-clock propagation, and electrical margin of a particular access.**
 
+## MC68681 acknowledge ownership
+
+SP-327 sheet 6 connects `/RDUART` directly to MC68681 `CS` pin 35, connects
+`DTACK` pin 9 to `/DUDTACK`, and pulls that net to +5 V through R49=4.7 kΩ.
+The DUART uses a dedicated 3.6864 MHz crystal at `X1/CLK` and `X2`; it does
+not share the main processor's 8 MHz phase. Motorola defines active-low `CS`
+as initiating a read or write cycle and the three-state, active-low,
+open-drain `DTACK` output as confirming a completed read, write, or interrupt
+acknowledge [atari-hard-drivin-schematic-package-sp327, sheet 6, PDF p. 7;
+motorola-mc68681-advance-information-1985, §§1.1-1.2, printed p. 1-3 and
+§§2.5-2.7, printed p. 2-3].
+
+The exact-device AC table requires `CS` setup at least 90 ns before a rising
+`X1/CLK` edge for the illustrated recognition point and allows `DTACK` up to
+125 ns after that edge. If setup is missed, acknowledgement may move one
+DUART clock later. After `CS` is negated, `DTACK` negates within 100 ns and
+becomes high impedance within 125 ns [motorola-mc68681-advance-information-1985,
+§§5.5, 5.7-5.8 and Figures 5-2-5-3, printed pp. 5-2-5-4]. The later
+MC68HC681 manual corroborates that clocked interface and explicitly warns
+where successor write-latching differs; no successor-only behavior is
+assigned to Atari's MC68681 [nxp-mc68hc681-users-manual-mc68681um-1996,
+§5.5.3, printed pp. 5-4-5-6].
+
+Consequently, the main-board gate logic cannot replace `/DUDTACK` with a
+fixed number of 8 MHz phases. It must accept a peripheral-owned completion
+level. When the raw `/DUART` selection ends, `/RDUART` goes high and the
+board's OR gate suppresses any still-low open-drain pin during its specified
+release interval. **Confidence: VERIFIED_PRIMARY for part identity, clock,
+wiring, pull-up, selection, polarity, and the generic read/write acknowledge
+protocol; UNKNOWN for the exact cross-clock phase and loaded propagation
+margin of any individual board cycle.**
+
 ## Complete combinational `/DTACK` cone
 
 SP-327 sheet 4 uses three active-low acknowledgement terms. Written as direct
@@ -119,12 +152,15 @@ scan's compact gate outline [atari-hard-drivin-schematic-package-sp327,
 sheet 4, PDF p. 5; ti-sn74ls20-datasheet-sdls079, printed pp. 1 and 3;
 ti-sn74as00-datasheet-sdas187a, printed pp. 1 and 4;
 ti-sn74als32-datasheet-sdas113b, printed pp. 1 and 4;
-ti-sn74f11-datasheet-sdfs040a, printed pp. 1 and 4]. SP-327 sheet 6 identifies
-`/DUDTACK` as the MC68681 acknowledgement output; the UART's internal timing
-is not modeled here [atari-hard-drivin-schematic-package-sp327, sheet 6,
-PDF p. 7]. **Confidence: VERIFIED_PRIMARY for the full Boolean cone and the
-TMS34010-derived wait-input semantics; UNKNOWN for peripheral-internal
-latency and electrical propagation margin.**
+ti-sn74f11-datasheet-sdfs040a, printed pp. 1 and 4]. SP-327 sheet 6 and
+Motorola's exact-device publication qualify `/DUDTACK` as the clocked,
+active-low open-drain MC68681 acknowledgement described above. Its timing is
+deliberately not recreated inside this gate block
+[atari-hard-drivin-schematic-package-sp327, sheet 6, PDF p. 7;
+motorola-mc68681-advance-information-1985, §§2.5-2.7 and 5.7-5.8, printed
+pp. 2-3 and 5-3-5-4]. **Confidence: VERIFIED_PRIMARY for the full Boolean
+cone and both peripheral contracts; UNKNOWN for peripheral-internal latency
+and electrical propagation margin.**
 
 For the sound-reset expansion write, the LS138 decode selects `/EXTBUS`, not
 `/HSBUS` or `/DUART`. A non-CPU-space cycle therefore uses the ordinary term:
@@ -155,8 +191,9 @@ samples low, the final F74 receives no later rising clock transition and
 `/RVAS` remains asserted. The new RTL deliberately preserves that stuck-hold
 case instead of adding a timeout. The equations that decide when the physical
 main-board `/DTACK` signal goes low and high are now implemented. The
-graphics-ready and DUART acknowledgement inputs remain externally owned even
-though the two graphics-ready sources and polarity are now source-qualified.
+graphics-ready and DUART acknowledgement inputs remain externally owned;
+their sources, polarity, and general selection/completion protocols are now
+source-qualified.
 **Confidence: VERIFIED_PRIMARY for the state dependency;
 VERIFIED_SIMULATION/FORMAL for the discrete event model; UNKNOWN for the
 complete acknowledgement-path delay and fault behavior.**
@@ -210,10 +247,13 @@ states. A composed bus test connects the timing, `/DTACK`, and sound-reset
 decode blocks and checks the complete synthetic `/AS` capture through `/SRES`
 release sequence. A separate HSBUS composition checks S3 early
 acknowledgement, independent GSP and MSP wait extensions, S7 raw-select
-release, and the following sampled release edge.
+release, and the following sampled release edge. A DUART composition checks
+that `/RVAS`, not `/RVAS0`, selects the MC68681; arbitrary external wait is
+retained; a late `/DUDTACK` completes the transfer; and raw select removal
+suppresses a still-low open-drain pin before the sampled release edge.
 
 Yosys 0.67+111 reports 93 cells/25 retained checks for the two-strobe hold
-state and 21 cells/eight retained checks for the combinational decode, with no memory,
-latch, generated clock, or structural problem. This is not a Cyclone V fit,
-raw-pin CDC proof, electrical timing calculation, TMS34010 host-interface
-model, or complete main-processor bus wrapper.
+state and 21 cells/eight retained checks for the combinational decode, with no
+memory, latch, generated clock, or structural problem. This is not a Cyclone V
+fit, raw-pin CDC proof, electrical timing calculation, TMS34010 host-interface
+or MC68681 model, or complete main-processor bus wrapper.

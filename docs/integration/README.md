@@ -86,8 +86,10 @@ contract.
 `rtl/wrappers/hard_drivin_main_dtack_decode.sv` transcribes the complete
 SP-327 sheet-4 combinational `/VPA`, ordinary-RVA, high-speed-wait, DUART, and
 final `/DTACK` equations. Supplemental Atari A044425 sheets qualify both wait
-nets as direct TMS34010 `HRDY` outputs, but the storage-free block correctly
-leaves those peripheral-owned levels and their timing outside the gate model.
+nets as direct TMS34010 `HRDY` outputs. SP-327 and Motorola ADI988R1 likewise
+qualify `/DUDTACK` as the independently clocked MC68681 open-drain
+acknowledgement. The storage-free block correctly leaves all peripheral-owned
+levels and their latency outside the gate model.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address
