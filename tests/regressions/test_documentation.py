@@ -407,6 +407,35 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)
 
+    def test_hard_drivin_local_memory_preserves_physical_aliases(self) -> None:
+        local_memory = (
+            DOCS / "integration" / "hard_drivin_local_memory.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "/ROMCE = A23 OR /AS",
+            "physical 64 KiB image repeats",
+            "`A22:A17` do not reach `30P`",
+            "Y5 program/direct-I/O subdecode",
+            "`0xff4000-0xff5fff`",
+            "`0xff6000-0xff7fff`",
+            "/RWS = RWN OR /RVAS",
+            "131,072 combinations",
+            "56 abstract combinational cells",
+            "17 retained checks",
+            "provide a 68000 core",
+        ):
+            self.assertIn(required, local_memory)
+        self.assertIn(
+            "SC-034 — Physical local-68000 aliases", conflicts
+        )
+        self.assertIn("OQ-034", questions)
+
     def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
         mailboxes = (
             DOCS / "integration" / "hard_drivin_host_mailboxes.md"

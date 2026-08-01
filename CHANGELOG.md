@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 32-source
+- Reference-provenance policy, safe acquisition/hash tools, a 33-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -507,6 +507,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   transactions/instruction qualification, exact documented control effects,
   and the implementation-scoped retention transition; its nonzero ACC/OVM
   cover reaches step 5.
+
+- A storage-free local-68000 memory decoder transcribing A044427's broad
+  low-ROM aliases, all eight high-bank LS138 outputs, Y5 program/direct-I/O
+  split, communication/local-RAM selects, populated word-address projections,
+  and local 6264 byte-lane controls. It includes exhaustive alias/control
+  verification and a standalone Yosys target without embedding memory data.
+- Primary research for the Driver Sound local program-memory diagnostics,
+  backed by a newly pinned TI SDAS113B ALS32 data sheet, exact Rev-A equations,
+  `SC-034` for physical-versus-MAME mapping differences, and `OQ-034` for the
+  unqualified E1/E2/larger-EPROM production option.
 
 ### Changed
 
@@ -1272,10 +1282,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   checks all four timed reads and writes, exact masked S4-through-S6 data,
   S7 mailbox/control effects, partial-write rejection, unimplemented speech
   visibility, and external-callback selection. Integrated Yosys retains three
-  memories at 2,966 cells/257 checks. The complete current regression passes 126
-  repository/tool, 231 model/unit, 38 instruction RTL, 40 bus/wrapper, 5
-  interrupt, and 10 differential tests; strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 reference hashes, and all 28 tasks from
+  memories at 2,966 cells/257 checks. The complete current regression passes 127
+  repository/tool, 231 model/unit, 38 instruction RTL, 41 bus/wrapper, 5
+  interrupt, and 10 differential tests; strict lint across 29 modules, all
+  nineteen Yosys targets, all 33 reference hashes, and all 28 tasks from
   fourteen formal configurations pass. The adapter BMC passes through 16
   steps; its whole-word read/write covers reach step 8 and the fully settled
   VPA cover reaches step 9. The separate board BMC passes 12 steps and reaches
@@ -1290,6 +1300,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   model/RTL differential, six focused two-cycle control-flow differentials,
   one focused IN/OUT differential, one focused TBLR/TBLW differential, and
   one focused interrupt-entry differential.
+
+- The local-68000 memory decoder passes 131,072 exhaustive control-relevant
+  combinations covering every ignored `A22:A17` alias, bank, transfer
+  direction, and byte-strobe state. Yosys 0.67+111 reports 56 combinational
+  cells, 17 checks, no memory/latch, and zero structural problems.
 
 ### Known Issues
 

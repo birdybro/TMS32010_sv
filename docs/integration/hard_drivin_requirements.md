@@ -24,6 +24,12 @@ VERIFIED_PRIMARY.**
 
 ## Memory and host path
 
+The local 68000's physical ROM/high-bank/local-RAM decode, the Y5
+program/direct-I/O split, populated word-address projections, and byte-lane
+controls are traced separately in `docs/integration/hard_drivin_local_memory.md`.
+The storage-free exhaustive RTL decoder preserves the board's broad aliases;
+it does not instantiate a 68000, ROM, local RAM, or open-bus policy.
+
 The DSP exposes `TA0..TA11`, `TD0..TD15`, `/MEN`, `/DEN`, and `/TWE` to board
 logic. The drawings show four 20-pin `8168D45`-labeled SRAM slices. Every
 slice receives `RA0..RA11` and contributes four `TD` bits, establishing a

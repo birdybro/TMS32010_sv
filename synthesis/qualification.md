@@ -237,6 +237,14 @@ suppression, exact low-I/O target order, and fixed no-retry completion. It is
 not raw-pin CDC, physical F74 startup, complete TTL timing closure, or a
 Cyclone V fit.
 
+The nineteenth checked-in script targets the storage-free
+`hard_drivin_sound_local_memory_decode`. Yosys 0.67+111 reports 56 abstract
+combinational cells with 17 retained checks, no memory or latch, and zero
+structural problems. Together with exhaustive simulation, this qualifies the
+Rev-A ROM/high-bank/Y5/local-RAM equations, populated word-address
+projections, and local byte lanes. It does not qualify memory contents,
+raw-pin timing, a 68000 implementation, or a Cyclone V fit.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite

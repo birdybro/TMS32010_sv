@@ -1326,8 +1326,9 @@ objective passing evidence.
   storage-free `/READSTAT` mapper as 23 cells/eight checks. A sixteenth checks
   the storage-free raw `/SWITCHES` mapper as 10 cells/six checks. A seventeenth
   checks the masked low-host-read selector as 72 cells/13 checks. An eighteenth
-  checks the same-clock host-timing adapter as 142 cells/24 checks. All seven have
-  no memory/latch or structural problem.
+  checks the same-clock host-timing adapter as 142 cells/24 checks. A
+  nineteenth checks the storage-free local-68000 memory decoder as 56
+  cells/17 checks. All eight have no memory/latch or structural problem.
   This is not a
   Quartus mapping or completed sound-board fit. Full-core resources, a block-RAM-safe
   pipeline, pin-level wrapper constraints, and final timing remain.
@@ -1379,6 +1380,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_sound_control.md`,
   `docs/integration/hard_drivin_bio.md`,
   `docs/integration/hard_drivin_compare.md`,
+  `docs/integration/hard_drivin_local_memory.md`,
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
@@ -1399,6 +1401,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_switches.sv`,
   `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`,
   `sim/bus/tb_hard_drivin_sound_host_timing.sv`,
+  `sim/bus/tb_hard_drivin_sound_local_memory_decode.sv`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1541,8 +1544,8 @@ objective passing evidence.
   exact masks, and S7 side effects. Integrated Yosys retains three memories at
   2,966 cells/257 checks. It does not claim raw-pin CDC, open-bus policy, or
   electrical closure. The current
-  126/231/38/40/5/10 regression split, strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 hashes, and all 28 formal tasks from fourteen
+  127/231/38/41/5/10 regression split, strict lint across 29 modules, all
+  nineteen Yosys targets, all 33 hashes, and all 28 formal tasks from fourteen
   configurations pass. The host adapter's 16-step proof uses an explicit
   legal same-clock event contract and reaches read, write, and VPA covers; the
   12-step board proof reaches seven covers across all six implemented routing
@@ -1607,12 +1610,23 @@ objective passing evidence.
   four masked targets through S6, applies `/SOUNDRD`, complete-word
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
   and exposes `/SPEECH` without a side effect. The complete current
-  126/231/38/40/5/10 regression split and strict lint across 28 modules pass;
-  all eighteen Yosys targets and all 32 hashes pass. Formal qualification now
+  127/231/38/41/5/10 regression split and strict lint across 29 modules pass;
+  all nineteen Yosys targets and all 33 hashes pass. Formal qualification now
   comprises 28 tasks from fourteen configurations: the standalone adapter
   proof is bounded to 16 steps, and a separate 12-step board-routing proof
   checks seven covers across all six implemented timing-derived transaction
   classes and both partial-byte orientations with the DSP paused.
+  A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
+  local-68000 ROM and high-bank decode. The populated 27256 pair uses
+  `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`
+  and assigns Y4-Y7 to low I/O, the Y5 program/direct-I/O bank,
+  communication RAM, and local 6264 RAM. A13 further splits Y5 through raw
+  `/RAMCE`, `/PWE`, and `/PDEN` controls. The standalone storage-free decoder
+  exhausts 131,072 control/alias/lane combinations and synthesizes to 56
+  abstract cells/17 checks with no memory or latch. Pinned MAME's canonical
+  windows and wider declared ROM region remain `SC-034`; exact E1/E2 and
+  board-variant population remain `OQ-034`. This is decode evidence, not a
+  68000, memory storage, or raw-pin timing implementation.
 
 ## Milestone 22 — Release qualification
 

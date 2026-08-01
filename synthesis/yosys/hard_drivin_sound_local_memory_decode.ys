@@ -1,0 +1,10 @@
+read_verilog -sv rtl/wrappers/hard_drivin_sound_local_memory_decode.sv
+
+hierarchy -check -top hard_drivin_sound_local_memory_decode
+proc
+opt
+check -assert
+synth -top hard_drivin_sound_local_memory_decode
+check -assert
+stat
+write_json build/yosys/hard_drivin_sound_local_memory_decode.json

@@ -731,3 +731,35 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the physical decode and lane maps;
   CORROBORATED for the pinned emulator's recorded software abstraction;
   UNKNOWN for connector semantics and undriven host lanes.
+
+## SC-034 — Physical local-68000 aliases versus canonical emulator windows
+
+- **Primary board evidence:** A044427 drives both `27256D20` EPROM `/CE`
+  pins from `A23 OR /AS` and addresses the populated pair only from CPU
+  `A1:A15`. LS138 `30P` decodes high-bank `A16:A14` only while `A23=1` and
+  `/AS=0`; `A22:A17` are absent. The Y5 bank is then split by `A13` into
+  program-RAM controls and direct TMS `/PWE`/`/PDEN` controls
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 3-5 of
+  10, PDF pp. 5-10; ti-sn74ls138-datasheet, printed pp. 1-2;
+  ti-sn74als32-datasheet-sdas113b, printed p. 1].
+- **Secondary abstraction:** pinned MAME declares ROM only at
+  `0x000000-0x01ffff` and six canonical high windows from `0xff0000` through
+  `0xffffff`. Hard Drivin' sets load one `0x8000`-byte file in each EPROM
+  lane, while direct-TMS-I/O handlers mask their offset with seven
+  [mame-harddriv-audio-030fefc, `driversnd_68k_map`,
+  `hdsnd68k_320ports_r`, `hdsnd68k_320ports_w`, and Hard Drivin' soundcpu
+  ROM declarations].
+- **Conflict:** the 64 KiB populated payload corroborates two 27256 devices,
+  but a 128 KiB emulator region does not reproduce the populated pair's A16
+  mirror. MAME also omits the broad physical `A23=0` and `A22:A17` aliases.
+  Its `offset & 7` direct-I/O alias is a software convenience unless the
+  complete downstream physical TMS address decode independently selects that
+  target.
+- **Current treatment:** the storage-free board decoder exposes raw selects,
+  the exact populated word addresses, and the Y5 control split. Higher-level
+  software maps may retain canonical windows, but cannot describe omitted
+  aliases or padding as pin-equivalent. See `OQ-034` and
+  `docs/integration/hard_drivin_local_memory.md`.
+- **Confidence:** VERIFIED_PRIMARY for the Rev-A decode; CORROBORATED for the
+  canonical software ranges and 64 KiB payload; UNKNOWN for installed jumper
+  and later board variants.

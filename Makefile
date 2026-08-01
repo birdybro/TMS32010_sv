@@ -72,6 +72,7 @@ synth-yosys:
 			synthesis/yosys/tms32010_sequential_pipeline.ys \
 			synthesis/yosys/tms32010_mister.ys \
 			synthesis/yosys/hard_drivin_sound_bus_decode.ys \
+			synthesis/yosys/hard_drivin_sound_local_memory_decode.ys \
 			synthesis/yosys/hard_drivin_sound_program_ram.ys \
 			synthesis/yosys/hard_drivin_sound_rom_path.ys \
 			synthesis/yosys/hard_drivin_sound_dac_latch.ys \

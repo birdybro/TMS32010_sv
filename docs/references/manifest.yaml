@@ -903,6 +903,33 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "ti-sn74als32-datasheet-sdas113b",
+      "title": "Quadruple 2-Input Positive-OR Gates",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDAS113B",
+      "publication_date": "1982-04; revised 1994-12",
+      "revision": "B",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74als32.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDAS113B_SN74ALS32_Quadruple_OR_Gates.pdf",
+      "sha256": "12e4bf88c7cf5a831393c59085ec15658d74dd730cf93465271eea36d7420c3b",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for A044427's local-68000 ROM chip select and qualified upper/lower SRAM write-enable gates",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari A044427 as authority for actual board wiring and signal names.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, pinout, and positive-OR function table, printed page 1"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

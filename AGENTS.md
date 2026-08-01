@@ -501,6 +501,15 @@ interface carrier. Its qualified
 selection can come from the explicit callback or the opt-in timing adapter;
 only the separate S7 `/SOUNDRD` event clears the flag. Do not add an open-bus
 value or a combinational side effect to this storage-free composition.
+The standalone storage-free `hard_drivin_sound_local_memory_decode` preserves
+A044427's local-68000 ROM gate, all eight high-bank LS138 outputs, Y5
+program-RAM/direct-I/O subdecode, Y6 communication select, Y7 local-RAM
+select, local byte write enables, and populated 27256/6264 address
+projections. Its broad physical aliases intentionally differ from MAME's
+canonical windows under `SC-034`. Read
+`docs/integration/hard_drivin_local_memory.md` before changing this path. Do
+not add ROM/RAM contents, a larger-EPROM jumper mode, or an open-bus value
+until `OQ-034` and the relevant electrical/storage boundary are resolved.
 The standalone `hard_drivin_sound_communication_path` now implements that
 FPGA storage/control boundary with explicit validity for the physically
 uncleared LS191/port-6 state. Its exhaustive test and memory-retaining Yosys

@@ -26,7 +26,7 @@ asynchronous data-RAM read currently lowers to registers and muxes rather than
 a memory block. The portable multiply operator remains technology-neutral;
 the current Cyclone V flow infers one DSP block.
 
-The command runs eighteen checked-in scripts. The main synthesis harness targets
+The command runs nineteen checked-in scripts. The main synthesis harness targets
 the legacy multicycle phase wrapper and writes `build/yosys/tms32010.json`.
 The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
@@ -149,6 +149,13 @@ problems. This qualifies the explicit-enable logical S2-through-S7 sequence,
 `/RVF` alias decode, VPA suppression, fixed completion, and no-retry contract;
 it is not a Cyclone V fit, raw-pin CDC, physical power-up result, or
 nanosecond electrical closure.
+
+The nineteenth script targets the storage-free
+`hard_drivin_sound_local_memory_decode`. It reports 56 abstract combinational
+cells, 17 retained checks, no memory or latch, and zero structural problems.
+This qualifies the Rev-A ROM/high-bank/Y5/local-RAM Boolean decode, populated
+word-address projections, and local byte-lane controls only; it is not memory
+storage, a 68000 bridge, a Cyclone V fit, or electrical timing closure.
 
 ## Quartus
 

@@ -1,19 +1,19 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' opt-in same-clock local-68000 bridge
+- **Current milestone:** Hard Drivin' local-68000 memory decode
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 126 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 127 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 40 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 41 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 32 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 33 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -82,6 +82,9 @@
   An eighteenth target checks the standalone explicit-enable local-68000 host
   timing adapter at 142 abstract cells, 24 retained checks, no memory/latch,
   and zero structural problems.
+  A nineteenth target checks the storage-free local-68000 memory decoder at
+  56 abstract combinational cells, 17 retained checks, no memory/latch, and
+  zero structural problems.
 - **Formal status:** all 28 tasks from 14 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -680,13 +683,25 @@
   Integrated Yosys retains three memories at 2,966 cells/257 checks. This does
   not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
-  126/231/38/40/5/10 regression split, strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 hashes, and all 28 tasks from fourteen formal
+  127/231/38/41/5/10 regression split, strict lint across 29 modules, all
+  nineteen Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
   configurations pass. The adapter's dedicated 16-step bounded harness uses
   the documented legal same-clock event contract and reaches read, write, and
   VPA paths; the 12-step board harness reaches seven covers across all six
   implemented routing classes and both partial-byte orientations with the
   processor paused.
+- **New local-68000 memory-decode evidence:** A044427 sheets 3-5 and newly
+  pinned TI SDAS113B establish the ROM `/CE=A23 OR /AS` gate, all eight LS138
+  `30P` high-bank outputs, Y5's A13-selected program-RAM versus direct-TMS-I/O
+  controls, Y6 communication selection, and Y7 local-RAM selection. The
+  populated 27256 pair uses CPU `A15:A1`; the local 6264 pair uses `A13:A1`
+  with separate `/UDS`/`/LDS` write enables and complete-word read drive. The
+  storage-free RTL exhausts 131,072 combinations over `/AS`, `RVA`, `/RVAS`,
+  `A23`, every ignored `A22:A17` alias, all banks, A13, direction, and byte
+  strobes. Strict lint now covers 29 modules, and all nineteen Yosys targets
+  pass; the new target reports 56 cells/17 checks. Pinned MAME's canonical
+  windows and 128 KiB declared ROM region do not reproduce the physical
+  aliases (`SC-034`). The exact E1/E2 production option remains `OQ-034`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -710,13 +725,16 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
+  exact local-68000 E1/E2 EPROM strap/variant population and noncanonical
+  direct-TMS-I/O aliases,
   Hard Drivin' signed-audio DAC interpretation under `OQ-020`, and
   board-revision equivalence;
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** investigate the local-68000 program ROM/RAM decode needed for
-  TM-327's synthetic program-memory diagnostics without assigning an open-bus
-  value.
+- **Next task:** compose the qualified local-memory decode with the same-clock
+  host timing boundary and define ROM/local-RAM storage callbacks for
+  synthetic TM-327-style diagnostics without embedding copyrighted ROM data
+  or assigning an open-bus value.
 - **Latest committed baseline before this cycle:**
-  `707289b`
+  `37c3813`
