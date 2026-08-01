@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 44 pinned
+  until permission is demonstrated. The ignored cache now verifies 45 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -72,6 +72,8 @@ objective passing evidence.
   Motorola's exact 1985 MC68681 advance information and the official archived
   MC68HC681 successor manual now qualify the independently clocked DUART
   acknowledge boundary without transferring successor-only behavior.
+  TI SDLS013A now qualifies the active-low B:A/Y0-Y3 truth table for both
+  SP-327 LS139 subdecoders.
 
 ## Milestone 3 — Architecture specification
 
@@ -1419,6 +1421,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `sim/bus/tb_hard_drivin_main_address_decode.sv`,
   `sim/bus/tb_hard_drivin_main_dtack_decode.sv`,
   `sim/bus/tb_hard_drivin_main_duart_timing.sv`,
   `sim/bus/tb_hard_drivin_main_hsbus_timing.sv`,
@@ -1428,6 +1431,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_reset_source.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_interlock.sv`,
   `formal/hard_drivin_main_dtack_decode.sby`,
+  `formal/hard_drivin_main_address_decode.sby`,
   `formal/hard_drivin_main_sound_reset_decode.sby`,
   `formal/hard_drivin_main_rvas_timing.sby`,
   `formal/hard_drivin_sound_direct_io.sby`,
@@ -1727,6 +1731,13 @@ objective passing evidence.
   3.6864 MHz device clock, and pulled-up active-low open-drain `/DUDTACK`.
   The composed DUART test preserves arbitrary external latency, late ACK,
   raw-select release with a still-low device pin, and sampled hold release.
+  SP-327 sheet 4 plus TI SDLS014/SDLS013A now resolve the main primary LS138,
+  RAM-region LS139, and `/RVAS0`-qualified HSBUS LS139. The standalone decoder
+  exhausts all 1,024 consumed `A23:A14` values with both `/AS` and `/RVAS0`,
+  explicitly tests ignored-bit mirrors and canonical MAME windows, passes a
+  one-step proof with six covers, and synthesizes to 49 cells/20 checks. It
+  exposes all active-low outputs, including unconnected Y1/Y2 and Y2/Y3,
+  without assigning peripheral-internal register behavior.
   The original system `/RESET` driver, workload-specific TMS34010 latency,
   exact cross-clock phase, raw CDC, and electrical timing remain `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,

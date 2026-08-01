@@ -62,6 +62,9 @@ traced separately in `hard_drivin_main_bus_timing.md`: `/RVA` asynchronously
 asserts `/RVAS`, while only a falling-8-MHz-sampled `/DTACK` low-to-high
 transition releases it
 [atari-hard-drivin-schematic-package-sp327, sheets 4 and 7, PDF pp. 5 and 8].
+The standalone `hard_drivin_main_address_decode` now transcribes and
+exhaustively verifies that complete primary LS138 output set; see
+`hard_drivin_main_address_decode.md` for all regions and aliases.
 The package shows `/RESET` as a main-CPU input and RUN-indicator input, but the
 reviewed sheets do not establish its original driving source. That remaining
 system-level origin is `OQ-036`.

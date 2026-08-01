@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-board MC68681 acknowledge
+- **Current milestone:** Hard Drivin' main-board physical address decode
   qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
@@ -8,13 +8,13 @@
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 52 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 53 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 44 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 45 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -109,7 +109,10 @@
   A twenty-seventh target checks the complete storage-free main `/VPA`/
   ordinary-RVA/HSBUS-wait/DUART `/DTACK` cone at 21 cells/eight retained
   checks, with no memory, latch, generated clock, or structural problem.
-- **Formal status:** all 40 tasks from 20 SymbiYosys configurations pass with
+  A twenty-eighth target checks the storage-free main primary/RAM/HSBUS
+  address decoder at 49 cells/20 retained checks, with no memory, latch,
+  generated clock, or structural problem.
+- **Formal status:** all 42 tasks from 21 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -856,8 +859,8 @@
   active-low `HCS` is inactive. The gate model therefore correctly retains
   both signals as peripheral-owned inputs; the composed test now exercises
   each wait source independently. The two Atari drawings and TI guide bring
-  the pinned total to 42. Workload-specific host-interface latency, the full
-  chip-select address decode, propagation margin, and CDC remain open.
+  the pinned total to 42. Workload-specific host-interface latency,
+  propagation margin, and CDC remain open.
 - **New DUART acknowledge evidence:** SP-327 sheet 6 connects `/RDUART`
   directly to MC68681 `CS`, uses a dedicated 3.6864 MHz crystal, and pulls
   pin-9 `/DUDTACK` high through 4.7 kΩ. Motorola ADI988R1 defines that pin as
@@ -868,6 +871,13 @@
   later sampled release of both held strobes. The exact-device and official
   successor publications bring the pinned total to 44; successor-only write
   behavior is not transferred to Atari's part.
+- **New main address-decode evidence:** SP-327 sheet 4 plus TI SDLS014 and
+  newly pinned SDLS013A resolve the `/AS`-qualified `A23:A21` LS138, the
+  `/RAMEN` `A15:A14` LS139, and the `/RVAS0`-qualified HSBUS LS139. Exhaustive
+  simulation covers all 4,096 consumed address/control combinations and
+  directs ignored-bit aliases, including physical DUART/GSP/MSP selections
+  broader than MAME's canonical handlers. One-step BMC and six covers pass;
+  the storage-free target is 49 cells/20 checks. The pinned total is 45.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -892,8 +902,8 @@
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
-  main-bus peripheral response latency, complete GSP/MSP selection decode,
-  exact DUART/main-clock phase and raw-CDC/electrical timing, platform tick calibration, and
+  main-bus peripheral response latency, exact DUART/main-clock phase and
+  raw-CDC/electrical timing, platform tick calibration, and
   future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
@@ -903,8 +913,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the complete SP-327 sheet-4 main address decoder,
-  including the broad `/DUART` and `/GSP`/`/MSP` mirrors, before composing it
-  with the already verified acknowledge blocks.
+- **Next task:** compose the verified main address decoder with the held-
+  strobe and `/DTACK` blocks for address-driven GSP, MSP, DUART, and ordinary
+  expansion-bus cycles without adding peripheral latency policy.
 - **Latest committed baseline before this cycle:**
-  `58d7d5b`
+  `9dc6959`

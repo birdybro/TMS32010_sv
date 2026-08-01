@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 44-source
+- Reference-provenance policy, safe acquisition/hash tools, a 45-source
   integrity-pinned catalog, and living engineering backlog.
 - Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and
   MSP sheets plus TI's 1988 TMS34010 User's Guide. The drawings connect each
@@ -579,6 +579,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/DUDTACK` high through 4.7 kΩ. A composed test retains arbitrary device
   wait, accepts late ACK, and checks select/release ordering without inventing
   fixed main-clock latency.
+- Primary qualification of SP-327's `/AS`-enabled LS138 and both LS139
+  subdecoders, backed by the newly pinned TI SDLS013A data sheet. The
+  storage-free RTL exposes all active-low outputs and preserves physical
+  `/DUART`, `/GSP`, and `/MSP` aliases that are broader than MAME's canonical
+  software-facing handlers.
 
 ### Changed
 
@@ -593,8 +598,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   unreset power-up state, and raw CDC boundary; both discrete held-strobe
   dependencies and the complete combinational `/DTACK` cone are now
   primary-resolved. The GSP/MSP ready protocol and generic MC68681
-  acknowledge contract are now resolved; workload phase, electrical margin,
-  and full address-select qualification remain open.
+  acknowledge contract and physical primary/peripheral address-select
+  qualification are now resolved; workload phase, electrical margin, and raw
+  CDC remain open.
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
@@ -744,10 +750,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 ### Verified
 
 - The complete repository gates pass with 129 provenance/document/tool tests,
-  231 model/unit tests, 38 instruction/decode RTL tests, 52 bus/integration
+  231 model/unit tests, 38 instruction/decode RTL tests, 53 bus/integration
   tests, 5 interrupt RTL tests, and 10 differential tests. Verilator lint
-  checks 37 modules; all 40 formal jobs from 20 configurations pass; all 27
-  Yosys targets synthesize; and all 44 acquired reference hashes verify.
+  checks 38 modules; all 42 formal jobs from 21 configurations pass; all 28
+  Yosys targets synthesize; and all 45 acquired reference hashes verify.
+- The main address-decode regression exhausts all 1,024 `A23:A14` values
+  across both `/AS` and `/RVAS0` levels, then directs canonical and physically
+  mirrored DUART, RAM, GSP, and MSP selections. Its one-step BMC proves the
+  LS138 and named LS139 equations and reaches six covers. Yosys reports 49
+  cells/20 retained checks with no memory, latch, generated clock, or
+  structural problem.
 - The `/DTACK` decode regression exhausts all 4,096 raw input combinations;
   its one-step BMC proves every intermediate/final equation and six covers
   reach ordinary ACK, CPU-space VPA, both HSBUS wait states, and both DUART

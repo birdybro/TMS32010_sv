@@ -26,6 +26,9 @@
   `/DTACK` cone plus `/AS`-to-`RVA` request capture and sampled-`/DTACK`
   `/RVAS` hold/release timing, kept distinct from the local sound-68000 bus
   sequencer.
+- `hard_drivin_main_address_decode.md`: SP-327 main-board primary LS138,
+  RAM/DUART LS139, and `/RVAS0`-qualified GSP/MSP LS139 decode, including
+  physical address mirrors hidden by canonical software maps.
 - `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
   state, board-reset effects, and standalone FPGA callback boundary.
 - `hard_drivin_host_timing.md`: primary-transcribed local 68000 `RVA`,
@@ -90,6 +93,12 @@ nets as direct TMS34010 `HRDY` outputs. SP-327 and Motorola ADI988R1 likewise
 qualify `/DUDTACK` as the independently clocked MC68681 open-drain
 acknowledgement. The storage-free block correctly leaves all peripheral-owned
 levels and their latency outside the gate model.
+
+`rtl/wrappers/hard_drivin_main_address_decode.sv` separately transcribes the
+SP-327 primary, RAM, and high-speed-host address decoders. It exposes all
+active-low TTL outputs, including unconnected outputs, so broad aliases and
+one-hot selection remain testable. It contains no peripheral register model
+or response timing.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address

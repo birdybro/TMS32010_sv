@@ -94,8 +94,14 @@ MC68681 `CS`, `/DUDTACK` is its active-low open-drain `DTACK` output with a
 3.6864 MHz crystal. A composed test accepts arbitrary peripheral wait, then
 checks late acknowledge, raw-select release while `/DUDTACK` remains low, and
 the later sampled `/RVAS` release. No fixed 8 MHz latency is inferred.
-Electrical propagation and raw CDC remain external.
-See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
+Electrical propagation and raw CDC remain external. SP-327 sheet 4 and the
+TI LS138/LS139 function tables now also resolve the upstream physical address
+selection: `/AS` and `A23:A21` select the primary region; `/RAMEN` plus
+`A15:A14` select `/DUART`, `/ZRAM`, `/RAM0`, or `/RAM1`; and `/RHSBUS` plus
+`A15:A14` select `/GSP` or `/MSP`. The full output vectors and broad aliases
+are verified separately from MAME's narrower canonical handlers. See
+`hard_drivin_main_address_decode.md` and `hard_drivin_main_bus_timing.md`.
+**Confidence: VERIFIED_PRIMARY
 for decode, transport, both logical hold chains, graphics-wait ownership,
 graphics-ready polarity, and the generic MC68681 acknowledge contract;
 VERIFIED_SIMULATION/FORMAL for the three standalone RTL blocks; UNKNOWN for

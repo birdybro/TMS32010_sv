@@ -438,6 +438,15 @@ physical-edge enables and a fully settled VPA-owned release, proves the
 common-clock logical equations and no-retry behavior, and reaches read, write,
 and VPA covers. Do not extend that bounded claim to board-top side effects,
 raw-pin CDC, or electrical timing.
+SP-327 sheet 4 now has a separate storage-free
+`hard_drivin_main_address_decode` transcription for the `/AS`-enabled
+`A23:A21` primary LS138, the `/RAMEN` `A15:A14` LS139, and the
+`/RVAS0`-qualified HSBUS LS139. It preserves all active-low outputs and the
+broad physical DUART/GSP/MSP aliases hidden by MAME's canonical handlers.
+Read `docs/integration/hard_drivin_main_address_decode.md` and
+`hard_drivin_main_bus_timing.md` before modifying or composing this path. It
+does not model peripheral registers, response latency, raw CDC, or electrical
+propagation.
 The separate 12-step `hard_drivin_sound_host_routing` harness instantiates the
 board hierarchy with the processor paused, selects one symbolic transaction
 from six routed host classes with a symbolic partial-byte orientation, holds

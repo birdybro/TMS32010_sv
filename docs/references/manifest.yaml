@@ -338,7 +338,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
-        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; and separate /RVA-preset /RVAS chain",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 LS138 primary decode; /RAMEN- and /RHSBUS-enabled A15:A14 LS139 subdecoders; /RHSBUS and /RDUART qualifiers; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; and separate /RVA-preset /RVAS chain",
         "SP-327 sheet 6, PDF page 7: /RDUART connection to MC68681 CS pin 35; 3.6864 MHz crystal; pin-9 /DUDTACK output with R49=4.7 kΩ pull-up; data/address wiring",
         "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
       ],
@@ -461,7 +461,9 @@
       "notes": "Sound-board behavior is split into harddriv_a.cpp in this commit.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Hard Drivin' serialroms region size, four 0x10000-byte loads, and physical socket labels"
+        "Hard Drivin' serialroms region size, four 0x10000-byte loads, and physical socket labels",
+        "driver_68k_map around lines 562-566: canonical GSP, MSP, DUART, ZRAM, and main RAM software-facing address ranges",
+        "Machine configuration around lines 1500-1501: main MC68681 and 3.6864 MHz clock"
       ],
       "status": "acquired",
       "download": {
@@ -758,7 +760,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component truth table for A044427 sound-ROM and main-side /SRES decode",
+      "relevance": "Primary component truth table for A044427 sound-ROM, main-side /SRES, and SP-327 main primary address decode",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
       "may_commit": false,
@@ -1240,6 +1242,35 @@
         "Sections 1.1-1.2, printed pages 1-3 through 1-4, PDF pages 15-16: DTACK control ownership and the X1-clock dependency",
         "Section 2.7, printed page 2-4, PDF page 21: active-low tri-state DTACK and active-rescind description",
         "Section 5.5.3 and Figures 5-3 through 5-4, printed pages 5-4 through 5-6, PDF pages 58-60: detailed read/write timing and explicit MC68681-versus-MC68HC681 write-latch distinction"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "ti-sn74ls139a-datasheet",
+      "title": "Dual 2-Line to 4-Line Decoders/Demultiplexers",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS013A",
+      "publication_date": "1972-12",
+      "revision": "Revised March 1988",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls139a.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SN74LS139A_Dual_2-Line_to_4-Line_Decoders_Rev_A.pdf",
+      "sha256": "15432426418048540261fe1867c5f364d3bdb7388d4709af67de51997dc7edc3",
+      "document_type": "primary manufacturer logic data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Texas Instruments publication; redistribution permission not established",
+      "relevance": "Primary function-table authority for the two LS139 active-low subdecoders at Atari SP-327 location 180E",
+      "authority_level": 2,
+      "notes": "Component truth-table authority only; Atari SP-327 remains the authority for board wiring, enable sources, signal names, and populated part. Keep only in ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Printed page 1, PDF page 1: active-low enable, B:A select order, active-low Y0-Y3 function table, pinout, and device description",
+        "Printed page 2, PDF page 2: positive-logic internal gate diagram",
+        "Printed page 3, PDF page 3: LS-family switching characteristics for future electrical timing analysis"
       ],
       "status": "acquired",
       "download": {

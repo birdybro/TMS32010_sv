@@ -11,6 +11,8 @@ and TI defines their common host-ready protocol. SP-327 plus Motorola's exact
 MC68681 publication likewise qualify the DUART acknowledge boundary.
 Device-internal response latency, raw clock-domain relationships, and
 nanosecond timing margin remain outside the implemented blocks.
+The upstream primary and peripheral chip selects are transcribed separately
+in `hard_drivin_main_address_decode.md`.
 
 ## Primary logic trace
 
@@ -225,6 +227,11 @@ main-board gate block.
 `/VPA`, `/RHSBUS`, `/RDUART`, all three acknowledgement terms, and final
 `/DTACK` for traceability. It imposes no legal-cycle assumptions and therefore
 preserves even contradictory raw input combinations for exhaustive checking.
+`hard_drivin_main_address_decode` separately produces the raw `/HSBUS` and
+`/DUART` inputs from physical address and `/AS`, plus `/RHSBUS`, `/GSP`, and
+`/MSP` from `/RVAS0`. The timing compositions still drive raw selects directly
+so each block remains independently testable; a full address/timing
+composition is the next integration boundary.
 
 ## Verification evidence
 

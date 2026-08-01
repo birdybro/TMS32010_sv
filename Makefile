@@ -71,6 +71,7 @@ synth-yosys:
 			synthesis/yosys/tms32010.ys \
 			synthesis/yosys/tms32010_sequential_pipeline.ys \
 			synthesis/yosys/tms32010_mister.ys \
+			synthesis/yosys/hard_drivin_main_address_decode.ys \
 			synthesis/yosys/hard_drivin_main_dtack_decode.ys \
 			synthesis/yosys/hard_drivin_main_rvas_timing.ys \
 			synthesis/yosys/hard_drivin_main_sound_reset_decode.ys \
