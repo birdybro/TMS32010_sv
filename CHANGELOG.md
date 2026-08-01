@@ -169,6 +169,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   `/RVAS` through the S7 read-data latch boundary. It records the lack of
   READY/retry behavior and separates the resolved logical sequence from the
   still-open electrical margin and power-up transient under `OQ-033`.
+- A synthesizable standalone Driver Sound host-timing adapter with explicit
+  8 MHz edge and `/AS` events, complete address/control capture, exact
+  `/VPA`/`RVA`/`/DTACK`/`/RVAS`/`/RVF` outputs, global byte-write strobes,
+  one-hot low-I/O selection, and qualified completion pulses. It deliberately
+  has no READY input and labels deterministic initialization as FPGA-only.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -1226,6 +1231,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   by SHA-256. Cross-sheet pin tracing now checks that low-I/O LS138 `30N`
   requires `/RVF` as well as `/RVAS`, and the documented MC68000 edge table
   accounts for every F74 transition from `/AS` assertion through S7.
+- The standalone host-timing regression passes 8,192 exhaustive
+  alias/address/direction/quadrant transactions plus directed byte-strobe,
+  VPA, delayed-release, held-`/AS` no-retry, and FPGA-reinitialization cases.
+  Yosys reports 136 abstract cells, 21 retained checks, no memory or latch,
+  and zero structural problems. The complete current regression passes 126
+  repository/tool, 231 model/unit, 38 instruction RTL, 40 bus/wrapper, 5
+  interrupt, and 10 differential tests; strict lint across 28 modules, all
+  eighteen Yosys targets, all 32 reference hashes, and the existing 24 formal
+  tasks pass. The adapter itself does not yet have a dedicated formal harness.
 - The complete current regression passes 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase/wrapper tests including the exhaustive mailbox test and

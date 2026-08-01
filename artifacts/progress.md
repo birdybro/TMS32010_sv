@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' local-68000 host-cycle timing research
+- **Current milestone:** Hard Drivin' same-clock local-68000 host timing adapter
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 125 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 126 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 39 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 40 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -79,6 +79,9 @@
   A seventeenth target checks the storage-free masked low-host-read selector
   at 68 abstract cells, 13 retained checks, no storage/latch, and zero
   structural problems.
+  An eighteenth target checks the standalone explicit-enable local-68000 host
+  timing adapter at 136 abstract cells, 21 retained checks, no memory/latch,
+  and zero structural problems.
 - **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -642,6 +645,22 @@
   RAM, TMS32010 communication/program RAM, IRQ, DAC, tune/sweep, and block
   latch diagnostics. No RTL was added: full TTL propagation/loading margin
   and unreset power-up transients remain explicit `OQ-033` work.
+- **New logical host-adapter evidence:**
+  `hard_drivin_sound_host_timing` implements the isolated same-clock
+  S2-through-S7 boundary with mutually exclusive 8 MHz enables, distinct
+  `/AS` events, complete address/control capture, `/VPA` suppression, exact
+  `/RVF` and eight-way target decode, global byte-write strobes, and qualified
+  one-clock completions. It has no READY input. Simulation exhausts all 8,192
+  `A22:A17` alias, `A23`, `A16:A14`, read/write, and quadrant combinations,
+  then directs every UDS/LDS state, CPU-space VPA, delayed `/AS` release,
+  held-`/AS` no-retry behavior, and mid-cycle deterministic FPGA
+  initialization. Yosys 0.67+111 reports 136 cells/21 checks with no
+  memory/latch or structural problem. It is standalone and does not close
+  `OQ-033` raw-pin CDC, TTL margin, or physical startup. The complete current
+  126/231/38/40/5/10 regression split, strict lint across 28 modules, all
+  eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
+  pass. The adapter itself has exhaustive simulation but no dedicated formal
+  harness yet.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -670,10 +689,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** implement and exhaustively verify a standalone same-clock
-  logical `RVA`/`/DTACK`/`/RVAS` plus `/RVF` adapter using explicit 8 MHz edge
-  enables, fixed zero-wait completion, deterministic FPGA-only initialization,
-  and no arbitrary ready input; keep `OQ-033` electrical timing outside its
-  claim.
+- **Next task:** connect the qualified standalone timing outputs to the masked
+  read selector and existing whole-word completion callbacks behind an
+  explicit opt-in board-top interface, while keeping raw-pin CDC, open-bus,
+  byte-write policy, and `OQ-033` electrical closure outside the adapter.
 - **Latest committed baseline before this cycle:**
-  `4a3d908`
+  `332c479`

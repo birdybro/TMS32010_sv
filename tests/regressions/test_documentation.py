@@ -373,6 +373,28 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("OQ-030", questions)
         self.assertIn("OQ-032", questions)
 
+    def test_hard_drivin_host_timing_preserves_fixed_primary_sequence(self) -> None:
+        host_timing = (
+            DOCS / "integration" / "hard_drivin_host_timing.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "`A22:A17` are not inputs",
+            "both `/RVF` and `/RVAS`",
+            "rising edge entering S4",
+            "falling edge entering S7",
+            "no READY input",
+            "cannot reassert merely",
+            "hard_drivin_sound_host_timing.sv",
+            "8,192 complete",
+            "136 abstract cells",
+            "21 checks",
+        ):
+            self.assertIn(required, host_timing)
+        self.assertIn("OQ-033", questions)
+
     def test_hard_drivin_mailboxes_preserve_reset_and_conflict_scope(self) -> None:
         mailboxes = (
             DOCS / "integration" / "hard_drivin_host_mailboxes.md"

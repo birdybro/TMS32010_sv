@@ -227,6 +227,15 @@ This proves only invalid-selection suppression, physical quadrant order,
 one-hot target visibility, and masked-source forwarding; it is not a 68000
 strobe/DTACK, side-effect, open-bus, or timing implementation.
 
+The eighteenth checked-in script targets `hard_drivin_sound_host_timing`.
+Yosys 0.67+111 reports 136 abstract cells with 21 retained checks, no memory
+or latch, and zero structural problems. Together with the exhaustive
+simulation, this qualifies only the same-clock logical edge adaptation,
+`/RVF` alias qualification, VPA
+suppression, exact low-I/O target order, and fixed no-retry completion. It is
+not raw-pin CDC, physical F74 startup, complete TTL timing closure, or a
+Cyclone V fit.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite

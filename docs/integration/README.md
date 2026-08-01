@@ -91,6 +91,13 @@ storage-free selector forwards the four low read sources and their masks in
 Atari LS138 order without generating a read cycle or side effect. All paths
 leave the complete-word open-bus policy to a future host bridge.
 
+`rtl/wrappers/hard_drivin_sound_host_timing.sv` now implements the isolated
+same-clock logical `RVA`/`/DTACK`/`/RVAS` and `/RVF` boundary with explicit
+8 MHz edge and `/AS` events. It exposes exact low-I/O target/completion state,
+has no READY input, and preserves the board's lack of a held-`/AS` retry. It
+is not yet connected to the board top and does not claim physical power-up or
+nanosecond timing closure under `OQ-033`.
+
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a
 separate Hard Drivin'-specific integration layer after their evidence is

@@ -82,6 +82,7 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_read_status.ys \
 			synthesis/yosys/hard_drivin_sound_switches.ys \
 			synthesis/yosys/hard_drivin_sound_host_read_mux.ys \
+			synthesis/yosys/hard_drivin_sound_host_timing.ys \
 			synthesis/yosys/hard_drivin_sound_mister.ys \
 			synthesis/yosys/hard_drivin_sound_communication_path.ys \
 			synthesis/yosys/hard_drivin_sound_bio_generator.ys; do \

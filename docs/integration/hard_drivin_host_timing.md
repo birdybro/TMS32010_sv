@@ -165,6 +165,52 @@ If a MiSTer system uses a separately clocked 68000 core, the boundary requires
 an explicit CDC or a common-clock enable contract. This document does not
 choose between them.
 
+## Standalone logical adapter
+
+`rtl/wrappers/hard_drivin_sound_host_timing.sv` implements the qualified
+same-clock boundary. It accepts mutually exclusive 8 MHz rising/falling
+enables plus distinct `/AS` assertion and deassertion events. On assertion it
+captures the complete stable `A23:A1`, function code, `RWN`, `/UDS`, and
+`/LDS`. It then exposes:
+
+- `RVA`, `/VPA`, `/DTACK`, `/RVAS`, and `/RVF` logical levels;
+- global `/RWS`, `/WEU`, and `/WEL` write qualification;
+- exact active-high one-hot LS138 `30N` target visibility;
+- read/write selection and `A13:A12` quadrant state;
+- one-clock ordinary-cycle and qualified low-I/O read/write completion pulses;
+  and
+- the full captured address so high aliases are not discarded by the timing
+  boundary.
+
+The module has no READY input. A normal completion occurs only after F74 `50S`
+has sampled low `/DTACK`, `RVA` has deasserted, and the following falling-edge
+enable represents S7. CPU-space cycles hold `/VPA` active and never emit that
+ordinary completion. `/AS` deassertion remains a distinct event so the model
+can represent processor propagation after the S7 edge and the longer external
+VPA-owned sequence. `initialize_i` chooses idle `RVA=0`,
+`dtack_seen=1`, and no active cycle solely as a deterministic FPGA convention.
+**Confidence: VERIFIED_SIMULATION for this logical same-clock adaptation;
+not physical power-up or nanosecond timing evidence.**
+
+## Verification and synthesis
+
+`tb_hard_drivin_sound_host_timing` exhausts all 64 combinations of physically
+ignored `A22:A17`, both `A23` values, all eight `A16:A14` selections, both
+read/write directions, and all four `A13:A12` quadrants: 8,192 complete
+ordinary transactions. Every transaction checks `/RVF`, exact one-hot target
+order, S4 acknowledgement/select assertion, S5 hold capture, S6 `RVA` and
+`/DTACK` release with continued `/RVAS`, S7 completion/release, and qualified
+read/write pulses. Directed cases additionally check all `/UDS`/`/LDS`
+combinations, CPU-space `/VPA` suppression, delayed `/AS` release, absence of
+a held-`/AS` retry, and deterministic mid-cycle FPGA reinitialization.
+
+Twenty-one retained assertions cover legal event combinations, exact Boolean
+outputs, target uniqueness, state capture, rising/falling transition state,
+ordinary completion qualification, and `/AS` release ownership. Yosys
+0.67+111 reports 136 abstract cells, 21 checks, no inferred latch or memory,
+and zero structural problems. This is pre-technology portable synthesis, not
+a Cyclone V fit or `OQ-033` electrical closure.
+
 ## Diagnostic-software evidence
 
 Atari TM-327's Sound Board menu says the local 68000 tests the program ROM,

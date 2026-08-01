@@ -1377,7 +1377,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_mailboxes.sv`,
   `sim/bus/tb_hard_drivin_sound_read_status.sv`,
   `sim/bus/tb_hard_drivin_sound_switches.sv`,
-  `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`
+  `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`,
+  `sim/bus/tb_hard_drivin_sound_host_timing.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1505,7 +1506,15 @@ objective passing evidence.
   edge. The path has no READY input or held-`/AS` retry. Its exact edge table
   and FPGA requirements are cited in `hard_drivin_host_timing.md`; complete
   electrical propagation/loading margin and unreset power-up transients remain
-  `OQ-033`, so no RTL transaction wrapper is claimed yet. Atari TM-327 is now
+  `OQ-033`. The standalone same-clock logical adapter now uses explicit
+  8 MHz and `/AS` events with no READY input. Its regression exhausts 8,192
+  alias/address/direction/quadrant transactions and directs VPA, byte-strobe,
+  delayed-release, no-retry, and FPGA-initialization cases; Yosys reports 136
+  cells/21 checks with no latch or structural problem. It is not board-top
+  connected and does not claim raw-pin CDC or electrical closure. The current
+  126/231/38/40/5/10 regression split, strict lint across 28 modules, all
+  eighteen Yosys targets, all 32 hashes, and the existing 24 formal tasks
+  pass; the adapter has no dedicated formal harness yet. Atari TM-327 is now
   pinned and records local-68000 program/program-RAM tests plus TMS32010
   communication-RAM, IRQ, DAC, tune/sweep, and block-latch diagnostics as
   future synthetic qualification targets. The new standalone
