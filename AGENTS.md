@@ -262,6 +262,11 @@ Only the explicit reserved-bit class may be called reserved. Pattern mismatch
 and primary-unlisted do not establish execution behavior; the current model/RTL
 trap remains conservative project policy. The reserved-encoding audit is not
 complete.
+Original data storage is verified only at `0x00`-`0x8f`. Ordinary effective
+addresses `0x90`-`0xff` remain `OQ-002`/`SC-041`; model/RTL rejection and the
+standalone RAM's diagnostic zero are not silicon claims. Read
+`docs/research/ram_invalid_decode_experiment.md` before changing that boundary
+or running the undefined-write probes; the read-only fixture must run first.
 RTL and seeded differential support the same set except POP and PUSH, for
 fifty-eight shared instructions. CALA/RET use ADR-0003's reversible
 `INFERRED` discarded-sequential/selected-target mapping under `OQ-007`;

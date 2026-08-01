@@ -21,8 +21,14 @@ Sources: [ti-tms32010-users-guide-spru001b, §§2.1.1, 2.3, printed
 pp. 2-3, 2-15–2-18 (PDF pp. 27, 39–42)]. **Confidence:
 VERIFIED_PRIMARY.**
 
-The behavior of data addresses `0x90`–`0xff` is not assigned (`OQ-002`).
-Expanded RAM in the TMS320C15 is outside the default device scope.
+The behavior of data addresses `0x90`–`0xff` is not assigned (`OQ-002`/
+`SC-041`). Direct DP-plus-seven-bit and indirect eight-bit formation can
+present those values, but address reach does not prove implemented storage or
+define an absent select. Expanded RAM in the TMS320C15 is outside the default
+device scope. A reproducible experiment now separates a read-only controlled-
+history sweep from ascending/descending unique-sentinel write sweeps; none has
+an expected absent-region result
+[`docs/research/ram_invalid_decode_experiment.md`].
 
 SPRU001B prints page 1 once as locations 128-144 even though the same section
 says there are 144 total words. SPRU002B and the later TI family guide use the
@@ -88,6 +94,16 @@ the portable block's zero read output when invalid. The last result is only
 the current verification-interface policy: it does not establish an
 original-chip value for `0x90`–`0xff` or weaken the core's trap-before-effects
 boundary under `OQ-002` [`formal/tms32010_internal_ram.sby`].
+
+The corresponding physical protocol deliberately runs a read-only
+controlled-history sweep before any undefined write. It observes every absent
+address after both `0x0000` and `0xffff` legal reads. Only then do separate
+ascending and descending probes write unique full-AR sentinels, scan all 144
+valid words, and read back all 112 absent selects. This order distinguishes
+open/dynamic-value candidates from write alias or corruption without declaring
+zero-fill, hidden storage, modulo aliasing, or instruction suppression. The
+current trap remains **PROVISIONAL** and physical behavior remains **UNKNOWN**
+[`docs/research/ram_invalid_decode_experiment.md`, `SC-041`].
 
 `LST` performs one ordinary internal-RAM read and uses the old DP or old
 selected AR to resolve that source before replacing status fields. It never

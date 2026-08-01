@@ -88,6 +88,7 @@
         "Section 4.3 instruction-description conventions, printed pages 4-11 through 4-13 (PDF pages 92-94)",
         "Section 3.5.2 arithmetic overflow and logical-operation behavior, printed pages 3-19 through 3-20 (PDF pages 48-49)",
         "Section 3.5.3 multiplier behavior, printed page 3-21 (PDF page 50)",
+        "Sections 3.4.1 and 3.4.4 plus Figure 3-5, printed pages 3-10 and 3-13 (PDF pages 39 and 42): original TMS32010/C10 144-word data RAM and exact 0x00-0x8f map",
         "Section 3.4.3 data movement, printed page 3-13 (PDF page 42)",
         "Section 3.6.3 status register, printed pages 3-24 through 3-26 (PDF pages 53-55)",
         "Section 3.8 and Figures 3-19 through 3-20, printed pages 3-31 through 3-34 (PDF pages 60-63): mixed-family interrupt logic, NMOS external-synchronizer note corroborating original Section 2.14, and N/dummy-N+1/vector fetch sequence retained as a conflict with original Figure 2-12",
@@ -375,6 +376,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "abst() instruction handler, lines 341-347",
+        "TMS320C10 RAM map and eight-bit data-space configuration, lines 40-49 and 64-68: only 0x00-0x8f is mapped",
         "UPDATE_AR() simultaneous-bit execution order, getdata() address-update helper, lar_ar0()/lar_ar1() handlers, and larp_mar() handler, lines 240-274, 547-557, and 569-575",
         "putdata_sar() update/write helper and sar_ar0()/sar_ar1() handlers, lines 291-304 and 697-704",
         "subc() conditional-subtract handler and overflow expression, lines 732-742",
@@ -647,7 +649,8 @@
         "PUSH/POP two-microcycle bus and PC control around lines 690-731",
         "Bus-controller stop/read pin outputs and CALA/RET two-microcycle control around lines 166-228 and 1401-1461",
         "Auxiliary-register INC/DEC update case and representative raw-bit controls around lines 290-328 and 663-675: simultaneous controls preserve the register",
-        "LST direct/indirect ARP-source selection around lines 663-688: encoded next-ARP wins only in indirect form"
+        "LST direct/indirect ARP-source selection around lines 663-688: encoded next-ARP wins only in indirect form",
+        "IKA32010_ram 256-word internal RAM allocation and deterministic initialization, lines 1909-1937"
       ],
       "status": "acquired",
       "download": {
@@ -1331,6 +1334,33 @@
       "download": {
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "caps0ff-tms320m10-decap-2020",
+      "title": "Extracting the elusive TMS32010 mask ROM",
+      "author_or_organization": "CAPS0ff",
+      "publication_number": "none",
+      "publication_date": "2020-11",
+      "revision": "web article",
+      "source_url": "https://caps0ff.blogspot.com/2020/11/the-elusive-tms32010-mask-rom.html",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "web/caps0ff_tms320m10_decap_2020.html",
+      "sha256": null,
+      "document_type": "independent decap and die-imaging report",
+      "media_type": "text/html",
+      "license_or_redistribution_status": "Unknown; no repository redistribution assumed",
+      "relevance": "Potential physical-layout lead for an NMOS TMS320M10-family die; indexed material concerns mask-ROM extraction and currently supplies no RAM-decoder result",
+      "authority_level": 4,
+      "notes": "Lawful retrieval was attempted on 2026-07-31 but the host returned HTTP 429. Do not evade the rate limit. Search-index text confirms a TMS320M10 die image but does not expose RAM-select analysis, so no architectural claim is derived.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Search-index metadata only: TMS320M10 die and mask-ROM extraction; full page unavailable and not used as architectural evidence"
+      ],
+      "status": "unavailable",
+      "download": {
+        "enabled": false,
+        "expected_content_types": ["text/html"]
       }
     }
   ]

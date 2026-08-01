@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-010` simultaneous indirect INC/DEC research and
-  reproducible original-device probe
+- **Current milestone:** `OQ-002` absent internal-data-address research and
+  reproducible original-device probe matrix
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 143 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 145 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1037,6 +1037,17 @@
   zero and `0x01ff`, distinguishing preserve, increment priority, decrement
   priority, and unexpected outcomes. No silicon result is assigned; the 372
   words remain rejected fail-closed and `OQ-010` remains open.
+- **New absent-data-address evidence:** original TI material proves 144 words
+  at `0x00`-`0x8f` while permitting eight-bit effective-address formation,
+  but gives no `0x90`-`0xff` select result. The related patent's row/column
+  capacity is internally inconsistent; pinned MAME leaves the range unmapped
+  while pinned IKA allocates 256 initialized words. `SC-041` preserves those
+  scopes. A stable 35-word read-only image observes every absent address after
+  controlled `0x0000` and `0xffff` reads. Stable 43-word ascending and
+  descending images write unique `0xa06f`-`0xa000` sentinels, then scan all
+  144 valid and 112 absent locations. The read-only image must run first and
+  none assigns an expected physical result. A TMS320M10 decap lead remains
+  metadata-only after a lawful HTTP-429 response and supplies no decoder fact.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1048,7 +1059,8 @@
   control-flow traces, LST next-ARP precedence,
   PUSH/POP per-cycle program-address/fetched-word ownership, SUBC result availability and
   OV stage, simultaneous indirect
-  increment/decrement, out-of-range RAM behavior, physical-reset retention of
+  increment/decrement, `0x90`-`0xff` read/write/alias behavior under
+  `OQ-002`/`SC-041`, physical-reset retention of
   unlisted state,
   DMOV/LTD source-`0x8f` destination behavior, 68000-side reset-handoff timing
   and firmware compliance,
@@ -1073,8 +1085,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-002` general `0x90`-`0xff` data-address decode
-  behavior and define a minimally destructive original-NMOS alias/open-read
-  experiment beyond the existing DMOV/LTD edge probes.
+- **Next task:** investigate `OQ-012` original-NMOS reset retention for
+  ACC/T/P/AR/ARP/DP/OV and define a noncircular before/after capture without
+  assigning deterministic FPGA initialization to the portable core.
 - **Latest committed baseline before this cycle:**
-  `10d5265`
+  `1d8c271`

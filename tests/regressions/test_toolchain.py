@@ -87,6 +87,141 @@ class ToolchainSliceTests(unittest.TestCase):
                 },
             )
 
+    def test_ram_invalid_decode_probe_images_are_stable(self) -> None:
+        read_result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "ram_invalid_read_sweep_probe.asm"
+        )
+        self.assertEqual(
+            read_result.words,
+            dict(
+                enumerate(
+                    [
+                        0x6E00,
+                        0x7F8A,
+                        0x7F89,
+                        0x5000,
+                        0x7E01,
+                        0x5005,
+                        0x7F89,
+                        0x1005,
+                        0x5001,
+                        0x7E31,
+                        0x5002,
+                        0x7E32,
+                        0x5003,
+                        0x7E3F,
+                        0x5004,
+                        0x4F02,
+                        0x7090,
+                        0x716F,
+                        0x6880,
+                        0x4F00,
+                        0x4FA1,
+                        0xF400,
+                        0x0012,
+                        0x4F03,
+                        0x7090,
+                        0x716F,
+                        0x6880,
+                        0x4F01,
+                        0x4FA1,
+                        0xF400,
+                        0x001A,
+                        0x4F04,
+                        0x7F80,
+                        0xF900,
+                        0x0021,
+                    ]
+                )
+            ),
+        )
+        self.assertEqual(
+            read_result.symbols,
+            {
+                "HOLD": 0x021,
+                "ONE_HISTORY": 0x01A,
+                "ZERO_HISTORY": 0x012,
+            },
+        )
+
+        ascending_words = [
+            0x6E00,
+            0x7F8A,
+            0x7EA0,
+            0x5000,
+            0x7E6F,
+            0x5001,
+            0x2800,
+            0x0001,
+            0x5002,
+            0x3902,
+            0x7F89,
+            0x708F,
+            0x6880,
+            0x5088,
+            0xF400,
+            0x000D,
+            0x7E41,
+            0x5000,
+            0x4F00,
+            0x7F89,
+            0x5000,
+            0x7090,
+            0x6880,
+            0x31A1,
+            0xF400,
+            0x0016,
+            0x708F,
+            0x6880,
+            0x4F88,
+            0xF400,
+            0x001C,
+            0x7090,
+            0x716F,
+            0x6880,
+            0x4FA1,
+            0xF400,
+            0x0021,
+            0x7E4F,
+            0x5000,
+            0x4F00,
+            0x7F80,
+            0xF900,
+            0x0029,
+        ]
+        write_symbols = {
+            "CLEAR": 0x00D,
+            "HOLD": 0x029,
+            "READ_ABSENT": 0x021,
+            "SCAN_VALID": 0x01C,
+            "WRITE_ABSENT": 0x016,
+        }
+        for source_name, replacements in (
+            ("ram_invalid_write_ascending_probe.asm", {}),
+            (
+                "ram_invalid_write_descending_probe.asm",
+                {
+                    0x010: 0x7E42,
+                    0x015: 0x70FF,
+                    0x017: 0x3191,
+                    0x01F: 0x70FF,
+                    0x022: 0x4F91,
+                },
+            ),
+        ):
+            expected_words = ascending_words.copy()
+            for address, word in replacements.items():
+                expected_words[address] = word
+            result = self.assembler.assemble_file(
+                ROOT / "tests" / "asm" / source_name
+            )
+            self.assertEqual(
+                result.words,
+                dict(enumerate(expected_words)),
+                source_name,
+            )
+            self.assertEqual(result.symbols, write_symbols, source_name)
+
     def test_subc_physical_probe_images_are_stable(self) -> None:
         cases = (
             (

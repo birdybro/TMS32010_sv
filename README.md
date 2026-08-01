@@ -306,8 +306,17 @@ A stable two-boundary raw-word probe assigns no expected silicon result.
 Another 28,656 words are absent from TI's explicitly complete instruction
 summary but are not called reserved. Unsupported opcodes,
 undocumented SACH shifts, and unresolved RAM addresses currently trap as a
-conservative project policy, not a claim about original-silicon behavior. A
-separate native-phase wrapper qualifies the normal reads for all 41 supported
+conservative project policy, not a claim about original-silicon behavior.
+
+The original data RAM boundary is similarly evidence-scoped. TI proves 144
+words at `0x00`-`0x8f` but does not define ordinary accesses to `0x90`-`0xff`.
+The repository supplies a read-only controlled-history sweep followed by
+separate ascending/descending alias probes; all absent-region observations
+remain expectation-free under `OQ-002`/`SC-041`. The model/RTL reject those
+addresses fail-closed rather than emulate later 256-word parts. See the
+[absent-address experiment](docs/research/ram_invalid_decode_experiment.md).
+
+A separate native-phase wrapper qualifies the normal reads for all 41 supported
 one-cycle instructions, eleven two-word control-flow instructions, the two
 one-word computed-control instructions, and the two qualified I/O
 instructions, plus both three-cycle table transfers; it is not a general

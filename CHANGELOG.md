@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `SC-041` and three stable original-NMOS absent-data-address probes. A
+  read-only fixture sweeps `0x90`-`0xff` after controlled zero and all-one
+  legal reads; ascending and descending fixtures write unique full-AR
+  sentinels, scan all 144 valid words, and read all 112 absent selects. No
+  absent value, alias, or retirement behavior is assigned.
+- A metadata-only decap lead for a publicly indexed TMS320M10 die. Lawful
+  retrieval returned HTTP 429 and the indexed subject is mask-ROM extraction,
+  so it contributes no RAM-decoder claim and automation remains disabled.
 - `SC-040` plus a stable original-NMOS simultaneous-INC/DEC raw-word probe.
   Original manuals leave the combination undefined, a later TI C1x card
   prohibits it, MAME and IKA independently choose no net AR update, and the
@@ -898,6 +906,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The absent-data-address fixtures assemble deterministically to exact
+  contiguous 35-, 43-, and 43-word images with fixed history/write/scan/read/
+  terminal symbols. Documentation regressions require read-before-write
+  ordering, both controlled predecessor values, both write directions, all
+  valid/absent sample counts, and no expected original-silicon result.
 - The simultaneous-update fixture assembles deterministically to an exact
   contiguous 23-word image with fixed zero, wrap-boundary, and terminal
   symbols. Documentation regressions require preserve/increment/decrement
@@ -920,7 +933,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 143 provenance/document/tool tests,
+- The complete repository gates pass with 145 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
@@ -1866,6 +1879,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   before all effects and labels that policy provisional. Stable physical probe
   images now define the smallest clear/scan/register experiment, but no
   original NMOS capture is available.
+- Ordinary original-part reads and writes at `0x90`-`0xff` remain unknown
+  under `OQ-002`/`SC-041`. The current core trap and standalone diagnostic
+  zero are fail-closed policies. Stable read-only and directional write/scan
+  fixtures exist, but no original-NMOS capture or qualified RAM decap is
+  available.
 - Remaining indirect control-flow/return traces, interrupt execute ownership,
   original-silicon SST bit-1 qualification, and out-of-range RAM behavior
   remain open.

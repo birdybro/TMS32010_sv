@@ -116,6 +116,13 @@ objective passing evidence.
   images clear and scan all valid words through `OUT`, expose an `0x90` read,
   and leave T/P/ACC inspectable. No boundary outcome has been assigned without
   the physical capture.
+  The broader `OQ-002` absent-address question is separately reduced to three
+  reproducible original-NMOS fixtures under `SC-041`: a read-only
+  `0x90`-`0xff` sweep places controlled `0x0000` and `0xffff` legal reads
+  immediately before every observation, and ascending/descending SAR sweeps
+  write unique full-AR sentinels before scanning all 144 valid words and all
+  112 absent selects. The read-only image must run first. No absent value,
+  alias, zero-fill, or trap result is assigned without physical capture.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
@@ -725,7 +732,9 @@ objective passing evidence.
 - **Acceptance criteria:** address selection, read/write ordering, stalls, and
   internal/external boundaries pass directed and randomized bus tests.
 - **Documentation:** `docs/architecture/memory_model.md`
-- **Tests:** `sim/bus/tb_data_bus.sv`
+- **Tests:** `sim/bus/tb_data_bus.sv`,
+  `tests/asm/ram_invalid_*_probe.asm`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_ram_invalid_decode_probe_images_are_stable`
 - **Notes:** Primary documentation establishes that ordinary operands are
   wholly internal; external storage moves through table or I/O instructions.
   `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBS`/
@@ -737,7 +746,13 @@ objective passing evidence.
   quantifies all qualified word addresses and arbitrary 16-bit legal writes,
   checks non-target preservation, and exhausts the 256-value read/write
   validity functions. The invalid-read-zero result is a verification-interface
-  policy, not original-silicon evidence for `OQ-002`. Remaining instruction
+  policy, not original-silicon evidence for `OQ-002`. `SC-041` now records the
+  primary eight-bit-address/144-word boundary and MAME-unmapped versus
+  IKA-256-word policy split. Stable read-only and two-direction write/scan
+  images make alias, disturbance, history, and absent-read hypotheses
+  physically testable without weakening the fail-closed implementation;
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_ram_invalid_decode_probe_images_are_stable`
+  locks their exact machine words and symbols. Remaining instruction
   interactions remain.
   MPYK separately verifies that its immediate multiply performs no logical
   data-memory transaction. PAC separately verifies that its internal P-to-ACC

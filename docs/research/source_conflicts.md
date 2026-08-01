@@ -1041,3 +1041,41 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY that later C1x software prohibits the
   combination; CORROBORATED that MAME and IKA choose no net update; UNKNOWN
   for original NMOS execution, timing, and stability.
+
+## SC-041 — Eight-bit data-address reach versus 144-word storage
+
+- **Original production boundary:** SPRU001B says all non-immediate operands
+  reside in exactly 144 on-chip words. Its direct form nevertheless
+  concatenates DP and seven operand bits, and its indirect form supplies all
+  eight low AR bits. Neither form defines a failed or absent select
+  [ti-tms32010-users-guide-spru001b, Sections 2.3-2.3.1.2, printed
+  pp. 2-7-2-8 (PDF pp. 31-32)].
+- **Exact implemented map:** SPRU002B and SPRU013 identify page 0 as
+  `0x00`-`0x7f` and the original TMS32010 page 1 as `0x80`-`0x8f`. The
+  isolated SPRU001B `128-144` endpoint error remains `SC-005`/`SC-038`; it
+  cannot explain the other 111 absent eight-bit selects
+  [ti-tms32010-assembly-guide-spru002b, `LDP`/`LDPK`, printed
+  pp. 3-36-3-37 (PDF pp. 57-58); ti-first-generation-users-guide-1987,
+  Sections 3.4.1 and 3.4.4, Figure 3-5, printed pp. 3-10 and 3-13
+  (PDF pp. 39 and 42)].
+- **Related physical evidence:** US4577282A exposes an eight-bit related RAM
+  address and row/column decode, but its capacity statements are internally
+  inconsistent and do not define an unselected row, alias, precharge value,
+  or write disturbance. The indexed TMS320M10 decap lead was unavailable with
+  HTTP 429 and its visible description concerns ROM extraction; it supplies
+  no production RAM decode evidence.
+- **Independent implementation conflict:** pinned MAME maps only
+  `0x00`-`0x8f` in its eight-bit data space, leaving the rest to framework
+  unmapped-space policy. Pinned IKA32010 instantiates 256 initialized words.
+  Neither choice is original-device evidence
+  [mame-tms320c1x-core-030fefc, `tms320c10_ram`, lines 40-49, and data-space
+  configuration, lines 64-68; ika32010-rtl-51bc1f0, `IKA32010_ram`, lines
+  1909-1937].
+- **Current treatment:** model/RTL trap before effects; the standalone RAM's
+  invalid-read zero is diagnostic policy only. The read-only controlled-
+  history sweep must run before either directional unique-sentinel write
+  sweep in `docs/research/ram_invalid_decode_experiment.md`. None has an
+  expected absent-region result.
+- **Confidence:** VERIFIED_PRIMARY for `0x00`-`0x8f` implemented storage;
+  UNKNOWN for original NMOS reads, writes, retirement, aliasing, disturbance,
+  electrical stability, and mask invariance across `0x90`-`0xff`.

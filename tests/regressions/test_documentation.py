@@ -150,6 +150,61 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("PROVISIONAL safety policy", conflicts)
         self.assertIn("UNKNOWN outside that range", memory)
 
+    def test_absent_ram_decode_stays_unknown_and_probe_order_is_safe(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "ram_invalid_decode_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        questions = (DOCS / "research" / "open_questions.md").read_text(
+            encoding="utf-8"
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        memory = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "architecture" / "memory_model.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        family_pages = " ".join(
+            by_id["ti-first-generation-users-guide-1987"]["sections_or_pages_used"]
+        )
+        mame_lines = " ".join(
+            by_id["mame-tms320c1x-core-030fefc"]["sections_or_pages_used"]
+        )
+        ika_lines = " ".join(
+            by_id["ika32010-rtl-51bc1f0"]["sections_or_pages_used"]
+        )
+        decap = by_id["caps0ff-tms320m10-decap-2020"]
+        self.assertIn("Figure 3-5", family_pages)
+        self.assertIn("TMS320C10 RAM map", mame_lines)
+        self.assertIn("256-word internal RAM allocation", ika_lines)
+        self.assertEqual(decap["status"], "unavailable")
+        self.assertFalse(decap["download"]["enabled"])
+        for required in (
+            "Run it before either write probe",
+            "repository assigns no passing expected absent-read value",
+            "0xa06f` through `0xa000",
+            "all 144 valid words",
+            "at least 32 reset-and-execute trials",
+            "at least 8 cold-power trials",
+            "follow with a single-target probe",
+            "cannot establish mask invariance",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-041`)", questions)
+        self.assertIn("## SC-041", conflicts)
+        self.assertIn("read-only controlled-history sweep", memory)
+
     def test_subc_pipeline_evidence_stays_provisional_and_reproducible(self) -> None:
         manifest = json.loads(
             (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")

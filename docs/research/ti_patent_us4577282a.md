@@ -60,14 +60,17 @@ ordinary next-higher-word move without consuming the ALU or D bus
 [ti-dsp-microcomputer-patent-us4577282a, patent cols. 25-26 (PDF p. 39),
 Figures 5i-5j].
 
-It supplies no production boundary result. Patent columns 17-18 describe a
-1-of-144 row decoder plus a 1-of-2 column decoder while also saying eight
-address bits suffice; columns 25-26 again describe 144 row lines plus an
-even/odd word select. Those statements are not a self-consistent 144-word
-map, and no last-row or absent-row behavior is specified. The patent therefore
-cannot decide whether original-part `DMOV`/`LTD` source `0x8f` suppresses,
-aliases, or otherwise performs the requested write to `0x90`. See
-`docs/research/ram_boundary_experiment.md` and `SC-038`.
+It supplies no production boundary or general absent-select result. Patent
+columns 17-18 describe a 1-of-144 row decoder plus a 1-of-2 column decoder
+while also saying eight address bits suffice; columns 25-26 again describe
+144 row lines plus an even/odd word select. Those statements are not a self-
+consistent 144-word map, and no last-row or absent-row behavior is specified.
+The patent therefore cannot decide whether original-part `DMOV`/`LTD` source
+`0x8f` suppresses, aliases, or otherwise performs the requested write to
+`0x90`; nor can it assign a value or side effect to ordinary `0x90`-`0xff`
+operands. See
+`docs/research/ram_boundary_experiment.md`,
+`docs/research/ram_invalid_decode_experiment.md`, `SC-038`, and `SC-041`.
 
 ## SUBC staging background and its limit
 
@@ -162,7 +165,8 @@ the smallest evidence needed to choose among those hypotheses.
 - OCR of Table A is poor and several encodings/names are visibly corrupted.
   It must not supply opcode fixtures.
 - The RAM row/column capacity statements are internally inconsistent and do
-  not establish the original production 144-word decoder or its array edge.
+  not establish the original production 144-word decoder, its array edge, or
+  an absent-select result.
 - Generic indirect-ARP and LST status-restore prose do not state which source
   wins when both target ARP in one instruction.
 - Separate auxiliary-register increment/decrement circuitry assumes mutually
