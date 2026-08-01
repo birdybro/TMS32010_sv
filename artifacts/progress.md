@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** CALA/RET computed-control RTL and qualification
+- **Current milestone:** ROM-free MAME CALA/RET functional corroboration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 130 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -18,15 +18,15 @@
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
-  EINT/protected-instruction/dummy-entry/vector model/RTL differential; 32
+  EINT/protected-instruction/dummy-entry/vector model/RTL differential; 36
   directed request-arrival cases across every represented machine cycle
-  of all 15 currently supported multicycle core families; four native
+  of all 17 currently supported multicycle core families; four native
   subphase arrivals with a stalled phase-2 case and falling-boundary ownership;
-  plus thirteen ROM-free MAME-adapter/orchestration tests covering strict
+  plus fourteen ROM-free MAME-adapter/orchestration tests covering strict
   parsing, original-part widths, state normalization, strict model-state
   validation, pre/post boundary alignment, safe debugger command generation,
   executable resolution, and deterministic mismatch reporting; one opt-in
-  live synthetic MAME smoke matching five model steps across six boundary rows
+  live synthetic MAME smoke matching ten model steps across eleven boundary rows
   without copyrighted ROM content
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
@@ -915,13 +915,16 @@
   It is not claimed as an exact-commit build. MAME names the 20 MHz nested
   device TMS320C10. A new opt-in live run builds the machine with 20 exact-sized
   all-zero placeholders, requires MAME's wrong-checksum warning, injects the
-  hand-fixed PUSH/POP program, and matches five model steps across six boundary
-  rows. This is actual synthetic TMS320C10 execution but not Atari firmware;
-  device equivalence, `/MEN`, cycles, and pin timing remain unqualified.
-- **Unresolved issues:** pipeline ownership remains absent beyond sequential
-  one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
-  branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
-  MPY/MPYK interrupt extension; physical interrupt setup/synchronizer
+  hand-fixed combined PUSH/POP/CALA/RET program, and matches ten model steps
+  across eleven boundary rows. CALA pushes return PC `0x007`, enters `0x00c`,
+  and RET restores PC `0x007` and the stack. The runner now rejects script
+  launchers so its hash identifies the actual emulator binary. This is actual
+  synthetic TMS320C10 execution but not Atari firmware; device equivalence,
+  `/MEN`, cycles, and pin timing remain unqualified.
+- **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
+  and complete fetch/execute overlap remains unqualified beyond the supported
+  one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
+  physical interrupt setup/synchronizer
   behavior, physical confirmation of the inferred CALA/RET discarded-`PC+1`
   then target sequence, unsupported PUSH/POP arrival cycles,
   provisional DINT-at-final-boundary ordering under `OQ-019`, remaining
@@ -952,9 +955,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** extend the ROM-free MAME boundary oracle with a synthetic
-  CALA/RET call/return fixture, while keeping device-variant and pin-timing
-  claims separate; then investigate the explicit pipeline's slow critical
-  path without changing the qualified 20 MHz board behavior.
+- **Next task:** investigate the explicit pipeline's slow critical path and
+  attempt a portable, equivalence-preserving improvement without changing the
+  qualified 20 MHz board behavior or hiding the rejected 50 MHz checkpoint.
 - **Latest committed baseline before this cycle:**
-  `349f41f`
+  `a1f9780`

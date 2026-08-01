@@ -256,9 +256,10 @@ Only the explicit reserved-bit class may be called reserved. Pattern mismatch
 and primary-unlisted do not establish execution behavior; the current model/RTL
 trap remains conservative project policy. The reserved-encoding audit is not
 complete.
-RTL and seeded differential support the same set except CALA, POP, PUSH, and
-RET, for fifty-six shared instructions; their second external cycles remain
-`OQ-007`/`OQ-016`.
+RTL and seeded differential support the same set except POP and PUSH, for
+fifty-eight shared instructions. CALA/RET use ADR-0003's reversible
+`INFERRED` discarded-sequential/selected-target mapping under `OQ-007`;
+PUSH/POP second-cycle ownership remains unknown under `OQ-016`.
 The synthesizable `tms32010_fetch_execute` register now separately represents
 fetched instruction validity/address and execute ownership with completion and
 flush controls. It passes directed overlap/dummy/redirect/reset tests,
@@ -305,13 +306,12 @@ EINT/protected-instruction/dummy/vector path now has explicit ownership,
 including stalls and deferred vector execution. MPY and MPYK in the protected
 slot now have explicit extension through one additional instruction, including
 signed products, bus shape, stalls, and post-following return-PC ownership.
-The 32 represented arrival intervals across all 15 supported multicycle
-families now have matching core and explicit-pipeline matrices; the explicit
-matrix checks family-specific native strobes, no midinstruction entry, one
+The 32 previously represented arrival intervals plus four CALA/RET intervals
+cover all 36 intervals of 17 supported multicycle families; the explicit
+tests check family-specific native strobes, no midinstruction entry, one
 protected retirement, dummy ownership, stack entry, acknowledge state, and
-vector capture. Other multicycle
-pipeline integration remains absent; do not
-generalize this narrow evidence into a complete fetch/execute claim.
+vector capture. PUSH/POP multicycle pipeline integration remains absent; do
+not generalize this narrow evidence into a complete fetch/execute claim.
 A 12-step standalone BMC checks its transition relation for arbitrary
 fetch/control inputs satisfying the two legal sequencer contracts; the cover
 reaches prime/stall/replacement/flush/target capture at step 7. This is not
@@ -356,15 +356,15 @@ retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. Matching 32-case core and
-explicit-pipeline matrices exhaust arrival at every represented execution
-interval of all 15 supported multicycle families. A four-case native test
+explicit-pipeline matrices plus four CALA/RET cases exhaust arrival at all 36
+represented execution intervals of 17 supported multicycle families. A four-case native test
 also proves the current digital
 wrapper samples a held-low request only at the enabled falling boundary from
 each modeled subphase, including a phase stall. The explicit pipeline
 additionally qualifies the basic EINT/protected-word/discarded-N+2/vector
 sequence, including the MPY/MPYK protected-slot extension. Physical
-setup/synchronizer behavior, native/RTL CALA/RET
-sequencing, PUSH/POP second-cycle sequencing, and the provisional
+setup/synchronizer behavior, physical confirmation of the inferred CALA/RET
+sequence, PUSH/POP second-cycle sequencing, and the provisional
 DINT-at-final-boundary ordering remain outside the qualified boundary under
 `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`.
 For Atari integration specifically, production drawing A044427 Rev A holds the

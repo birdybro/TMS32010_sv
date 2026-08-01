@@ -34,6 +34,31 @@ class ToolchainSliceTests(unittest.TestCase):
         )
         self.assertEqual(result.symbols["HOLD"], 0x006)
 
+    def test_mame_stack_control_smoke_image_is_stable(self) -> None:
+        result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"
+        )
+        self.assertEqual(
+            result.words,
+            {
+                0x000: 0x7E55,
+                0x001: 0x7F9C,
+                0x002: 0x7F80,
+                0x003: 0x7EAA,
+                0x004: 0x7F9D,
+                0x005: 0x7E0C,
+                0x006: 0x7F8C,
+                0x007: 0x7E33,
+                0x008: 0x7F80,
+                0x009: 0xF900,
+                0x00A: 0x0009,
+                0x00C: 0x7E77,
+                0x00D: 0x7F8D,
+            },
+        )
+        self.assertEqual(result.symbols["HOLD"], 0x009)
+        self.assertEqual(result.symbols["SUBROUTINE"], 0x00C)
+
     def test_supported_instruction_encodings_match_hand_fixtures(self) -> None:
         result = self.assembler.assemble_text(
             """

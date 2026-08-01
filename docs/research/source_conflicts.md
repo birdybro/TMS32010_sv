@@ -382,11 +382,11 @@ electrical result of an out-of-range access.
   original-device capture criteria are in
   `docs/research/push_pop_bus_experiment.md`; see `OQ-016`.
 - **MAME functional check:** the ROM-free `make mame-synthetic` workflow runs
-  that same project-authored fixture in MAME's Hard Drivin' TMS320C10 device.
-  Five model steps match six debugger boundary states, including both stack
-  transforms. MAME's trace contains no `/MEN`, program-address subcycle, or
-  pin-phase data, so it corroborates neither IKA's idle interval nor either
-  active-read hypothesis.
+  a separate combined stack/computed-control fixture in MAME's Hard Drivin'
+  TMS320C10 device. Ten model steps match eleven debugger boundary states,
+  including both PUSH/POP transforms and a complete CALA/RET path. MAME's
+  trace contains no `/MEN`, program-address subcycle, or pin-phase data, so it
+  corroborates neither IKA's idle interval nor either active-read hypothesis.
 - **Confidence:** VERIFIED_PRIMARY for two cycles, general `MEN` behavior,
   and the architectural state transform; UNKNOWN for the exact address and
   fetched-word ownership of each cycle.

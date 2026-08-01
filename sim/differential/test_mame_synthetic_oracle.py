@@ -9,6 +9,7 @@ from unittest.mock import patch
 
 from tools.reference.mame_synthetic_oracle import (
     FIXTURE,
+    STOP_PC,
     SyntheticOracleError,
     _program_words,
     _resolve_mame,
@@ -113,29 +114,43 @@ class MameSyntheticRomTests(unittest.TestCase):
 
 class MameSyntheticOracleTests(unittest.TestCase):
     def test_bare_mame_name_must_resolve_from_path(self) -> None:
-        with patch(
-            "tools.reference.mame_synthetic_oracle.shutil.which",
-            return_value="/trusted/bin/mame",
-        ):
-            self.assertEqual(_resolve_mame(Path("mame")), Path("/trusted/bin/mame"))
+        with tempfile.TemporaryDirectory() as directory:
+            executable = Path(directory) / "mame"
+            executable.write_bytes(b"\x7fELF synthetic test sentinel")
+            executable.chmod(0o755)
+            with patch(
+                "tools.reference.mame_synthetic_oracle.shutil.which",
+                return_value=str(executable),
+            ):
+                self.assertEqual(_resolve_mame(Path("mame")), executable.resolve())
         with patch(
             "tools.reference.mame_synthetic_oracle.shutil.which", return_value=None
         ):
             with self.assertRaisesRegex(SyntheticOracleError, "not on PATH"):
                 _resolve_mame(Path("mame"))
 
+    def test_script_launcher_is_rejected_before_provenance_hashing(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            launcher = Path(directory) / "mame"
+            launcher.write_text("#!/bin/sh\nexec /real/mame \"$@\"\n", encoding="utf-8")
+            launcher.chmod(0o755)
+            with self.assertRaisesRegex(SyntheticOracleError, "script launcher"):
+                _resolve_mame(launcher)
+
     def test_debug_script_uses_hand_fixture_and_two_stage_focus(self) -> None:
         words = _program_words(ROOT)
         script = build_debug_script(words, Path("build/mame/mame.tr"))
         lines = script.splitlines()
         self.assertEqual(len(lines), 2)
-        self.assertEqual(FIXTURE, Path("tests/asm/push_pop_bus_probe.asm"))
+        self.assertEqual(FIXTURE, Path("tests/asm/mame_stack_control_smoke.asm"))
         self.assertIn("sounddsp.pw@1 = 7f9c", lines[0])
         self.assertIn("sounddsp.pw@4 = 7f9d", lines[0])
+        self.assertIn("sounddsp.pw@6 = 7f8c", lines[0])
+        self.assertIn("sounddsp.pw@d = 7f8d", lines[0])
         self.assertIn("soundcpu.pw!ff1018 = 0", lines[0])
         self.assertTrue(lines[0].endswith("focus mainpcb:harddriv_sound:sounddsp"))
         self.assertIn("TMS32010_STATE", lines[1])
-        self.assertIn("bp 6,1", lines[1])
+        self.assertIn("bp 9,1", lines[1])
         self.assertTrue(lines[1].endswith("traceflush ; quit} ; go"))
 
     def test_model_trace_starts_after_prime_and_has_expected_stack_effects(self) -> None:
@@ -146,13 +161,30 @@ class MameSyntheticOracleTests(unittest.TestCase):
             records = parse_model_trace(path)
         self.assertEqual(
             [record.mnemonic for record in records],
-            ["PUSH", "NOP", "LACK", "POP", "NOP"],
+            [
+                "PUSH",
+                "NOP",
+                "LACK",
+                "POP",
+                "LACK",
+                "CALA",
+                "LACK",
+                "RET",
+                "LACK",
+                "NOP",
+            ],
         )
         self.assertEqual(records[0].state_after["stack"], [0x55, 0, 0, 0])
         self.assertEqual(records[2].state_after["acc"], 0xAA)
         self.assertEqual(records[3].state_after["acc"], 0x55)
         self.assertEqual(records[3].state_after["stack"], [0, 0, 0, 0])
-        self.assertEqual(records[-1].state_after["pc"], 6)
+        self.assertEqual(records[5].state_after["pc"], 0x00C)
+        self.assertEqual(records[5].state_after["stack"], [0x007, 0, 0, 0])
+        self.assertEqual(records[6].state_after["acc"], 0x77)
+        self.assertEqual(records[7].state_after["pc"], 0x007)
+        self.assertEqual(records[7].state_after["stack"], [0, 0, 0, 0])
+        self.assertEqual(records[-1].state_after["acc"], 0x33)
+        self.assertEqual(records[-1].state_after["pc"], STOP_PC)
 
 
 if __name__ == "__main__":

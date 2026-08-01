@@ -4,6 +4,7 @@ YOSYS ?= yosys
 QUARTUS_SH ?= quartus_sh
 SBY ?= sby
 MAME ?= mame
+MAME_SYNTHETIC_OUTPUT ?= build/mame_synthetic_stack_control
 
 .PHONY: help test lint unit instruction-tests bus-tests differential formal
 .PHONY: synth-yosys synth-quartus docs clean release-check
@@ -45,7 +46,7 @@ differential:
 mame-synthetic:
 	@command -v "$(MAME)" >/dev/null 2>&1 || { echo "ERROR: MAME is required"; exit 1; }
 	$(PYTHON) -m tools.reference.mame_synthetic_oracle \
-		--mame "$$(command -v "$(MAME)")" --output build/mame_synthetic
+		--mame "$$(command -v "$(MAME)")" --output "$(MAME_SYNTHETIC_OUTPUT)"
 
 lint: docs
 	$(PYTHON) -m compileall -q scripts tests tools sim/reference_models

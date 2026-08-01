@@ -1199,9 +1199,12 @@ objective passing evidence.
   TMS320C10, so it remains a secondary functional oracle, not original-part
   or timing proof. A ROM-free live trace now constructs the Hard Drivin'
   machine with exact-sized all-zero placeholders, requires wrong-checksum
-  diagnostics, debugger-injects the hand-fixed PUSH/POP fixture, and matches
-  five model steps across six MAME rows. It corroborates architectural state
-  but cannot resolve `OQ-016` because the debugger exposes no bus cycles.
+  diagnostics, debugger-injects the hand-fixed combined PUSH/POP/CALA/RET
+  fixture, and matches ten model steps across eleven MAME rows. It
+  corroborates architectural stack and computed-control state but cannot
+  resolve `OQ-007` or `OQ-016` because the debugger exposes no bus cycles.
+  Script launchers are rejected so the recorded SHA-256 identifies the actual
+  trusted emulator binary rather than only its wrapper.
   Firmware comparison and legal randomized full-ISA streams remain; no
   authorized Hard Drivin' ROM is present. MAME disagreement creates research
   work, not an automatic oracle verdict.

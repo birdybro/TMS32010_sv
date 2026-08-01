@@ -18,10 +18,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   launch MAME, obtain ROMs, or claim cycle/pin evidence.
 - An opt-in ROM-free MAME execution smoke using size-limited, all-zero,
   deliberately wrong-checksum placeholders; fail-closed debugger injection of
-  the existing PUSH/POP fixture; a finite-timeout live run; six additional
-  unit tests; and generated hash/result metadata. Five model steps match six
-  live TMS320C10 boundary rows while `/MEN`, cycle, pin, original-part, and
-  Atari-firmware claims remain explicitly excluded.
+  a hand-fixed combined PUSH/POP/CALA/RET fixture; a finite-timeout live run;
+  seven orchestration tests; and generated hash/result metadata. Ten model
+  steps match eleven live TMS320C10 boundary rows while `/MEN`, cycle, pin,
+  original-part, and Atari-firmware claims remain explicitly excluded.
 - Reference-provenance policy, safe acquisition/hash tools, a 45-source
   integrity-pinned catalog, and living engineering backlog.
 - Primary acquisition of Atari A044425 Rev-J supplemental Driver Main GSP and
@@ -741,6 +741,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- The ROM-free MAME runner now rejects shell-script launchers before execution,
+  preventing generated provenance from hashing only `/usr/bin/mame`-style
+  wrappers while omitting the actual emulator binary bytes.
 - Exposed execute-slot validity/address/word and pipeline-blocked diagnostics
   through the synthesis harness after the first explicit-pipeline Quartus
   elaboration reported all four output groups unconnected. Analysis/synthesis
@@ -793,9 +796,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- The complete repository gates pass with 129 provenance/document/tool tests,
+- The complete repository gates pass with 130 provenance/document/tool tests,
   231 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
-  tests, 5 interrupt RTL tests, and 24 differential/oracle tests. Verilator lint
+  tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 44 formal jobs from 22 configurations pass; all 29
   Yosys targets synthesize; and all 45 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy

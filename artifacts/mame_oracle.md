@@ -67,7 +67,9 @@ requires inactive interrupts and rejects the model's separate interrupt-entry
 pseudo-step.
 
 The parser's seven synthetic text regressions and the placeholder/orchestration
-tool's six unit tests are ROM-free and passing.
+tool's seven unit tests are ROM-free and passing. The runner rejects a
+shell-script launcher before execution so `mame_sha256` cannot silently hash
+only a wrapper instead of the emulator binary.
 
 On 2026-07-31, this exact trusted local binary also passed:
 
@@ -77,26 +79,32 @@ make mame-synthetic MAME=/usr/lib/mame/mame
 
 The runner obtained 20 required filenames/sizes from `harddriv -listxml`,
 created 1,118,208 zero bytes across exact-sized files, verified MAME's explicit
-wrong-checksum warnings, injected `tests/asm/push_pop_bus_probe.asm` into
-writable DSP program RAM, and released the emulated board's DSP halt latch.
-No Atari ROM content was used. Five model steps (`PUSH`, `NOP`, `LACK`, `POP`,
-`NOP`) matched six live MAME instruction-boundary state rows.
+wrong-checksum warnings, injected `tests/asm/mame_stack_control_smoke.asm`
+into writable DSP program RAM, and released the emulated board's DSP halt
+latch. No Atari ROM content was used. Ten model steps (`PUSH`, `NOP`, `LACK`,
+`POP`, `LACK`, `CALA`, subroutine `LACK`, `RET`, return-path `LACK`, and
+`NOP`) matched eleven live MAME instruction-boundary state rows. The path
+pushes return PC `0x007`, enters PC `0x00c`, returns to PC `0x007`, and restores
+the four-level stack before reaching sentinel PC `0x009`.
 The model's OVM/INTM values are seeded to MAME's observed reset state for this
 comparison. That setup does not promote MAME initialization into original-part
 reset behavior.
 
 - MAME trace SHA-256:
-  `c3024c892e0e684a9153c854a480930cd267e03642f7526c3629be7cdda67565`
+  `b522cdcfc22fb890dc9e91e488f4b55985c6c0a149bc529cbc3fdc8aa2ff7fce`
 - Model trace SHA-256:
-  `576a68310f33b43723a11ae216a12a488a0acca8eef103b61890c77c3adeaecd`
+  `57ebf1260e87e4ce09c921216896b4d822edd693ba881cbe36fa0dc7080fa484`
 - Generated debugger script SHA-256:
-  `5153ea834f79e5731781f156c0fff351818a4785a39912084fecfd35916da4b5`
-- Generated result: `PASS`, five steps, six MAME rows, zero trailing rows
+  `097117a1cd2693d59c3f090f956d5d677faa411346c17a2816850a87f97bf1fc`
+- Placeholder manifest SHA-256:
+  `06ec84c578b78c7bed57bde3d56b9a522d3713380d879ef71d26ac75947c81a7`
+- Generated result: `PASS`, ten steps, eleven MAME rows, zero trailing rows
 
-These generated files remain ignored below `build/mame_synthetic/`. The result
-is real execution of MAME's TMS320C10 device in the Hard Drivin' machine
-configuration, but it is not Atari firmware execution. It corroborates
-architectural PUSH/POP state only. MAME exposes no `/MEN`, external
-program-address cycle, or pin phase through this trace, so `OQ-016` remains
-unresolved. A firmware-oriented comparison still requires user-supplied lawful
+These generated files remain ignored below
+`build/mame_synthetic_stack_control/`. The result is real execution of MAME's
+TMS320C10 device in the Hard Drivin' machine configuration, but it is not Atari
+firmware execution. It corroborates architectural PUSH/POP and CALA/RET state
+only. MAME exposes no `/MEN`, external program-address cycle, or pin phase
+through this trace, so `OQ-007` and `OQ-016` remain unresolved at the physical
+bus level. A firmware-oriented comparison still requires user-supplied lawful
 ROMs and must retain the exact executable hash and invocation.

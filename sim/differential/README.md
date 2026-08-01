@@ -123,16 +123,17 @@ and `artifacts/mame_oracle.md`.
 
 The separate opt-in `make mame-synthetic` path no longer needs an authorized
 ROM set. It generates 20 all-zero, wrong-checksum placeholder files from
-MAME's own `harddriv -listxml` metadata, injects the project-authored PUSH/POP
-bus-probe fixture into the writable emulated DSP RAM, releases the emulated
-DSP halt latch, and captures six live MAME rows. Five model steps—PUSH, NOP,
-LACK, POP, and NOP—match PC/ACC/P/T/AR/stack/status state. Six standard-library
-tests cover safe metadata parsing, traversal/size rejection, idempotent
-non-overwrite behavior, executable resolution, the two-stage debugger-focus
-script, and the aligned model fixture. The run is functional TMS320C10
-emulator corroboration only:
+MAME's own `harddriv -listxml` metadata, injects the project-authored combined
+stack/computed-control fixture into the writable emulated DSP RAM, releases
+the emulated DSP halt latch, and captures eleven live MAME rows. Ten model
+steps—PUSH/POP followed by a complete CALA/subroutine/RET path—match
+PC/ACC/P/T/AR/stack/status state. Seven standard-library tests cover safe
+metadata parsing, traversal/size rejection, idempotent non-overwrite behavior,
+actual-binary resolution, script-launcher rejection, the two-stage
+debugger-focus script, and the aligned model fixture. The run is functional
+TMS320C10 emulator corroboration only:
 MAME exports neither the `/MEN` waveform nor per-cycle program addresses, so
-it does not resolve the original TMS32010 `OQ-016` bus question.
+it does not resolve the original TMS32010 `OQ-007` or `OQ-016` bus questions.
 
 The 512-instruction stream is model/RTL functional evidence only. The focused
 B/BANZ/BIOZ/BV/CALL/CALA/RET/family/IN/OUT/TBLR/TBLW differentials supply logical

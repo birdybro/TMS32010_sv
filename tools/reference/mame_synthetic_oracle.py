@@ -1,9 +1,9 @@
 """Run a ROM-free MAME/model architectural-boundary smoke comparison.
 
 This opt-in tool creates deterministic wrong-checksum placeholder files,
-injects a project-authored PUSH/POP program into writable Hard Drivin' DSP
-program RAM through the debugger, and compares MAME state with the independent
-model.  It is not a cycle- or pin-timing oracle.
+injects a project-authored PUSH/POP/CALA/RET program into writable Hard
+Drivin' DSP program RAM through the debugger, and compares MAME state with the
+independent model.  It is not a cycle- or pin-timing oracle.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import os
 import shutil
 import subprocess
 import sys
@@ -36,10 +37,10 @@ from tools.reference.mame_trace import (
 SYSTEM = "harddriv"
 DEVICE_TAG = DEFAULT_DEVICE_TAG.removeprefix(":")
 SOUND_CPU_TAG = "mainpcb:harddriv_sound:soundcpu"
-FIXTURE = Path("tests/asm/push_pop_bus_probe.asm")
+FIXTURE = Path("tests/asm/mame_stack_control_smoke.asm")
 TRACE_START_PC = 1
-STOP_PC = 6
-MODEL_STEPS = STOP_PC - TRACE_START_PC
+STOP_PC = 9
+MODEL_STEPS = 10
 INSPECTED_SOURCE_COMMIT = "030fefcbd14e47c01ec9d67655be90f64a1dc8ab"
 
 
@@ -60,8 +61,25 @@ def _resolve_mame(path: Path) -> Path:
         resolved = shutil.which(str(path))
         if resolved is None:
             raise SyntheticOracleError(f"MAME executable is not on PATH: {path}")
-        return Path(resolved).resolve()
-    return path.resolve()
+        path = Path(resolved)
+    resolved_path = path.resolve()
+    if not resolved_path.is_file() or not os.access(resolved_path, os.X_OK):
+        raise SyntheticOracleError(
+            f"MAME path is not an executable file: {resolved_path}"
+        )
+    try:
+        with resolved_path.open("rb") as stream:
+            prefix = stream.read(2)
+    except OSError as error:
+        raise SyntheticOracleError(
+            f"cannot inspect MAME executable: {resolved_path}: {error}"
+        ) from error
+    if prefix == b"#!":
+        raise SyntheticOracleError(
+            "MAME path is a script launcher; supply the underlying trusted "
+            f"emulator binary so its bytes can be hashed: {resolved_path}"
+        )
+    return resolved_path
 
 
 def _program_words(repository: Path) -> dict[int, int]:
@@ -72,12 +90,23 @@ def _program_words(repository: Path) -> dict[int, int]:
         0x002: 0x7F80,
         0x003: 0x7EAA,
         0x004: 0x7F9D,
-        0x005: 0x7F80,
-        0x006: 0xF900,
-        0x007: 0x0006,
+        0x005: 0x7E0C,
+        0x006: 0x7F8C,
+        0x007: 0x7E33,
+        0x008: 0x7F80,
+        0x009: 0xF900,
+        0x00A: 0x0009,
+        0x00C: 0x7E77,
+        0x00D: 0x7F8D,
     }
-    if result.words != expected or result.symbols.get("HOLD") != STOP_PC:
-        raise SyntheticOracleError("PUSH/POP hand fixture changed unexpectedly")
+    if (
+        result.words != expected
+        or result.symbols.get("HOLD") != STOP_PC
+        or result.symbols.get("SUBROUTINE") != 0x00C
+    ):
+        raise SyntheticOracleError(
+            "PUSH/POP/CALA/RET hand fixture changed unexpectedly"
+        )
     return result.words
 
 
@@ -113,6 +142,19 @@ def build_model_trace(words: dict[int, int], path: Path) -> None:
     records = [model.step() for _ in range(MODEL_STEPS)]
     if records[0].pc != TRACE_START_PC or model.state.pc != STOP_PC:
         raise SyntheticOracleError("synthetic model trace reached an unexpected PC")
+    if [record.mnemonic for record in records] != [
+        "PUSH",
+        "NOP",
+        "LACK",
+        "POP",
+        "LACK",
+        "CALA",
+        "LACK",
+        "RET",
+        "LACK",
+        "NOP",
+    ]:
+        raise SyntheticOracleError("synthetic model trace changed control flow")
     path.write_text(
         "".join(record.to_json() + "\n" for record in records),
         encoding="utf-8",
@@ -255,7 +297,9 @@ def _build_parser() -> argparse.ArgumentParser:
         description="run the ROM-free Hard Drivin' MAME/model smoke oracle"
     )
     parser.add_argument("--mame", type=Path, required=True)
-    parser.add_argument("--output", type=Path, default=Path("build/mame_synthetic"))
+    parser.add_argument(
+        "--output", type=Path, default=Path("build/mame_synthetic_stack_control")
+    )
     parser.add_argument("--repository", type=Path, default=Path.cwd())
     parser.add_argument("--debugger", choices=("qt", "imgui"), default="qt")
     parser.add_argument("--timeout-seconds", type=float, default=20.0)
