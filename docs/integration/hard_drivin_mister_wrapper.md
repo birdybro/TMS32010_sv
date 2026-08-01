@@ -150,11 +150,21 @@ independent and carry the captured raw host word. No READY input exists on this
 path; a caller must provide valid read data within the fixed physical cycle or
 receive the diagnostic missing event.
 
+The external local-RAM callback remains the default. Selecting
+`use_internal_local_ram_i` instead uses two byte-wide 8K memories plus per-byte
+validity. FPGA initialization scrubs only validity metadata over 8,192 clocks;
+the data memories are not reset. `host_local_ram_storage_ready_o` must be true
+before the platform releases the local processor. Pre-ready writes are
+rejected and reported, because the physical fixed-cycle path cannot stall.
+Internal selection suppresses the external request and write commits so two
+storage owners cannot consume one transaction.
+
 Upper-Y5 direct DSP I/O is deliberately distinct from program RAM. The top
 exports `/PDEN` read level, `/PWE` write level, the S6 write commit, and
 `A12:A1`, but a complete host/TMS data-bus composition policy is still absent.
-Authorized local ROM storage, lane-valid 8K-by-16 local SRAM storage, raw-pin
-CDC, and open-bus combination are integration responsibilities.
+Authorized local ROM storage, raw-pin CDC, and open-bus combination remain
+integration responsibilities. The optional local SRAM is an FPGA storage
+policy and is not physical-power-up evidence.
 
 ## Parallel sample-ROM callback
 
@@ -322,8 +332,8 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains three memories and reports 3,294
-abstract cells with 338 checks and zero structural problems after opt-in
+The pre-technology Yosys target retains six memories and reports 3,424
+abstract cells with 362 checks and zero structural problems after opt-in
 same-clock local-host timing and storage-callback integration. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

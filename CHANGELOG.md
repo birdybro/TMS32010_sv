@@ -522,6 +522,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   commits, program/communication-RAM callbacks, and the distinct direct-TMS
   `/PWE` S6 edge. Read data carries separate driven/valid masks and an explicit
   fixed-boundary missing-response event without a READY or open-bus policy.
+- An optional 8K-by-16 local SRAM built from independent byte memories and
+  per-lane validity metadata. Its 8,192-clock FPGA initialization scrub never
+  resets the data arrays, exposes readiness/progress, and rejects pre-ready
+  writes instead of inventing known physical power-up contents.
 
 ### Changed
 
@@ -530,6 +534,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
   the original explicit callbacks. Upper-Y5 direct DSP I/O remains separate
   and externally visible instead of aliasing program RAM.
+- Local Y7 storage remains an external callback by default and can now select
+  the internal lane-valid SRAM explicitly. Internal selection suppresses the
+  external request and write commits while retaining raw address/data
+  observability; authorized ROM data remains a separate external callback.
 - The host-timing adapter now exposes its captured R/W direction alongside
   the already captured address and byte strobes, preventing downstream bank
   decode from consulting a live processor input after `/AS` assertion.
@@ -665,15 +673,28 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The standalone local SRAM checks exactly 8,192 metadata-scrub clocks,
+  blocked pre-ready writes, every invalid word, independent upper/lower byte
+  validity, all 8,192 complete-word writes and reads, and reinitialization.
+  Yosys retains three memories at 88 abstract cells/nine checks with no latch
+  or structural problem. Board simulation proves internal/external callback
+  isolation, an invalid unwritten read, and independent byte writes composing
+  `0x5aa7`; the board hierarchy retains six memories at 3,424 cells/362 checks.
+  The existing 12-step routing BMC and all seven covers still pass with the
+  internal SRAM disabled in that proof. The complete regression passes
+  127 repository/tool, 231 model/unit, 38 instruction RTL, 43 bus/wrapper,
+  five interrupt, and ten differential tests; strict lint covers 31 modules,
+  all 21 Yosys targets pass, all 33 hashes verify, and all 28 formal tasks
+  from fourteen configurations pass.
 - Board-level synthetic host cycles now cover mirrored valid ROM data,
   lane-valid local SRAM and an upper-byte S7 write, lower-Y5 program-RAM
   write/readback, upper-Y5 direct-I/O S6 commit and storage isolation, and Y6
   communication-RAM write/readback under CRAMEN. Opposite explicit callback
   sentinels prove opt-in selection, while later regression phases prove the
   timing-disabled fallback. Partial lower-Y5 and Y6 writes are separately
-  reported and leave their FPGA memories unchanged. Yosys retains the same
-  three memories at 3,294 abstract cells/338 checks with zero structural
-  problems; the existing
+  reported and leave their FPGA memories unchanged. At that checkpoint Yosys
+  retained three memories at 3,294 abstract cells/338 checks with zero
+  structural problems; the existing
   12-step board-routing BMC/cover remains passing after composition.
 - Arbitrary nonzero invalid bits for all four low-read sources are masked at
   the composition boundary. The dedicated board BMC passes solver steps 0–11
@@ -1305,7 +1326,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   checks all four timed reads and writes, exact masked S4-through-S6 data,
   S7 mailbox/control effects, partial-write rejection, unimplemented speech
   visibility, and external-callback selection. Integrated Yosys retains three
-  memories at 2,966 cells/257 checks. The complete current regression passes 127
+  memories at 2,966 cells/257 checks. That checkpoint regression passed 127
   repository/tool, 231 model/unit, 38 instruction RTL, 42 bus/wrapper, 5
   interrupt, and 10 differential tests; strict lint across 30 modules, all
   twenty Yosys targets, all 33 reference hashes, and all 28 tasks from
@@ -1315,7 +1336,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   all seven timing-derived routing covers at solver step 10. Both proofs remain
   scoped to common-clock digital behavior, not raw-pin CDC or electrical
   timing.
-- The complete current regression passes 124 repository/ISA/tool tests, 231
+- An earlier checkpoint regression passed 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase/wrapper tests including the exhaustive mailbox test and
   thirteen explicit pipeline tests, five
@@ -1336,6 +1357,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- The optional FPGA local SRAM needs 8,192 clocks to invalidate metadata after
+  `initialize_i`. This is an integration convention, not physical 6264 reset
+  or wait behavior; a platform selecting it must keep the local processor from
+  accessing Y7 until `host_local_ram_storage_ready_o` is true.
 - A044427's `RVA`/`/DTACK`/`/RVAS` logic and same-clock board composition are
   qualified at logical bus-state resolution, but complete TTL
   propagation/loading margin, raw-pin CDC, and unreset power-up transient are

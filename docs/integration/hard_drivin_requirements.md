@@ -35,8 +35,11 @@ Its data carrier preserves separate driven/valid masks; storage and a complete
 68000 read-bus selector remain outside the module.
 The opt-in board top now selects that bridge, connects lower Y5 to the existing
 program RAM and Y6 to the existing communication RAM, and retains the explicit
-storage callbacks when timing mode is disabled. ROM/local-SRAM storage and
-upper-Y5 direct-I/O data-bus composition remain external.
+storage callbacks when timing mode is disabled. Local SRAM may remain an
+external callback or explicitly select the lane-valid 8K-by-16 FPGA storage;
+that storage invalidates metadata over 8,192 initialization clocks without
+resetting its data arrays. Authorized ROM storage and upper-Y5 direct-I/O
+data-bus composition remain external.
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a

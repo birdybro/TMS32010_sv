@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' board-top local-memory callback integration
+- **Current milestone:** Hard Drivin' lane-valid local SRAM integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 127 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 42 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 43 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains all three memories and passes at 3,294 abstract cells/338 checks
+  board top retains six memories and passes at 3,424 abstract cells/362 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -88,6 +88,9 @@
   A twentieth target checks the composed storage-free local-memory timing
   bridge at 305 abstract combinational hierarchy cells, 40 retained checks,
   no memory/latch, and zero structural problems.
+  A twenty-first target retains the optional local 8K-by-16 SRAM as separate
+  upper-byte, lower-byte, and two-bit validity memories at 88 abstract cells,
+  nine retained checks, no latch, and zero structural problems.
 - **Formal status:** all 28 tasks from 14 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -683,11 +686,12 @@
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR`; partial mailbox writes are reported
   and rejected; and `/SPEECH` remains visible without a side effect. External
   callbacks remain the default and are explicitly isolated while opted in.
-  Integrated Yosys retains three memories at 3,294 cells/338 checks. This does
+  Integrated Yosys retained three memories at 3,294 cells/338 checks at that
+  checkpoint. This does
   not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
-  127/231/38/42/5/10 regression split, strict lint across 30 modules, all
-  twenty Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
+  127/231/38/43/5/10 regression split, strict lint across 31 modules, all
+  twenty-one Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
   configurations pass. The adapter's dedicated 16-step bounded harness uses
   the documented legal same-clock event contract and reaches read, write, and
   VPA paths; the 12-step board harness reaches seven covers across all six
@@ -701,7 +705,7 @@
   with separate `/UDS`/`/LDS` write enables and complete-word read drive. The
   storage-free RTL exhausts 131,072 combinations over `/AS`, `RVA`, `/RVAS`,
   `A23`, every ignored `A22:A17` alias, all banks, A13, direction, and byte
-  strobes. Strict lint now covers 30 modules, and all twenty Yosys targets
+  strobes. Strict lint covered 30 modules, and all twenty Yosys targets
   pass; the new target reports 56 cells/17 checks. Pinned MAME's canonical
   windows and 128 KiB declared ROM region do not reproduce the physical
   aliases (`SC-034`). The exact E1/E2 production option remains `OQ-034`.
@@ -724,10 +728,23 @@
   and emits one upper-byte local-SRAM commit at S7. Contradictory explicit
   callback sentinels are ignored while opted in; later timing-disabled phases
   still pass through the original explicit callbacks. Integrated Yosys retains
-  all three memories at 3,294 cells/338 checks with zero structural problems.
+  the three then-existing memories at 3,294 cells/338 checks with zero
+  structural problems.
   Partial lower-Y5/Y6 writes produce distinct trace pulses and are rejected at
   the FPGA storage boundary, preserving `OQ-022`/`OQ-024` rather than assigning
   the physically unqualified byte.
+- **New local-SRAM evidence:** `hard_drivin_sound_local_ram` preserves the two
+  physical byte lanes as independent 8K-by-8 data memories and tracks known
+  FPGA contents in a separate two-bit validity memory. Its exact 8,192-clock
+  metadata scrub leaves both data arrays unreset, masks every unwritten lane,
+  reports pre-ready writes, and exposes readiness/progress to the platform.
+  Standalone regression covers all 8,192 addresses before writes, after a full
+  patterned load, and after re-scrub, plus separate upper/lower boundary cases.
+  Board regression proves the external callback is the default, internal opt-
+  in ignores an all-valid external sentinel, and independent byte writes
+  compose `0x5aa7`. Standalone Yosys reports 88 cells/nine checks/three
+  memories; the board top reports 3,424 cells/362 checks/six memories. This
+  initialization contract is an FPGA policy, not physical 6264 reset evidence.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -758,9 +775,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** add an integration-specific lane-valid 8K-by-16 local SRAM
-  boundary while retaining the external authorized-ROM callback and explicit
-  masks, then compose upper-Y5 direct DSP I/O into a complete host read/write
-  data path without inventing noncanonical aliases.
+- **Next task:** compose upper-Y5 direct DSP I/O into a complete host read/write
+  data path without inventing noncanonical aliases, then add a platform reset-
+  release interlock for the optional local-SRAM validity scrub.
 - **Latest committed baseline before this cycle:**
-  `76e41d9`
+  `211f6f6`

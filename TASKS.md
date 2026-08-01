@@ -1406,6 +1406,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_host_timing.sv`,
   `sim/bus/tb_hard_drivin_sound_local_memory_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
+  `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `formal/hard_drivin_sound_host_routing.sby`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
@@ -1547,7 +1548,7 @@ objective passing evidence.
   integration checks external-callback isolation, all eight target quadrants,
   exact masks, and S7 side effects. Integrated Yosys retains three memories at
   2,966 cells/257 checks. It does not claim raw-pin CDC, open-bus policy, or
-  electrical closure. The current
+  electrical closure. At that checkpoint, the
   127/231/38/42/5/10 regression split, strict lint across 30 modules, all
   twenty Yosys targets, all 33 hashes, and all 28 formal tasks from fourteen
   configurations pass. The host adapter's 16-step proof uses an explicit
@@ -1609,13 +1610,13 @@ objective passing evidence.
   `/RVF`/`/RVAS`/DTACK/open-bus integration remains separate. The full
   125/231/38/39/5/10 regression split, strict lint, all seventeen Yosys
   targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
-  The current timing-enabled board regression preserves external-callback
+  The timing-enabled board regression preserves external-callback
   fallback, overrides only the selected local paths when opted in, reads all
   four masked targets through S6, applies `/SOUNDRD`, complete-word
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
   and exposes `/SPEECH` without a side effect. The complete current
-  127/231/38/42/5/10 regression split and strict lint across 30 modules pass;
-  all twenty Yosys targets and all 33 hashes pass. Formal qualification now
+  127/231/38/43/5/10 regression split and strict lint across 31 modules pass;
+  all twenty-one Yosys targets and all 33 hashes pass. Formal qualification now
   comprises 28 tasks from fourteen configurations: the standalone adapter
   proof is bounded to 16 steps, and a separate 12-step board-routing proof
   checks seven covers across all six implemented timing-derived transaction
@@ -1629,13 +1630,19 @@ objective passing evidence.
   explicit-callback isolation, upper-Y5 non-aliasing, mirrored authorized-ROM
   callbacks, and lane-valid local-SRAM reads plus an upper-byte S7 commit.
   Timing-disabled tests continue to exercise the original explicit storage
-  callbacks. Integrated Yosys retains three memories and reports 3,294
-  abstract cells/338 checks with no structural problem. Partial lower-Y5 and
-  Y6 writes are reported and rejected because their unselected physical data
-  lane remains unresolved under `OQ-022`/`OQ-024`. The lane-valid
-  8K-by-16 local SRAM implementation, complete direct-I/O data-bus composition,
-  raw-pin CDC, authorized ROM storage, and open-bus policy remain acceptance
-  work.
+  callbacks. The explicitly selectable local SRAM now uses independent 8K-by-8
+  data memories and a two-bit-per-word validity memory. It scrubs validity over
+  exactly 8,192 clocks without resetting either data array, reports readiness
+  and blocked pre-ready writes, preserves the external callback as the default,
+  and suppresses that callback while selected. Standalone tests cover every
+  address, independent byte validity, complete writes/reads, and re-scrub;
+  board cycles prove external-sentinel isolation and independent byte writes.
+  Integrated Yosys retains six memories and reports 3,424 abstract cells/362
+  checks with no structural problem. Partial lower-Y5 and Y6 writes are
+  reported and rejected because their unselected physical data lane remains
+  unresolved under `OQ-022`/`OQ-024`. Complete direct-I/O data-bus composition,
+  raw-pin CDC, authorized ROM storage, a platform reset-release interlock for
+  the SRAM scrub, and open-bus policy remain acceptance work.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
   local-68000 ROM and high-bank decode. The populated 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`
@@ -1655,8 +1662,9 @@ objective passing evidence.
   `/PWE` commits at its S6 trailing edge; SRAM callbacks commit at S7. The
   bridge synthesizes to 305 hierarchy cells/40 checks with no storage or
   latch. It neither supplies copyrighted contents nor inserts READY/open-bus
-  behavior. Board-top callback selection is now verified as described above;
-  an integration-specific local SRAM remains acceptance work.
+  behavior. Board-top callback selection and the optional integration-specific
+  local SRAM are now verified as described above; a complete upper-Y5 direct-
+  I/O bus path remains acceptance work.
 
 ## Milestone 22 — Release qualification
 

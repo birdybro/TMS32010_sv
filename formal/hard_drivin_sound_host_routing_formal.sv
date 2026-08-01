@@ -135,6 +135,7 @@ module hard_drivin_sound_host_routing_formal (
     .host_bus_write_data_i                  (transaction_data_q),
     .host_local_rom_read_data_i             (16'h0000),
     .host_local_rom_read_data_valid_i       (1'b0),
+    .use_internal_local_ram_i               (1'b0),
     .host_local_ram_read_data_i             (16'h0000),
     .host_local_ram_read_valid_mask_i       (16'h0000),
 

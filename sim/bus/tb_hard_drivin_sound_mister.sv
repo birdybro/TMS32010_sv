@@ -67,6 +67,7 @@ module tb_hard_drivin_sound_mister;
   logic        host_local_rom_read_data_valid;
   logic        host_local_rom_read_request;
   logic [14:0] host_local_rom_word_address;
+  logic        use_internal_local_ram;
   logic [15:0] host_local_ram_read_data;
   logic [15:0] host_local_ram_read_valid_mask;
   logic        host_local_ram_read_request;
@@ -74,6 +75,10 @@ module tb_hard_drivin_sound_mister;
   logic        host_local_ram_upper_write_commit;
   logic        host_local_ram_lower_write_commit;
   logic [15:0] host_local_ram_write_data;
+  logic        host_local_ram_storage_ready;
+  logic        host_local_ram_storage_scrub_active;
+  logic [12:0] host_local_ram_storage_scrub_address;
+  logic        host_local_ram_storage_write_blocked;
   logic [15:0] host_local_memory_read_data;
   logic [15:0] host_local_memory_read_driven_mask;
   logic [15:0] host_local_memory_read_valid_mask;
@@ -295,6 +300,7 @@ module tb_hard_drivin_sound_mister;
     .host_local_rom_read_data_valid_i(host_local_rom_read_data_valid),
     .host_local_rom_read_request_o(host_local_rom_read_request),
     .host_local_rom_word_address_o(host_local_rom_word_address),
+    .use_internal_local_ram_i     (use_internal_local_ram),
     .host_local_ram_read_data_i   (host_local_ram_read_data),
     .host_local_ram_read_valid_mask_i(host_local_ram_read_valid_mask),
     .host_local_ram_read_request_o(host_local_ram_read_request),
@@ -306,6 +312,16 @@ module tb_hard_drivin_sound_mister;
       host_local_ram_lower_write_commit
     ),
     .host_local_ram_write_data_o  (host_local_ram_write_data),
+    .host_local_ram_storage_ready_o(host_local_ram_storage_ready),
+    .host_local_ram_storage_scrub_active_o(
+      host_local_ram_storage_scrub_active
+    ),
+    .host_local_ram_storage_scrub_address_o(
+      host_local_ram_storage_scrub_address
+    ),
+    .host_local_ram_storage_write_blocked_o(
+      host_local_ram_storage_write_blocked
+    ),
     .host_local_memory_read_data_o(host_local_memory_read_data),
     .host_local_memory_read_driven_mask_o(
       host_local_memory_read_driven_mask
@@ -876,6 +892,7 @@ module tb_hard_drivin_sound_mister;
     host_bus_write_data = 16'h0000;
     host_local_rom_read_data = 16'h0000;
     host_local_rom_read_data_valid = 1'b0;
+    use_internal_local_ram = 1'b0;
     host_local_ram_read_data = 16'h0000;
     host_local_ram_read_valid_mask = 16'h0000;
     bio_one_mhz_rise = 1'b0;
@@ -1270,6 +1287,91 @@ module tb_hard_drivin_sound_mister;
             host_local_ram_lower_write_count == 0,
             "timed Y7 upper-byte write commits only the physical upper slice");
     tick();
+
+    // The optional FPGA SRAM cannot silently turn uninitialized data into a
+    // board value. Its two-bit validity metadata is scrubbed sequentially;
+    // the external callback remains authoritative until the explicit opt-in.
+    require(host_local_ram_storage_scrub_active &&
+            !host_local_ram_storage_ready,
+            "internal local SRAM remains unavailable during validity scrub");
+    while (!host_local_ram_storage_ready) begin
+      tick();
+    end
+    require(!host_local_ram_storage_scrub_active &&
+            host_local_ram_storage_scrub_address == 13'h1fff,
+            "internal local SRAM becomes ready only after all 8192 words");
+
+    use_internal_local_ram = 1'b1;
+    host_local_ram_read_data = 16'hffff;
+    host_local_ram_read_valid_mask = 16'hffff;
+    local_host_start_address(
+      23'h7fe321, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    require(
+      !host_local_ram_read_request &&
+      host_local_ram_word_address == 13'h0321 &&
+      host_local_memory_read_target_select == 2'b10 &&
+      host_local_memory_read_data == 16'h0000 &&
+      host_local_memory_read_driven_mask == 16'hffff &&
+      host_local_memory_read_valid_mask == 16'h0000,
+      "internal unwritten SRAM masks retained data and external sentinel"
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fe321, 1'b0, 1'b0, 1'b1, 16'h5ade
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    require(
+      !host_local_ram_upper_write_commit &&
+      !host_local_ram_lower_write_commit &&
+      !host_local_ram_storage_write_blocked &&
+      host_local_ram_upper_write_count == 1 &&
+      host_local_ram_lower_write_count == 0,
+      "internal upper-byte write is isolated from the external callback"
+    );
+    tick();
+
+    local_host_start_address(
+      23'h7fe321, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    require(
+      !host_local_ram_read_request &&
+      host_local_memory_read_data == 16'h5a00 &&
+      host_local_memory_read_valid_mask == 16'hff00,
+      "internal SRAM read reports only its written upper lane"
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fe321, 1'b0, 1'b1, 1'b0, 16'hc3a7
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    require(!host_local_ram_upper_write_commit &&
+            !host_local_ram_lower_write_commit &&
+            !host_local_ram_storage_write_blocked,
+            "internal lower-byte write is accepted without external callback");
+    tick();
+
+    local_host_start_address(
+      23'h7fe321, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    require(
+      host_local_memory_read_data == 16'h5aa7 &&
+      host_local_memory_read_driven_mask == 16'hffff &&
+      host_local_memory_read_valid_mask == 16'hffff,
+      "independent internal byte writes compose one fully valid SRAM word"
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    tick();
+    use_internal_local_ram = 1'b0;
 
     // Timing mode owns the program-RAM callbacks. Opposite explicit callback
     // values are sentinels and must neither select nor alter another address.

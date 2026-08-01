@@ -208,18 +208,52 @@ The board top forwards the complete ROM callback, local-RAM callback, byte-
 specific local-RAM commits, read carrier masks, and missing-response event to
 its caller. It also forwards the upper-Y5 `/PDEN` level and `/PWE` S6 commit,
 but does not yet connect that direct path to a complete MC68000/TMS data-bus
-multiplexer. ROM bytes and the 8K-by-16 local SRAM remain external; no
-copyrighted image, open-bus value, or integration-specific SRAM initialization
-is embedded.
+multiplexer. ROM bytes remain external. The local-SRAM callback remains the
+default, while `use_internal_local_ram_i` explicitly selects the optional
+storage described below. No copyrighted image or open-bus value is embedded.
 
-`tb_hard_drivin_sound_mister` verifies this composition with synthetic mirrored
-ROM and lane-valid local-SRAM responses, an upper-byte local-SRAM S7 write,
+### Optional lane-valid FPGA SRAM
+
+`hard_drivin_sound_local_ram` implements the drawn pair as separate 8K-by-8
+upper and lower data memories with one shared two-bit lane-validity memory.
+Reads are combinational, matching the same-clock fixed-cycle bridge contract;
+S7 callbacks write either byte independently. A read returns zero on every
+invalid lane and carries exactly one of `0x0000`, `0xff00`, `0x00ff`, or
+`0xffff` as its validity mask. Physical driven-lane reporting remains in the
+bridge and is therefore still independent of known FPGA contents.
+
+Neither data memory is reset. On `initialize_i`, a small controller instead
+starts a sequential 8,192-clock scrub of validity metadata. Storage reports
+not-ready throughout that interval, all reads remain invalid, and attempted
+writes raise `host_local_ram_storage_write_blocked_o` rather than being
+accepted ahead of a later scrub location. This is a deterministic FPGA
+qualification policy, not a claim that either physical 6264 clears, waits, or
+blocks writes after board reset. An integration selecting internal storage
+must finish the scrub before releasing the local processor; the fixed Atari
+host path has no READY mechanism with which to stretch an early access.
+
+When internal storage is selected, the external local-RAM request and write-
+commit outputs remain inactive, while the raw word address and write data stay
+observable. When it is not selected, the original external data/validity and
+callback interface is unchanged. Authorized ROM supply is independent of this
+choice.
+
+`tb_hard_drivin_sound_local_ram` checks the exact 8,192-clock scrub, blocked
+pre-ready writes, all 8,192 invalid words, independent upper/lower validity,
+all 8,192 complete-word writes and reads, and reinitialization invalidation.
+Standalone Yosys retains three abstract memories and reports 88 cells, nine
+checks, no latch, and zero structural problems.
+
+`tb_hard_drivin_sound_mister` verifies the composition with synthetic mirrored
+ROM and external lane-valid local-SRAM responses, then opts into the internal
+SRAM, proves an external all-valid sentinel is ignored, writes the two byte
+lanes independently, and reads one fully valid combined word. It also checks
 lower-Y5 program-RAM write/readback, upper-Y5 direct-I/O isolation and S6
 commit, and Y6 communication-RAM write/readback under CRAMEN. Opposite explicit
 callback sentinels prove timing-mode ownership, and later board tests prove the
 explicit-callback fallback still operates with timing mode disabled.
 
-The composed board hierarchy retains its three existing memories and reports
-3,294 abstract cells with 338 checks and zero structural problems in Yosys
+The composed board hierarchy retains six memories and reports 3,424 abstract
+cells with 362 checks and zero structural problems in Yosys
 0.67+111. This remains pre-technology synthesis, not raw-pin CDC, a complete
 MC68000 data-bus mux, a Cyclone V fit, or electrical timing closure.

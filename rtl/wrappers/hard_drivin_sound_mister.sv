@@ -76,6 +76,7 @@ module hard_drivin_sound_mister (
   input  logic        host_local_rom_read_data_valid_i,
   output logic        host_local_rom_read_request_o,
   output logic [14:0] host_local_rom_word_address_o,
+  input  logic        use_internal_local_ram_i,
   input  logic [15:0] host_local_ram_read_data_i,
   input  logic [15:0] host_local_ram_read_valid_mask_i,
   output logic        host_local_ram_read_request_o,
@@ -83,6 +84,10 @@ module hard_drivin_sound_mister (
   output logic        host_local_ram_upper_write_commit_o,
   output logic        host_local_ram_lower_write_commit_o,
   output logic [15:0] host_local_ram_write_data_o,
+  output logic        host_local_ram_storage_ready_o,
+  output logic        host_local_ram_storage_scrub_active_o,
+  output logic [12:0] host_local_ram_storage_scrub_address_o,
+  output logic        host_local_ram_storage_write_blocked_o,
   output logic [15:0] host_local_memory_read_data_o,
   output logic [15:0] host_local_memory_read_driven_mask_o,
   output logic [15:0] host_local_memory_read_valid_mask_o,
@@ -293,6 +298,17 @@ module hard_drivin_sound_mister (
   logic [7:0]  bridge_high_bank_select_n;
   logic        bridge_rvf_select_n;
   logic        bridge_local_ram_select_n;
+  logic        bridge_local_ram_read_request;
+  logic [12:0] bridge_local_ram_word_address;
+  logic        bridge_local_ram_upper_write_commit;
+  logic        bridge_local_ram_lower_write_commit;
+  logic [15:0] bridge_local_ram_write_data;
+  logic [15:0] internal_local_ram_read_data;
+  logic [15:0] internal_local_ram_read_valid_mask;
+  logic [15:0] selected_local_ram_read_data;
+  logic [15:0] selected_local_ram_read_valid_mask;
+  logic        internal_local_ram_upper_write_accepted;
+  logic        internal_local_ram_lower_write_accepted;
 
   assign selected_bio_n_o = use_board_bio_i ? board_bio_n_o : bio_i;
   assign selected_bio_valid_o = !use_board_bio_i || board_bio_valid_o;
@@ -412,6 +428,22 @@ module hard_drivin_sound_mister (
     use_host_timing_i
       ? host_bus_write_data_i
       : host_communication_write_data_i;
+  assign selected_local_ram_read_data =
+    use_internal_local_ram_i
+      ? internal_local_ram_read_data
+      : host_local_ram_read_data_i;
+  assign selected_local_ram_read_valid_mask =
+    use_internal_local_ram_i
+      ? internal_local_ram_read_valid_mask
+      : host_local_ram_read_valid_mask_i;
+  assign host_local_ram_read_request_o =
+    bridge_local_ram_read_request && !use_internal_local_ram_i;
+  assign host_local_ram_word_address_o = bridge_local_ram_word_address;
+  assign host_local_ram_upper_write_commit_o =
+    bridge_local_ram_upper_write_commit && !use_internal_local_ram_i;
+  assign host_local_ram_lower_write_commit_o =
+    bridge_local_ram_lower_write_commit && !use_internal_local_ram_i;
+  assign host_local_ram_write_data_o = bridge_local_ram_write_data;
 
   assign native_write_data =
     logical_program_write
@@ -674,19 +706,19 @@ module hard_drivin_sound_mister (
     .rom_read_data_valid_i               (
       host_local_rom_read_data_valid_i
     ),
-    .local_ram_read_request_o            (host_local_ram_read_request_o),
-    .local_ram_word_address_o            (host_local_ram_word_address_o),
-    .local_ram_read_data_i               (host_local_ram_read_data_i),
+    .local_ram_read_request_o            (bridge_local_ram_read_request),
+    .local_ram_word_address_o            (bridge_local_ram_word_address),
+    .local_ram_read_data_i               (selected_local_ram_read_data),
     .local_ram_read_valid_mask_i         (
-      host_local_ram_read_valid_mask_i
+      selected_local_ram_read_valid_mask
     ),
     .local_ram_upper_write_commit_o      (
-      host_local_ram_upper_write_commit_o
+      bridge_local_ram_upper_write_commit
     ),
     .local_ram_lower_write_commit_o      (
-      host_local_ram_lower_write_commit_o
+      bridge_local_ram_lower_write_commit
     ),
-    .local_ram_write_data_o              (host_local_ram_write_data_o),
+    .local_ram_write_data_o              (bridge_local_ram_write_data),
     .host_program_select_n_o             (bridge_host_program_select_n),
     .host_program_ram_select_n_o         (
       bridge_host_program_ram_select_n
@@ -731,6 +763,38 @@ module hard_drivin_sound_mister (
     .high_bank_select_n_o                (bridge_high_bank_select_n),
     .rvf_select_n_o                      (bridge_rvf_select_n),
     .local_ram_select_n_o                (bridge_local_ram_select_n)
+  );
+
+  hard_drivin_sound_local_ram local_ram (
+    .clk_i                       (clk_i),
+    .initialize_i                (initialize_i),
+    .read_request_i              (
+      use_internal_local_ram_i && bridge_local_ram_read_request
+    ),
+    .word_address_i              (bridge_local_ram_word_address),
+    .read_data_o                 (internal_local_ram_read_data),
+    .read_valid_mask_o           (internal_local_ram_read_valid_mask),
+    .upper_write_commit_i        (
+      use_internal_local_ram_i && bridge_local_ram_upper_write_commit
+    ),
+    .lower_write_commit_i        (
+      use_internal_local_ram_i && bridge_local_ram_lower_write_commit
+    ),
+    .write_data_i                (bridge_local_ram_write_data),
+    .upper_write_accepted_o      (
+      internal_local_ram_upper_write_accepted
+    ),
+    .lower_write_accepted_o      (
+      internal_local_ram_lower_write_accepted
+    ),
+    .write_blocked_o             (host_local_ram_storage_write_blocked_o),
+    .storage_ready_o             (host_local_ram_storage_ready_o),
+    .validity_scrub_active_o     (
+      host_local_ram_storage_scrub_active_o
+    ),
+    .validity_scrub_address_o    (
+      host_local_ram_storage_scrub_address_o
+    )
   );
 
   hard_drivin_sound_host_control host_control (
@@ -937,6 +1001,35 @@ module hard_drivin_sound_mister (
                ~host_local_memory_read_driven_mask_o) == 16'h0000);
       assert ((host_local_memory_read_data_o &
                ~host_local_memory_read_valid_mask_o) == 16'h0000);
+      if (use_internal_local_ram_i) begin
+        assert (!host_local_ram_read_request_o);
+        assert (!host_local_ram_upper_write_commit_o);
+        assert (!host_local_ram_lower_write_commit_o);
+        assert (selected_local_ram_read_data ==
+                internal_local_ram_read_data);
+        assert (selected_local_ram_read_valid_mask ==
+                internal_local_ram_read_valid_mask);
+        assert (internal_local_ram_upper_write_accepted ==
+                (bridge_local_ram_upper_write_commit &&
+                 host_local_ram_storage_ready_o));
+        assert (internal_local_ram_lower_write_accepted ==
+                (bridge_local_ram_lower_write_commit &&
+                 host_local_ram_storage_ready_o));
+      end else begin
+        assert (host_local_ram_read_request_o ==
+                bridge_local_ram_read_request);
+        assert (host_local_ram_upper_write_commit_o ==
+                bridge_local_ram_upper_write_commit);
+        assert (host_local_ram_lower_write_commit_o ==
+                bridge_local_ram_lower_write_commit);
+        assert (selected_local_ram_read_data ==
+                host_local_ram_read_data_i);
+        assert (selected_local_ram_read_valid_mask ==
+                host_local_ram_read_valid_mask_i);
+        assert (!internal_local_ram_upper_write_accepted);
+        assert (!internal_local_ram_lower_write_accepted);
+        assert (!host_local_ram_storage_write_blocked_o);
+      end
       if (use_host_timing_i) begin
         assert (selected_sound_cpu_low_read_select_valid ==
                 host_timing_read_select_valid_o);

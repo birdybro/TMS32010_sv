@@ -199,8 +199,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Upper-Y5 direct DSP I/O is deliberately distinct",
             "host_timing_partial_program_write_o",
             "host_timing_partial_communication_write_o",
-            "3,294",
-            "338 checks",
+            "use_internal_local_ram_i",
+            "8,192 clocks",
+            "3,424",
+            "362 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -407,8 +409,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Seven covers span all six classes",
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
-            "3,294 abstract cells",
-            "338 checks",
+            "optional lane-valid SRAM",
+            "3,424 abstract cells",
+            "362 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)
@@ -440,6 +443,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "ROM-invalid",
             "305 abstract combinational hierarchy cells",
             "40 retained checks",
+            "Optional lane-valid FPGA SRAM",
+            "8,192-clock scrub",
+            "hard_drivin_sound_local_ram",
+            "88 cells",
+            "nine checks",
+            "six memories",
             "provide a 68000 core",
         ):
             self.assertIn(required, local_memory_flat)
