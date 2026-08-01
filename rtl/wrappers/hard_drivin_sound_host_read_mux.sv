@@ -2,7 +2,9 @@
 
 // Storage-free composition of A044427 Rev-A LS138 30N's four low host-read
 // targets. read_quadrant_i is raw A13:A12 order after an external bridge has
-// qualified a read selection. This mapper has no strobe timing or side effects.
+// qualified a read selection. Invalid source lanes are clamped only in the
+// interface carrier; the validity mask remains the authority. This mapper has
+// no strobe timing or side effects.
 module hard_drivin_sound_host_read_mux (
   input  logic        read_select_valid_i,
   input  logic [1:0]  read_quadrant_i,
@@ -35,22 +37,22 @@ module hard_drivin_sound_host_read_mux (
       target_select_o = 4'b0001 << read_quadrant_i;
       unique case (read_quadrant_i)
         2'b00: begin
-          host_read_data_o = sound_read_data_i;
+          host_read_data_o = sound_read_data_i & sound_read_valid_mask_i;
           host_driven_mask_o = sound_read_driven_mask_i;
           host_valid_mask_o = sound_read_valid_mask_i;
         end
         2'b01: begin
-          host_read_data_o = port_320_data_i;
+          host_read_data_o = port_320_data_i & port_320_valid_mask_i;
           host_driven_mask_o = port_320_driven_mask_i;
           host_valid_mask_o = port_320_valid_mask_i;
         end
         2'b10: begin
-          host_read_data_o = switches_data_i;
+          host_read_data_o = switches_data_i & switches_valid_mask_i;
           host_driven_mask_o = switches_driven_mask_i;
           host_valid_mask_o = switches_valid_mask_i;
         end
         2'b11: begin
-          host_read_data_o = read_status_data_i;
+          host_read_data_o = read_status_data_i & read_status_valid_mask_i;
           host_driven_mask_o = read_status_driven_mask_i;
           host_valid_mask_o = read_status_valid_mask_i;
         end

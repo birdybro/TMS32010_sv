@@ -195,7 +195,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "`host_irq_clear_commit_i` callback",
             "`LACK 0x5a` and `NOP`",
-            "2,962",
+            "2,966",
             "257 checks",
             "Cyclone V",
         ):
@@ -246,7 +246,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "connected to `hard_drivin_sound_mister` as an explicit opt-in",
             "external platform-independent raw BIO input remains the default",
             "selected_bio_valid_o=0",
-            "2,962 abstract cells",
+            "2,966 abstract cells",
             "52 cells",
             "seven retained checks",
         ):
@@ -362,7 +362,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "hard_drivin_sound_host_read_mux.sv",
             "`00` | `0001` | `/SOUNDRD`",
             "selecting\n`/SOUNDRD` does not clear `MAINFLAG`",
-            "68 abstract cells",
+            "72 abstract cells",
             "13 retained checks",
         ):
             self.assertIn(required, host_reads)
@@ -398,7 +398,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "VPA cover\nreaches step 9",
             "Opt-in board-top composition",
             "host_timing_partial_sound_write_o",
-            "2,962 abstract cells",
+            "hard_drivin_sound_host_routing.sby",
+            "12-step bounded composition",
+            "Seven covers span all six classes",
+            "2,966 abstract cells",
             "257 checks",
         ):
             self.assertIn(required, host_timing)
@@ -425,7 +428,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Ten retained RTL checks",
             "`hard_drivin_sound_mister` instantiates the standalone adapter",
             "both coincident write/read",
-            "2,962 abstract cells",
+            "2,966 abstract cells",
             "257 retained\nchecks",
         ):
             self.assertIn(required, mailboxes)

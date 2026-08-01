@@ -335,7 +335,36 @@ electrical setup/hold, physical unreset power-up state, open-bus values,
 mailbox partial-byte behavior, or the board-top side effects driven by the
 completion events.
 
-The thirteen harnesses leave DINT ordering, formal coverage of the represented
+## Driver Sound board host-routing harness
+
+`hard_drivin_sound_host_routing.sby` instantiates the complete current
+`hard_drivin_sound_mister` hierarchy with DSP execution paused and the
+same-clock host-timing path selected. A 12-step BMC and cover choose one of six
+symbolic transactions: `/SOUNDRD`, whole-word `/SOUNDWR`, partial
+`/SOUNDWR`, `/LATCHES`, `/SPEECH`, or `/IRQCLR`. The transferred word, LS259
+address bits, and upper-only versus lower-only partial-write choice remain
+symbolic. Deterministic FPGA initialization and a
+fixed legal `/AS`/S3-through-S7 event sequence are explicit harness
+conditions; opposite external callbacks are asserted with contradictory
+sentinel values to prove timing-mode isolation.
+
+The assertions check read target/data/masks before completion, exact S7
+mailbox read-clear and whole-word write effects, partial-write rejection,
+address-coded LS259 state, side-effect-free speech visibility, IRQ-clear
+routing, completion classification, and absence of early state changes. The
+BMC passes solver steps 0 through 11. Seven covers span the six transaction
+classes, including both partial-byte orientations, and all reach solver step
+10, corresponding to harness state `step_q == 8` after the registered effects
+are visible. Embedded hierarchy assertions also prove that arbitrary invalid
+pre-initialization source data is clamped by the low-read selector.
+
+This is one bounded, fixed-edge common-clock composition scenario per
+transaction class. It does not prove DSP execution during a host cycle,
+arbitrary event spacing, raw-pin CDC, physical LS374/LS74 collision behavior,
+partial-byte electrical behavior, an implemented speech peripheral, open-bus
+values, or TTL/MC68000 electrical timing.
+
+The fourteen harnesses leave DINT ordering, formal coverage of the represented
 multicycle interrupt-arrival matrix, RET, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

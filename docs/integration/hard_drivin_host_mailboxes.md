@@ -153,6 +153,6 @@ local-write rejection, external-callback isolation, exact flag-to-status
 mapping, both coincident write/read
 conflicts, independent flag invalidity and requalification, raw peripheral
 validity masks, and board-reset flag clear with both word latches retained.
-The complete board hierarchy reports 2,962 abstract cells, 257 retained
+The complete board hierarchy reports 2,966 abstract cells, 257 retained
 checks, three memories, and zero structural problems. It is not a 68000 bus
 or Cyclone V timing qualification.

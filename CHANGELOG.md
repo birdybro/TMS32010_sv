@@ -178,6 +178,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   alternating-edge and VPA-release assumptions, exact external-equation and
   captured-state assertions, and reachable whole-word read, whole-word write,
   and fully settled CPU-space covers.
+- A 12-step bounded board-hierarchy host-routing proof that symbolically
+  selects all six implemented timing-derived transaction classes, holds
+  contradictory explicit callbacks active, checks exact S7 stateful effects
+  with the DSP paused, and reaches seven covers including both partial-byte
+  orientations.
 - An opt-in board-top composition of that timing path: all four masked read
   quadrants are driven during the held selection interval, and pre-edge S7
   events route `/SOUNDRD`, complete-word `/SOUNDWR`, `/LATCHES`, and
@@ -590,6 +595,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- The low-host-read selector now clamps arbitrary bits outside each selected
+  source-valid mask instead of requiring unqualified storage to power up at
+  zero. Raw source outputs and physical driven-lane masks remain unchanged;
+  this fixes the deterministic interface carrier without inventing an
+  open-bus value.
 - Removed the nonphysical external-ready dependency from Driver Sound port 3
   and implemented its populated byte latch. Both OUT and low-address TBLW now
   complete against the internal no-wait target and update the masked host view
@@ -632,6 +642,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Arbitrary nonzero invalid bits for all four low-read sources are masked at
+  the composition boundary. The dedicated board BMC passes solver steps 0–11
+  and all seven read/write/latch/speech/IRQ routing covers reach solver step 10,
+  including both partial-byte orientations.
+  Standalone selector synthesis reports 72 cells/13 checks and the board
+  hierarchy reports 2,966 cells/257 checks with three memories and no
+  structural problems.
 - Invalid low-read selection, exact `00/01/10/11` Atari target order, every
   physically driven lane, distinct source masks, one-hot visibility, live
   board source transitions, MAME-swapped quadrant discrimination, and
@@ -1255,14 +1272,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   checks all four timed reads and writes, exact masked S4-through-S6 data,
   S7 mailbox/control effects, partial-write rejection, unimplemented speech
   visibility, and external-callback selection. Integrated Yosys retains three
-  memories at 2,962 cells/257 checks. The complete current regression passes 126
+  memories at 2,966 cells/257 checks. The complete current regression passes 126
   repository/tool, 231 model/unit, 38 instruction RTL, 40 bus/wrapper, 5
   interrupt, and 10 differential tests; strict lint across 28 modules, all
-  eighteen Yosys targets, all 32 reference hashes, and all 26 tasks from
-  thirteen formal configurations pass. The new adapter BMC passes through 16
+  eighteen Yosys targets, all 32 reference hashes, and all 28 tasks from
+  fourteen formal configurations pass. The adapter BMC passes through 16
   steps; its whole-word read/write covers reach step 8 and the fully settled
-  VPA cover reaches step 9. The proof remains scoped to common-clock digital
-  behavior, not raw-pin CDC, board-top side effects, or electrical timing.
+  VPA cover reaches step 9. The separate board BMC passes 12 steps and reaches
+  all seven timing-derived routing covers at solver step 10. Both proofs remain
+  scoped to common-clock digital behavior, not raw-pin CDC or electrical
+  timing.
 - The complete current regression passes 124 repository/ISA/tool tests, 231
   directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 33
   native bus/phase/wrapper tests including the exhaustive mailbox test and

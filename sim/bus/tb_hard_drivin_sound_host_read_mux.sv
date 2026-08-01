@@ -97,6 +97,22 @@ module tb_hard_drivin_sound_host_read_mux;
     check_selected(2'b11, 16'h4000, 16'hf000, 16'h6000, 4'b1000,
                    "quadrant 11 selects raw /READSTAT nibble");
 
+    // Invalid input bits may be arbitrary before their source storage has
+    // been qualified. The composed carrier must clamp them without widening
+    // the source's valid or physically driven masks.
+    sound_read_data = 16'hffff;
+    port_320_data = 16'hffff;
+    switches_data = 16'hffff;
+    read_status_data = 16'hffff;
+    check_selected(2'b00, 16'h0f0f, 16'hffff, 16'h0f0f, 4'b0001,
+                   "invalid /SOUNDRD carrier bits are clamped");
+    check_selected(2'b01, 16'ha500, 16'hff00, 16'ha500, 4'b0010,
+                   "invalid /320PORT carrier bits are clamped");
+    check_selected(2'b10, 16'h9000, 16'hf000, 16'h9000, 4'b0100,
+                   "invalid /SWITCHES carrier bits are clamped");
+    check_selected(2'b11, 16'h6000, 16'hf000, 16'h6000, 4'b1000,
+                   "invalid /READSTAT carrier bits are clamped");
+
     // Exercise every physically driven lane through its qualified target.
     for (int unsigned bit_index = 0; bit_index < 16; bit_index++) begin
       sound_read_valid_mask = 16'h0001 << bit_index;

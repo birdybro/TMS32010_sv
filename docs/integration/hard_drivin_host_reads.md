@@ -188,7 +188,10 @@ qualified masked sources in Atari LS138 `30N` order:
 `read_select_valid_i` means only that an external bridge has qualified one of
 these source selections. When it is false, the output data and masks are all
 zero and no target is claimed. When true, the mux forwards the selected
-source's data, driven mask, and valid mask without widening any physical lane.
+source's driven and valid masks without widening any physical lane, and
+clamps data outside that valid mask to the deterministic zero carrier. This
+keeps arbitrary pre-qualification storage contents out of the composed
+carrier without changing the raw source output or assigning physical bus data.
 It does not generate `/RVF` or `/RVAS`, sample 68000 strobes, produce DTACK, choose an
 open-bus value, or cause any side effect. In particular, selecting
 `/SOUNDRD` does not clear `MAINFLAG`; only the separate completed-read callback
@@ -218,7 +221,7 @@ later low-address TBLW captures `0x30` from word `0xf230` and exposes
 `0x3000`, exactly once, without modifying program RAM. This verifies the
 same-clock FPGA boundary, not LS374 propagation delay or 68000 bus timing.
 Standalone Yosys reports 19 abstract cells and five retained checks; the
-integrated board hierarchy reports 2,962 cells, 257 checks, three memories,
+integrated board hierarchy reports 2,966 cells, 257 checks, three memories,
 and zero structural problems. Neither result is a Cyclone V fit.
 
 `tb_hard_drivin_sound_read_status` exhausts all sixteen raw source nibbles
@@ -243,8 +246,9 @@ latch, and zero structural problems. The board top now connects it to the
 masked selector but proves neither connector semantics nor a 68000 read cycle.
 
 `tb_hard_drivin_sound_host_read_mux` checks invalid-selection suppression,
-exact Atari quadrant/one-hot order, distinct source masks, and every physically
-driven lane of all four targets. Standalone Yosys reports 68 abstract cells,
+exact Atari quadrant/one-hot order, distinct source masks, arbitrary nonzero
+bits outside every source-valid mask, and every physically driven lane of all
+four targets. Standalone Yosys reports 72 abstract cells,
 13 retained checks, no storage or latch, and zero structural problems. The
 integrated board regression separately proves the same order with live source
 state, including MAME's swapped quadrant names, source validity propagation,

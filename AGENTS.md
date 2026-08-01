@@ -438,6 +438,14 @@ physical-edge enables and a fully settled VPA-owned release, proves the
 common-clock logical equations and no-retry behavior, and reaches read, write,
 and VPA covers. Do not extend that bounded claim to board-top side effects,
 raw-pin CDC, or electrical timing.
+The separate 12-step `hard_drivin_sound_host_routing` harness instantiates the
+board hierarchy with the processor paused, selects one symbolic transaction
+from six routed host classes with a symbolic partial-byte orientation, holds
+contradictory external callbacks active,
+and proves the currently implemented S7 read/write/latch/IRQ side effects plus
+partial-write rejection and speech non-effect. Treat it as bounded
+common-clock composition evidence only, not a general host-cycle or
+electrical proof.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW
@@ -487,7 +495,9 @@ twelve zero carrier bits remain outside both masks under `OQ-030`. Pinned
 MAME's swapped `/320PORT`/`/SWITCHES` handler names and equal zero stubs are
 `SC-033`, not board decode evidence. The board top connects this source to
 `hard_drivin_sound_host_read_mux`, which forwards all four low-read sources in
-Atari LS138 `30N` order with their exact driven/valid masks. Its qualified
+Atari LS138 `30N` order with their exact driven/valid masks and clamps
+arbitrary bits outside the selected valid mask only in the deterministic
+interface carrier. Its qualified
 selection can come from the explicit callback or the opt-in timing adapter;
 only the separate S7 `/SOUNDRD` event clears the flag. Do not add an open-bus
 value or a combinational side effect to this storage-free composition.

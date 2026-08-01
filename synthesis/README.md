@@ -89,7 +89,7 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,962 abstract cells, 257 checks, and zero structural problems after
+reports 2,966 abstract cells, 257 checks, and zero structural problems after
 the opt-in host-control, host-timing, port-3 latch, mailbox, raw-source, and
 masked-selector integration.
 This is not comparable to the
@@ -138,7 +138,7 @@ the raw connector-to-high-nibble mapping and masked carrier, not cabinet
 semantics, connector idle levels, undriven low lanes, or a 68000 read cycle.
 
 The seventeenth script targets the storage-free
-`hard_drivin_sound_host_read_mux`. It reports 68 abstract cells, 13 retained
+`hard_drivin_sound_host_read_mux`. It reports 72 abstract cells, 13 retained
 checks, no storage or latch, and zero structural problems. This qualifies the
 Atari quadrant order and exact mask forwarding only; it is not `/RVAS`, DTACK,
 side-effect, open-bus, or physical cycle evidence.

@@ -257,8 +257,23 @@ four timed write quadrants. It checks masked read data through S6, exact S7
 `/SOUNDRD`, whole-word `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` effects,
 external-callback isolation while opted in, explicit partial-mailbox
 rejection, and visible side-effect-free `/SPEECH` completion. Integrated
-Yosys retains three memories and reports 2,962 abstract cells, 257 checks,
+Yosys retains three memories and reports 2,966 abstract cells, 257 checks,
 and zero structural problems.
+
+`formal/hard_drivin_sound_host_routing.sby` adds a 12-step bounded composition
+check over the complete current board hierarchy with DSP execution paused.
+One symbolic transaction selects `/SOUNDRD`, complete or partial
+`/SOUNDWR`, `/LATCHES`, `/SPEECH`, or `/IRQCLR`; word data, LS259 address
+bits, and the partial-write byte orientation remain symbolic, while
+contradictory external callback sentinels prove timing-mode isolation.
+Assertions cover exact pre-completion read data/masks,
+S7 mailbox effects, partial-write rejection, address-coded latch state,
+side-effect-free speech visibility, IRQ-clear routing, and no early state
+change. Seven covers span all six classes plus both partial-byte orientations
+and reach solver step 10 after the registered effects are visible. This fixed
+common-clock event sequence does not prove raw-pin CDC,
+arbitrary event spacing, physical collision/byte behavior, or electrical
+timing.
 
 ## Diagnostic-software evidence
 
