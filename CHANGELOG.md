@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- Expanded `SC-009` plus a stable two-direction original-NMOS indirect-LST
+  probe. The research now preserves the original guides' `ARP becomes 1`
+  worked result against their memory-status restore contract, later C25/MAME
+  memory-wins behavior, pinned IKA encoded-field-wins behavior, and related TI
+  patent control background without assigning a silicon outcome. The fixture
+  makes status bit 8 and encoded next ARP disagree in both directions.
 - `SC-039` and an exact original-NMOS DINT/interrupt-race probe. The source
   conflict preserves original SPRU001B's executed N+1/dummy N+2 sequence
   against later mixed-family SPRU013's dummy N+1 sequence and separately
@@ -887,6 +893,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The indirect-LST precedence fixture assembles deterministically to an exact
+  contiguous 30-word image with fixed case and terminal symbols.
+  Documentation regressions require both marker hypotheses, both independent
+  implementation results, the original worked-result ambiguity, and no
+  expected hardware sequence.
 - The DINT race fixture assembles deterministically to an exact sparse 28-word
   image with fixed vector, arm, race, resume, handler, and hold symbols.
   Documentation regressions require the TI source conflict, MAME/IKA scope,
@@ -899,7 +910,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 139 provenance/document/tool tests,
+- The complete repository gates pass with 141 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
   checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
@@ -1780,10 +1791,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   it exposes an abstract asserted callback rather than documenting physical
   pin polarity. Project behavior follows TI's active-low pin and unconditional
   two-cycle entry (`SC-015`).
-- Original TMS32010 manuals do not define LST's memory-sourced ARP versus
-  encoded next-ARP precedence. The implemented memory-word precedence is
-  PROVISIONAL under `OQ-015`; later TI and MAME evidence corroborates but does
-  not prove original silicon behavior.
+- Original TMS32010/first-generation LST pages say both that the memory word
+  restores ARP and, in `LARP 0; LST *,1`, that ARP becomes one without stating
+  word bit 8. Later TI/MAME implement memory-wins; pinned IKA implements
+  encoded-field-wins. The current memory-word policy remains PROVISIONAL under
+  `OQ-015`/`SC-009`; the stable physical probe has no expected silicon result.
 - The located original PUSH/POP pages do not show per-cycle program-address or
   fetched-word ownership. TI's general pin table establishes active `MEN` in
   both non-I/O cycles, while pinned IKA32010 models an idle first microcycle;

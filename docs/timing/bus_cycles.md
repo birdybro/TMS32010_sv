@@ -296,7 +296,7 @@ status commit during one ordinary external program fetch. The operation
 introduces no external data or I/O strobe
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY for the bus boundary; indirect next-ARP
-precedence remains PROVISIONAL under `OQ-015`.**
+precedence remains PROVISIONAL under `OQ-015`/`SC-009`.**
 
 The phase test also verifies SUBC's internal divisor-word read beside the
 ordinary external program fetch and requires no physical data or I/O strobe.

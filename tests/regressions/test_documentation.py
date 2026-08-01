@@ -248,6 +248,62 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertNotIn("is synchronized internally", interrupts)
         self.assertIn("does not claim an analog synchronizer", interrupts)
 
+    def test_lst_arp_conflict_preserves_both_hypotheses_and_hardware_boundary(
+        self,
+    ) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        original_pages = " ".join(
+            by_id["ti-tms32010-users-guide-spru001b"]["sections_or_pages_used"]
+        )
+        assembly_pages = " ".join(
+            by_id["ti-tms32010-assembly-guide-spru002b"]["sections_or_pages_used"]
+        )
+        family_pages = " ".join(
+            by_id["ti-first-generation-users-guide-1987"]["sections_or_pages_used"]
+        )
+        patent_pages = " ".join(
+            by_id["ti-dsp-microcomputer-patent-us4577282a"][
+                "sections_or_pages_used"
+            ]
+        )
+        ika_lines = " ".join(
+            by_id["ika32010-rtl-51bc1f0"]["sections_or_pages_used"]
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "lst_arp_precedence_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (DOCS / "research" / "open_questions.md").read_text(
+            encoding="utf-8"
+        )
+        for pages in (original_pages, assembly_pages):
+            self.assertIn("generic post-execution encoded-ARP rule", pages)
+            self.assertIn("ambiguous LARP 0/LST *,1 result", pages)
+        self.assertIn("ARP becomes one", family_pages)
+        self.assertIn("does not order simultaneous", patent_pages)
+        self.assertIn("encoded next-ARP wins only in indirect form", ika_lines)
+        for required in (
+            "The repository assigns no passing expected sequence",
+            "0033, 00a0, 00b1",
+            "0033, 00a1, 00b0",
+            "at least 32 reset-and-execute trials",
+            "MAME nor IKA may be cited as original-silicon proof",
+            "status-restore prose and example admit opposing readings",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("## SC-009", conflicts)
+        self.assertIn("literal example plus IKA", conflicts)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-009`)", questions)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

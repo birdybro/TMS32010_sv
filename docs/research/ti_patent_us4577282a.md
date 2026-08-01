@@ -95,6 +95,25 @@ from upgrading the patent hypothesis. The physical probes in
 `docs/research/subc_pipeline_experiment.md` remain necessary for `OQ-017` and
 `OQ-018`.
 
+## Indirect-LST background and its limit
+
+The disclosed embodiment says a generic indirect-control bit loads its
+encoded ARP value after the current instruction and that the indirect
+explanation applies to Table A. It separately describes LST as restoring the
+status circuits and says the ARP latch is among the registers loaded during
+Q2 when the current instruction requests that function
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 11-16
+(PDF pp. 32-34)].
+
+That background makes the original guide's `LST *,1` worked result
+microarchitecturally plausible, but it does not identify the priority when
+the encoded field and restored status bit disagree. The disclosed table and
+control names also differ from the production instruction set. The patent
+therefore preserves both `OQ-015` hypotheses; it neither overrides the later
+C25 memory-wins clarification nor proves the original NMOS result. The
+two-direction capture in
+`docs/research/lst_arp_precedence_experiment.md` remains necessary.
+
 ## Why PUSH/POP remains unresolved
 
 The patent's Table A contains `CALLA` and `RET`, but it does not contain the
@@ -127,6 +146,8 @@ the smallest evidence needed to choose among those hypotheses.
   It must not supply opcode fixtures.
 - The RAM row/column capacity statements are internally inconsistent and do
   not establish the original production 144-word decoder or its array edge.
+- Generic indirect-ARP and LST status-restore prose do not state which source
+  wins when both target ARP in one instruction.
 - The prose's general one-state statement and Table A's two-state `SUBC` entry
   are internally awkward and differ from the production TMS32010's documented
   one-cycle SUBC. Its Q3 following-state shift and ALU-derived overflow path

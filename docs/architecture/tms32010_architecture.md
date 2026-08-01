@@ -208,9 +208,11 @@ their second native program cycles and all RTL/differential behavior remain
 outside the qualified boundary under `OQ-016`.
 `LST` reads through the common address path and replaces `OV`, `OVM`, `ARP`,
 and `DP` from bits 15, 14, 8, and 0 while preserving `INTM`. The original
-manuals do not state whether a simultaneously encoded indirect next-ARP
-request or the memory word wins; the implemented memory-word precedence is
-PROVISIONAL under `OQ-015`.
+manuals' status-restore contract and `LST *,1` worked result admit opposing
+same-instruction precedence readings. Later TI/MAME implement memory-wins,
+while pinned IKA implements encoded-field-wins; the current memory-word policy
+remains PROVISIONAL under `OQ-015`/`SC-009` pending the stable original-NMOS
+probe.
 ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
 `OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the

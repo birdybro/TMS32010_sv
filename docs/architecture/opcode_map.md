@@ -170,7 +170,9 @@ simultaneous-update case, which is UNKNOWN under `OQ-010`.**
 direct/indirect address field. Its encoding, operands, one-word size, and
 one-cycle timing are primary-verified. Indirect next-ARP precedence is an
 execution-order ambiguity rather than a decode ambiguity and remains
-PROVISIONAL under `OQ-015`
+PROVISIONAL under `OQ-015`/`SC-009`; the original worked result, later
+TI/MAME memory-wins behavior, and IKA encoded-wins behavior do not change the
+legal encoding
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88);
 ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59)].
 

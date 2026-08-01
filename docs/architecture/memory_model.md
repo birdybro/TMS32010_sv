@@ -95,7 +95,8 @@ writes data RAM. Out-of-range sources trap before status or indirect-address
 effects, consistent with the partial core's explicit `OQ-002` boundary
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY except indirect next-ARP precedence, which is
-PROVISIONAL under `OQ-015`.**
+PROVISIONAL under `OQ-015`/`SC-009`; the two-direction original-NMOS probe has
+no expected silicon result.**
 
 `SUBC` performs one ordinary internal-RAM read through the same old-address
 and post-update ordering. The selected 16-bit word is treated as an unsigned

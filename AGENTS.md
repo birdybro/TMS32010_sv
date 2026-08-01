@@ -583,7 +583,8 @@ synthetic smoke zero is only a named test sentinel. Read
 `docs/integration/hard_drivin_compare.md` before changing this boundary.
 `LST` loads `OV`, `OVM`, `ARP`, and `DP` from an internal word while
 preserving `INTM`; the indirect next-ARP precedence remains a labeled
-provisional behavior under `OQ-015`.
+provisional behavior under `OQ-015`/`SC-009`. Read
+`docs/research/lst_arp_precedence_experiment.md` before changing that policy.
 `SUBC` implements the documented conditional subtract/divide recurrence in
 one cycle and is tested only with the required ACC-free following
 instruction. Its exact result availability after a scheduling violation and

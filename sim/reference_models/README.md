@@ -102,8 +102,9 @@ Current supported boundary:
   internal acknowledge effects, and vector-2 selection;
 - `LST` direct/indirect reads, exhaustive `OV`/`OVM`/`ARP`/`DP` source-bit
   combinations, `INTM` preservation, old-address ordering, and indirect
-  counter updates; memory-sourced ARP precedence is provisional under
-  `OQ-015`;
+  counter updates; memory-sourced ARP precedence is a reversible provisional
+  policy under `OQ-015`/`SC-009`, opposed by the original worked-result
+  reading and pinned IKA;
 - `SACL` direct/indirect writes of `ACC[15:0]`, logical write traces, and the
   same post-access auxiliary-register controls;
 - `SACH` direct/indirect writes after complete-accumulator left shifts of

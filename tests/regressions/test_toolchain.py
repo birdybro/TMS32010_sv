@@ -178,6 +178,58 @@ class ToolchainSliceTests(unittest.TestCase):
             },
         )
 
+    def test_lst_arp_precedence_probe_image_is_stable(self) -> None:
+        result = self.assembler.assemble_file(
+            ROOT / "tests" / "asm" / "lst_arp_precedence_probe.asm"
+        )
+        self.assertEqual(
+            result.words,
+            dict(
+                enumerate(
+                    [
+                        0x6E00,
+                        0x7E33,
+                        0x5000,
+                        0x7EA0,
+                        0x5011,
+                        0x7EA1,
+                        0x5012,
+                        0x7EB1,
+                        0x5021,
+                        0x7EB0,
+                        0x5022,
+                        0x7E00,
+                        0x5010,
+                        0x7E01,
+                        0x5030,
+                        0x2830,
+                        0x5020,
+                        0x4F00,
+                        0x7010,
+                        0x7112,
+                        0x6880,
+                        0x7BA1,
+                        0x4F88,
+                        0x7022,
+                        0x7120,
+                        0x6881,
+                        0x7BA0,
+                        0x4F88,
+                        0xF900,
+                        0x001C,
+                    ]
+                )
+            ),
+        )
+        self.assertEqual(
+            result.symbols,
+            {
+                "CASE_MEMORY_ONE_ENCODED_ZERO": 0x017,
+                "CASE_MEMORY_ZERO_ENCODED_ONE": 0x012,
+                "HOLD": 0x01C,
+            },
+        )
+
     def test_mame_stack_control_smoke_image_is_stable(self) -> None:
         result = self.assembler.assemble_file(
             ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"

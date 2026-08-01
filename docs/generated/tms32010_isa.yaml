@@ -338,7 +338,7 @@
       "sign_extension_behavior": "none; only source bits 15, 14, 8, and 0 are consumed",
       "shift_behavior": "none except the common indirect nine-bit AR increment/decrement",
       "overflow_behavior": "source bit 15 replaces OV and may clear a previously sticky overflow; source bit 14 replaces OVM; no arithmetic or saturation occurs",
-      "result_behavior": "OV, OVM, ARP, and DP receive source bits 15, 14, 8, and 0 respectively; source bit 13 cannot change INTM, source bits 12:9 and 7:1 are ignored, and all other architectural state is preserved; provisionally, an encoded indirect next-ARP value is ignored",
+      "result_behavior": "OV, OVM, ARP, and DP receive source bits 15, 14, 8, and 0 respectively; source bit 13 cannot change INTM, source bits 12:9 and 7:1 are ignored, and all other architectural state is preserved; provisionally, an encoded indirect next-ARP value is ignored despite the original worked example's competing encoded-wins reading",
       "branch_behavior": "none",
       "interrupt_interaction": "INTM is explicitly preserved; no other special interaction documented",
       "documented_cycle_count": 1,
@@ -347,10 +347,12 @@
         {"space": "program", "operation": "instruction_fetch", "count": 1, "phase_detail": "normal read phases qualified; the concurrent internal status-word read has no external data-memory cycle"}
       ],
       "source_citations": [
-        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.7, Figure 2-7, 3.3, and LST instruction description", "printed_page": "2-14 through 2-15, 3-2 through 3-3, and 3-38", "pdf_page": "38-39, 52-53, and 88"},
-        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "LST instruction description", "printed_page": "3-38", "pdf_page": 59},
-        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.3 and LST instruction description", "printed_page": "3-24 through 3-26 and 4-43", "pdf_page": "53-55 and 124"},
-        {"source_id": "ti-tms320c25-users-guide-spru012-1986", "section": "LST instruction description and Example 1", "printed_page": "4-75", "pdf_page": 170}
+        {"source_id": "ti-tms32010-users-guide-spru001b", "section": "2.7, Figure 2-7, 3.3, and LST instruction description/worked example", "printed_page": "2-14 through 2-15, 3-1 through 3-3, and 3-38", "pdf_page": "38-39, 51-53, and 88"},
+        {"source_id": "ti-tms32010-assembly-guide-spru002b", "section": "3.3.2 and LST instruction description/worked example", "printed_page": "3-1 through 3-2 and 3-38", "pdf_page": "22-23 and 59"},
+        {"source_id": "ti-first-generation-users-guide-1987", "section": "3.6.3 and LST instruction description/worked example", "printed_page": "3-24 through 3-26 and 4-43", "pdf_page": "53-55 and 124"},
+        {"source_id": "ti-tms320c25-users-guide-spru012-1986", "section": "LST instruction description and Example 1", "printed_page": "4-75", "pdf_page": 170},
+        {"source_id": "mame-tms320c1x-core-030fefc", "section": "lst() memory-word precedence", "lines": "594-604"},
+        {"source_id": "ika32010-rtl-51bc1f0", "section": "LST direct/indirect ARP-source selection", "lines": "663-688"}
       ],
       "confidence_level": "PROVISIONAL",
       "unresolved_questions": ["OQ-002", "OQ-010", "OQ-015"]

@@ -210,8 +210,8 @@ The synthesizable code:
 - sets and clears `INTM` for exact `DINT`/`EINT` words without claiming
   interrupt recognition or EINT's following-instruction service delay;
 - loads `OV`, `OVM`, `ARP`, and `DP` from an `LST` internal-RAM read while
-  preserving `INTM`; indirect next-ARP precedence is provisional under
-  `OQ-015`;
+  preserving `INTM`; indirect next-ARP precedence is a reversible provisional
+  policy under `OQ-015`/`SC-009`, pending the exact original-NMOS probe;
 - preserves `OVM` through physical reset as TI documents;
 - suppresses instruction qualification and every transaction class while
   recognized physical reset is active;

@@ -235,8 +235,10 @@ execution, reaching cover step 35. These are bounded scenarios, not a general
 interrupt, external-memory, or pipeline proof.
 `LST` reads one internal word in one cycle, loads `OV`, `OVM`, `ARP`, and
 `DP`, and preserves `INTM`. Its indirect next-ARP precedence is explicitly
-provisional under `OQ-015`, based on later TI and independent MAME
-corroboration because the original-part manuals do not state the precedence.
+provisional under `OQ-015`/`SC-009`: the original manuals' worked result and
+status-restore contract admit opposing readings, later TI and MAME implement
+memory-wins, and pinned IKA implements encoded-field-wins. A stable
+two-direction original-NMOS probe assigns no expected silicon result.
 `SUBC` performs TI's one-cycle conditional subtract/divide step through the
 common data-address path. Tests use the documented requirement that its next
 instruction not consume ACC; the exact illegal-scheduling result availability

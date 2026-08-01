@@ -149,21 +149,41 @@ electrical result of an out-of-range access.
 
 ## SC-009 — LST next-ARP precedence
 
-- **Original-part sources:** SPRU001B and SPRU002B `LST`, printed p. 3-38,
-  and SPRU013 `LST`, printed p. 4-43, all expose an optional indirect
-  next-ARP operand while stating that data-word bit 8 loads `ARP`. None states
-  which source wins when the two values differ.
+- **Original-part status contract:** SPRU001B and SPRU002B `LST`, printed
+  p. 3-38, and SPRU013 `LST`, printed p. 4-43, expose an optional indirect
+  next-ARP operand while stating that the addressed word loads status,
+  including `ARP` from data bit 8.
+- **Original-part worked result:** all three pages use `LARP 0; LST *,1` and
+  say the AR0-addressed word replaces status while `ARP` becomes one. No data
+  word is given. Read as a demonstration of the explicit operand, the example
+  supports encoded-field precedence; read as an omitted assumption that word
+  bit 8 is also one, it is compatible with memory-word precedence. The
+  ordinary indirect-addressing section says bit 0 loads ARP after the current
+  instruction and states no LST exception. Thus the primary text is
+  internally ambiguous rather than simply silent.
 - **Variant clarification:** TI SPRU012 `LST`, printed p. 4-75, explicitly
   says the next-ARP field is ignored and the memory word supplies `ARP`.
-- **Independent oracle:** pinned MAME commit
+- **Related TI embodiment:** US4577282A says its generic indirect-control bit
+  loads encoded ARP after the current instruction and separately says LST
+  restores status, but supplies no same-instruction priority. It preserves the
+  competing hypotheses and cannot override production documentation.
+- **Independent memory-wins oracle:** pinned MAME commit
   `030fefcbd14e47c01ec9d67655be90f64a1dc8ab` suppresses the ordinary
   next-ARP update in its `lst()` handler before loading the status word.
+- **Independent encoded-wins implementation:** pinned IKA32010 commit
+  `51bc1f05a2a08a61c8815a9643d08a42e99779c6` uses the instruction field for
+  indirect LST and data bit 8 only for direct LST, matching the literal worked
+  example while opposing MAME and the later C25 guide.
 - **Current treatment:** the model and RTL will ignore LST's encoded next-ARP
   field and load `ARP` from source bit 8. This is a targeted, tested
   provisional original-part behavior under `OQ-015`, not a claim that later
-  C25 behavior proves the NMOS TMS32010.
-- **Confidence:** PROVISIONAL for the original TMS32010; CORROBORATED across
-  the later TI guide and independent emulator.
+  C25 behavior proves the NMOS TMS32010. The exact two-direction capture in
+  `docs/research/lst_arp_precedence_experiment.md` is required before changing
+  or upgrading that policy.
+- **Confidence:** VERIFIED_PRIMARY that both write sources are documented and
+  the worked result says ARP becomes one; PROVISIONAL for original-silicon
+  precedence. Later TI plus MAME corroborate memory-wins, while the original
+  literal example plus IKA corroborate encoded-wins.
 
 ## SC-010 — SUBC overflow stage and dependent-instruction hazard
 

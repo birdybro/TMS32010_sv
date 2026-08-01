@@ -185,7 +185,8 @@ logical data read. The loaded status fields commit at the falling-edge sample;
 no physical `DEN` or `WE` transaction is produced
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88)].
 **Confidence: VERIFIED_PRIMARY for its one-cycle program/internal-read
-boundary; indirect next-ARP precedence remains PROVISIONAL under `OQ-015`.**
+boundary; indirect next-ARP precedence remains PROVISIONAL under
+`OQ-015`/`SC-009`.**
 
 `SUBC` retains the ordinary external program fetch while performing its
 single internal divisor-word read. Directed phase tests place the required

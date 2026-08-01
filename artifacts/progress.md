@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-019` DINT/interrupt-grant ordering research and
+- **Current milestone:** `OQ-015` indirect-LST ARP-precedence research and
   reproducible original-device probe
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 139 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 141 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1014,6 +1014,18 @@
   at original N+1, and exports the stacked return PC plus entry/resume markers
   to distinguish cancellation, N+2 entry, and earlier N+1 entry. No silicon
   result is assigned; `OQ-019` remains RESEARCHING/CONFLICT.
+- **New indirect-LST evidence:** original SPRU001B/SPRU002B and later
+  first-generation SPRU013 all pair the memory-status restore contract with
+  `LARP 0; LST *,1` and the unexplained result “ARP becomes 1.” Generic
+  indirect prose says the encoded field loads after execution and gives no
+  LST exception. Later C25 documentation and pinned MAME implement
+  memory-word precedence, while pinned IKA implements encoded-field
+  precedence; contemporary patent control prose leaves their priority
+  unstated. Expanded `SC-009` preserves the contradiction. A stable contiguous
+  30-word fixture makes bit 8 disagree with the encoded field in both
+  directions and emits distinct port-7 markers for both hypotheses. No
+  silicon result is assigned; `OQ-015` remains RESEARCHING/CONFLICT and the
+  current memory-wins model/RTL policy remains PROVISIONAL.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1049,8 +1061,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** investigate `OQ-015` indirect-LST next-ARP precedence using
-  original control-path evidence and define a minimal original-NMOS state/
-  status capture if the later-guide/MAME corroboration cannot be upgraded.
+- **Next task:** investigate `OQ-010` simultaneous indirect increment/decrement
+  encodings in original TI decode/control evidence and independent
+  implementations, retaining trap policy unless authoritative behavior is
+  established.
 - **Latest committed baseline before this cycle:**
-  `047a549`
+  `1a31e9f`

@@ -43,7 +43,8 @@ documented exact aliases of `LARP 0/1`.
 address forms, such as `DMOV 8`, `LDP 6`, `LT *`, `LTA 24`,
 `LTD *-,AR1`, `LST *+,AR1`, or `MPY *+,AR1`. For LST, accepting a next-ARP
 operand describes the primary encoding; execution precedence remains
-provisional under `OQ-015`.
+provisional under `OQ-015`/`SC-009` and the two-direction hardware probe has no
+expected silicon result.
 
 `MPYK` accepts a signed 13-bit immediate from `-4096` through `4095`, for
 example `MPYK -9`. Values outside that primary-defined range are diagnosed.

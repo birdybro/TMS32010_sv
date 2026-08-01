@@ -71,14 +71,20 @@ For `LST`, source bits 15, 14, 8, and 0 replace `OV`, `OVM`, `ARP`, and `DP`;
 source bit 13 does not alter `INTM`, and source bits 12:9 and 7:1 have no
 architectural effect. Direct address resolution uses the old `DP`. Indirect
 address and counter selection use the old `ARP`. Original-part manuals expose
-both a memory-sourced ARP and optional next-ARP encoding without declaring
-their precedence. Current model/RTL gives the memory word final precedence,
-as later TI TMS320C25 documentation states and pinned MAME independently
-corroborates; this is PROVISIONAL for the TMS32010 under `OQ-015`
+both a memory-sourced ARP and optional next-ARP encoding. Their worked
+`LARP 0; LST *,1` result says ARP becomes one without specifying source bit 8,
+so the status-restore prose and example admit opposing readings. Current
+model/RTL gives the memory word final precedence, as later TI TMS320C25
+documentation states and pinned MAME independently corroborates; pinned IKA
+instead implements the literal encoded-field result. This is PROVISIONAL for
+the TMS32010 under `OQ-015`/`SC-009`
 [ti-tms32010-users-guide-spru001b, `LST`, printed p. 3-38 (PDF p. 88);
 ti-tms32010-assembly-guide-spru002b, `LST`, printed p. 3-38 (PDF p. 59);
 ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
-(PDF p. 170)]. **Confidence: VERIFIED_PRIMARY for status fields, address
+(PDF p. 170); mame-tms320c1x-core-030fefc,
+`tms320c1x_device_base::lst`, lines 594-604; ika32010-rtl-51bc1f0,
+`IKA32010.sv`, lines 663-688].
+**Confidence: VERIFIED_PRIMARY for status fields, address
 ordering, and one-cycle result; PROVISIONAL for next-ARP precedence.**
 
 `SST` stores `OV:OVM:INTM:1111:ARP:1111111:DP`. The ten non-field positions

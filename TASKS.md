@@ -308,8 +308,10 @@ objective passing evidence.
   preserves INTM, ignores every non-field source position, and applies
   indirect counter updates to the old selected AR.
   Memory-sourced ARP precedence over an encoded next ARP is explicitly
-  PROVISIONAL under `OQ-015`, supported by later TI and independent MAME
-  evidence but not stated in the original-part manuals. `SUBC` implements
+  PROVISIONAL under `OQ-015`/`SC-009`. The original worked example plus pinned
+  IKA support encoded-field-wins, while later TI plus MAME support memory-wins;
+  a stable two-direction original-NMOS probe assigns no expected result.
+  `SUBC` implements
   both conditional subtract/divide paths and TI's 65/7 worked result with
   legally inserted ACC-free following instructions. Intermediate-subtraction
   sticky OV is provisional under `OQ-018`, and same-boundary ACC commit is
@@ -879,7 +881,9 @@ objective passing evidence.
 - **Acceptance criteria:** definition of instruction-complete in `AGENTS.md` is
   met for every family and full regression passes.
 - **Documentation:** `docs/architecture/instruction_set.md`
-- **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`
+- **Tests:** `sim/instruction/test_*`, `tests/asm/instruction_*`,
+  `tests/asm/lst_arp_precedence_probe.asm`,
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_lst_arp_precedence_probe_image_is_stable`
 - **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
   `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
   `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,
@@ -893,8 +897,11 @@ objective passing evidence.
   status-field tests plus every ignored source position, directed RTL
   address/order/cycle/stall/trap checks,
   native-phase retirement, and seeded differential comparison. Original
-  manuals leave the indirect next-ARP precedence unstated, so memory-word ARP
-  precedence remains PROVISIONAL under `OQ-015`/`SC-009`.
+  manuals' status-restore prose and `LST *,1` worked result admit opposing
+  precedence readings. Later TI/MAME implement memory-wins and pinned IKA
+  implements encoded-wins, so current memory-word precedence remains
+  PROVISIONAL under `OQ-015`/`SC-009`. The exact 30-word two-direction fixture
+  and physical procedure now define the resolving original-NMOS evidence.
   `SST` now passes primary-cited database/tool support, exhaustive 32-state
   model packing tests, directed RTL page-one/address/update/cycle tests,
   native-phase and explicit-pipeline retirement, and seeded differential RAM/
@@ -1198,7 +1205,8 @@ objective passing evidence.
   read, DP source-bit result, and common AR/ARP post-update.
   LST cases compare the logical read, all four loaded status fields, preserved
   INTM, old-address counter update, and provisional memory-word ARP
-  precedence under `OQ-015`. LT cases compare
+  precedence under `OQ-015`/`SC-009`; this is consistency evidence despite the
+  opposing original-example/IKA hypothesis. LT cases compare
   the logical read, full-width T result, and common AR/ARP post-update. LTA
   cases additionally compare the simultaneous previous-P accumulation and
   OV/OVM outcomes. LTD cases compare the same state effects plus distinct

@@ -185,7 +185,9 @@ old-ARP address selection, post-read nine-bit counter updates, `INTM`
 preservation, all four loaded status fields, clock-enable hold, and
 trap-before-effects at an unresolved address. Native-phase integration
 observes its internal read beside the ordinary program fetch. The encoded
-next-ARP versus memory-sourced ARP precedence is PROVISIONAL under `OQ-015`.
+next-ARP versus memory-sourced ARP precedence is PROVISIONAL under
+`OQ-015`/`SC-009`; the stable functional probe does not alter the qualified
+one-cycle bus count and assigns no expected silicon state result.
 
 Directed `SUBC` tests assert its documented one-cycle total, both conditional
 ACC paths, logical data read, and 16 legally spaced iterations of TI's

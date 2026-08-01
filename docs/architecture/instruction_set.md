@@ -84,14 +84,17 @@ ti-first-generation-users-guide-1987, `LST`, printed p. 4-43
 Indirect form reads through the pre-instruction ARP and applies any
 increment/decrement to that old selected AR. The original-part sources
 provide an optional encoded next-ARP field while also loading ARP from the
-memory word, but do not state which wins. Later TI TMS320C25 documentation
-explicitly says the encoded next ARP is ignored for LST; pinned MAME
-independently does the same. The current model and RTL therefore give the
-memory word final precedence and label only that ordering PROVISIONAL for the
-original TMS32010 under `OQ-015`/`SC-009`
+memory word. Their `LARP 0; LST *,1` example says ARP becomes one without
+specifying word bit 8, making the original page internally ambiguous rather
+than merely silent. Later TI TMS320C25 documentation explicitly says the
+encoded next ARP is ignored for LST; pinned MAME independently does the same,
+while pinned IKA implements encoded-field precedence. The current model and
+RTL retain memory-word precedence and label only that ordering PROVISIONAL for
+the original TMS32010 under `OQ-015`/`SC-009`
 [ti-tms320c25-users-guide-spru012-1986, `LST`, printed p. 4-75
 (PDF p. 170); mame-tms320c1x-core-030fefc,
-`tms320c1x_device_base::lst`, lines 594–604].
+`tms320c1x_device_base::lst`, lines 594–604; ika32010-rtl-51bc1f0,
+`IKA32010.sv`, lines 663-688].
 
 Hand fixtures cover direct page endpoints and indirect increment/decrement
 forms. Model tests exhaust all 16 combinations of the four loaded fields

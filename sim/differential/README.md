@@ -58,8 +58,9 @@ modeled on either side.
 LST cases compare logical reads, all loaded status fields, preserved INTM,
 old-address and counter-update ordering, and memory-word ARP precedence over
 an encoded next ARP. That last comparison is provisional original-part
-behavior under `OQ-015`, not independent proof from two implementations using
-the same policy.
+behavior under `OQ-015`/`SC-009`, not independent proof from two
+implementations using the same policy. The original worked result and pinned
+IKA instead support the competing encoded-field interpretation.
 SUBC cases are followed by NOP, compare both conditional ACC paths, logical
 reads and address updates, and include 16 seeded-random direct/indirect pairs.
 Both sides use the same provisional intermediate-overflow policy, so this is
