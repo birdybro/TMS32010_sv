@@ -1287,9 +1287,11 @@ objective passing evidence.
   standalone storage-free sample-ROM adapter as 18 abstract cells with three
   checks and zero structural problems. A seventh script checks the raw DAC
   latch as 14 cells/two checks with no memory, latch, or structural problem. An
-  eighth pre-technology script checks the partial processor/program/
-  communication/sample-ROM/DAC board top as 2,309 abstract cells, 140 checks,
-  and three retained memories with zero structural problems. A ninth
+  eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
+  checks with no memory, latch, or structural problem. A ninth pre-technology
+  script checks the partial processor/program/communication/sample-ROM/DAC/
+  output-control board top as 2,346 abstract cells, 144 checks, and three
+  retained memories with zero structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. This is not a
@@ -1339,14 +1341,16 @@ objective passing evidence.
   DAC traces without copyrighted ROMs.
 - **Documentation:** `docs/integration/hard_drivin_requirements.md`,
   `docs/integration/hard_drivin_communication_ram.md`,
-  `docs/integration/hard_drivin_sound_rom.md`
+  `docs/integration/hard_drivin_sound_rom.md`,
+  `docs/integration/hard_drivin_sound_control.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_mister.sv`,
   `sim/bus/tb_hard_drivin_sound_communication_path.sv`,
   `sim/bus/tb_hard_drivin_sound_rom_path.sv`,
-  `sim/bus/tb_hard_drivin_sound_dac_latch.sv`
+  `sim/bus/tb_hard_drivin_sound_dac_latch.sv`,
+  `sim/bus/tb_hard_drivin_sound_output_control.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1361,8 +1365,9 @@ objective passing evidence.
   high-address TMS writes, diverts low writes to I/O, and grants neither side
   during invalid overlap. Firmware compliance/release timing remains
   `OQ-021`, while byte-lane behavior is isolated under `SC-022`/`OQ-022`.
-  Complete BIO divider state, signed-audio DAC interpretation, board-variant
-  audit, 68000 bus adaptation, and complete peripheral integration remain.
+  Complete BIO divider state, signed-audio DAC interpretation, effective mute
+  semantics, board-variant audit, 68000 bus adaptation, and complete
+  peripheral integration remain.
   The partial `hard_drivin_sound_mister` now connects the core, native decoder,
   shared program RAM, and communication path. A directed RTL test host-loads
   the fixed ROM-free smoke and a synthetic communication word,
@@ -1374,6 +1379,16 @@ objective passing evidence.
   and proves by host readback that program word zero remains `0x7e00`. This
   regression exposed and fixed board-top logical readiness incorrectly using
   the external callback instead of the selected internal DAC target.
+  A044427 sheets 2, 3, 5, and 7 plus newly pinned TI SDLS119 establish the two
+  LS74 halves at 100H. Port 4 captures TD0 and exposes complementary
+  `MUTE=/Q`; its only Rev-A analog consumer is explicitly not loaded, so
+  `SC-027`/`OQ-027` prohibit treating the raw net as an effective mute. Port 5
+  presets data-independent `320IRQ`, host `/IRQCLR` clocks grounded D to clear
+  it, and `/320RES` clears both Q states. The standalone RTL exhausts all
+  65,536 port-4 and port-5 words, priority, reset, commit, and isolation cases;
+  the integrated smoke forces external backpressure on both targets, captures
+  raw MUTE low, asserts IRQ, clears it through the host callback, and restores
+  MUTE high on reset.
   A044427 sheet 7 plus the AMD
   Am6012 data book now establish the raw port-0 mapping as `TD15:TD4` to
   uncomplemented `B1:B12`; pinned MAME's additional bit-11 XOR conflicts with
@@ -1421,9 +1436,10 @@ objective passing evidence.
   `0xf23`, never MAME's `0x723`. Address-zero TBLW is separately executed under
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
-  integrated Yosys reports 2,309 abstract cells/140 checks and retains the same
-  three memories. Host latch/68000 bus adaptation, authorized sample storage,
-  compare/DAC-analog/control peripherals, and physical timing remain
+  the output-control adapter reports 33 cells/four checks. Integrated Yosys
+  reports 2,346 abstract cells/144 checks and retains the same three memories.
+  Host latch/68000 bus adaptation, authorized sample storage,
+  compare/DAC-analog/effective-mute peripherals, and physical timing remain
   acceptance work.
 
 ## Milestone 22 — Release qualification

@@ -157,7 +157,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ).read_text(encoding="utf-8")
         for required in (
             "partial, same-clock FPGA top",
-            "does not implement the 68000 bus",
+            "does not implement the 68000 bus/address decoder",
             "needless FPGA divergence",
             "neither storage path is acknowledged",
             "Communication-RAM host sequence",
@@ -165,10 +165,34 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "A TBLW to address 0–7 arrives as `io_write_o`",
             "No Atari ROM data is used",
             "`0x3456` to `0x3459`",
-            "2,309",
+            "2,346",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
+
+    def test_hard_drivin_output_control_remains_raw_and_evidence_scoped(self) -> None:
+        control = (
+            DOCS / "integration" / "hard_drivin_sound_control.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "physical `MUTE` net (`/Q`)",
+            "Only `TD0` participates",
+            "`NOT LOADED`",
+            "host_irq_clear_commit_i",
+            "all 65,536 possible",
+            "33 abstract cells",
+            "four retained checks",
+            "not electrical LS74 timing",
+        ):
+            self.assertIn(required, control)
+        self.assertIn("SC-027", conflicts)
+        self.assertIn("OQ-027", questions)
 
     def test_hard_drivin_communication_ram_remains_primary_scoped(self) -> None:
         communication = (

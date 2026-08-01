@@ -9,7 +9,7 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Repository governance, build, research, model, RTL, verification, formal,
   synthesis, and integration directory framework.
-- Reference-provenance policy, safe acquisition/hash tools, a 27-source
+- Reference-provenance policy, safe acquisition/hash tools, a 28-source
   integrity-pinned catalog, and living engineering backlog.
 - Standard-library regression entrypoints and documentation consistency checks.
 - Primary-cited programmer, memory, pipeline, interrupt, external-interface,
@@ -91,6 +91,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   `TD15:TD4` on committed port-0 writes, retains explicit validity, and emits a
   one-clock downstream commit without modeling analog conversion or promoting
   MAME's disputed bit-11 XOR into hardware.
+- Primary schematic qualification of both Driver Sound LS74 halves at 100H,
+  backed by the official TI SDLS119 data sheet: port 4 captures `TD0` onto Q
+  and exposes complementary raw `MUTE`, while port 5 presets `320IRQ` until
+  reset or a 68000-side `/IRQCLR` completion. The only drawn Rev-A mute
+  consumer is explicitly not loaded, so effective audio semantics remain
+  unresolved rather than being inferred from the net name.
+- A synthesizable Driver Sound output-control adapter exposing raw `MUTE`, a
+  one-clock mute commit, the data-independent 68000 IRQ latch, and an explicit
+  future-host clear callback. The partial board top now acknowledges ports 4
+  and 5 internally without relying on an unrelated external ready callback.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -526,6 +536,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Exhaustive standalone output-control coverage across all 65,536 port-4
+  words and all 65,536 port-5 words, plus reset, retention, port isolation,
+  host clear, and set-over-clear priority. Integrated smoke proves raw MUTE
+  capture, data-independent IRQ assertion, host clear, and reset restoration
+  while external readiness remains low. Yosys reports 33 cells/four checks for
+  the standalone path and 2,346 cells/144 checks/three memories for the partial
+  board hierarchy, with zero structural problems.
+
 - Exhaustive raw-DAC coverage across all 65,536 TMS output words, every
   low-nibble alias, ports 1-7, input-side commits, no-commit retention, and
   FPGA validity. Yosys reports 14 cells, two checks, no memory/latch, and zero
@@ -535,7 +553,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   A separate five-cycle `LACK 0; TBLW 0x11; NOP` execution captures internal
   word `0x00a5` as raw code `0x00a` through the same target while a host
   readback proves program word zero remains `0x7e00`.
-  The board hierarchy passes Yosys at 2,309 abstract cells/140 checks with its
+  The board hierarchy passes Yosys at 2,346 abstract cells/144 checks with its
   same three memories.
 - Exhaustive standalone sample-ROM coverage across all sixteen block values,
   all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
@@ -545,7 +563,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
   commit, external-sentinel rejection, and shared-counter advance. The board
   hierarchy retains three memories and, with the raw DAC latch, passes Yosys
-  at 2,309 abstract cells with 140 checks and zero structural problems.
+  at 2,346 abstract cells with 144 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
@@ -556,8 +574,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   preload state, and initialization-time memory retention. Pre-technology
   Yosys retains one 512-by-16 memory in an 82-cell hierarchy with seven checks
   and zero structural problems.
-- All 27 acquired reference files match their pinned SHA-256 values, including
-  the official TI-hosted LS138, LS191, LS244, LS259, and LS374 data sheets.
+- All 28 acquired reference files match their pinned SHA-256 values, including
+  the official TI-hosted LS74, LS138, LS191, LS244, LS259, and LS374 data
+  sheets.
 - End-to-end RTL host loading and safe reset handoff for the ROM-free Driver
   Sound smoke: the host preloads communication word `0x056`, port 7 first
   qualifies the address chain, internal port 1 ignores an external sentinel,
@@ -567,8 +586,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,309 abstract
-  cells, 140 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,346 abstract
+  cells, 144 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and
@@ -1038,8 +1057,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   results, internal-read versus program-only bus shape, stalls, one additional
   protected retirement, discarded dummy words, post-following stacked PCs,
   vector capture, and deferred vector effects.
-- The complete current regression passes 118 repository/ISA/tool tests, 231
-  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 31
+- The complete current regression passes 119 repository/ISA/tool tests, 231
+  directed model/unit tests, 38 exhaustive/directed instruction RTL tests, 32
   native bus/phase tests including thirteen explicit pipeline tests, five
   interrupt RTL/phase tests, one 512-step seeded
   model/RTL differential, six focused two-cycle control-flow differentials,
@@ -1060,8 +1079,10 @@ Changelog, and the project follows semantic versioning once releases begin.
   omitting the global `/PDEN` increment from port 2; port 3 remains an
   unresolved decoded strobe (`OQ-023`–`OQ-025`).
 - `hard_drivin_sound_mister` is only the processor/program/communication-RAM/
-  sample-ROM-callback and physical-I/O boundary. It lacks the 68000 bridge,
-  actual sample storage, and compare/DAC-analog/mute/IRQ/BIO implementations;
+  sample-ROM-callback and qualified physical-I/O boundary. It lacks the 68000
+  bridge, actual sample storage, compare/DAC-analog/BIO implementations, and a
+  loaded mute consumer; raw MUTE and 68000-IRQ latch state are implemented but
+  do not establish effective audio semantics or the host address decoder;
   its synchronous ready/commit callbacks are implementation conventions, not
   physical SRAM pins. Its Yosys result is not a Cyclone V fit or timing result,
   and the future 68000 bridge must resolve or reject byte accesses under

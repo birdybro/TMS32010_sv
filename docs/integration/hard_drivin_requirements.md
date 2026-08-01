@@ -124,8 +124,8 @@ secondary adapter behavior:
 | 1 | read | 512-word host communication RAM at shared `SA8:SA0` | VERIFIED_PRIMARY |
 | 2 | read | compare path, incompletely emulated | PROVISIONAL |
 | 3 | write | decoded `/CPORT`; no loaded consumer found | UNKNOWN (`OQ-023`) |
-| 4 | write | mute control | VERIFIED_PRIMARY |
-| 5 | write | generate 68000 IRQ | VERIFIED_PRIMARY |
+| 4 | write | LS74 captures TD0; raw `MUTE=/Q=!TD0`; only drawn consumer not loaded | VERIFIED_PRIMARY for raw state; effective mute UNKNOWN |
+| 5 | write | data-independent LS74 preset asserts latched `320IRQ` | VERIFIED_PRIMARY |
 | 6 | write | low-nibble sample-ROM block latch | VERIFIED_PRIMARY |
 | 7 | write | 16-bit shared sound-address counter load | VERIFIED_PRIMARY |
 
@@ -273,6 +273,20 @@ code to downstream audio logic. The integrated smoke commits `0xf230` once as
 `0xf23`; it does not emit MAME's `0x723`. This is VERIFIED_SIMULATION for the
 primary-backed digital latch only, not the analog voltage, sample encoding, or
 sound reproduction.
+
+### Port-4 MUTE state and port-5 68000 interrupt
+
+A044427 and TI's SDLS119 LS74 data sheet establish both location-100H halves.
+Port 4 captures `TD0` and exports complementary `/Q` as the raw `MUTE` net;
+`/320RES` forces that net high. The sole drawn analog consumer is explicitly
+`NOT LOADED`, so no effective audio mute is implemented. Port 5 asynchronously
+presets active-high `320IRQ` without using write data; `/IRQCLR` clocks grounded
+D to clear it and `/320RES` also clears it. The standalone FPGA adapter
+exhausts all 65,536 data words for both paths, reset, clear, simultaneous
+set/clear priority, other ports, and missing commits. Yosys reports 33 cells
+with four retained checks and zero structural problems. Complete evidence and
+the `SC-027`/`OQ-027` mute ambiguity are in
+`docs/integration/hard_drivin_sound_control.md`.
 
 ## Reset, BIO, and interrupt
 

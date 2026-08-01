@@ -560,3 +560,23 @@ electrical result of an out-of-range access.
   difference. Invalid/unpopulated block behavior remains `OQ-026`.
 - **Confidence:** VERIFIED_PRIMARY for Rev-A wiring; documented
   secondary-source mismatch.
+
+## SC-027 — Raw complementary MUTE net versus secondary semantic label
+
+- **Primary board evidence:** port-4 `/MCLK` clocks `TD0` into LS74 100H and
+  the complementary `/Q` output, not Q, is named `MUTE`. Active `/320RES`
+  clears Q and therefore drives the raw `MUTE` net high. The only drawn analog
+  consumer is inside a sheet-7 option explicitly marked `NOT LOADED`
+  [atari-driver-sound-board-schematic, sheets 5 and 7 of 10, PDF pp. 9 and 14;
+  ti-sn74ls74a-datasheet-sdls119, printed p. 1].
+- **Secondary interpretation:** pinned MAME comments `mute DAC audio, D0=1`,
+  but the handler only logs its input and neither stores a mute state nor gates
+  audio [mame-harddriv-audio-030fefc, `hdsnddsp_mute_w`].
+- **Ambiguity:** D0=1 makes the physical net named `MUTE` low on Rev A. The
+  production drawing supplies no loaded consumer that establishes whether the
+  name is active-low, whether the MAME comment describes another revision, or
+  whether the comment is only a software convention.
+- **Current treatment:** expose the primary-defined raw complementary net and
+  do not apply it to audio. See `OQ-027`.
+- **Confidence:** VERIFIED_PRIMARY for the LS74 state and unloaded Rev-A
+  consumer; UNKNOWN for effective mute semantics on any populated variant.

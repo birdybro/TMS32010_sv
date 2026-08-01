@@ -4,13 +4,14 @@
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
-communication-memory, sample-ROM, and raw DAC-latch paths.
+communication-memory, sample-ROM, raw DAC-latch, and output-control paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
-1 and routes port 0 through a present-block-aware byte callback. It does not implement the 68000 bus
-or latches, actual sample storage, compare circuit, DAC
-analog path, mute/IRQ consumers, BIO divider, or a MiSTer framework top level.
+1 and routes port 0 through a present-block-aware byte callback.
+It does not implement the 68000 bus/address decoder, actual sample storage, compare
+circuit, DAC analog path, a loaded mute consumer, BIO divider, or a MiSTer
+framework top level.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -100,6 +101,22 @@ a physical power-up code. `dac_code_o` is the uncomplemented Am6012 input code;
 the analog transfer, signed PCM interpretation, and pinned MAME bit-11 XOR are
 deliberately absent under `SC-019`/`OQ-020`.
 
+## Output-control LS74s
+
+Ports 4 and 5 are also acknowledged internally because their LS74 targets
+have no wait input. A completed port-4 write captures complement
+`io_write_data_o[0]` into the physical `mute_net_o` and pulses
+`mute_commit_o`. This is the raw `/Q` net, not permission to gate audio: the
+only Rev-A analog consumer is marked `NOT LOADED` and remains unresolved under
+`SC-027`/`OQ-027`.
+
+Any visible port-5 write request sets active-high `irq_68000_o` independently
+of data, matching `/68IRQ` on the LS74 asynchronous preset. The level remains
+asserted until `host_irq_clear_commit_i` clocks the grounded D input or
+`dsp_reset_n_i=0` applies `/320RES`. The host callback is a same-clock FPGA
+boundary, not a 68000 address decoder or physical `/IRQCLR` pulse model. See
+`hard_drivin_sound_control.md` for the pin-level provenance and confidence.
+
 ## Physical I/O callback
 
 `io_port_o`, `io_read_o`, `io_write_o`, `io_write_data_o`, `io_ready_i`, and
@@ -108,8 +125,8 @@ address/MEN/DEN/WE decode. `io_commit_o` pulses at an enabled phase-3 boundary
 when the physical request and selected target readiness are both active.
 Processor port-0 reads take their data/readiness from the sample-ROM callback,
 and port-1 reads from the internal communication path; the external `io_read_data_i` and `io_ready_i` are ignored
-for both targets. All other ports
-continue to use the external callback.
+for both targets. Port-0, port-4, and port-5 writes use internal always-ready
+latches; other physical targets continue to use the external callback.
 Consumers commit writes or count reads only on `io_commit_o`, not on every
 FPGA clock for which a request remains asserted. The same pulse drives the
 shared address control, so every committed input read—including internal ports
@@ -118,10 +135,10 @@ loads that address and port 6 latches the separate low block nibble.
 
 This physical callback intentionally differs from the generic logical split.
 A TBLW to address 0–7 arrives as `io_write_o` and never writes program RAM.
-Address 0 receives internal DAC-latch readiness, while addresses 1–7 still
-receive `io_ready_i`; TBLW at address 8 or above receives readiness from the
-shared RAM. IN/OUT use the same physical callback. This is the A044427 alias
-documented by `SC-021`.
+Addresses 0, 4, and 5 receive their internal latch readiness, while addresses
+1–3, 6, and 7 still receive `io_ready_i`; TBLW at address 8 or above receives
+readiness from the shared RAM. IN/OUT use the same physical callback. This is
+the A044427 alias documented by `SC-021`.
 
 The production Rev-A TMS interrupt input is tied internally inactive-high.
 `bio_i` remains an external active-low input because the board-specific divider
@@ -157,9 +174,12 @@ ignores an external unsigned-MAME sentinel, holds block 3/address `0x3457`
 stable through three unready clocks, maps synthetic byte `0xd5` to `0xea80`,
 and commits once. The port-0 output ignores a deliberately unready external
 callback, captures raw word `0xf230` once as code `0xf23`, and never emits the
-distinct MAME-derived `0x723` value.
+distinct MAME-derived `0x723` value. Ports 4 and 5 also ignore deliberately
+unready external callbacks: TD0=1 drives raw `MUTE` low exactly once, the
+data-independent IRQ latch asserts, a host-clear pulse clears only the IRQ,
+and the following `/320RES` returns raw `MUTE` high.
 
-The pre-technology Yosys target retains three memories and reports 2,309
-abstract cells with 140 checks and zero structural problems. This is not a
+The pre-technology Yosys target retains three memories and reports 2,346
+abstract cells with 144 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

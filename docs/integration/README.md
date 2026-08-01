@@ -42,6 +42,10 @@ and contains neither ROM images nor physical access-time behavior.
 qualified raw port-0 output code `TD15:TD4` and emits a one-clock commit pulse.
 It implements no MAME bit-11 transform, signed-sample interpretation, DAC
 analog model, or filter.
+`hard_drivin_sound_control.md` qualifies the two LS74 halves behind ports 4
+and 5: the raw complementary `MUTE` net and latched active-high `320IRQ`. The
+corresponding RTL exposes those states without inventing a loaded mute consumer
+or embedding a 68000 bus decoder.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

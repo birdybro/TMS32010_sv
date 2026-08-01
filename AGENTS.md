@@ -384,6 +384,12 @@ processor reset, and reports a one-clock commit pulse. Its deterministic
 initialization validity is an FPGA convention. Never add MAME's bit-11 XOR,
 signed-sample conversion, or analog filtering to this module without resolving
 `SC-019`/`OQ-020` from stronger evidence.
+The board-only `hard_drivin_sound_output_control` follows the two LS74 halves
+at A044427 location 100H. Port 4 commits raw `MUTE=/Q=!TD0`; port 5 presets
+active-high `320IRQ` independently of write data, `/320RES` clears both Q
+states, and the separate host callback clocks grounded D to clear the IRQ.
+Expose the raw mute net only: its sole Rev-A analog consumer is marked
+`NOT LOADED`, and `SC-027`/`OQ-027` prohibit inventing an audio effect.
 The board-specific `hard_drivin_sound_program_ram` now implements a
 same-clock, synchronous-read 4K-by-16 FPGA storage adaptation. It permits host
 access only while `/320RES` is asserted, permits TMS access only after host

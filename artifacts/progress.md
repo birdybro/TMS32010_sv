@@ -1,18 +1,18 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' integrated raw DAC latch
+- **Current milestone:** Hard Drivin' raw MUTE and 68000-IRQ output control
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 118 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 119 repository/provenance/document/ISA/toolchain/program tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 31 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 32 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 27 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 28 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -51,12 +51,14 @@
   A sixth standalone target checks the storage-free parallel sample-ROM
   adapter at 18 abstract cells/three checks with no latch or structural
   problem. A seventh target checks the raw DAC latch at 14 cells/two checks
-  with no memory, latch, or structural problem. The partial processor/program/
-  communication/sample-ROM/DAC board top retains all three memories and passes
-  at 2,309 abstract cells/140 checks with zero structural problems before
-  technology mapping. A ninth target retains the
-  standalone 512-by-16 communication memory as one `$mem_v2` in an 82-cell
-  hierarchy with seven checks and zero structural problems.
+  with no memory, latch, or structural problem. An eighth target checks raw
+  MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
+  memory, latch, or structural problem. The ninth, partial processor/program/
+  communication/sample-ROM/DAC/output-control board top retains all three
+  memories and passes at 2,346 abstract cells/144 checks with zero structural
+  problems before technology mapping. A tenth target retains the standalone
+  512-by-16 communication memory as one `$mem_v2` in an 82-cell hierarchy with
+  seven checks and zero structural problems.
 - **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -482,6 +484,18 @@
   program word zero back unchanged as `0x7e00`. This test exposed and corrected
   board-top readiness selection for low-address TBLW.
   Analog voltage and signed-sample interpretation remain `OQ-020`.
+- **New output-control evidence:** A044427 sheets 2, 3, 5, and 7 plus TI
+  SDLS119 establish both LS74 halves at location 100H. Port 4 captures `TD0`
+  and exports raw complementary `MUTE=/Q`; port 5 presets active-high
+  `320IRQ` independently of data, while `/320RES` and the separate host
+  `/IRQCLR` path clear the respective Q state. The standalone RTL exhausts all
+  65,536 port-4 words and all 65,536 port-5 words, reset, isolation, host
+  clear, and set priority. Integrated smoke completes both ports despite low
+  external readiness, captures MUTE low, asserts and host-clears IRQ, and
+  restores MUTE high on reset. The only drawn Rev-A mute consumer is marked
+  `NOT LOADED`; `SC-027`/`OQ-027` therefore keep effective audio semantics
+  unknown. The newly acquired TI LS74 data sheet and all 28 local reference
+  files pass pinned SHA-256 verification.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -506,7 +520,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** qualify the port-4 mute and port-5 68000-interrupt latch paths
-  before implementing any remaining board control state.
+- **Next task:** qualify and implement the complete A044427 `/320BIO` divider
+  and resampling path without altering the generic core's platform-independent
+  BIO input.
 - **Latest committed baseline before this cycle:**
-  `c778e92`
+  `9404bb3`

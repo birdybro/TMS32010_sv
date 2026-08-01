@@ -42,11 +42,12 @@ the partial processor/RAM top and are not a 68000 bus bridge or complete
 sound-board wrapper.
 A partial board top now connects the processor, native decoder, shared program
 RAM, communication path, a storage-free parallel sample-ROM callback, and the
-raw twelve-bit DAC latch.
+raw twelve-bit DAC latch. It also exposes the primary-defined port-4
+complementary `MUTE` net and latched port-5 `320IRQ` state.
 It executes the host-loaded ROM-free smoke fixture with the expected 22-cycle
 trace and separately proves low-address TBLW reaches physical I/O. The 68000
-bridge/latch decode, actual sample storage, BIO generator, analog audio path,
-and remaining control peripherals remain absent.
+bridge/address decode, actual sample storage, BIO generator, analog audio
+path, loaded mute consumer, and remaining peripherals remain absent.
 A separate synthesizable communication-path adapter now implements the
 primary-transcribed 512-by-16, CRAMEN-selected host/DSP storage relationship,
 read-only DSP port-1 access, shared 16-bit sound-address counter, port-7 load,
@@ -72,6 +73,11 @@ The same top now captures every committed port-0 output as the uncomplemented
 `data[15:4]` DAC code and exposes an exact-once pulse. This implements only the
 primary digital latch boundary; analog conversion and MAME's disputed bit-11
 XOR remain outside RTL under `SC-019`/`OQ-020`.
+The output-control adapter separately models the two resettable LS74 halves:
+port 4 captures complement `TD0` onto the raw `MUTE` net, while any port-5
+write asserts `320IRQ` until a host-clear callback. Rev A's only drawn mute
+consumer is not loaded, so the raw state does not gate audio under
+`SC-027`/`OQ-027`.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

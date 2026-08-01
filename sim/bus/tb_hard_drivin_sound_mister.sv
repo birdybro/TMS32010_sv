@@ -24,6 +24,7 @@ module tb_hard_drivin_sound_mister;
   logic        host_communication_ready;
   logic        host_communication_access_permitted;
   logic        host_communication_blocked;
+  logic        host_irq_clear_commit;
   logic [2:0]  io_port;
   logic        io_read;
   logic        io_write;
@@ -46,6 +47,9 @@ module tb_hard_drivin_sound_mister;
   logic [11:0] dac_code;
   logic        dac_code_valid;
   logic        dac_commit;
+  logic        mute_net;
+  logic        mute_commit;
+  logic        irq_68000;
   logic        external_io_ready;
   logic        debug_data_write;
   logic [7:0]  debug_data_address;
@@ -77,6 +81,7 @@ module tb_hard_drivin_sound_mister;
   integer      sound_rom_commit_count;
   integer      sound_rom_wait_cycles;
   integer      dac_commit_count;
+  integer      mute_commit_count;
   logic        sound_rom_request_seen;
 
   hard_drivin_sound_mister dut (
@@ -106,6 +111,7 @@ module tb_hard_drivin_sound_mister;
       host_communication_access_permitted
     ),
     .host_communication_blocked_o  (host_communication_blocked),
+    .host_irq_clear_commit_i       (host_irq_clear_commit),
     .io_port_o                     (io_port),
     .io_read_o                     (io_read),
     .io_write_o                    (io_write),
@@ -129,6 +135,9 @@ module tb_hard_drivin_sound_mister;
     .dac_code_o                    (dac_code),
     .dac_code_valid_o              (dac_code_valid),
     .dac_commit_o                  (dac_commit),
+    .mute_net_o                    (mute_net),
+    .mute_commit_o                 (mute_commit),
+    .irq_68000_o                   (irq_68000),
     .debug_data_write_i            (debug_data_write),
     .debug_data_address_i          (debug_data_address),
     .debug_data_i                  (debug_data),
@@ -181,9 +190,15 @@ module tb_hard_drivin_sound_mister;
   always #5 clk = ~clk;
 
   always_comb begin
-    // Prove that the physical port-0 DAC latch does not inherit downstream
+    // Prove that internal port-0/4/5 latch targets do not inherit downstream
     // callback backpressure. Other still-external targets remain ready.
-    external_io_ready = !(io_write && (io_port == 3'd0));
+    external_io_ready = !(
+      io_write && (
+        (io_port == 3'd0) ||
+        (io_port == 3'd4) ||
+        (io_port == 3'd5)
+      )
+    );
     case (io_port)
       3'd0: io_read_data = 16'h6a80;
       3'd1: io_read_data = 16'hdead;
@@ -214,8 +229,10 @@ module tb_hard_drivin_sound_mister;
         end
       end
       if (io_write) begin
-        if ((io_port == 3'd0) && external_io_ready) begin
-          $fatal(1, "DAC commit unexpectedly relied on external readiness");
+        if (((io_port == 3'd0) ||
+             (io_port == 3'd4) ||
+             (io_port == 3'd5)) && external_io_ready) begin
+          $fatal(1, "internal output commit relied on external readiness");
         end
         io_write_count <= io_write_count + 1;
         output_ports[io_port] <= io_write_data;
@@ -226,8 +243,11 @@ module tb_hard_drivin_sound_mister;
   always_ff @(posedge clk) begin
     if (initialize) begin
       dac_commit_count <= 0;
+      mute_commit_count <= 0;
     end else if (dac_commit) begin
       dac_commit_count <= dac_commit_count + 1;
+    end else if (mute_commit) begin
+      mute_commit_count <= mute_commit_count + 1;
     end
   end
 
@@ -398,6 +418,7 @@ module tb_hard_drivin_sound_mister;
     host_communication_commit = 1'b0;
     host_communication_address = 9'h000;
     host_communication_write_data = 16'h0000;
+    host_irq_clear_commit = 1'b0;
     sound_rom_present = 12'h008;
     sound_rom_byte = 8'hd5;
     debug_data_write = 1'b0;
@@ -449,6 +470,10 @@ module tb_hard_drivin_sound_mister;
     require(dac_code_valid && dac_code == 12'hf23 &&
             dac_commit_count == 1,
             "internal DAC latch commits one uncomplemented raw code");
+    require(!mute_net && mute_commit_count == 1,
+            "port-4 TD0=1 commits the primary raw complementary MUTE net");
+    require(irq_68000,
+            "data-independent port-5 request leaves 320IRQ asserted");
     require(output_ports[3] == 16'h00a5 &&
             output_ports[4] == 16'h0001 &&
             output_ports[5] == 16'h0000 &&
@@ -471,10 +496,18 @@ module tb_hard_drivin_sound_mister;
             !sound_rom_selection_invalid,
             "processor port 0 held and committed one internal ROM response");
 
+    host_irq_clear_commit = 1'b1;
+    tick();
+    host_irq_clear_commit = 1'b0;
+    require(!irq_68000 && !mute_net,
+            "host /IRQCLR clears only 320IRQ and preserves raw MUTE state");
+
     // Processor reset does not erase communication RAM. Give CRAMEN to the
     // host and read the word back through the integrated host callback.
     dsp_reset_n = 1'b0;
     tick();
+    require(mute_net && !irq_68000,
+            "/320RES clears both LS74 Q states and drives MUTE complement high");
     communication_host_enable = 1'b1;
     host_communication_select_n = 1'b0;
     host_communication_write = 1'b0;

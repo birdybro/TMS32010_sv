@@ -160,8 +160,13 @@ The seventh checked-in script targets `hard_drivin_sound_dac_latch`. Yosys
 zero structural problems. This proves only the exhaustive-tested raw latch and
 commit-pulse logic, not analog conversion or sample interpretation.
 
-The eighth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,309 abstract cells, 140
+The eighth checked-in script targets `hard_drivin_sound_output_control`. Yosys
+0.67+111 reports 33 cells with four retained checks, no memory or latch, and
+zero structural problems. This proves only the exhaustive-tested raw MUTE-net
+and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
+
+The ninth script applies the same pre-technology boundary to
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 2,346 abstract cells, 144
 retained checks, and three `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, and the core's existing
 asynchronous-read 144-by-16 internal RAM.
@@ -169,7 +174,7 @@ Both structural checks pass with zero problems. This proves hierarchy and
 memory retention only; it is not a technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
-The ninth script applies the pre-technology boundary to
+The tenth script applies the pre-technology boundary to
 `hard_drivin_sound_communication_path`. Yosys 0.67+111 retains its 512-by-16
 communication RAM as one `$mem_v2` and reports 82 abstract cells with seven
 retained checks. Both structural checks pass with zero problems. This proves
