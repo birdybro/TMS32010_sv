@@ -188,6 +188,12 @@ and zero structural problems. This proves only the tested one-clock,
 explicit-enable representation of the divide-by-50 and CLKOUT sample state;
 it is not physical independent-clock setup/hold or metastability evidence.
 
+The twelfth checked-in script targets `hard_drivin_sound_host_control`. Yosys
+0.67+111 reports 53 cells with six retained checks, no memory or latch, and
+zero structural problems. This proves only the tested address-encoded LS259
+update, reset, retention, and validity logic; it is not `/RVAS`/DTACK decode,
+a complete 68000 bridge, or physical latch timing.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -202,8 +208,9 @@ The ignored outputs are `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and
 `build/yosys/tms32010_mister.json`; the board-specific scripts also write
 ignored JSON outputs including
-`build/yosys/hard_drivin_sound_communication_path.json` and
-`build/yosys/hard_drivin_sound_bio_generator.json`. Tool-version differences
+`build/yosys/hard_drivin_sound_communication_path.json`,
+`build/yosys/hard_drivin_sound_bio_generator.json`, and
+`build/yosys/hard_drivin_sound_host_control.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization
 regressions.

@@ -35,6 +35,27 @@ pp. 5–10]. **Confidence: VERIFIED_PRIMARY for organization and wiring; the
 manufacturer suffix and complete SRAM AC limits have not been independently
 qualified.**
 
+### 68000 low-I/O and control latch
+
+Within the valid host-I/O region, LS138 `30N` decodes `RWN` plus `A13:A12`
+into four write strobes and four read strobes. The write quadrants are
+`/SOUNDWR`, `/LATCHES`, `/SPEECH`, and `/IRQCLR`; the matching read quadrants
+are `/SOUNDRD`, `/320PORT`, `/SWITCHES`, and `/READSTAT`. During a
+`/LATCHES` write, LS259 `80R` takes its selected bit from `A3:A1` and its new
+value from `A4`; host `D15:D0` does not participate. Board `/RESET` clears all
+eight Q outputs. Q3 is `CRAMEN` and Q4 is `/320RES`
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
+PDF pp. 5–6; ti-sn74ls259b-datasheet-sdls086, printed pp. 1–2].
+**Confidence: VERIFIED_PRIMARY.**
+
+`hard_drivin_sound_host_control` now implements that isolated address-encoded
+latch update behind an explicit decoded completion pulse. It exposes every raw
+Q bit and per-bit validity, passes all eight selections/both values/reset and
+retention tests, and synthesizes to 53 cells with six retained checks. It is
+not yet connected to the board top: `/RVAS`, DTACK, the full 68000 memory map,
+and end-to-end reset/CRAMEN handoff remain separate acceptance work. Complete
+details are in `docs/integration/hard_drivin_host_control.md`.
+
 ### Program-RAM ownership is a firmware protocol
 
 The drawing contains no mutual-exclusion arbiter. LS259 output `/320RES`

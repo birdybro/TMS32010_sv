@@ -251,6 +251,27 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("SC-029", conflicts)
         self.assertIn("OQ-029", questions)
 
+    def test_hard_drivin_host_control_stays_callback_scoped(self) -> None:
+        host = (DOCS / "integration" / "hard_drivin_host_control.md").read_text(
+            encoding="utf-8"
+        )
+        host_flat = " ".join(host.split())
+        for required in (
+            "LS138 `30N`",
+            "`RWN`, `A13`, and",
+            "Host data `D15:D0` does not enter the latch",
+            "`latch_address_i={A4,A3,A2,A1}`",
+            "Q3 | `CRAMEN`",
+            "Q4 | `/320RES`",
+            "per-bit validity",
+            "not yet connected",
+            "53 abstract cells",
+            "six retained checks",
+            "not a Cyclone V fit",
+        ):
+            self.assertIn(required, host_flat)
+        self.assertIn("`SC-020`", host_flat)
+
     def test_hard_drivin_communication_ram_remains_primary_scoped(self) -> None:
         communication = (
             DOCS / "integration" / "hard_drivin_communication_ram.md"

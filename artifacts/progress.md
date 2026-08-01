@@ -1,12 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' port-2 compare-path qualification
+- **Current milestone:** Hard Drivin' standalone 68000 host-control latch
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 121 repository/provenance/document/ISA/toolchain/program tests; 231
+- **Tests passing:** 122 repository/provenance/document/ISA/toolchain/program
+  tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 33 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 34 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -61,7 +62,10 @@
   seven checks and zero structural problems. An eleventh target checks the
   standalone explicit-enable BIO divider/resampler at 52 cells/seven checks
   with no memory, latch, or structural problem.
-- **Formal status:** SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 passes
+  A twelfth target checks the standalone address-encoded LS259 adapter at 53
+  cells/six retained checks with no memory, latch, or structural problem.
+- **Formal status:** all 24 tasks from 12 SymbiYosys configurations pass with
+  SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
@@ -527,6 +531,18 @@
   port-2 callback is retained, the smoke zero is labeled a synthetic sentinel,
   and no unsupported RTL was added. All 30 cached sources pass pinned SHA-256
   verification; the full regression and lint pass unchanged.
+- **New host-control evidence:** A044427 sheet 3 and TI SDLS086 establish that
+  LS138 `30N` selects `/LATCHES` for a host write with `A13:A12=01`, while
+  LS259 `80R` takes its select from `A3:A1` and its value from `A4`; host data
+  does not enter the latch. Board `/RESET` clears all raw Q outputs, including
+  `CRAMEN=Q3` and `/320RES=Q4`. The new standalone same-clock completion
+  adapter exposes all eight raw values plus per-bit validity. Directed
+  simulation exhausts every selection and both values, retention, reset, and
+  reset-over-write priority; standalone Yosys reports 53 cells/six checks.
+  It is intentionally not connected to the board top until an opt-in host
+  sequence is verified, and it does not claim `/RVAS`, DTACK, or physical
+  level-sensitive timing. The complete regression, documentation checks,
+  strict Verilator lint, all twelve Yosys targets, and all 24 formal tasks pass.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -553,8 +569,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** trace the A044427 68000 host latch/address decode for
-  `/320RES`, `CRAMEN`, program-RAM selection, communication-RAM selection, and
-  `/IRQCLR`, then define the smallest evidence-backed host-control adapter.
+- **Next task:** connect the qualified host-control adapter to the partial
+  board top behind an explicit opt-in while preserving the external callback
+  default, then verify a synthetic reset/program-load/CRAM-load/release
+  sequence end to end.
 - **Latest committed baseline before this cycle:**
-  `2103c44`
+  `d8ae5e3`

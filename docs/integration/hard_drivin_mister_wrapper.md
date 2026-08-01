@@ -14,6 +14,13 @@ It does not implement the 68000 bus/address decoder, actual sample storage,
 the optional unpopulated compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
 clock-enable source, or a MiSTer framework top level.
 
+The separately qualified `hard_drivin_sound_host_control` is not yet connected
+to this top. The top still accepts `/320RES` as `dsp_reset_n_i`, CRAMEN as
+`communication_host_enable_i`, and `/IRQCLR` as
+`host_irq_clear_commit_i` from an external host bridge. This preserves the
+existing callback contract until an explicit opt-in path and end-to-end host
+handoff test qualify the connection.
+
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
 This wrapper is therefore not evidence that the project is instruction-

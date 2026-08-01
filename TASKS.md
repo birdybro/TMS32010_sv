@@ -1347,7 +1347,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_sound_rom.md`,
   `docs/integration/hard_drivin_sound_control.md`,
   `docs/integration/hard_drivin_bio.md`,
-  `docs/integration/hard_drivin_compare.md`
+  `docs/integration/hard_drivin_compare.md`,
+  `docs/integration/hard_drivin_host_control.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1356,7 +1357,8 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_rom_path.sv`,
   `sim/bus/tb_hard_drivin_sound_dac_latch.sv`,
   `sim/bus/tb_hard_drivin_sound_output_control.sv`,
-  `sim/bus/tb_hard_drivin_sound_bio_generator.sv`
+  `sim/bus/tb_hard_drivin_sound_bio_generator.sv`,
+  `sim/bus/tb_hard_drivin_sound_host_control.sv`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1466,6 +1468,16 @@ objective passing evidence.
   Host latch/68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
+  A044427 sheet 3 plus TI SDLS086 establish the host low-I/O LS138 and LS259
+  `80R`: `/LATCHES` is the write quadrant at `A13:A12=01`, `A3:A1` selects Q,
+  `A4` supplies its value, and host data is ignored. Board `/RESET` clears all
+  raw outputs, including `CRAMEN=Q3` and `/320RES=Q4`. The standalone adapter
+  verifies every selection/value, per-bit validity, reset, retention, and
+  reset-over-write priority; Yosys reports 53 cells/six checks. Board-top
+  opt-in selection, full `/RVAS`/DTACK decode, and 68000 timing remain. The
+  complete 122/231/38/34/5/10 regression split, strict lint, all twelve Yosys
+  targets, and all 24 tasks from twelve formal configurations pass at this
+  checkpoint.
 
 ## Milestone 22 — Release qualification
 

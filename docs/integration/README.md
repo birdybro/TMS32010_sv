@@ -15,6 +15,8 @@
   resampler, with explicit independent-clock uncertainty.
 - `hard_drivin_compare.md`: primary port-2 `/CMPRD`/`CMPOUT` trace, explicit
   Rev-A nonpopulation, and MAME zero-stub boundary.
+- `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
+  state, board-reset effects, and standalone FPGA callback boundary.
 - `hard_drivin_mister_wrapper.md`: partial same-clock processor/program-RAM
   top, reset/ownership protocol, physical I/O callback, and test boundary.
 
@@ -60,6 +62,10 @@ creating clocks or pretending board reset initializes the divider.
 from an unpopulated-source `CMPOUT`; it therefore remains on the board top's
 external data/ready callback instead of receiving an invented zero-valued
 peripheral.
+`hard_drivin_host_control.md` qualifies the LS259 whose raw Q3/Q4 outputs are
+`CRAMEN` and `/320RES`. Its standalone RTL uses an explicit decoded host
+completion and per-bit validity; the full `/RVAS`/DTACK bridge remains future
+work.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

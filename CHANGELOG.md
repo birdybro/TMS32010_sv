@@ -119,6 +119,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   `THIS SHEET NOT LOADED.` `SC-029`/`OQ-029` now prevent MAME's zero-return
   stub from being promoted into physical behavior; the wrapper retains an
   explicit external callback and the smoke zero is a named synthetic sentinel.
+- Primary qualification of Driver Sound LS138 `30N` and LS259 `80R`: the
+  `/LATCHES` host quadrant writes one Q selected by `A3:A1` from address bit
+  `A4`, board reset clears every output, and raw Q3/Q4 are `CRAMEN` and
+  `/320RES`. Host data is not incorrectly treated as latch data.
+- A standalone synthesizable host-control adapter with explicit decoded
+  completion, all eight raw outputs, per-bit validity, reset qualification,
+  six retained checks, and exhaustive select/value verification. Full
+  `/RVAS`/DTACK and board-top opt-in integration remain separate.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -553,6 +561,14 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- All eight LS259 selections, both A4 values, uncommitted retention, per-bit
+  validity, two complete alternating patterns, board-reset qualification, and
+  reset-over-write priority. Standalone Yosys reports 53 cells, six checks,
+  no memory/latch, and zero structural problems. The complete regression
+  passes 122 repository/tool, 231 model/unit, 38 instruction RTL, 34
+  bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all twelve
+  Yosys targets, and all 24 tasks from twelve formal configurations pass.
 
 - The A044427 cross-sheet port-2 trace from LS139 decode through LS244 `10H`
   to `TDI15`, the absent compare-target connections to `TDI14:TDI0`, the

@@ -107,6 +107,12 @@ This qualifies the explicit-enable divide-by-50, reset, validity, and CLKOUT
 sample structure only; it is not independent-clock electrical timing or a
 metastability result.
 
+The twelfth script targets `hard_drivin_sound_host_control`. It reports 53
+cells, six retained checks, no memory or latch, and zero structural problems.
+This qualifies only the address-encoded LS259 state, board-reset sampling, and
+per-bit validity; it is not a 68000 decoder, DTACK path, or physical
+level-sensitive latch-timing result.
+
 ## Quartus
 
 The initial project targets the DE10-Nano Cyclone V SoC FPGA
