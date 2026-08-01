@@ -5,7 +5,7 @@
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
 communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
-board-BIO paths.
+board-BIO and host-control paths.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
 4K-by-16 shared program RAM. It now also connects the separately qualified
 512-by-16 communication RAM and sound-address controls to processor input port
@@ -14,12 +14,14 @@ It does not implement the 68000 bus/address decoder, actual sample storage,
 the optional unpopulated compare circuit, DAC analog path, a loaded mute consumer, a board 1 MHz
 clock-enable source, or a MiSTer framework top level.
 
-The separately qualified `hard_drivin_sound_host_control` is not yet connected
-to this top. The top still accepts `/320RES` as `dsp_reset_n_i`, CRAMEN as
-`communication_host_enable_i`, and `/IRQCLR` as
-`host_irq_clear_commit_i` from an external host bridge. This preserves the
-existing callback contract until an explicit opt-in path and end-to-end host
-handoff test qualify the connection.
+The separately qualified `hard_drivin_sound_host_control` is connected behind
+`use_host_control_i`. The default false setting still accepts `/320RES` as
+`dsp_reset_n_i` and CRAMEN as `communication_host_enable_i`; selecting the
+board path instead uses LS259 Q4 and Q3. Raw latch state, per-bit validity, and
+validity of both selected controls remain visible. `/IRQCLR` is electrically
+separate from LS259 `80R` and remains the explicit
+`host_irq_clear_commit_i` callback. No `/RVAS` generator, 68000 address
+decoder, byte-lane logic, or DTACK path is implied by this opt-in selection.
 
 The wrapped processor still omits CALA, RET, PUSH, and POP from RTL and retains
 the timing and silicon uncertainties in `docs/research/open_questions.md`.
@@ -29,9 +31,10 @@ complete, cycle-accurate, or release-ready.
 ## Clock and reset boundary
 
 All inputs are synchronous to `clk_i`. `initialize_i` performs the explicit
-FPGA-only deterministic state initialization. `dsp_reset_n_i` represents the
-board's active-low `/320RES` latch output and enters the generic wrapper as a
-separate processor-reset request. Holding `/320RES` low does not clear shared
+FPGA-only deterministic state initialization. The selected reset is either the
+default external `dsp_reset_n_i` callback or opt-in LS259 Q4, both representing
+the board's active-low `/320RES` latch output. It enters the generic wrapper as
+a separate processor-reset request. Holding `/320RES` low does not clear shared
 program RAM; each release invokes the generic five-enabled-machine-cycle reset
 hold and the qualified inactive release cycle before address-zero fetch.
 
@@ -50,13 +53,15 @@ VERIFIED_SIMULATION for this synchronous FPGA adaptation.**
 
 The required same-clock sequence is:
 
-1. assert `dsp_reset_n_i=0`;
+1. hold the selected `/320RES` low, using `dsp_reset_n_i=0` in the default
+   mode or board-reset-cleared/Q4-low state in host-control mode;
 2. assert `host_program_select_n_i=0` only after the host begins its RAM access;
 3. supply a complete 12-bit word address and 16-bit write word;
 4. pulse `host_commit_i` once for each write accepted with `host_ready_o=1`;
 5. release `host_program_select_n_i=1`;
 6. verify `ownership_conflict_o=0`; and
-7. release `dsp_reset_n_i=1`.
+7. release the selected `/320RES`, using `dsp_reset_n_i=1` or a decoded Q4
+   write as selected.
 
 The host callback is whole-word only because A044427 routes A12:A1, D15:D0,
 and one RAM write strobe without UDS/LDS lane enables. `SC-022`/`OQ-022`
@@ -66,17 +71,18 @@ wrapper does not choose a protective winner and call that physical behavior.
 
 ## Communication-RAM host sequence
 
-`communication_host_enable_i` represents the external CRAMEN latch state.
-When high, the `host_communication_*` whole-word callback owns the 512-word
+The selected CRAMEN is either default external
+`communication_host_enable_i` or opt-in LS259 Q3. When high, the
+`host_communication_*` whole-word callback owns the 512-word
 memory and processor port 1 is blocked. The host may pulse
 `host_communication_commit_i` once for a selected write accepted with
 `host_communication_ready_o=1`. When CRAMEN returns low, the host callback is
 disabled and processor port 1 reads the word at `sound_address_o[8:0]`.
 
 CRAMEN is deliberately not derived from `/320RES`: the drawing shows it as a
-separate host LS259 output cleared by board `/RESET`. This wrapper exposes the
-latch output but does not implement the 68000 decode that controls it. Host
-byte lanes and DTACK remain unresolved integration work under
+separate host LS259 output cleared by board `/RESET`. The opt-in path updates
+that output only from an explicit decoded completion. Host byte lanes,
+`/RVAS`, address decode, and DTACK remain unresolved integration work under
 `SC-025`/`OQ-024`.
 
 ## Parallel sample-ROM callback
@@ -121,7 +127,7 @@ only Rev-A analog consumer is marked `NOT LOADED` and remains unresolved under
 Any visible port-5 write request sets active-high `irq_68000_o` independently
 of data, matching `/68IRQ` on the LS74 asynchronous preset. The level remains
 asserted until `host_irq_clear_commit_i` clocks the grounded D input or
-`dsp_reset_n_i=0` applies `/320RES`. The host callback is a same-clock FPGA
+the selected reset applies `/320RES`. The host callback is a same-clock FPGA
 boundary, not a 68000 address decoder or physical `/IRQCLR` pulse model. See
 `hard_drivin_sound_control.md` for the pin-level provenance and confidence.
 
@@ -143,7 +149,7 @@ invented CLKOUT schedule. The generator asserts that these two enables do not
 coincide. This explicitly contains `OQ-028`: a future clock adapter must avoid
 the unresolved same-edge case or replace that contract only after stronger
 evidence establishes its behavior. `board_reset_n_i` represents global board
-`/RESET` and is deliberately distinct from `dsp_reset_n_i` (`/320RES`). See
+`/RESET` and is deliberately distinct from the selected `/320RES`. See
 `hard_drivin_bio.md` for the primary divider/resampler provenance.
 
 ## Physical I/O callback
@@ -221,7 +227,16 @@ unready external callbacks: TD0=1 drives raw `MUTE` low exactly once, the
 data-independent IRQ latch asserts, a host-clear pulse clears only the IRQ,
 and the following `/320RES` returns raw `MUTE` high.
 
-The pre-technology Yosys target retains three memories and reports 2,408
-abstract cells with 154 checks and zero structural problems. This is not a
+The final test phase opts into the host-control path with the external reset
+and CRAMEN callbacks held at opposite sentinel values. Board reset qualifies
+all LS259 outputs low. Q4 then permits a synthetic three-word program load and
+safe DSP release; Q3 permits one communication-word load and returns it to DSP
+ownership. The DSP executes `LACK 0x5a` and `NOP` in two instruction cycles.
+Q4 subsequently disables TMS ownership and reasserts processor reset, after
+which Q3 grants a synchronous host readback of the preserved word `0x1357`.
+This is an end-to-end same-clock callback test, not a physical 68000 bus test.
+
+The pre-technology Yosys target retains three memories and reports 2,474
+abstract cells with 166 checks and zero structural problems. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

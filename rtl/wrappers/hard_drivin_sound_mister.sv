@@ -2,9 +2,9 @@
 
 // Same-clock FPGA integration of the generic MiSTer callback wrapper with the
 // qualified A044427 Rev-A program/communication RAM ownership, parallel
-// sample-ROM callback, raw DAC latch, output-control LS74s, opt-in BIO path,
-// and native target decode. Remaining peripherals and the 68000 bus bridge
-// are external.
+// sample-ROM callback, raw DAC latch, output-control LS74s, opt-in BIO and
+// host-control paths, and native target decode. Remaining peripherals and the
+// complete 68000 bus bridge are external.
 module hard_drivin_sound_mister (
   input  logic        clk_i,
   input  logic        initialize_i,
@@ -24,6 +24,16 @@ module hard_drivin_sound_mister (
   output logic        board_bio_valid_o,
   output logic        selected_bio_n_o,
   output logic        selected_bio_valid_o,
+
+  input  logic        use_host_control_i,
+  input  logic        host_latch_write_commit_i,
+  input  logic [3:0]  host_latch_address_i,
+  output logic [7:0]  host_latch_q_o,
+  output logic [7:0]  host_latch_valid_o,
+  output logic        selected_dsp_reset_n_o,
+  output logic        selected_dsp_reset_valid_o,
+  output logic        selected_communication_host_enable_o,
+  output logic        selected_communication_host_enable_valid_o,
 
   input  logic        host_program_select_n_i,
   input  logic        host_write_i,
@@ -150,6 +160,16 @@ module hard_drivin_sound_mister (
 
   assign selected_bio_n_o = use_board_bio_i ? board_bio_n_o : bio_i;
   assign selected_bio_valid_o = !use_board_bio_i || board_bio_valid_o;
+  assign selected_dsp_reset_n_o =
+    use_host_control_i ? host_latch_q_o[4] : dsp_reset_n_i;
+  assign selected_dsp_reset_valid_o =
+    !use_host_control_i || host_latch_valid_o[4];
+  assign selected_communication_host_enable_o =
+    use_host_control_i
+      ? host_latch_q_o[3]
+      : communication_host_enable_i;
+  assign selected_communication_host_enable_valid_o =
+    !use_host_control_i || host_latch_valid_o[3];
   // CLKOUT is low in modeled phases 0/1 and high in phases 2/3, so an
   // enabled phase-1 advance is its rising sampling boundary.
   assign bio_clkout_rise = phase_advance_o && (phase_o == 2'd1);
@@ -213,7 +233,7 @@ module hard_drivin_sound_mister (
   hard_drivin_sound_program_ram program_ram_adapter (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
-    .dsp_reset_n_i                 (dsp_reset_n_i),
+    .dsp_reset_n_i                 (selected_dsp_reset_n_o),
     .host_program_select_n_i       (host_program_select_n_i),
     .host_write_i                  (host_write_i),
     .host_commit_i                 (host_commit_i),
@@ -244,7 +264,7 @@ module hard_drivin_sound_mister (
   hard_drivin_sound_communication_path communication_path (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
-    .communication_host_enable_i   (communication_host_enable_i),
+    .communication_host_enable_i   (selected_communication_host_enable_o),
     .host_select_n_i               (host_communication_select_n_i),
     .host_write_i                  (host_communication_write_i),
     .host_commit_i                 (host_communication_commit_i),
@@ -302,7 +322,7 @@ module hard_drivin_sound_mister (
   hard_drivin_sound_output_control output_control (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
-    .dsp_reset_n_i                 (dsp_reset_n_i),
+    .dsp_reset_n_i                 (selected_dsp_reset_n_o),
     .io_port_i                     (io_port_o),
     .io_write_i                    (io_write_o),
     .io_write_data_i               (io_write_data_o),
@@ -329,10 +349,20 @@ module hard_drivin_sound_mister (
     .bio_valid_o                   (board_bio_valid_o)
   );
 
+  hard_drivin_sound_host_control host_control (
+    .clk_i                         (clk_i),
+    .initialize_i                  (initialize_i),
+    .board_reset_n_i               (board_reset_n_i),
+    .latch_write_commit_i          (host_latch_write_commit_i),
+    .latch_address_i               (host_latch_address_i),
+    .latch_q_o                     (host_latch_q_o),
+    .latch_valid_o                 (host_latch_valid_o)
+  );
+
   tms32010_mister processor (
     .clk_i                         (clk_i),
     .reset_i                       (initialize_i),
-    .processor_reset_i             (!dsp_reset_n_i),
+    .processor_reset_i             (!selected_dsp_reset_n_o),
     .clock_enable_i                (clock_enable_i),
     .bio_i                         (selected_bio_n_o),
     .int_i                         (1'b1),
@@ -408,8 +438,22 @@ module hard_drivin_sound_mister (
               (use_board_bio_i ? board_bio_n_o : bio_i));
       assert (selected_bio_valid_o ==
               (!use_board_bio_i || board_bio_valid_o));
+      assert (selected_dsp_reset_n_o ==
+              (use_host_control_i ? host_latch_q_o[4] : dsp_reset_n_i));
+      assert (selected_dsp_reset_valid_o ==
+              (!use_host_control_i || host_latch_valid_o[4]));
+      assert (selected_communication_host_enable_o ==
+              (use_host_control_i
+                 ? host_latch_q_o[3]
+                 : communication_host_enable_i));
+      assert (selected_communication_host_enable_valid_o ==
+              (!use_host_control_i || host_latch_valid_o[3]));
       if (!use_board_bio_i) begin
         assert (selected_bio_valid_o);
+      end
+      if (!use_host_control_i) begin
+        assert (selected_dsp_reset_valid_o);
+        assert (selected_communication_host_enable_valid_o);
       end
       if (io_read_o || io_write_o) begin
         assert (logical_io_port == io_port_o || logical_program_write);

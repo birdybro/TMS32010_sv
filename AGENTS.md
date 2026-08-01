@@ -412,9 +412,11 @@ A decoded `/LATCHES` completion uses host `A3:A1` to select Q and `A4` as the
 new value; `D15:D0` is irrelevant. Board `/RESET` clears all eight outputs,
 including `CRAMEN=Q3` and `/320RES=Q4`. Preserve per-bit validity before reset
 or write, and do not describe the same-clock completion as the physical
-level-sensitive interval. It is not yet connected to the board top. Read
-`docs/integration/hard_drivin_host_control.md` before modifying or integrating
-this path; full `/RVAS`, DTACK, and 68000 timing remain outside it.
+level-sensitive interval. Its board-top connection is opt-in, preserves the
+external reset/CRAMEN callbacks by default, exports selected-control validity,
+and keeps `/IRQCLR` separate. Read `docs/integration/hard_drivin_host_control.md`
+before modifying this path; full `/RVAS`, DTACK, and 68000 timing remain
+outside it.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
 callback wrapper, separates deterministic initialization from physical
 processor reset, and passes the host-loaded ROM-free smoke plus a low-TBLW

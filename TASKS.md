@@ -1290,8 +1290,8 @@ objective passing evidence.
   eighth script checks the port-4/5 LS74 output-control path as 33 cells/four
   checks with no memory, latch, or structural problem. A ninth pre-technology
   script checks the partial processor/program/communication/sample-ROM/DAC/
-  output-control/BIO board top as 2,408 abstract cells, 154 checks, and three
-  retained memories with zero structural problems. A tenth
+  output-control/BIO/host-control board top as 2,474 abstract cells, 166
+  checks, and three retained memories with zero structural problems. A tenth
   pre-technology script checks the standalone communication-RAM and
   sound-address path as 82 abstract cells, seven retained checks, and one
   retained 512-by-16 memory with zero structural problems. An eleventh script
@@ -1464,8 +1464,8 @@ objective passing evidence.
   forced external backpressure and captures raw code `0x00a` without changing
   shared program word zero. Standalone Yosys reports 14 cells/two checks;
   the output-control adapter reports 33 cells/four checks. Integrated Yosys
-  reports 2,408 abstract cells/154 checks and retains the same three memories.
-  Host latch/68000 bus adaptation, authorized sample storage, optional
+  reports 2,474 abstract cells/166 checks and retains the same three memories.
+  Full 68000 bus adaptation, authorized sample storage, optional
   populated-compare/DAC-analog/effective-mute peripherals, exact Rev-A port-2
   electrical data, and physical timing remain acceptance work.
   A044427 sheet 3 plus TI SDLS086 establish the host low-I/O LS138 and LS259
@@ -1473,8 +1473,11 @@ objective passing evidence.
   `A4` supplies its value, and host data is ignored. Board `/RESET` clears all
   raw outputs, including `CRAMEN=Q3` and `/320RES=Q4`. The standalone adapter
   verifies every selection/value, per-bit validity, reset, retention, and
-  reset-over-write priority; Yosys reports 53 cells/six checks. Board-top
-  opt-in selection, full `/RVAS`/DTACK decode, and 68000 timing remain. The
+  reset-over-write priority; Yosys reports 53 cells/six checks. The board-top
+  opt-in preserves external defaults, exposes selected Q4/Q3 validity, and
+  passes a synthetic program/communication-memory handoff while opposite
+  external sentinels are ignored. Full `/RVAS`/DTACK decode and 68000 timing
+  remain. The
   complete 122/231/38/34/5/10 regression split, strict lint, all twelve Yosys
   targets, and all 24 tasks from twelve formal configurations pass at this
   checkpoint.

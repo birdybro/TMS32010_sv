@@ -33,8 +33,10 @@ neither side during invalid overlap. Its whole-word host callback is not a
 
 `rtl/wrappers/hard_drivin_sound_mister.sv` connects those pieces to the
 generic processor callback wrapper. It can execute a host-loaded synthetic
-program and correctly routes low-address TBLW to physical I/O, but leaves all
-peripheral implementations and the 68000 bridge external.
+program and correctly routes low-address TBLW to physical I/O. It now selects
+the qualified LS259 host-control state only behind an explicit opt-in while
+retaining external reset/CRAMEN callbacks by default; the complete 68000 bridge
+remains external.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address
@@ -64,8 +66,8 @@ external data/ready callback instead of receiving an invented zero-valued
 peripheral.
 `hard_drivin_host_control.md` qualifies the LS259 whose raw Q3/Q4 outputs are
 `CRAMEN` and `/320RES`. Its standalone RTL uses an explicit decoded host
-completion and per-bit validity; the full `/RVAS`/DTACK bridge remains future
-work.
+completion and per-bit validity. The board top can opt into Q3/Q4 and exports
+selected-control validity; the full `/RVAS`/DTACK bridge remains future work.
 
 The generic processor and MiSTer wrapper do not contain Atari memory maps,
 ROM content, DAC transforms, or host-handshake behavior. Those belong in a

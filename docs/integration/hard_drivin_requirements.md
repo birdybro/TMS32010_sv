@@ -51,9 +51,11 @@ PDF pp. 5–6; ti-sn74ls259b-datasheet-sdls086, printed pp. 1–2].
 `hard_drivin_sound_host_control` now implements that isolated address-encoded
 latch update behind an explicit decoded completion pulse. It exposes every raw
 Q bit and per-bit validity, passes all eight selections/both values/reset and
-retention tests, and synthesizes to 53 cells with six retained checks. It is
-not yet connected to the board top: `/RVAS`, DTACK, the full 68000 memory map,
-and end-to-end reset/CRAMEN handoff remain separate acceptance work. Complete
+retention tests, and synthesizes to 53 cells with six retained checks. The
+board top can select Q4/Q3 behind an explicit opt-in, exports selected-control
+validity, and passes a synthetic program/communication-RAM handoff while
+opposite-valued external callbacks are ignored. `/RVAS`, DTACK, the full 68000
+memory map, and physical host timing remain separate acceptance work. Complete
 details are in `docs/integration/hard_drivin_host_control.md`.
 
 ### Program-RAM ownership is a firmware protocol

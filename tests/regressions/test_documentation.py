@@ -168,7 +168,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Opt-in board BIO",
             "external active-low `bio_i` remains the default",
             "selected_bio_valid_o",
-            "2,408",
+            "`use_host_control_i`",
+            "per-bit validity",
+            "`host_irq_clear_commit_i` callback",
+            "`LACK 0x5a` and `NOP`",
+            "2,474",
+            "166 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -218,7 +223,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "connected to `hard_drivin_sound_mister` as an explicit opt-in",
             "external platform-independent raw BIO input remains the default",
             "selected_bio_valid_o=0",
-            "2,408 abstract cells",
+            "2,474 abstract cells",
             "52 cells",
             "seven retained checks",
         ):
@@ -264,7 +269,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Q3 | `CRAMEN`",
             "Q4 | `/320RES`",
             "per-bit validity",
-            "not yet connected",
+            "now instantiates the adapter behind `use_host_control_i`",
+            "default false setting preserves external",
+            "`/IRQCLR` remains the distinct",
             "53 abstract cells",
             "six retained checks",
             "not a Cyclone V fit",

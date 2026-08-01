@@ -89,8 +89,8 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, and 144-word internal RAM as three memory objects and
-reports 2,408 abstract cells, 154 checks, and zero structural problems. This
-is not comparable to the
+reports 2,474 abstract cells, 166 checks, and zero structural problems after
+the opt-in host-control integration. This is not comparable to the
 technology-mapped generic-cell counts above and is not a Cyclone V fit or
 timing result.
 

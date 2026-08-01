@@ -126,7 +126,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 - A standalone synthesizable host-control adapter with explicit decoded
   completion, all eight raw outputs, per-bit validity, reset qualification,
   six retained checks, and exhaustive select/value verification. Full
-  `/RVAS`/DTACK and board-top opt-in integration remain separate.
+  `/RVAS`/DTACK integration remains separate.
+- An opt-in board-top host-control path that selects LS259 Q4/Q3 for
+  `/320RES` and CRAMEN, exports raw and selected-control validity, preserves
+  the external callbacks by default, and keeps `/IRQCLR` separate.
 - Portable SystemVerilog package, exhaustive partial decoder, and
   clock-enable execution core for the fifty-six-instruction slice.
 - Directed RTL tests, exhaustive 16-bit decode-space validation, and a seeded
@@ -570,6 +573,13 @@ Changelog, and the project follows semantic versioning once releases begin.
   bus/wrapper, 5 interrupt, and 10 differential tests; strict lint, all twelve
   Yosys targets, and all 24 tasks from twelve formal configurations pass.
 
+- Opt-in Q4/Q3 board control with opposite-valued external callback sentinels:
+  board reset qualifies all raw outputs, Q4 enables a safe synthetic
+  program-RAM handoff, Q3 loads and releases communication RAM, the DSP
+  executes `LACK 0x5a; NOP` in two instruction cycles, and a later Q4 reset/Q3
+  host read returns preserved word `0x1357`. Integrated Yosys reports 2,474
+  cells, 166 retained checks, three memories, and zero structural problems.
+
 - The A044427 cross-sheet port-2 trace from LS139 decode through LS244 `10H`
   to `TDI15`, the absent compare-target connections to `TDI14:TDI0`, the
   optional LM311 open-collector polarity, and Rev-A's explicit nonpopulation
@@ -580,7 +590,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   qualified low: BIOZ takes only target `LACK 0x22`, consumes three total
   instruction cycles with that target, and sees source release only after a
   later modeled CLKOUT sample. The partial board hierarchy synthesizes to
-  2,408 abstract cells, 154 checks, and three retained memories with zero
+  2,474 abstract cells, 166 checks, and three retained memories with zero
   structural problems.
 
 - The complete fifty-state BIO divider sequence, one-source-period low pulse,
@@ -595,7 +605,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   host clear, and set-over-clear priority. Integrated smoke proves raw MUTE
   capture, data-independent IRQ assertion, host clear, and reset restoration
   while external readiness remains low. Yosys reports 33 cells/four checks for
-  the standalone path and 2,408 cells/154 checks/three memories for the partial
+  the standalone path and 2,474 cells/166 checks/three memories for the partial
   board hierarchy, with zero structural problems.
 
 - Exhaustive raw-DAC coverage across all 65,536 TMS output words, every
@@ -607,7 +617,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   A separate five-cycle `LACK 0; TBLW 0x11; NOP` execution captures internal
   word `0x00a5` as raw code `0x00a` through the same target while a host
   readback proves program word zero remains `0x7e00`.
-  The board hierarchy passes Yosys at 2,408 abstract cells/154 checks with its
+  The board hierarchy passes Yosys at 2,474 abstract cells/166 checks with its
   same three memories.
 - Exhaustive standalone sample-ROM coverage across all sixteen block values,
   all 65,536 pre-increment addresses, all 256 bytes, validity/presence cases,
@@ -617,7 +627,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   block 3/address `0x3457`, exact synthetic `0xd5` to `0xea80` mapping, one
   commit, external-sentinel rejection, and shared-counter advance. The board
   hierarchy retains three memories and, with the raw DAC latch, passes Yosys
-  at 2,408 abstract cells with 154 checks and zero structural problems.
+  at 2,474 abstract cells with 166 checks and zero structural problems.
 - A documentation/model-fixture invariant independently derives physical
   sound-ROM words as `{{2{byte[7]}}, byte[6:0], 7'b0}`, preserves the distinct
   pinned-MAME oracle value, and rejects absent-block behavior as unverified.
@@ -640,8 +650,8 @@ Changelog, and the project follows semantic versioning once releases begin.
   proves retention. A second
   reset/reload executes LACK/TBLW/NOP in five cycles and proves low-address
   TBLW commits once to port 3 while RAM word 3 remains `0x7f83`.
-- The partial board hierarchy passes pre-technology Yosys with 2,408 abstract
-  cells, 154 retained checks, three memory objects, and zero structural errors.
+- The partial board hierarchy passes pre-technology Yosys with 2,474 abstract
+  cells, 166 retained checks, three memory objects, and zero structural errors.
 - Complete host loading, synchronous TMS readback, and address identity across
   all 4,096 shared program words; contents survive adapter initialization,
   legal high-address TMS writes commit, low-eight writes remain I/O, and

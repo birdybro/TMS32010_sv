@@ -87,6 +87,12 @@ partial board top connects it as an explicit opt-in while retaining external
 raw BIO as the default. The caller supplies a noncoincident 1 MHz enable and
 the top derives CLKOUT sampling from the core phase; physical independent-
 crystal coincidence remains `OQ-028` rather than receiving invented behavior.
+A host-control adapter now models the address-encoded LS259 `80R` behind an
+explicit decoded-completion callback. The partial board top can opt into raw
+Q4 `/320RES` and Q3 CRAMEN while exposing their validity and preserving the
+external callbacks by default. A synthetic opposite-sentinel test qualifies
+program- and communication-RAM handoff end to end. This is not the missing
+`/RVAS`/DTACK, byte-lane, or complete 68000 address-decode bridge.
 `ABS` is exact opcode `0x7f88`, executes in one program-only cycle, negates a
 negative accumulator, and uses OVM to choose wrap or positive saturation for
 `0x8000_0000`. It preserves the incoming sticky OV bit. That OV behavior is

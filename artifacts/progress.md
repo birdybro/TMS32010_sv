@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' standalone 68000 host-control latch
+- **Current milestone:** Hard Drivin' opt-in host-control board integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 122 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -55,11 +55,12 @@
   with no memory, latch, or structural problem. An eighth target checks raw
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
-  communication/sample-ROM/DAC/output-control/BIO board top retains all three
-  memories and passes at 2,408 abstract cells/154 checks with zero structural
-  problems before technology mapping. A tenth target retains the standalone
-  512-by-16 communication memory as one `$mem_v2` in an 82-cell hierarchy with
-  seven checks and zero structural problems. An eleventh target checks the
+  communication/sample-ROM/DAC/output-control/BIO/host-control board top
+  retains all three memories and passes at 2,474 abstract cells/166 checks
+  with zero structural problems before technology mapping. A tenth target
+  retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
+  82-cell hierarchy with seven checks and zero structural problems. An
+  eleventh target checks the
   standalone explicit-enable BIO divider/resampler at 52 cells/seven checks
   with no memory, latch, or structural problem.
   A twelfth target checks the standalone address-encoded LS259 adapter at 53
@@ -520,7 +521,7 @@
   coincidence. An integrated fixture holds external BIO high, selects a
   qualified generated low, proves BIOZ reaches only `LACK 0x22` in three
   cycles, and observes release only after a later CLKOUT sample. Board-top
-  Yosys passes at 2,408 abstract cells/154 checks/three memories.
+  Yosys passes at 2,474 abstract cells/166 checks/three memories.
 - **New compare-path evidence:** A044427 sheets 3 and 5 prove that port-2
   `/CMPRD` enables only `CMPOUT` onto `TDI15`; the target supplies no drawn
   source for `TDI14:TDI0`. Sheet 8 draws the microphone/DAC LM311 comparison
@@ -539,10 +540,14 @@
   adapter exposes all eight raw values plus per-bit validity. Directed
   simulation exhausts every selection and both values, retention, reset, and
   reset-over-write priority; standalone Yosys reports 53 cells/six checks.
-  It is intentionally not connected to the board top until an opt-in host
-  sequence is verified, and it does not claim `/RVAS`, DTACK, or physical
-  level-sensitive timing. The complete regression, documentation checks,
-  strict Verilator lint, all twelve Yosys targets, and all 24 formal tasks pass.
+  The board top now connects it only behind an explicit opt-in, preserves the
+  external callbacks by default, and exports validity for selected Q4/Q3.
+  With opposite-valued external sentinels, a synthetic sequence applies board
+  reset, loads program and communication RAM under latched ownership, hands
+  both to the DSP, executes `LACK 0x5a; NOP` in two cycles, reasserts latched
+  reset, and reads communication word `0x1357` back under Q3. Integrated Yosys
+  reports 2,474 cells/166 checks/three memories with zero structural problems.
+  This does not claim `/RVAS`, DTACK, or physical level-sensitive timing.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -569,9 +574,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** connect the qualified host-control adapter to the partial
-  board top behind an explicit opt-in while preserving the external callback
-  default, then verify a synthetic reset/program-load/CRAM-load/release
-  sequence end to end.
+- **Next task:** qualify the remaining A044427 host readback/status paths and
+  determine the smallest evidence-backed callback boundary without inventing
+  byte-lane or DTACK behavior.
 - **Latest committed baseline before this cycle:**
-  `d8ae5e3`
+  `624e441`

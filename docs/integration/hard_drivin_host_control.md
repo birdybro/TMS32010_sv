@@ -92,10 +92,16 @@ raw Q bits and a separate validity bit for each:
 
 This commit-pulse model deliberately does not reproduce the physical LS259's
 level-sensitive interval or propagation delay. It is a same-clock integration
-convention suitable for a later host bridge. The module is not yet connected
-to `hard_drivin_sound_mister`; that top continues to accept external
-`dsp_reset_n_i` and `communication_host_enable_i` until an opt-in selection and
-end-to-end handoff test are added.
+convention suitable for a later host bridge.
+
+`hard_drivin_sound_mister` now instantiates the adapter behind
+`use_host_control_i`. The default false setting preserves external
+`dsp_reset_n_i` and `communication_host_enable_i` callbacks and treats them as
+valid by contract. The opt-in setting selects raw Q4 and Q3 respectively and
+exports validity for both selected controls. An invalid deterministic FPGA
+initialization bit is therefore never silently promoted to known physical
+state. `/IRQCLR` remains the distinct `host_irq_clear_commit_i` callback; the
+LS259 write cannot clear `320IRQ`.
 
 ## Verification and synthesis
 
@@ -104,6 +110,13 @@ values, per-bit validity, uncommitted changes, complete alternating patterns,
 board-reset qualification, and reset-over-write priority. Six retained RTL
 checks assert selected-bit update, unselected-bit preservation, validity, and
 reset behavior.
+
+The board-top test uses opposite-valued external sentinels while opted in,
+applies board reset, loads synthetic program and communication words under Q4
+and Q3 ownership, hands both memories to the DSP, executes two instructions,
+reasserts Q4 reset, and reads the preserved communication word back under Q3.
+This verifies the selection and handoff convention, not a 68000 address or
+DTACK waveform.
 
 Yosys 0.67+111 reports 53 abstract cells, six retained checks, no memory or
 latch, and zero structural problems. This is portable structural evidence,

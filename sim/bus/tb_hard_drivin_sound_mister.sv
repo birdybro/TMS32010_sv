@@ -19,6 +19,15 @@ module tb_hard_drivin_sound_mister;
   logic        board_bio_valid;
   logic        selected_bio_n;
   logic        selected_bio_valid;
+  logic        use_host_control;
+  logic        host_latch_write_commit;
+  logic [3:0]  host_latch_address;
+  logic [7:0]  host_latch_q;
+  logic [7:0]  host_latch_valid;
+  logic        selected_dsp_reset_n;
+  logic        selected_dsp_reset_valid;
+  logic        selected_communication_host_enable;
+  logic        selected_communication_host_enable_valid;
   logic        host_program_select_n;
   logic        host_write;
   logic        host_commit;
@@ -117,6 +126,19 @@ module tb_hard_drivin_sound_mister;
     .board_bio_valid_o             (board_bio_valid),
     .selected_bio_n_o              (selected_bio_n),
     .selected_bio_valid_o          (selected_bio_valid),
+    .use_host_control_i            (use_host_control),
+    .host_latch_write_commit_i     (host_latch_write_commit),
+    .host_latch_address_i          (host_latch_address),
+    .host_latch_q_o                (host_latch_q),
+    .host_latch_valid_o            (host_latch_valid),
+    .selected_dsp_reset_n_o        (selected_dsp_reset_n),
+    .selected_dsp_reset_valid_o    (selected_dsp_reset_valid),
+    .selected_communication_host_enable_o(
+      selected_communication_host_enable
+    ),
+    .selected_communication_host_enable_valid_o(
+      selected_communication_host_enable_valid
+    ),
     .host_program_select_n_i       (host_program_select_n),
     .host_write_i                  (host_write),
     .host_commit_i                 (host_commit),
@@ -366,6 +388,16 @@ module tb_hard_drivin_sound_mister;
     host_communication_commit = 1'b0;
   endtask
 
+  task automatic host_latch_write(
+    input logic [2:0] select,
+    input logic       value
+  );
+    host_latch_address = {value, select};
+    host_latch_write_commit = 1'b1;
+    tick();
+    host_latch_write_commit = 1'b0;
+  endtask
+
   task automatic debug_write_word(
     input logic [7:0] address,
     input logic [15:0] data
@@ -407,6 +439,38 @@ module tb_hard_drivin_sound_mister;
             "DSP owns RAM after safe reset release");
   endtask
 
+  task automatic release_host_control_and_check_reset;
+    int unsigned falling_boundaries;
+    logic previous_clkout;
+    logic previous_reset_active;
+
+    host_program_select_n = 1'b1;
+    tick();
+    require(!host_access_permitted && !tms_access_permitted,
+            "latched handoff disables host before /320RES release");
+    host_latch_write(3'd4, 1'b1);
+    require(selected_dsp_reset_n && selected_dsp_reset_valid,
+            "Q4 releases the qualified selected /320RES path");
+    falling_boundaries = 0;
+    for (int unsigned elapsed = 0; elapsed < 32; elapsed++) begin
+      previous_clkout       = clkout;
+      previous_reset_active = reset_active;
+      tick();
+      if (previous_reset_active && previous_clkout && !clkout) begin
+        falling_boundaries++;
+      end
+      if (!reset_active) begin
+        break;
+      end
+    end
+    require(falling_boundaries == 5,
+            "latched reset release retains the five-cycle modeled hold");
+    require((phase == 2'd0) && !clkout && native_address == 12'h000,
+            "latched reset release reaches address-zero fetch state");
+    require(tms_access_permitted && !ownership_conflict,
+            "DSP owns program RAM after the latched handoff");
+  endtask
+
   task automatic run_until_retired(input int unsigned target);
     int unsigned count;
     count = 0;
@@ -437,6 +501,9 @@ module tb_hard_drivin_sound_mister;
     external_bio_n = 1'b0;
     use_board_bio = 1'b0;
     board_reset_n = 1'b1;
+    use_host_control = 1'b0;
+    host_latch_write_commit = 1'b0;
+    host_latch_address = 4'h0;
     bio_one_mhz_rise = 1'b0;
     bio_counter_seed = 8'hff;
     bio_counter_seed_valid = 1'b1;
@@ -685,6 +752,88 @@ module tb_hard_drivin_sound_mister;
     require(board_bio_n && board_bio_valid &&
             selected_bio_n && selected_bio_valid,
             "following CLKOUT enable propagates generated BIO release");
+
+    // Finally opt into the qualified host latch. External reset and CRAMEN
+    // inputs become deliberate opposite-valued sentinels, so every ownership
+    // transition below must come from LS259 Q4/Q3 rather than the legacy
+    // callbacks.
+    use_board_bio = 1'b0;
+    use_host_control = 1'b1;
+    dsp_reset_n = 1'b1;
+    communication_host_enable = 1'b1;
+    board_reset_n = 1'b0;
+    tick();
+    board_reset_n = 1'b1;
+    tick();
+    require(
+      (host_latch_q == 8'h00) && (host_latch_valid == 8'hff) &&
+      !selected_dsp_reset_n && selected_dsp_reset_valid &&
+      !selected_communication_host_enable &&
+      selected_communication_host_enable_valid,
+      "board reset qualifies Q4/Q3 low and ignores opposite external controls"
+    );
+    require(reset_active && !tms_access_permitted,
+            "selected Q4 low holds the processor and TMS buffers reset");
+
+    host_program_select_n = 1'b0;
+    host_write_word(12'h000, 16'h7e5a);  // LACK 0x5a
+    host_write_word(12'h001, 16'h7f80);  // NOP
+    host_write_word(12'h002, 16'h7f83);  // conservative park word
+
+    // Q3 high selects host communication-RAM ownership even while the legacy
+    // callback is low. Returning Q3 low hands the word to the DSP side.
+    communication_host_enable = 1'b0;
+    host_latch_write(3'd3, 1'b1);
+    require(
+      selected_communication_host_enable &&
+      selected_communication_host_enable_valid,
+      "Q3 selects qualified host communication ownership"
+    );
+    host_communication_select_n = 1'b0;
+    host_communication_write_word(9'h12a, 16'h1357);
+    host_communication_select_n = 1'b1;
+    host_communication_write = 1'b0;
+    host_latch_write(3'd3, 1'b0);
+    require(
+      !selected_communication_host_enable &&
+      !host_communication_access_permitted &&
+      !host_communication_blocked,
+      "Q3 low completes the communication handoff to the DSP"
+    );
+
+    release_host_control_and_check_reset();
+    dsp_reset_n = 1'b0;
+    #1;
+    require(selected_dsp_reset_n && tms_access_permitted,
+            "selected Q4 high ignores the low external reset sentinel");
+    run_until_retired(2);
+    require(accumulator == 32'h0000_005a && cycle_count == 32'd2,
+            "latched host handoff executes the synthetic two-cycle program");
+
+    dsp_reset_n = 1'b1;
+    host_latch_write(3'd4, 1'b0);
+    require(!selected_dsp_reset_n && selected_dsp_reset_valid &&
+            !tms_access_permitted,
+            "Q4 low immediately disables TMS ownership after completion");
+    tick();
+    require(reset_active,
+            "processor recognizes the selected latched reset synchronously");
+
+    communication_host_enable = 1'b0;
+    host_latch_write(3'd3, 1'b1);
+    host_communication_select_n = 1'b0;
+    host_communication_write = 1'b0;
+    host_communication_address = 9'h12a;
+    #1;
+    require(!host_communication_ready,
+            "latched CRAMEN host read retains synchronous response timing");
+    tick();
+    require(
+      host_communication_ready &&
+      host_communication_read_data == 16'h1357,
+      "latched reset/CRAMEN handoff preserves the synthetic communication word"
+    );
+    host_communication_select_n = 1'b1;
 
     $display("PASS tb_hard_drivin_sound_mister");
     $finish;
