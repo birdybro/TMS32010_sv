@@ -128,6 +128,10 @@ transaction. An LTD whose source or destination is outside the verified
 DMOV performs only that source-preserving next-address copy, leaving
 ACC/T/P and arithmetic status unchanged; it follows the same explicit
 unresolved-endpoint policy.
+Two synthetic original-NMOS probe images now clear/scan all 144 valid words,
+expose an `0x90` read through `OUT`, and preserve DMOV/LTD register results for
+physical inspection. They make `OQ-014` reproducible but do not resolve it;
+see [the RAM-boundary experiment](docs/research/ram_boundary_experiment.md).
 `SST=0x7c00/mask 0xff00` stores the defined status fields and reserved-one
 mask into internal RAM in one cycle. Its direct form forces page 1 and only
 offsets 0–15 are legal on the original part; indirect forms store the old ARP

@@ -50,6 +50,25 @@ not make its exact original-TMS32010 pin waveform `VERIFIED_PRIMARY`. CALA's
 matching RTL ownership remains `INFERRED`: the patent describes its state
 operation but does not give an equally explicit state-by-state CALA waveform.
 
+## RAM-move background and its limit
+
+The disclosed RAM uses a move control to connect sensed data to an adjacent
+column during Q4 and retain it for a Q2 write in the following state. An even
+source complements the column-select bit; an odd source also increments the
+row decoder. This supplies a plausible related-embodiment mechanism for an
+ordinary next-higher-word move without consuming the ALU or D bus
+[ti-dsp-microcomputer-patent-us4577282a, patent cols. 25-26 (PDF p. 39),
+Figures 5i-5j].
+
+It supplies no production boundary result. Patent columns 17-18 describe a
+1-of-144 row decoder plus a 1-of-2 column decoder while also saying eight
+address bits suffice; columns 25-26 again describe 144 row lines plus an
+even/odd word select. Those statements are not a self-consistent 144-word
+map, and no last-row or absent-row behavior is specified. The patent therefore
+cannot decide whether original-part `DMOV`/`LTD` source `0x8f` suppresses,
+aliases, or otherwise performs the requested write to `0x90`. See
+`docs/research/ram_boundary_experiment.md` and `SC-038`.
+
 ## Why PUSH/POP remains unresolved
 
 The patent's Table A contains `CALLA` and `RET`, but it does not contain the
@@ -80,6 +99,8 @@ the smallest evidence needed to choose among those hypotheses.
   accumulator PUSH/POP are a concrete omission.
 - OCR of Table A is poor and several encodings/names are visibly corrupted.
   It must not supply opcode fixtures.
+- The RAM row/column capacity statements are internally inconsistent and do
+  not establish the original production 144-word decoder or its array edge.
 - The prose's general one-state statement and Table A's two-state `SUBC` entry
   are internally awkward and differ from the production TMS32010's documented
   one-cycle SUBC. This is further reason not to merge the embodiments silently.

@@ -884,3 +884,39 @@ electrical result of an out-of-range access.
   and active `/MEN` in both intervals; CORROBORATED for RET and INFERRED for
   CALA `PC+1`-then-target ownership; UNKNOWN for original-silicon
   confirmation.
+
+## SC-038 — Original 144-word RAM versus boundary descriptions
+
+- **Production capacity evidence:** SPRU001B says the original data RAM has
+  144 words. SPRU002B's LDP and LDPK descriptions and the later first-
+  generation guide define the original part's page 1 as locations 128-143,
+  which combines with page 0 to produce exactly 144 words
+  [ti-tms32010-users-guide-spru001b, Section 2.3, printed p. 2-7 (PDF p. 31);
+  ti-tms32010-assembly-guide-spru002b, `LDP`/`LDPK`, printed pp. 3-36-3-37
+  (PDF pp. 57-58); ti-first-generation-users-guide-1987, Sections 3.4.1 and
+  3.4.6, printed pp. 3-10 and 3-19 (PDF pp. 39 and 48)].
+- **Primary outlier:** SPRU001B's immediately following direct-address table
+  prints page 1 as 128-144. Together with page 0's 128 words, that would be 145
+  locations and conflicts with the surrounding capacity statement
+  [ti-tms32010-users-guide-spru001b, Section 2.3.1.2, printed p. 2-8
+  (PDF p. 32)].
+- **Related-embodiment inconsistency:** US4577282A describes a 1-of-144 row
+  decoder and 1-of-2 column decoder while saying eight bits suffice, then
+  describes 144 physical row lines plus an even/odd word select. Its ordinary
+  RAM-move description complements the column bit and increments the row for
+  an odd source, but never defines the final row or an absent select
+  [ti-dsp-microcomputer-patent-us4577282a, patent cols. 17-18 and 25-26
+  (PDF pp. 35 and 39), Figures 5i-5j].
+- **Independent implementations:** pinned MAME maps the TMS320C10 data space
+  only through `0x8f` but asks its memory framework to write `m_memaccess+1`;
+  pinned IKA32010 instead allocates 256 words and writes `0x8f` to `0x90`
+  [mame-tms320c1x-core-030fefc, `tms320c10_ram`, `dmov`, and `ltd`;
+  ika32010-rtl-51bc1f0, `IKA32010_ram`, lines 1909-1937].
+- **Current treatment:** valid original storage is `0x00`-`0x8f`; `0x90` is
+  not inferred from the outlier. Model/RTL reject the boundary move before all
+  effects as a PROVISIONAL safety policy. The clear/scan/register experiment
+  in `docs/research/ram_boundary_experiment.md` is required before assigning
+  physical suppression, hidden storage, aliasing, corruption, or parallel LTD
+  effects.
+- **Confidence:** VERIFIED_PRIMARY for the 144-word implemented range;
+  UNKNOWN for every access beyond it and for the boundary move outcome.

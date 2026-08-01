@@ -109,6 +109,13 @@ objective passing evidence.
   corroborates external `N+1` visibility during the multicycle context, but
   its address-driven logic supplies no exact phase, repeat count, or later
   address and therefore does not choose a hypothesis.
+  `OQ-014` is now reduced to a reproducible original-NMOS measurement:
+  `SC-038` preserves SPRU001B's isolated `128-144` off-by-one table, the
+  consistent 144-word/`128-143` production evidence, and the related patent's
+  internally inconsistent row/column capacity. Stable DMOV and LTD probe
+  images clear and scan all valid words through `OUT`, expose an `0x90` read,
+  and leave T/P/ACC inspectable. No boundary outcome has been assigned without
+  the physical capture.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
@@ -259,7 +266,9 @@ objective passing evidence.
   OVM-controlled wrap or signed-endpoint saturation. `LTD` adds the unchanged
   source-word copy to the next internal-RAM address, with distinct logical
   read/write transactions and provisional trap-before-effects for unresolved
-  endpoints under `OQ-014`. `DMOV` performs only that unchanged-word copy,
+  endpoints under `OQ-014`. The executable original-NMOS clear/scan probe now
+  makes that provisional policy falsifiable without claiming a result.
+  `DMOV` performs only that unchanged-word copy,
   preserves ACC/T/P/arithmetic status, and applies the same address/update and
   endpoint policy. `MPY` produces a
   signed 16-by-16 P result through that same path and reproduces the

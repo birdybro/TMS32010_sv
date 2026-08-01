@@ -24,6 +24,16 @@ VERIFIED_PRIMARY.**
 The behavior of data addresses `0x90`–`0xff` is not assigned (`OQ-002`).
 Expanded RAM in the TMS320C15 is outside the default device scope.
 
+SPRU001B prints page 1 once as locations 128-144 even though the same section
+says there are 144 total words. SPRU002B and the later TI family guide use the
+arithmetically consistent original-part range 128-143. `SC-038` retains the
+outlier; it is not evidence for address `0x90` or a 145th word
+[ti-tms32010-users-guide-spru001b, Sections 2.3-2.3.1.2, printed pp. 2-7-2-8
+(PDF pp. 31-32); ti-tms32010-assembly-guide-spru002b, `LDP`/`LDPK`, printed
+pp. 3-36-3-37 (PDF pp. 57-58); ti-first-generation-users-guide-1987,
+Section 3.4.6, printed p. 3-19 (PDF p. 48)]. **Confidence: VERIFIED_PRIMARY
+for 144 words and `0x00`-`0x8f`; UNKNOWN outside that range.**
+
 All ordinary non-immediate data operands reside in the 144-word on-chip RAM.
 The original part has no ordinary external-data-memory transaction: software
 moves off-chip data through `TBLR`/`TBLW` program-space transfers or `IN`/`OUT`
@@ -124,6 +134,12 @@ selects source `0x8f`, whose next higher destination is outside the documented
 144-word RAM. The current model and RTL reject either unresolved endpoint
 before instruction-specific state, AR/ARP, or RAM changes. This is an
 explicitly provisional implementation boundary under `OQ-002` and `OQ-014`.
+The related TI patent describes the ordinary adjacent-column move mechanism
+but has internally inconsistent row/column capacity statements and no array-
+edge result; pinned MAME and IKA make different storage-policy choices. A
+reproducible original-NMOS experiment now clears/scans every valid word,
+observes `0x90` through an external `OUT`, and separately checks DMOV/LTD
+register effects [`docs/research/ram_boundary_experiment.md`, `SC-038`].
 
 `MPYK` uses a signed immediate carried in the program word and therefore
 performs no logical or physical data-memory access. Directed and native-phase

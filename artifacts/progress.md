@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-016` PUSH/POP program-bus research and primary
-  EVM breakpoint evidence
+- **Current milestone:** `OQ-014` original 144-word RAM-edge research and
+  reproducible DMOV/LTD physical probes
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 133 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 135 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -979,6 +979,16 @@
   program-address bus and substitutes NOP data on a match. This corroborates
   `N+1` visibility during the multicycle context but does not expose `MEN`
   phase, repetition, or a subsequent address; OQ-016 H1-H3 all remain live.
+- **New RAM-edge evidence:** original TI sources consistently establish 144
+  implemented words at `0x00`-`0x8f`; SPRU001B's isolated `128-144` table is
+  an internal off-by-one conflict, not a 145th-word specification. Related TI
+  patent US4577282A explains an adjacent-column move but gives mutually
+  incompatible 144-row/even-odd/eight-bit capacity statements and no final-row
+  result. Pinned MAME maps only through `0x8f` yet asks its framework for the
+  `+1` write, while IKA allocates 256 words. Two stable 26-word probes now
+  clear/scan all 144 valid cells, expose the `0x90` read, and preserve DMOV/LTD
+  registers for an original-NMOS capture; `OQ-014` remains RESEARCHING and the
+  RTL policy remains PROVISIONAL.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1014,10 +1024,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** continue searching original TI development-system and device
-  control material for an accumulator PUSH/POP waveform; absent such evidence,
-  retain the existing original-NMOS capture as the smallest resolving action
-  and move to the next unblocked architecture task without implementing a
-  guessed native sequence.
+- **Next task:** inspect primary/later TI arithmetic-control material and the
+  related patent only as scoped background for `OQ-017`/`OQ-018` SUBC result
+  availability and overflow-stage behavior; retain both physical experiments
+  as blockers only for their respective silicon questions.
 - **Latest committed baseline before this cycle:**
-  `df183d6`
+  `29e474e`

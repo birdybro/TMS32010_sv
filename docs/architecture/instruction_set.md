@@ -794,6 +794,11 @@ read/write addresses, and reserved controls. A source of `0x8f` implies an
 undocumented destination `0x90`; the current partial implementation traps
 before any state or RAM effect under `OQ-002`/`OQ-014`. Simultaneous indirect
 increment/decrement remains rejected under `OQ-010`.
+The related TI patent describes an adjacent-column move but has internally
+inconsistent capacity statements and no final-row outcome. Pinned MAME and IKA
+make different storage-policy choices. The synthetic original-NMOS probes in
+`docs/research/ram_boundary_experiment.md` now lock a clear/scan/readback test
+without converting any hypothesis into architectural behavior (`SC-038`).
 
 ## Qualified `LTA` functional slice
 
@@ -863,6 +868,10 @@ not a hardware-behavior claim (`OQ-002`, `OQ-014`). Simultaneous indirect
 increment/decrement remains rejected under `OQ-010`; the generic sequencer
 recognizes LTD retirement as a possible end of multiply deferral, but no
 per-instruction interrupt-arrival matrix is yet claimed.
+The original-NMOS experiment in `docs/research/ram_boundary_experiment.md`
+separately scans all 144 valid cells, exposes an `0x90` read on the external
+I/O write data, and preserves T/P/ACC for monitor inspection. It is a pending
+measurement protocol, not passing hardware evidence (`SC-038`).
 
 ## Qualified `MPY` functional slice
 

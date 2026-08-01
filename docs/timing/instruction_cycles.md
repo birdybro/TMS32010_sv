@@ -123,7 +123,10 @@ pre-modification address and post-modification AR/ARP ordering.
 Directed DMOV tests assert the one-cycle source-preserving copy to the next
 internal-RAM address, distinct source/write diagnostics, page crossing,
 unrelated-state preservation, and trap-before-effects at an unresolved
-destination.
+destination. That last result is only the current PROVISIONAL implementation
+boundary: the original-NMOS probe in
+`docs/research/ram_boundary_experiment.md` must determine the `0x8f`-to-`0x90`
+physical outcome before it can enter a timing claim (`OQ-014`, `SC-038`).
 Directed LTA tests assert the same one-cycle T load and address ordering while
 also checking previous-P accumulation, both overflow directions, both OVM
 result modes, sticky OV, and unchanged P.

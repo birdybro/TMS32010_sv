@@ -34,6 +34,59 @@ class ToolchainSliceTests(unittest.TestCase):
         )
         self.assertEqual(result.symbols["HOLD"], 0x006)
 
+    def test_ram_boundary_physical_probe_images_are_stable(self) -> None:
+        expected = [
+            0x6E00,
+            0x6880,
+            0x708F,
+            0x7F89,
+            0x5088,
+            0xF400,
+            0x0004,
+            0x708F,
+            0x7E5A,
+            0x5088,
+            0x6E00,
+            0x7E03,
+            0x5000,
+            0x6A00,
+            0x8005,
+            0x7E07,
+            0x6E01,
+            0x690F,
+            0x708F,
+            0x4F88,
+            0xF400,
+            0x0013,
+            0x4F10,
+            0x7F80,
+            0xF900,
+            0x0018,
+        ]
+        for source_name, boundary_word in (
+            ("ram_boundary_dmov_probe.asm", 0x690F),
+            ("ram_boundary_ltd_probe.asm", 0x6B0F),
+        ):
+            result = self.assembler.assemble_file(
+                ROOT / "tests" / "asm" / source_name
+            )
+            fixture_words = expected.copy()
+            fixture_words[0x011] = boundary_word
+            self.assertEqual(
+                result.words,
+                dict(enumerate(fixture_words)),
+                source_name,
+            )
+            self.assertEqual(
+                result.symbols,
+                {
+                    "BOUNDARY": 0x011,
+                    "CLEAR": 0x004,
+                    "HOLD": 0x018,
+                    "SCAN": 0x013,
+                },
+            )
+
     def test_mame_stack_control_smoke_image_is_stable(self) -> None:
         result = self.assembler.assemble_file(
             ROOT / "tests" / "asm" / "mame_stack_control_smoke.asm"

@@ -244,7 +244,10 @@ address is resolved before the common indirect AR/ARP post-update. Tests expose
 both logical addresses and require the read and write in the same one-cycle
 retirement. Source `0x8f` would select an unimplemented destination `0x90`;
 the current trap-before-effects policy is provisional under `OQ-014`, not a
-claim about physical decode behavior.
+claim about physical decode behavior. A related TI patent supplies only an
+ordinary adjacent-column mechanism and internally inconsistent capacity
+statements; stable DMOV/LTD physical-probe images now define the original-NMOS
+clear/scan/register experiment needed to resolve the edge (`SC-038`).
 DMOV is the copy-only subset of that transfer: it reads the selected source
 through the same old-address/common-post-update path and writes the unchanged
 word to `source+1`, but does not load T or change ACC, P, OV, OVM, or DP.

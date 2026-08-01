@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- Two stable, noncopyrighted original-NMOS RAM-boundary probe images and a
+  physical-capture protocol for `DMOV`/`LTD` source `0x8f`. The programs clear
+  and scan all 144 valid words through port 7, expose an `0x90` read, preserve
+  register results for EVM inspection, and assign no expected value to the
+  undefined sample.
+- `SC-038`, separating the verified 144-word/`0x00`-`0x8f` production range
+  from SPRU001B's isolated `128-144` off-by-one table, a related patent's
+  internally inconsistent row/column capacity, and incompatible storage
+  policies in MAME and IKA32010.
 - An integrity-pinned, non-committed copy of TI patent US4577282A plus a
   claim-boundary research note. Its related DSP embodiment explicitly
   describes RET's discarded sequential fetch, stack pop, return-address fetch,
@@ -861,6 +870,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The DMOV and LTD RAM-edge probes assemble deterministically to 26-word
+  synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
+  regressions require the patent/EVM claim boundary and keep `OQ-014`
+  unresolved pending original-device capture.
 - The complete repository gates pass with 133 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
@@ -1796,7 +1809,9 @@ Changelog, and the project follows semantic versioning once releases begin.
   `CORROBORATED`, not physical-hardware verified, under resolved `OQ-013`.
 - Original-part DMOV/LTD behavior when source `0x8f` implies destination
   `0x90` remains unresolved under `OQ-014`; the partial implementation traps
-  before all effects and labels that policy provisional.
+  before all effects and labels that policy provisional. Stable physical probe
+  images now define the smallest clear/scan/register experiment, but no
+  original NMOS capture is available.
 - Remaining indirect control-flow/return traces, interrupt execute ownership,
   original-silicon SST bit-1 qualification, and out-of-range RAM behavior
   remain open.

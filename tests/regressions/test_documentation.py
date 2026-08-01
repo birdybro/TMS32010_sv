@@ -101,6 +101,55 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             self.assertIn(required, research)
         self.assertIn("all three hypotheses survive", questions)
 
+    def test_ram_boundary_evidence_stays_unresolved_and_reproducible(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        patent = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-dsp-microcomputer-patent-us4577282a"
+        )
+        evm = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-tms32010-evm-users-guide-spru005a"
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "ram_boundary_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        memory = (
+            DOCS / "architecture" / "memory_model.md"
+        ).read_text(encoding="utf-8")
+        for required in (
+            "patent columns 17-18 and 25-26",
+            "PDF pages 35 and 39",
+        ):
+            self.assertIn(required, " ".join(patent["sections_or_pages_used"]))
+        for required in ("0x00-0x5f", "PDF page 88"):
+            self.assertIn(required, " ".join(evm["sections_or_pages_used"]))
+        for required in (
+            "cannot characterize every absent address",
+            "does not resolve the last original-TMS32010 location",
+            "The 145th port write is the observed `0x90` read and has no expected value",
+            "Until a qualified capture or authoritative production source exists",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("RESEARCHING/CONFLICT (`SC-038`)", questions)
+        self.assertIn("## SC-038", conflicts)
+        self.assertIn("PROVISIONAL safety policy", conflicts)
+        self.assertIn("UNKNOWN outside that range", memory)
+
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
             DOCS / "research" / "open_questions.md"

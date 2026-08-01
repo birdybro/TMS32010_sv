@@ -349,6 +349,12 @@ LTD adds the source-preserving copy to the next data address in that same
 cycle. Its logical interface exposes distinct read/write addresses; source or
 destination addresses outside the verified 144-word RAM trap provisionally
 under `OQ-002`/`OQ-014`.
+`SC-038` preserves the original guide's isolated `128-144` off-by-one table,
+the consistent `0x00`-`0x8f` production range, and the related patent's
+internally inconsistent row/column capacity. The stable DMOV/LTD original-
+NMOS probes in `docs/research/ram_boundary_experiment.md` are the required
+evidence; do not replace the provisional endpoint policy without a qualified
+capture.
 DMOV performs that same unchanged-word next-address copy without the LTD
 T-load or ACC-plus-P effects and preserves ACC, T, P, OV, OVM, and DP.
 Its endpoint policy is equally provisional under `OQ-002`/`OQ-014`.

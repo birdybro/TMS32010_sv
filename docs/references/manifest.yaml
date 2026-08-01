@@ -604,6 +604,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Section 3.3.2 register display/modify workflow, including direct ACC, OV, and OVM access, printed pages 3-4 through 3-5 and command pages 3-53 through 3-54",
+        "Sections 3.3.2 through 3.3.3 and Tables 3-2 through 3-3, printed pages 3-4 through 3-6 (PDF pages 45-47), plus MDM printed page 3-47 (PDF page 88): architectural-register inspection and the monitor's 0x00-0x5f direct data-memory limit",
         "SB command breakpoint restrictions, printed page 3-58 (PDF page 99): the address immediately after PUSH, POP, CALA, RET, IN, OUT, TBRD, or TBWR is rejected as an EVM breakpoint",
         "Section 9.3 Program Execution and Breakpoint Logic, printed pages 9-2 through 9-3 (PDF pages 179-180): address-indexed breakpoint RAM, program-data-to-NOP switching, and captured TMS32010 address",
         "Appendix A schematic drawing D96214 sheet 3 (PDF page 188): TMS32010, program-memory, breakpoint-RAM, and start/stop connections; inspected for gating but not used as undocumented phase proof"
@@ -1300,7 +1301,7 @@
       "document_type": "contemporary Texas Instruments patent",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Public patent record; redistribution status of the hosted scan not independently audited",
-      "relevance": "Direct architectural background for the 1982 TI DSP embodiment, including non-microcoded program control, quarter-cycle timing, ordinary fetch overlap, branch/CALL/RET/IN/OUT/TBL bus ownership, and internal PC/stack clocks",
+      "relevance": "Direct architectural background for the 1982 TI DSP embodiment, including non-microcoded program control, quarter-cycle timing, ordinary fetch overlap, branch/CALL/RET/IN/OUT/TBL bus ownership, internal PC/stack clocks, and an adjacent-column RAM-move mechanism",
       "authority_level": 4,
       "notes": "Patent evidence is background, not an original-TMS32010 production specification. Its disclosed Table A omits the later documented accumulator PUSH/POP opcodes and says all non-branch/call/table/I/O instructions are one state; it therefore cannot choose an OQ-016 bus hypothesis. Keep the scan only in the ignored cache.",
       "may_commit": false,
@@ -1308,6 +1309,7 @@
         "Figures 2A-2B and 3a-3dd, patent sheets 2-8 (PDF pages 2-8): program-control structure and quarter-cycle fetch/branch/RET/IN/OUT/table timing",
         "System overview and external program access, patent columns 5-6 (PDF page 29): every-state active-low RCLK rule and DEN-/WE- exceptions",
         "System timing, patent columns 15-18 (PDF pages 34-35): PC increment behavior, branch/CALL/RET discarded fetches, selected-target fetch, and PC hold during IN/OUT",
+        "RAM decoder overview and move-cell implementation, patent columns 17-18 and 25-26 (PDF pages 35 and 39), Figures 5i-5j: internally inconsistent row/column capacity statements, adjacent-column transfer, even/odd select complement, and odd-address row increment; inspected only as related-embodiment background",
         "Table A, patent columns 34-36 (PDF pages 43-44): disclosed instruction scope, encodings, word counts, and state counts",
         "Figure 5p and PC/stack description, patent sheets 24-25 and columns 31-34 (PDF pages 24-25 and 42-43): PC source selection and quarter-cycle push/pop clocks used for call/return control"
       ],
