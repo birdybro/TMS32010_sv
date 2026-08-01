@@ -133,6 +133,10 @@ module hard_drivin_sound_host_routing_formal (
     .host_upper_data_strobe_n_i             (host_upper_data_strobe_n),
     .host_lower_data_strobe_n_i             (host_lower_data_strobe_n),
     .host_bus_write_data_i                  (transaction_data_q),
+    .host_local_rom_read_data_i             (16'h0000),
+    .host_local_rom_read_data_valid_i       (1'b0),
+    .host_local_ram_read_data_i             (16'h0000),
+    .host_local_ram_read_valid_mask_i       (16'h0000),
 
     .host_program_select_n_i                (1'b1),
     .host_write_i                           (1'b0),

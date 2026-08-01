@@ -37,6 +37,8 @@ read -formal -sv hard_drivin_sound_read_status.sv
 read -formal -sv hard_drivin_sound_switches.sv
 read -formal -sv hard_drivin_sound_host_read_mux.sv
 read -formal -sv hard_drivin_sound_host_timing.sv
+read -formal -sv hard_drivin_sound_local_memory_decode.sv
+read -formal -sv hard_drivin_sound_local_memory_bridge.sv
 read -formal -sv hard_drivin_sound_mister.sv
 read -formal -sv hard_drivin_sound_host_routing_formal.sv
 prep -top hard_drivin_sound_host_routing_formal
@@ -67,5 +69,7 @@ rtl/wrappers/hard_drivin_sound_read_status.sv
 rtl/wrappers/hard_drivin_sound_switches.sv
 rtl/wrappers/hard_drivin_sound_host_read_mux.sv
 rtl/wrappers/hard_drivin_sound_host_timing.sv
+rtl/wrappers/hard_drivin_sound_local_memory_decode.sv
+rtl/wrappers/hard_drivin_sound_local_memory_bridge.sv
 rtl/wrappers/hard_drivin_sound_mister.sv
 formal/hard_drivin_sound_host_routing_formal.sv

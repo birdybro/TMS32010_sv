@@ -525,6 +525,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The opt-in board host-timing path now selects the complete local-memory
+  bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
+  communication-RAM callback under CRAMEN, and timing-disabled operation keeps
+  the original explicit callbacks. Upper-Y5 direct DSP I/O remains separate
+  and externally visible instead of aliasing program RAM.
 - The host-timing adapter now exposes its captured R/W direction alongside
   the already captured address and byte strobes, preventing downstream bank
   decode from consulting a live processor input after `/AS` assertion.
@@ -660,6 +665,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Board-level synthetic host cycles now cover mirrored valid ROM data,
+  lane-valid local SRAM and an upper-byte S7 write, lower-Y5 program-RAM
+  write/readback, upper-Y5 direct-I/O S6 commit and storage isolation, and Y6
+  communication-RAM write/readback under CRAMEN. Opposite explicit callback
+  sentinels prove opt-in selection, while later regression phases prove the
+  timing-disabled fallback. Partial lower-Y5 and Y6 writes are separately
+  reported and leave their FPGA memories unchanged. Yosys retains the same
+  three memories at 3,294 abstract cells/338 checks with zero structural
+  problems; the existing
+  12-step board-routing BMC/cover remains passing after composition.
 - Arbitrary nonzero invalid bits for all four low-read sources are masked at
   the composition boundary. The dedicated board BMC passes solver steps 0–11
   and all seven read/write/latch/speech/IRQ routing covers reach solver step 10,
@@ -1335,9 +1350,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   leaves the shown physical data bus undriven; the adapter reports and stalls
   instead of returning a protective zero (`OQ-026`).
 - The communication-RAM/address adapter is connected to
-  `hard_drivin_sound_mister`, but CRAMEN remains an external input and no
-  68000 latch/bus bridge exists. Its registered response is an FPGA convention,
-  not physical HM6116 timing.
+  `hard_drivin_sound_mister`, and the opt-in same-clock Y6 path now supplies
+  its host cycles. CRAMEN remains an explicit ownership input unless the
+  separate host-control opt-in supplies Q3; no raw-pin/CDC 68000 boundary
+  exists. Its registered response is an FPGA convention, not physical HM6116
+  timing.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
   its undriven host low byte remains a distinct open-bus question (`OQ-030`).

@@ -33,6 +33,14 @@ it does not instantiate a 68000, ROM, local RAM, or open-bus policy.
 same-clock timing state and emits fixed ROM/SRAM requests and write commits.
 Its data carrier preserves separate driven/valid masks; storage and a complete
 68000 read-bus selector remain outside the module.
+The opt-in board top now selects that bridge, connects lower Y5 to the existing
+program RAM and Y6 to the existing communication RAM, and retains the explicit
+storage callbacks when timing mode is disabled. ROM/local-SRAM storage and
+upper-Y5 direct-I/O data-bus composition remain external.
+Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
+FPGA memories because the physical whole-bank strobe does not qualify the
+other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
+physical byte merge or a known full word.
 
 The DSP exposes `TA0..TA11`, `TD0..TD15`, `/MEN`, `/DEN`, and `/TWE` to board
 logic. The drawings show four 20-pin `8168D45`-labeled SRAM slices. Every

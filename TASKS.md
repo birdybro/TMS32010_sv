@@ -1620,6 +1620,22 @@ objective passing evidence.
   proof is bounded to 16 steps, and a separate 12-step board-routing proof
   checks seven covers across all six implemented timing-derived transaction
   classes and both partial-byte orientations with the DSP paused.
+  The board top now selects the complete local-memory bridge whenever host
+  timing is enabled. Lower Y5 drives the existing program RAM at `A12:A1`
+  with an S7 whole-word commit; Y6 drives the existing communication RAM at
+  `A9:A1` under unchanged CRAMEN ownership; and upper Y5 remains a separately
+  exported direct `/PDEN`/`/PWE` path with its write callback at S6. Synthetic
+  board cycles prove program and communication write/readback, opposite
+  explicit-callback isolation, upper-Y5 non-aliasing, mirrored authorized-ROM
+  callbacks, and lane-valid local-SRAM reads plus an upper-byte S7 commit.
+  Timing-disabled tests continue to exercise the original explicit storage
+  callbacks. Integrated Yosys retains three memories and reports 3,294
+  abstract cells/338 checks with no structural problem. Partial lower-Y5 and
+  Y6 writes are reported and rejected because their unselected physical data
+  lane remains unresolved under `OQ-022`/`OQ-024`. The lane-valid
+  8K-by-16 local SRAM implementation, complete direct-I/O data-bus composition,
+  raw-pin CDC, authorized ROM storage, and open-bus policy remain acceptance
+  work.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
   local-68000 ROM and high-bank decode. The populated 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`
@@ -1639,8 +1655,8 @@ objective passing evidence.
   `/PWE` commits at its S6 trailing edge; SRAM callbacks commit at S7. The
   bridge synthesizes to 305 hierarchy cells/40 checks with no storage or
   latch. It neither supplies copyrighted contents nor inserts READY/open-bus
-  behavior; board-top callback selection and an integration-specific local
-  SRAM remain acceptance work.
+  behavior. Board-top callback selection is now verified as described above;
+  an integration-specific local SRAM remains acceptance work.
 
 ## Milestone 22 — Release qualification
 

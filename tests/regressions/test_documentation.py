@@ -195,8 +195,12 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "per-bit validity",
             "`host_irq_clear_commit_i` callback",
             "`LACK 0x5a` and `NOP`",
-            "2,966",
-            "257 checks",
+            "Local-68000 memory callback boundary",
+            "Upper-Y5 direct DSP I/O is deliberately distinct",
+            "host_timing_partial_program_write_o",
+            "host_timing_partial_communication_write_o",
+            "3,294",
+            "338 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -401,8 +405,10 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "hard_drivin_sound_host_routing.sby",
             "12-step bounded composition",
             "Seven covers span all six classes",
-            "2,966 abstract cells",
-            "257 checks",
+            "lower-Y5 program-RAM storage",
+            "Y6 communication-RAM storage under CRAMEN",
+            "3,294 abstract cells",
+            "338 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)

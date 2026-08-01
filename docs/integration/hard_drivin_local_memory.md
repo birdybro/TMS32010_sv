@@ -187,7 +187,39 @@ and writes; Y5 direct reads and S6 writes; Y6 communication reads and writes;
 and isolation of the separate Y4 low-I/O path. No copyrighted image is used.
 
 Yosys 0.67+111 reports 305 abstract combinational hierarchy cells, 40
-retained checks, no memory or latch, and zero structural problems. The
-bridge is not yet selected by the board top and does not provide ROM/SRAM
-contents, raw-pin CDC, a complete MC68000 data-bus mux, a Cyclone V fit, or
-electrical timing closure.
+retained checks, no memory or latch, and zero structural problems.
+
+## Board-top composition
+
+When `hard_drivin_sound_mister.use_host_timing_i=1`, the board top now feeds
+the complete captured host cycle into this bridge. Lower-Y5 select, direction,
+`A12:A1`, raw write data, and the S7 commit drive the existing shared program-
+RAM adapter. Y6 similarly drives the existing communication-RAM host port at
+`A9:A1`; CRAMEN remains the independent ownership qualification. The explicit
+program/communication callbacks remain selected unchanged when timing mode is
+off, so the integration does not silently replace the older same-clock API.
+The physical bridge still exposes the unqualified whole-bank write level, but
+the FPGA storage mux accepts its commit only when both host byte strobes are
+active. Partial lower-Y5/Y6 writes emit separate diagnostic pulses and leave
+the FPGA memories unchanged under `OQ-022`/`OQ-024`; this is an explicit
+protective boundary, not a claim that the physical board suppresses the write.
+
+The board top forwards the complete ROM callback, local-RAM callback, byte-
+specific local-RAM commits, read carrier masks, and missing-response event to
+its caller. It also forwards the upper-Y5 `/PDEN` level and `/PWE` S6 commit,
+but does not yet connect that direct path to a complete MC68000/TMS data-bus
+multiplexer. ROM bytes and the 8K-by-16 local SRAM remain external; no
+copyrighted image, open-bus value, or integration-specific SRAM initialization
+is embedded.
+
+`tb_hard_drivin_sound_mister` verifies this composition with synthetic mirrored
+ROM and lane-valid local-SRAM responses, an upper-byte local-SRAM S7 write,
+lower-Y5 program-RAM write/readback, upper-Y5 direct-I/O isolation and S6
+commit, and Y6 communication-RAM write/readback under CRAMEN. Opposite explicit
+callback sentinels prove timing-mode ownership, and later board tests prove the
+explicit-callback fallback still operates with timing mode disabled.
+
+The composed board hierarchy retains its three existing memories and reports
+3,294 abstract cells with 338 checks and zero structural problems in Yosys
+0.67+111. This remains pre-technology synthesis, not raw-pin CDC, a complete
+MC68000 data-bus mux, a Cyclone V fit, or electrical timing closure.

@@ -69,6 +69,29 @@ module hard_drivin_sound_mister (
   output logic        host_timing_write_complete_o,
   output logic        host_timing_speech_write_complete_o,
   output logic        host_timing_partial_sound_write_o,
+  output logic        host_timing_partial_program_write_o,
+  output logic        host_timing_partial_communication_write_o,
+
+  input  logic [15:0] host_local_rom_read_data_i,
+  input  logic        host_local_rom_read_data_valid_i,
+  output logic        host_local_rom_read_request_o,
+  output logic [14:0] host_local_rom_word_address_o,
+  input  logic [15:0] host_local_ram_read_data_i,
+  input  logic [15:0] host_local_ram_read_valid_mask_i,
+  output logic        host_local_ram_read_request_o,
+  output logic [12:0] host_local_ram_word_address_o,
+  output logic        host_local_ram_upper_write_commit_o,
+  output logic        host_local_ram_lower_write_commit_o,
+  output logic [15:0] host_local_ram_write_data_o,
+  output logic [15:0] host_local_memory_read_data_o,
+  output logic [15:0] host_local_memory_read_driven_mask_o,
+  output logic [15:0] host_local_memory_read_valid_mask_o,
+  output logic [1:0]  host_local_memory_read_target_select_o,
+  output logic        host_local_memory_read_missing_o,
+  output logic        host_timing_program_io_read_o,
+  output logic        host_timing_program_io_write_o,
+  output logic        host_timing_program_io_write_commit_o,
+  output logic [11:0] host_timing_program_io_word_address_o,
 
   input  logic        host_program_select_n_i,
   input  logic        host_write_i,
@@ -247,6 +270,29 @@ module hard_drivin_sound_mister (
   logic [15:0] selected_sound_cpu_mailbox_write_data;
   logic        selected_sound_cpu_low_read_select_valid;
   logic [1:0]  selected_sound_cpu_low_read_quadrant;
+  logic        selected_host_program_select_n;
+  logic        selected_host_program_write;
+  logic        selected_host_program_commit;
+  logic [11:0] selected_host_program_address;
+  logic [15:0] selected_host_program_write_data;
+  logic        selected_host_communication_select_n;
+  logic        selected_host_communication_write;
+  logic        selected_host_communication_commit;
+  logic [8:0]  selected_host_communication_address;
+  logic [15:0] selected_host_communication_write_data;
+  logic        bridge_host_program_select_n;
+  logic        bridge_host_program_ram_select_n;
+  logic        bridge_host_program_ram_read;
+  logic        bridge_host_program_ram_write;
+  logic        bridge_host_program_ram_write_commit;
+  logic        bridge_host_communication_select_n;
+  logic        bridge_host_communication_read;
+  logic        bridge_host_communication_write;
+  logic        bridge_host_communication_write_commit;
+  logic [8:0]  bridge_host_communication_address;
+  logic [7:0]  bridge_high_bank_select_n;
+  logic        bridge_rvf_select_n;
+  logic        bridge_local_ram_select_n;
 
   assign selected_bio_n_o = use_board_bio_i ? board_bio_n_o : bio_i;
   assign selected_bio_valid_o = !use_board_bio_i || board_bio_valid_o;
@@ -313,6 +359,59 @@ module hard_drivin_sound_mister (
     use_host_timing_i && host_timing_write_complete_o &&
     (host_timing_select_quadrant_o == 2'b00) &&
     !host_timing_whole_word_write;
+  assign host_timing_partial_program_write_o =
+    use_host_timing_i && host_timing_cycle_complete_o &&
+    !host_timing_latched_read_not_write_o &&
+    host_timing_latched_address_o[23] &&
+    (host_timing_latched_address_o[16:14] == 3'b101) &&
+    !host_timing_latched_address_o[13] &&
+    !host_timing_whole_word_write;
+  assign host_timing_partial_communication_write_o =
+    use_host_timing_i && host_timing_cycle_complete_o &&
+    !host_timing_latched_read_not_write_o &&
+    host_timing_latched_address_o[23] &&
+    (host_timing_latched_address_o[16:14] == 3'b110) &&
+    !host_timing_whole_word_write;
+  assign selected_host_program_select_n =
+    use_host_timing_i
+      ? bridge_host_program_ram_select_n
+      : host_program_select_n_i;
+  assign selected_host_program_write =
+    use_host_timing_i
+      ? bridge_host_program_ram_write
+      : host_write_i;
+  assign selected_host_program_commit =
+    use_host_timing_i
+      ? (bridge_host_program_ram_write_commit &&
+         host_timing_whole_word_write)
+      : host_commit_i;
+  assign selected_host_program_address =
+    use_host_timing_i
+      ? host_timing_program_io_word_address_o
+      : host_address_i;
+  assign selected_host_program_write_data =
+    use_host_timing_i ? host_bus_write_data_i : host_write_data_i;
+  assign selected_host_communication_select_n =
+    use_host_timing_i
+      ? bridge_host_communication_select_n
+      : host_communication_select_n_i;
+  assign selected_host_communication_write =
+    use_host_timing_i
+      ? bridge_host_communication_write
+      : host_communication_write_i;
+  assign selected_host_communication_commit =
+    use_host_timing_i
+      ? (bridge_host_communication_write_commit &&
+         host_timing_whole_word_write)
+      : host_communication_commit_i;
+  assign selected_host_communication_address =
+    use_host_timing_i
+      ? bridge_host_communication_address
+      : host_communication_address_i;
+  assign selected_host_communication_write_data =
+    use_host_timing_i
+      ? host_bus_write_data_i
+      : host_communication_write_data_i;
 
   assign native_write_data =
     logical_program_write
@@ -375,11 +474,11 @@ module hard_drivin_sound_mister (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .dsp_reset_n_i                 (selected_dsp_reset_n_o),
-    .host_program_select_n_i       (host_program_select_n_i),
-    .host_write_i                  (host_write_i),
-    .host_commit_i                 (host_commit_i),
-    .host_address_i                (host_address_i),
-    .host_write_data_i             (host_write_data_i),
+    .host_program_select_n_i       (selected_host_program_select_n),
+    .host_write_i                  (selected_host_program_write),
+    .host_commit_i                 (selected_host_program_commit),
+    .host_address_i                (selected_host_program_address),
+    .host_write_data_i             (selected_host_program_write_data),
     .host_read_data_o              (host_read_data_o),
     .host_ready_o                  (host_ready_o),
     .host_access_permitted_o       (host_access_permitted_o),
@@ -406,11 +505,11 @@ module hard_drivin_sound_mister (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
     .communication_host_enable_i   (selected_communication_host_enable_o),
-    .host_select_n_i               (host_communication_select_n_i),
-    .host_write_i                  (host_communication_write_i),
-    .host_commit_i                 (host_communication_commit_i),
-    .host_address_i                (host_communication_address_i),
-    .host_write_data_i             (host_communication_write_data_i),
+    .host_select_n_i               (selected_host_communication_select_n),
+    .host_write_i                  (selected_host_communication_write),
+    .host_commit_i                 (selected_host_communication_commit),
+    .host_address_i                (selected_host_communication_address),
+    .host_write_data_i             (selected_host_communication_write_data),
     .host_read_data_o              (host_communication_read_data_o),
     .host_ready_o                  (host_communication_ready_o),
     .host_access_permitted_o       (host_communication_access_permitted_o),
@@ -546,6 +645,92 @@ module hard_drivin_sound_mister (
     .cycle_complete_o              (host_timing_cycle_complete_o),
     .read_complete_o               (host_timing_read_complete_o),
     .write_complete_o              (host_timing_write_complete_o)
+  );
+
+  hard_drivin_sound_local_memory_bridge local_memory_bridge (
+    .host_8mhz_rise_i                    (host_8mhz_rise_i),
+    .cycle_active_i                      (
+      use_host_timing_i && host_timing_cycle_active_o
+    ),
+    .rva_i                               (host_timing_rva_o),
+    .rvas_n_i                            (host_timing_rvas_n_o),
+    .cycle_complete_event_i              (
+      use_host_timing_i && host_timing_cycle_complete_event
+    ),
+    .latched_address_i                   (host_timing_latched_address_o),
+    .latched_read_not_write_i            (
+      host_timing_latched_read_not_write_o
+    ),
+    .latched_upper_data_strobe_n_i       (
+      host_timing_latched_upper_data_strobe_n_o
+    ),
+    .latched_lower_data_strobe_n_i       (
+      host_timing_latched_lower_data_strobe_n_o
+    ),
+    .host_write_data_i                   (host_bus_write_data_i),
+    .rom_read_request_o                  (host_local_rom_read_request_o),
+    .rom_word_address_o                  (host_local_rom_word_address_o),
+    .rom_read_data_i                     (host_local_rom_read_data_i),
+    .rom_read_data_valid_i               (
+      host_local_rom_read_data_valid_i
+    ),
+    .local_ram_read_request_o            (host_local_ram_read_request_o),
+    .local_ram_word_address_o            (host_local_ram_word_address_o),
+    .local_ram_read_data_i               (host_local_ram_read_data_i),
+    .local_ram_read_valid_mask_i         (
+      host_local_ram_read_valid_mask_i
+    ),
+    .local_ram_upper_write_commit_o      (
+      host_local_ram_upper_write_commit_o
+    ),
+    .local_ram_lower_write_commit_o      (
+      host_local_ram_lower_write_commit_o
+    ),
+    .local_ram_write_data_o              (host_local_ram_write_data_o),
+    .host_program_select_n_o             (bridge_host_program_select_n),
+    .host_program_ram_select_n_o         (
+      bridge_host_program_ram_select_n
+    ),
+    .host_program_ram_read_o             (bridge_host_program_ram_read),
+    .host_program_ram_write_o            (bridge_host_program_ram_write),
+    .host_program_ram_write_commit_o     (
+      bridge_host_program_ram_write_commit
+    ),
+    .host_program_word_address_o         (
+      host_timing_program_io_word_address_o
+    ),
+    .host_program_io_read_o              (host_timing_program_io_read_o),
+    .host_program_io_write_o             (host_timing_program_io_write_o),
+    .host_program_io_write_commit_o      (
+      host_timing_program_io_write_commit_o
+    ),
+    .host_communication_select_n_o       (
+      bridge_host_communication_select_n
+    ),
+    .host_communication_read_o           (bridge_host_communication_read),
+    .host_communication_write_o          (bridge_host_communication_write),
+    .host_communication_write_commit_o   (
+      bridge_host_communication_write_commit
+    ),
+    .host_communication_word_address_o   (
+      bridge_host_communication_address
+    ),
+    .host_read_data_o                    (host_local_memory_read_data_o),
+    .host_read_driven_mask_o             (
+      host_local_memory_read_driven_mask_o
+    ),
+    .host_read_valid_mask_o              (
+      host_local_memory_read_valid_mask_o
+    ),
+    .host_read_target_select_o           (
+      host_local_memory_read_target_select_o
+    ),
+    .host_read_response_missing_event_o  (
+      host_local_memory_read_missing_o
+    ),
+    .high_bank_select_n_o                (bridge_high_bank_select_n),
+    .rvf_select_n_o                      (bridge_rvf_select_n),
+    .local_ram_select_n_o                (bridge_local_ram_select_n)
   );
 
   hard_drivin_sound_host_control host_control (
@@ -733,6 +918,25 @@ module hard_drivin_sound_mister (
               host_timing_cycle_complete_event);
       assert (!host_timing_partial_sound_write_o ||
               !selected_sound_cpu_mailbox_write_commit);
+      assert (!host_timing_partial_program_write_o ||
+              (host_timing_cycle_complete_o &&
+               !selected_host_program_commit));
+      assert (!host_timing_partial_communication_write_o ||
+              (host_timing_cycle_complete_o &&
+               !selected_host_communication_commit));
+      assert ($onehot0(~bridge_high_bank_select_n));
+      assert (bridge_rvf_select_n == bridge_high_bank_select_n[4]);
+      assert (bridge_local_ram_select_n == bridge_high_bank_select_n[7]);
+      assert (bridge_host_program_ram_select_n ||
+              !bridge_host_program_select_n);
+      assert (!host_timing_program_io_read_o ||
+              !bridge_host_program_select_n);
+      assert (!host_timing_program_io_write_o ||
+              !bridge_host_program_select_n);
+      assert ((host_local_memory_read_valid_mask_o &
+               ~host_local_memory_read_driven_mask_o) == 16'h0000);
+      assert ((host_local_memory_read_data_o &
+               ~host_local_memory_read_valid_mask_o) == 16'h0000);
       if (use_host_timing_i) begin
         assert (selected_sound_cpu_low_read_select_valid ==
                 host_timing_read_select_valid_o);
@@ -751,6 +955,34 @@ module hard_drivin_sound_mister (
         assert (selected_host_irq_clear_commit ==
                 (host_timing_write_complete_event &&
                  (host_timing_select_quadrant_o == 2'b11)));
+        assert (selected_host_program_select_n ==
+                bridge_host_program_ram_select_n);
+        assert (selected_host_program_write ==
+                bridge_host_program_ram_write);
+        assert (selected_host_program_commit ==
+                (bridge_host_program_ram_write_commit &&
+                 host_timing_whole_word_write));
+        assert (selected_host_program_address ==
+                host_timing_program_io_word_address_o);
+        assert (selected_host_program_write_data ==
+                host_bus_write_data_i);
+        assert (selected_host_communication_select_n ==
+                bridge_host_communication_select_n);
+        assert (selected_host_communication_write ==
+                bridge_host_communication_write);
+        assert (selected_host_communication_commit ==
+                (bridge_host_communication_write_commit &&
+                 host_timing_whole_word_write));
+        assert (selected_host_communication_address ==
+                bridge_host_communication_address);
+        assert (selected_host_communication_write_data ==
+                host_bus_write_data_i);
+        assert (bridge_host_program_ram_read ==
+                (!bridge_host_program_ram_select_n &&
+                 host_timing_latched_read_not_write_o));
+        assert (bridge_host_communication_read ==
+                (!bridge_host_communication_select_n &&
+                 host_timing_latched_read_not_write_o));
       end else begin
         assert (selected_sound_cpu_low_read_select_valid ==
                 sound_cpu_low_read_select_valid_i);
@@ -764,6 +996,31 @@ module hard_drivin_sound_mister (
                 host_latch_write_commit_i);
         assert (selected_host_irq_clear_commit ==
                 host_irq_clear_commit_i);
+        assert (selected_host_program_select_n ==
+                host_program_select_n_i);
+        assert (selected_host_program_write == host_write_i);
+        assert (selected_host_program_commit == host_commit_i);
+        assert (selected_host_program_address == host_address_i);
+        assert (selected_host_program_write_data == host_write_data_i);
+        assert (selected_host_communication_select_n ==
+                host_communication_select_n_i);
+        assert (selected_host_communication_write ==
+                host_communication_write_i);
+        assert (selected_host_communication_commit ==
+                host_communication_commit_i);
+        assert (selected_host_communication_address ==
+                host_communication_address_i);
+        assert (selected_host_communication_write_data ==
+                host_communication_write_data_i);
+        assert (!host_local_rom_read_request_o);
+        assert (!host_local_ram_read_request_o);
+        assert (!host_local_ram_upper_write_commit_o);
+        assert (!host_local_ram_lower_write_commit_o);
+        assert (!host_timing_program_io_read_o);
+        assert (!host_timing_program_io_write_o);
+        assert (!host_timing_program_io_write_commit_o);
+        assert (!host_timing_partial_program_write_o);
+        assert (!host_timing_partial_communication_write_o);
       end
       if (!use_board_bio_i) begin
         assert (selected_bio_valid_o);

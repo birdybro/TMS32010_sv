@@ -61,6 +61,28 @@ module tb_hard_drivin_sound_mister;
   logic        host_timing_write_complete;
   logic        host_timing_speech_write_complete;
   logic        host_timing_partial_sound_write;
+  logic        host_timing_partial_program_write;
+  logic        host_timing_partial_communication_write;
+  logic [15:0] host_local_rom_read_data;
+  logic        host_local_rom_read_data_valid;
+  logic        host_local_rom_read_request;
+  logic [14:0] host_local_rom_word_address;
+  logic [15:0] host_local_ram_read_data;
+  logic [15:0] host_local_ram_read_valid_mask;
+  logic        host_local_ram_read_request;
+  logic [12:0] host_local_ram_word_address;
+  logic        host_local_ram_upper_write_commit;
+  logic        host_local_ram_lower_write_commit;
+  logic [15:0] host_local_ram_write_data;
+  logic [15:0] host_local_memory_read_data;
+  logic [15:0] host_local_memory_read_driven_mask;
+  logic [15:0] host_local_memory_read_valid_mask;
+  logic [1:0]  host_local_memory_read_target_select;
+  logic        host_local_memory_read_missing;
+  logic        host_timing_program_io_read;
+  logic        host_timing_program_io_write;
+  logic        host_timing_program_io_write_commit;
+  logic [11:0] host_timing_program_io_word_address;
   logic        host_program_select_n;
   logic        host_write;
   logic        host_commit;
@@ -179,6 +201,9 @@ module tb_hard_drivin_sound_mister;
   integer      dac_commit_count;
   integer      cport_latch_commit_count;
   integer      mute_commit_count;
+  integer      host_local_ram_upper_write_count;
+  integer      host_local_ram_lower_write_count;
+  integer      host_program_io_write_count;
   logic        sound_rom_request_seen;
 
   hard_drivin_sound_mister dut (
@@ -260,6 +285,46 @@ module tb_hard_drivin_sound_mister;
       host_timing_speech_write_complete
     ),
     .host_timing_partial_sound_write_o(host_timing_partial_sound_write),
+    .host_timing_partial_program_write_o(
+      host_timing_partial_program_write
+    ),
+    .host_timing_partial_communication_write_o(
+      host_timing_partial_communication_write
+    ),
+    .host_local_rom_read_data_i   (host_local_rom_read_data),
+    .host_local_rom_read_data_valid_i(host_local_rom_read_data_valid),
+    .host_local_rom_read_request_o(host_local_rom_read_request),
+    .host_local_rom_word_address_o(host_local_rom_word_address),
+    .host_local_ram_read_data_i   (host_local_ram_read_data),
+    .host_local_ram_read_valid_mask_i(host_local_ram_read_valid_mask),
+    .host_local_ram_read_request_o(host_local_ram_read_request),
+    .host_local_ram_word_address_o(host_local_ram_word_address),
+    .host_local_ram_upper_write_commit_o(
+      host_local_ram_upper_write_commit
+    ),
+    .host_local_ram_lower_write_commit_o(
+      host_local_ram_lower_write_commit
+    ),
+    .host_local_ram_write_data_o  (host_local_ram_write_data),
+    .host_local_memory_read_data_o(host_local_memory_read_data),
+    .host_local_memory_read_driven_mask_o(
+      host_local_memory_read_driven_mask
+    ),
+    .host_local_memory_read_valid_mask_o(
+      host_local_memory_read_valid_mask
+    ),
+    .host_local_memory_read_target_select_o(
+      host_local_memory_read_target_select
+    ),
+    .host_local_memory_read_missing_o(host_local_memory_read_missing),
+    .host_timing_program_io_read_o(host_timing_program_io_read),
+    .host_timing_program_io_write_o(host_timing_program_io_write),
+    .host_timing_program_io_write_commit_o(
+      host_timing_program_io_write_commit
+    ),
+    .host_timing_program_io_word_address_o(
+      host_timing_program_io_word_address
+    ),
     .host_program_select_n_i       (host_program_select_n),
     .host_write_i                  (host_write),
     .host_commit_i                 (host_commit),
@@ -462,6 +527,26 @@ module tb_hard_drivin_sound_mister;
 
   always_ff @(posedge clk) begin
     if (initialize) begin
+      host_local_ram_upper_write_count <= 0;
+      host_local_ram_lower_write_count <= 0;
+      host_program_io_write_count <= 0;
+    end else begin
+      if (host_local_ram_upper_write_commit) begin
+        host_local_ram_upper_write_count <=
+          host_local_ram_upper_write_count + 1;
+      end
+      if (host_local_ram_lower_write_commit) begin
+        host_local_ram_lower_write_count <=
+          host_local_ram_lower_write_count + 1;
+      end
+      if (host_timing_program_io_write_commit) begin
+        host_program_io_write_count <= host_program_io_write_count + 1;
+      end
+    end
+  end
+
+  always_ff @(posedge clk) begin
+    if (initialize) begin
       dac_commit_count <= 0;
       cport_latch_commit_count <= 0;
       mute_commit_count <= 0;
@@ -572,19 +657,14 @@ module tb_hard_drivin_sound_mister;
     host_latch_write_commit = 1'b0;
   endtask
 
-  task automatic local_host_start(
-    input logic [1:0]  quadrant,
+  task automatic local_host_start_address(
+    input logic [23:1] cycle_address,
     input logic        read_not_write_value,
-    input logic [3:0]  low_address,
     input logic        upper_strobe_n,
     input logic        lower_strobe_n,
     input logic [15:0] write_data
   );
-    host_bus_address = '0;
-    host_bus_address[23] = 1'b1;
-    host_bus_address[16:14] = 3'b100;
-    host_bus_address[13:12] = quadrant;
-    host_bus_address[4:1] = low_address;
+    host_bus_address = cycle_address;
     host_function_code = 3'b101;
     host_read_not_write = read_not_write_value;
     host_upper_data_strobe_n = upper_strobe_n;
@@ -594,13 +674,37 @@ module tb_hard_drivin_sound_mister;
     tick();
     host_address_strobe_assert = 1'b0;
     require(host_timing_cycle_active && host_timing_vpa_n &&
-            !host_timing_rvf_n &&
-            host_timing_latched_address == host_bus_address &&
+            host_timing_latched_address == cycle_address &&
             host_timing_latched_read_not_write == read_not_write_value &&
-            host_timing_select_quadrant == quadrant &&
+            host_timing_select_quadrant == cycle_address[13:12] &&
             host_timing_latched_upper_data_strobe_n == upper_strobe_n &&
             host_timing_latched_lower_data_strobe_n == lower_strobe_n,
             "opt-in host timing captures the qualified complete address");
+  endtask
+
+  task automatic local_host_start(
+    input logic [1:0]  quadrant,
+    input logic        read_not_write_value,
+    input logic [3:0]  low_address,
+    input logic        upper_strobe_n,
+    input logic        lower_strobe_n,
+    input logic [15:0] write_data
+  );
+    logic [23:1] cycle_address;
+    cycle_address = '0;
+    cycle_address[23] = 1'b1;
+    cycle_address[16:14] = 3'b100;
+    cycle_address[13:12] = quadrant;
+    cycle_address[4:1] = low_address;
+    local_host_start_address(
+      cycle_address,
+      read_not_write_value,
+      upper_strobe_n,
+      lower_strobe_n,
+      write_data
+    );
+    require(!host_timing_rvf_n,
+            "low-I/O helper selects the qualified RVF page");
   endtask
 
   task automatic local_host_rising_edge;
@@ -615,10 +719,7 @@ module tb_hard_drivin_sound_mister;
     host_8mhz_fall = 1'b0;
   endtask
 
-  task automatic local_host_finish(
-    input logic expected_read_complete,
-    input logic expected_write_complete
-  );
+  task automatic local_host_advance_to_s6;
     local_host_falling_edge();
     require(host_timing_rva && !host_timing_dtack_n &&
             !host_timing_rvas_n,
@@ -627,6 +728,12 @@ module tb_hard_drivin_sound_mister;
     require(!host_timing_rva && host_timing_dtack_n &&
             !host_timing_rvas_n,
             "S6 releases DTACK while holding the selected read/write path");
+  endtask
+
+  task automatic local_host_complete_s7(
+    input logic expected_read_complete,
+    input logic expected_write_complete
+  );
     host_8mhz_fall = 1'b1;
     host_address_strobe_deassert = 1'b1;
     tick();
@@ -637,6 +744,17 @@ module tb_hard_drivin_sound_mister;
             host_timing_read_complete == expected_read_complete &&
             host_timing_write_complete == expected_write_complete,
             "S7 updates stateful consumers and emits the exact trace pulse");
+  endtask
+
+  task automatic local_host_finish(
+    input logic expected_read_complete,
+    input logic expected_write_complete
+  );
+    local_host_advance_to_s6();
+    local_host_complete_s7(
+      expected_read_complete,
+      expected_write_complete
+    );
   endtask
 
   task automatic debug_write_word(
@@ -756,6 +874,10 @@ module tb_hard_drivin_sound_mister;
     host_upper_data_strobe_n = 1'b1;
     host_lower_data_strobe_n = 1'b1;
     host_bus_write_data = 16'h0000;
+    host_local_rom_read_data = 16'h0000;
+    host_local_rom_read_data_valid = 1'b0;
+    host_local_ram_read_data = 16'h0000;
+    host_local_ram_read_valid_mask = 16'h0000;
     bio_one_mhz_rise = 1'b0;
     bio_counter_seed = 8'hff;
     bio_counter_seed_valid = 1'b1;
@@ -1094,6 +1216,210 @@ module tb_hard_drivin_sound_mister;
             "unimplemented /SPEECH completion is visible without side effects"
     );
     tick();
+
+    // Outside Y4, the same captured host cycle feeds the storage-free local
+    // memory callback boundary. Authorized ROM contents and local SRAM state
+    // remain external, including lane validity.
+    host_local_rom_read_data = 16'ha55a;
+    host_local_rom_read_data_valid = 1'b1;
+    local_host_start_address(
+      23'h091a2b, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    require(
+      host_local_rom_read_request &&
+      host_local_rom_word_address == 15'h1a2b &&
+      !host_local_ram_read_request &&
+      host_local_memory_read_target_select == 2'b01 &&
+      host_local_memory_read_data == 16'ha55a &&
+      host_local_memory_read_driven_mask == 16'hffff &&
+      host_local_memory_read_valid_mask == 16'hffff &&
+      !host_local_memory_read_missing,
+      "timed mirrored ROM read retains the external valid-data carrier"
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    host_local_ram_read_data = 16'hcafe;
+    host_local_ram_read_valid_mask = 16'hffff;
+    local_host_start_address(
+      23'h7fe123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    require(
+      host_local_ram_read_request &&
+      host_local_ram_word_address == 13'h0123 &&
+      !host_local_rom_read_request &&
+      host_local_memory_read_target_select == 2'b10 &&
+      host_local_memory_read_data == 16'hcafe &&
+      host_local_memory_read_driven_mask == 16'hffff &&
+      host_local_memory_read_valid_mask == 16'hffff,
+      "timed Y7 read forwards integration-owned SRAM data and validity"
+    );
+    local_host_rising_edge();
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fe123, 1'b0, 1'b0, 1'b1, 16'h12aa
+    );
+    local_host_rising_edge();
+    require(host_local_ram_write_data == 16'h12aa,
+            "timed Y7 write forwards the captured raw host word");
+    local_host_finish(1'b0, 1'b0);
+    require(host_local_ram_upper_write_count == 1 &&
+            host_local_ram_lower_write_count == 0,
+            "timed Y7 upper-byte write commits only the physical upper slice");
+    tick();
+
+    // Timing mode owns the program-RAM callbacks. Opposite explicit callback
+    // values are sentinels and must neither select nor alter another address.
+    host_program_select_n = 1'b0;
+    host_write = 1'b1;
+    host_commit = 1'b1;
+    host_address = 12'h777;
+    host_write_data = 16'hdead;
+    local_host_start_address(
+      23'h7fa123, 1'b0, 1'b0, 1'b0, 16'h3456
+    );
+    local_host_rising_edge();
+    require(host_access_permitted && host_ready &&
+            host_timing_program_io_word_address == 12'h123 &&
+            !host_timing_program_io_write &&
+            !host_timing_program_io_read,
+            "timed lower-Y5 whole-word write owns program RAM");
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    require(host_access_permitted && !host_ready,
+            "timed lower-Y5 read waits for the synchronous RAM response");
+    local_host_advance_to_s6();
+    require(host_ready && host_read_data == 16'h3456,
+            "timed lower-Y5 read returns the word written at S7");
+    local_host_complete_s7(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b0, 1'b0, 1'b1, 16'hdead
+    );
+    local_host_rising_edge();
+    require(host_access_permitted && host_ready,
+            "physical lower-Y5 write level remains visible for a byte cycle");
+    local_host_finish(1'b0, 1'b0);
+    require(host_timing_partial_program_write &&
+            !host_timing_partial_communication_write,
+            "partial lower-Y5 write is reported and rejected at S7");
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    local_host_advance_to_s6();
+    require(host_ready && host_read_data == 16'h3456,
+            "rejected partial lower-Y5 write preserves program RAM");
+    local_host_complete_s7(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fb123, 1'b0, 1'b0, 1'b0, 16'hbcde
+    );
+    local_host_rising_edge();
+    require(host_timing_program_io_write &&
+            !host_timing_program_io_read && !host_access_permitted,
+            "timed upper-Y5 write selects direct DSP I/O, not program RAM");
+    local_host_advance_to_s6();
+    require(host_program_io_write_count == 1,
+            "timed direct DSP I/O write commits at the S6 /PWE edge");
+    local_host_complete_s7(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fb123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    require(host_timing_program_io_read &&
+            !host_timing_program_io_write && !host_access_permitted,
+            "timed upper-Y5 read exposes only the direct /PDEN callback");
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fa123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    local_host_advance_to_s6();
+    require(host_ready && host_read_data == 16'h3456,
+            "direct upper-Y5 activity cannot modify lower-Y5 program RAM");
+    local_host_complete_s7(1'b0, 1'b0);
+    host_program_select_n = 1'b1;
+    host_write = 1'b0;
+    host_commit = 1'b0;
+    tick();
+
+    // CRAMEN ownership is still authoritative, but timed Y6 callbacks now
+    // provide the physical select, direction, address, data, and S7 commit.
+    communication_host_enable = 1'b1;
+    host_communication_select_n = 1'b0;
+    host_communication_write = 1'b1;
+    host_communication_commit = 1'b1;
+    host_communication_address = 9'h077;
+    host_communication_write_data = 16'hdead;
+    local_host_start_address(
+      23'h7fc123, 1'b0, 1'b0, 1'b0, 16'h789a
+    );
+    local_host_rising_edge();
+    require(host_communication_access_permitted &&
+            host_communication_ready && !host_communication_blocked,
+            "timed Y6 whole-word write is accepted under CRAMEN ownership");
+    local_host_finish(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fc123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    require(host_communication_access_permitted &&
+            !host_communication_ready && !host_communication_blocked,
+            "timed Y6 read waits for its synchronous RAM response");
+    local_host_advance_to_s6();
+    require(host_communication_ready &&
+            host_communication_read_data == 16'h789a,
+            "timed Y6 read returns the S7-committed communication word");
+    local_host_complete_s7(1'b0, 1'b0);
+    tick();
+
+    local_host_start_address(
+      23'h7fc123, 1'b0, 1'b1, 1'b0, 16'hbeef
+    );
+    local_host_rising_edge();
+    require(host_communication_access_permitted &&
+            host_communication_ready && !host_communication_blocked,
+            "physical Y6 write level remains visible for a byte cycle");
+    local_host_finish(1'b0, 1'b0);
+    require(host_timing_partial_communication_write &&
+            !host_timing_partial_program_write,
+            "partial Y6 write is reported and rejected at S7");
+    tick();
+
+    local_host_start_address(
+      23'h7fc123, 1'b1, 1'b0, 1'b0, 16'h0000
+    );
+    local_host_rising_edge();
+    local_host_advance_to_s6();
+    require(host_communication_ready &&
+            host_communication_read_data == 16'h789a,
+            "rejected partial Y6 write preserves communication RAM");
+    local_host_complete_s7(1'b0, 1'b0);
+    communication_host_enable = 1'b0;
+    host_communication_select_n = 1'b1;
+    host_communication_write = 1'b0;
+    host_communication_commit = 1'b0;
+    tick();
+
     use_host_timing = 1'b0;
 
     sound_cpu_low_read_quadrant = 2'b11;

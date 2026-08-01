@@ -51,6 +51,7 @@ module tb_hard_drivin_sound_local_memory_bridge;
   logic        local_ram_lower_write_commit;
   logic [15:0] local_ram_write_data;
   logic        host_program_select_n;
+  logic        host_program_ram_select_n;
   logic        host_program_ram_read;
   logic        host_program_ram_write;
   logic        host_program_ram_write_commit;
@@ -153,6 +154,7 @@ module tb_hard_drivin_sound_local_memory_bridge;
     ),
     .local_ram_write_data_o              (local_ram_write_data),
     .host_program_select_n_o             (host_program_select_n),
+    .host_program_ram_select_n_o         (host_program_ram_select_n),
     .host_program_ram_read_o             (host_program_ram_read),
     .host_program_ram_write_o            (host_program_ram_write),
     .host_program_ram_write_commit_o     (
@@ -431,7 +433,8 @@ module tb_hard_drivin_sound_local_memory_bridge;
     // physical word-address projections. Neither enters the local read mux.
     start_cycle(24'hff4246, 1'b0, 1'b0, 1'b0, 16'h3456);
     rising_edge();
-    require(!host_program_select_n && host_program_ram_write &&
+    require(!host_program_select_n && !host_program_ram_select_n &&
+            host_program_ram_write &&
             host_program_word_address == 12'h123 &&
             host_read_target_select == 2'b00,
             "Y5 lower half exposes the whole-word program-RAM write path");
@@ -442,7 +445,8 @@ module tb_hard_drivin_sound_local_memory_bridge;
             "program-RAM callback commits once at S7");
     start_cycle(24'hff4246, 1'b1, 1'b0, 1'b0, 16'h0000);
     rising_edge();
-    require(host_program_ram_read && !host_program_ram_write &&
+    require(!host_program_ram_select_n && host_program_ram_read &&
+            !host_program_ram_write &&
             !host_program_io_read && !host_program_io_write,
             "Y5 lower-half read remains distinct from direct TMS I/O");
     falling_edge();

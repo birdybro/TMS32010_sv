@@ -257,9 +257,12 @@ The integrated board regression runs all four timed read quadrants and all
 four timed write quadrants. It checks masked read data through S6, exact S7
 `/SOUNDRD`, whole-word `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` effects,
 external-callback isolation while opted in, explicit partial-mailbox
-rejection, and visible side-effect-free `/SPEECH` completion. Integrated
-Yosys retains three memories and reports 2,966 abstract cells, 257 checks,
-and zero structural problems.
+rejection, and visible side-effect-free `/SPEECH` completion. It now also
+checks fixed-cycle ROM/local-SRAM callbacks, byte-specific local-SRAM commits,
+lower-Y5 program-RAM storage, upper-Y5 direct-I/O S6 timing and isolation, and
+Y6 communication-RAM storage under CRAMEN. Integrated Yosys retains three
+memories and reports 3,294 abstract cells, 338 checks, and zero structural
+problems.
 
 `formal/hard_drivin_sound_host_routing.sby` adds a 12-step bounded composition
 check over the complete current board hierarchy with DSP execution paused.

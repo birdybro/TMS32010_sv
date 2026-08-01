@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' local-68000 fixed-timing storage callbacks
+- **Current milestone:** Hard Drivin' board-top local-memory callback integration
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 127 repository/provenance/document/ISA/toolchain/program
   tests; 231
@@ -56,7 +56,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains all three memories and passes at 2,966 abstract cells/257 checks
+  board top retains all three memories and passes at 3,294 abstract cells/338 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -683,7 +683,7 @@
   `/SOUNDWR`, `/LATCHES`, and `/IRQCLR`; partial mailbox writes are reported
   and rejected; and `/SPEECH` remains visible without a side effect. External
   callbacks remain the default and are explicitly isolated while opted in.
-  Integrated Yosys retains three memories at 2,966 cells/257 checks. This does
+  Integrated Yosys retains three memories at 3,294 cells/338 checks. This does
   not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
   127/231/38/42/5/10 regression split, strict lint across 30 modules, all
@@ -715,6 +715,19 @@
   valid masks and report a fixed-S7 missing response without READY or an
   open-bus value. Standalone Yosys reports 305 hierarchy cells/40 checks and
   no storage/latch or structural problem.
+- **New board-composition evidence:** selecting host timing now routes lower
+  Y5 into the existing program RAM and Y6 into the existing communication RAM
+  without changing their reset/CRAMEN ownership rules. The board regression
+  writes and synchronously reads both memories through complete physical host
+  cycles, proves upper-Y5 direct I/O cannot modify program RAM, observes its
+  `/PWE` callback at S6, forwards synthetic valid ROM/local-SRAM read carriers,
+  and emits one upper-byte local-SRAM commit at S7. Contradictory explicit
+  callback sentinels are ignored while opted in; later timing-disabled phases
+  still pass through the original explicit callbacks. Integrated Yosys retains
+  all three memories at 3,294 cells/338 checks with zero structural problems.
+  Partial lower-Y5/Y6 writes produce distinct trace pulses and are rejected at
+  the FPGA storage boundary, preserving `OQ-022`/`OQ-024` rather than assigning
+  the physically unqualified byte.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -745,9 +758,9 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** select the local-memory bridge in the opt-in board top,
-  connect its Y5/Y6 callbacks to the existing program/communication storage,
-  and add an integration-specific lane-valid 8K-by-16 local SRAM boundary
-  while retaining an external authorized-ROM callback and explicit masks.
+- **Next task:** add an integration-specific lane-valid 8K-by-16 local SRAM
+  boundary while retaining the external authorized-ROM callback and explicit
+  masks, then compose upper-Y5 direct DSP I/O into a complete host read/write
+  data path without inventing noncanonical aliases.
 - **Latest committed baseline before this cycle:**
-  `89a9a5a`
+  `76e41d9`

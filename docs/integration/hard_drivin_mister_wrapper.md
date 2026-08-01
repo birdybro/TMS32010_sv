@@ -5,7 +5,8 @@
 `rtl/wrappers/hard_drivin_sound_mister.sv` is a partial, same-clock FPGA top
 for the qualified processor slice and Atari A044427 Rev-A program and
 communication-memory, sample-ROM, raw DAC-latch, output-control, and opt-in
-board-BIO, host-control, and same-clock local-68000 timing paths, plus the two
+board-BIO, host-control, and same-clock local-68000 timing/storage-callback
+paths, plus the two
 main/sound mailboxes, raw `/SWITCHES` and `/READSTAT` nibbles, and their masked
 low-host-read selector.
 It combines the generic `tms32010_mister`, the board-native decoder, and the
@@ -25,6 +26,9 @@ separate from LS259 `80R` and remains the explicit
 `host_irq_clear_commit_i` callback when host timing is disabled. The separate
 `use_host_timing_i` path can derive `/LATCHES` and `/IRQCLR` from the qualified
 same-clock S7 event without changing which LS259 outputs control ownership.
+It also selects the local-memory bridge's lower-Y5 and Y6 callbacks for the
+existing program and communication RAMs. When timing mode is false, the
+original explicit storage callbacks remain authoritative.
 
 ## Main/sound mailbox callbacks and masked host reads
 
@@ -102,6 +106,17 @@ govern byte accesses. If host selection overlaps released DSP reset,
 `ownership_conflict_o` asserts and neither storage path is acknowledged. The
 wrapper does not choose a protective winner and call that physical behavior.
 
+With `use_host_timing_i=1`, the explicit `host_program_*` inputs are ignored.
+The captured lower-Y5 cycle supplies the select, direction, word address, raw
+write word, and S7 commit instead. The same reset/ownership truth table still
+applies; selecting lower Y5 while `/320RES` is released remains an observable
+contention error rather than arbitration.
+Because the physical program-RAM write strobe is not lane-qualified, a byte
+cycle leaves the other data byte electrically unresolved. The FPGA storage
+adapter therefore reports `host_timing_partial_program_write_o` and rejects
+that commit under `OQ-022`; it does not invent a byte merge or store an
+unqualified full word.
+
 ## Communication-RAM host sequence
 
 The selected CRAMEN is either default external
@@ -117,6 +132,29 @@ separate host LS259 output cleared by board `/RESET`. The opt-in path updates
 that output only from an explicit decoded completion. Host byte lanes,
 `/RVAS`, address decode, and DTACK remain unresolved integration work under
 `SC-025`/`OQ-024`.
+
+With timing mode selected, Y6 supplies the communication select, direction,
+`A9:A1`, raw write word, and S7 commit. The explicit communication callback is
+retained only for timing-disabled operation. CRAMEN remains the sole ownership
+choice in both modes; the timing bridge does not grant the host implicitly.
+For the analogous whole-bank Y6 strobe, a byte cycle reports
+`host_timing_partial_communication_write_o` and cannot modify the FPGA memory
+under `OQ-024`.
+
+## Local-68000 memory callback boundary
+
+The timing-selected board top now exposes the populated ROM and local 6264
+read callbacks, their exact word addresses, separate driven/valid masks, and
+an S7 missing-response event. Local-RAM upper and lower write commits remain
+independent and carry the captured raw host word. No READY input exists on this
+path; a caller must provide valid read data within the fixed physical cycle or
+receive the diagnostic missing event.
+
+Upper-Y5 direct DSP I/O is deliberately distinct from program RAM. The top
+exports `/PDEN` read level, `/PWE` write level, the S6 write commit, and
+`A12:A1`, but a complete host/TMS data-bus composition policy is still absent.
+Authorized local ROM storage, lane-valid 8K-by-16 local SRAM storage, raw-pin
+CDC, and open-bus combination are integration responsibilities.
 
 ## Parallel sample-ROM callback
 
@@ -284,8 +322,8 @@ quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains three memories and reports 2,966
-abstract cells with 257 checks and zero structural problems after opt-in
-same-clock local-host timing integration. This is not a
+The pre-technology Yosys target retains three memories and reports 3,294
+abstract cells with 338 checks and zero structural problems after opt-in
+same-clock local-host timing and storage-callback integration. This is not a
 Cyclone V fit, block-RAM placement result, TimeQuest result, 68000 bridge
 qualification, or complete Driver Sound emulation.

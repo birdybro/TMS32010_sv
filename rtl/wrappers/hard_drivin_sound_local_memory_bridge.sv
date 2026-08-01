@@ -31,6 +31,7 @@ module hard_drivin_sound_local_memory_bridge (
   output logic [15:0] local_ram_write_data_o,
 
   output logic        host_program_select_n_o,
+  output logic        host_program_ram_select_n_o,
   output logic        host_program_ram_read_o,
   output logic        host_program_ram_write_o,
   output logic        host_program_ram_write_commit_o,
@@ -58,7 +59,6 @@ module hard_drivin_sound_local_memory_bridge (
   logic        rom_select_n;
   logic        program_bank_select_n;
   logic        communication_bank_select_n;
-  logic        host_program_ram_chip_enable_n;
   logic        host_program_ram_write_n;
   logic        host_program_io_write_enable_n;
   logic        host_program_io_data_enable_n;
@@ -94,7 +94,7 @@ module hard_drivin_sound_local_memory_bridge (
     .host_program_select_n_o           (host_program_select_n_o),
     .host_communication_select_n_o     (host_communication_select_n_o),
     .host_program_ram_chip_enable_n_o  (
-      host_program_ram_chip_enable_n
+      host_program_ram_select_n_o
     ),
     .host_program_ram_write_n_o        (host_program_ram_write_n),
     .host_program_io_write_enable_n_o  (
@@ -207,7 +207,7 @@ module hard_drivin_sound_local_memory_bridge (
     assert (host_communication_select_n_o ==
             (communication_bank_select_n || rvas_n_i));
     assert (host_program_ram_read_o ==
-            (!host_program_ram_chip_enable_n &&
+            (!host_program_ram_select_n_o &&
              latched_read_not_write_i));
     assert (!host_program_ram_write_o ||
             (!host_program_ram_write_n &&
