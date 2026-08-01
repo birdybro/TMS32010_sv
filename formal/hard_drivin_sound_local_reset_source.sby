@@ -1,0 +1,21 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 10
+cover: mode cover
+cover: depth 14
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv hard_drivin_sound_local_reset_source.sv
+read -formal -sv hard_drivin_sound_local_reset_source_formal.sv
+prep -top hard_drivin_sound_local_reset_source_formal
+
+[files]
+rtl/wrappers/hard_drivin_sound_local_reset_source.sv
+formal/hard_drivin_sound_local_reset_source_formal.sv

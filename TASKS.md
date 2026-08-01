@@ -1670,8 +1670,18 @@ objective passing evidence.
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
   Yosys reports 13 cells/seven checks; integrated Yosys reports 3,603 cells/
-  384 checks. MC68000 pulse duration, full HALT-source behavior, and CDC remain
-  `OQ-035`, so this is an FPGA policy boundary rather than pin-level reset.
+  384 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
+  source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
+  the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
+  separate 7406/pull-up branches drive equal logical RESET/HALT requests after
+  combination with `SOUND.RESET`. A standalone parameterized tick-domain
+  reconstruction covers deterministic startup, both triggers, direct reset,
+  paused ticks, exact expiry, early ignored retriggering, and later accepted
+  retriggering; its 10-step BMC and 14-step five-class cover tasks pass, and
+  default-parameter Yosys reports 28 cells/seven checks.
+  Production RC tolerance, power-up behavior, board-top timebase selection,
+  raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
+  is not pin-level reset timing.
   A044427 sheets 3-5 plus TI's LS138/ALS32 data sheets now establish the
   local-68000 ROM and high-bank decode. The populated 27256 pair uses
   `A15:A1` and is selected throughout `A23=0`; LS138 `30P` ignores `A22:A17`

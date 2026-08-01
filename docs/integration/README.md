@@ -20,8 +20,8 @@
 - `hard_drivin_direct_io.md`: upper-Y5 host/TMS transceivers, asymmetric
   modulo-four read and canonical-only write decode, masked carriers, side
   effects, and MAME conflict.
-- `hard_drivin_local_reset.md`: FPGA-only local-MC68000 RESET/HALT release
-  interlock for the optional validity-scrubbed SRAM.
+- `hard_drivin_local_reset.md`: primary-transcribed local-MC68000 LS123 reset
+  source plus the FPGA release interlock for optional validity-scrubbed SRAM.
 - `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
   state, board-reset effects, and standalone FPGA callback boundary.
 - `hard_drivin_host_timing.md`: primary-transcribed local 68000 `RVA`,
@@ -57,6 +57,14 @@ raw local-MC68000 RESET and HALT callbacks separate while clamping both during
 FPGA initialization or an incomplete selected internal-SRAM validity scrub.
 This is a platform safety policy, not physical SRAM reset behavior or a change
 to `/320RES`.
+
+`rtl/wrappers/hard_drivin_sound_local_reset_source.sv` separately reconstructs
+the A044427 `/MRES`/`/SRES` retriggerable one-shot and direct `SOUND.RESET`
+logic in a caller-calibrated hold and retrigger-inhibit tick domain. It emits
+the populated Rev-A source's equal logical RESET/HALT requests without
+pretending the nominal 47 kΩ/10 µF network, component tolerance, or raw
+asynchronous pins are FPGA clock cycles. It remains standalone until a
+platform qualifies the timebase and CDC.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address

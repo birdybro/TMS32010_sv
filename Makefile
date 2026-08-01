@@ -76,6 +76,7 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_local_memory_bridge.ys \
 			synthesis/yosys/hard_drivin_sound_direct_io.ys \
 			synthesis/yosys/hard_drivin_sound_local_ram.ys \
+			synthesis/yosys/hard_drivin_sound_local_reset_source.ys \
 			synthesis/yosys/hard_drivin_sound_local_reset_interlock.ys \
 			synthesis/yosys/hard_drivin_sound_program_ram.ys \
 			synthesis/yosys/hard_drivin_sound_rom_path.ys \

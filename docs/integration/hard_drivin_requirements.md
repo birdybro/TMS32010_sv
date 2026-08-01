@@ -45,6 +45,21 @@ An FPGA-only local-processor interlock separately gates the raw MC68000 RESET
 and HALT callbacks until initialization and any selected internal-SRAM scrub
 finish. It neither changes `/320RES` nor claims a physical SRAM reset; see
 `docs/integration/hard_drivin_local_reset.md`.
+
+The populated Rev-A raw source itself is separately traced. `/MRES` and
+decoded `/SRES` feed LS08 `10S` and the active-low A input of retriggerable
+LS123 `100N`; B and clear are high. C43=10 µF and R79=47 kΩ give about
+155.1 ms nominal from TI's `Cext >= 1 µF` typical equation. TI's early-trigger
+rule gives about 2.2 ms of trigger inhibit for the same capacitor. The LS123
+`/Q` and active-low `SOUND.RESET` test node then drive identical logic through
+separate open-collector/pull-up branches to local MC68000 HALT and RESET
+[atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
+PDF pp. 3-4; ti-sn74ls123-datasheet-sdls043, printed pp. 1-2 and 8-9]. The
+standalone digital reconstruction uses caller-calibrated hold and inhibit tick
+counts and is not board-top selected until its timebase and CDC are qualified.
+**Confidence: VERIFIED_PRIMARY for connectivity/polarity/nominal calculation;
+VERIFIED_SIMULATION/FORMAL for tick-domain RTL; UNKNOWN for production RC
+tolerance and power-up behavior.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a
@@ -443,6 +458,18 @@ timing [atari-driver-sound-board-schematic, drawing A044427, sheet 4 of 10,
 PDF p. 7; mame-harddriv-audio-030fefc, device reset and device
 configuration]. **Confidence: primary wiring VERIFIED_PRIMARY; reset timing
 PROVISIONAL pending a complete board-control trace.**
+
+The local MC68000 reset is independent of `/320RES`. A044427's first LS123
+half produces an approximately 155.1 ms nominal retriggerable hold from
+`/MRES` or decoded `/SRES`, while the active-low `SOUND.RESET` test node can
+hold it directly. TI's documented early-trigger rule implies about 2.2 ms of
+trigger inhibit with the fitted 10 µF capacitor. Separate 7406 outputs and
+pull-ups drive the local CPU HALT and RESET pins from the same stable Boolean
+source. MAME's main-side reset
+handler instead pulses RESET only and omits both the duration and HALT, so it
+is not a timing oracle for this path (`SC-035`). Complete equations, component
+citations, digital tick policy, and unresolved tolerance/CDC are in
+`docs/integration/hard_drivin_local_reset.md`.
 
 ### TMS32010 interrupt input
 

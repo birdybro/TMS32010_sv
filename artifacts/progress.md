@@ -1,19 +1,20 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' local-MC68000 reset-release interlock
+- **Current milestone:** Hard Drivin' local-MC68000 physical reset-source
+  qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 45 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 46 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 33 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 34 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -97,7 +98,10 @@
   A twenty-third target checks the storage-free local-MC68000 RESET/HALT
   release interlock at 13 combinational cells, seven retained checks, no
   storage/latch, and zero structural problems.
-- **Formal status:** all 32 tasks from 16 SymbiYosys configurations pass with
+  A twenty-fourth target checks the tick-domain retriggerable local-MC68000
+  reset source at 28 cells/seven retained checks, no memory/latch/generated
+  clock, and zero structural problems.
+- **Formal status:** all 34 tasks from 17 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -774,8 +778,25 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the board reports 3,603
-  cells/384 checks with six memories. This does not implement the physical
-  HALT source, MC68000 reset duration, or cross-domain deassertion (`OQ-035`).
+  cells/384 checks with six memories. This interlock does not itself select
+  the separate physical-source model, establish RC tolerance, or implement
+  cross-domain deassertion (`OQ-035`).
+- **New physical reset-source evidence:** A044427 sheet 2 and TI SDLS043 now
+  establish that `/MRES` and decoded `/SRES` feed LS08 `10S` into active-low A
+  of retriggerable LS123 `100N`, with B/clear high. C43=10 µF and R79=47 kΩ
+  yield about 155.1 ms nominal from TI's typical large-capacitance equation;
+  the data sheet's early-trigger rule yields about 2.2 ms of trigger inhibit.
+  The LS123 `/Q` and active-low `SOUND.RESET` test node feed LS00 `40S`; two
+  separate 7406/pull-up paths then drive equal stable logic to MC68000 HALT
+  and RESET. Pinned MAME instead pulses only RESET immediately (`SC-035`). A
+  standalone synthesizable reconstruction uses caller-calibrated hold ticks,
+  deterministic FPGA startup hold, TI's early-retrigger inhibit, and direct
+  test reset. Simulation covers exact six-tick expiry, pause, both triggers,
+  held-low behavior, an early ignored retrigger, and a later accepted retrigger;
+  a 10-step independent hold/inhibit-counter BMC and 14-step five-class cover
+  pass. Yosys reports 28 cells/seven checks. This is
+  VERIFIED_PRIMARY for stable board logic and nominal calculation, verified
+  only in the tick domain for RTL, and not analog/pin-timing equivalence.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -799,8 +820,8 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
-  local-MC68000 RESET/HALT pulse duration, complete HALT-source behavior, and
-  future-core reset CDC,
+  local-MC68000 RC tolerance/power-up behavior, upstream `/MRES`/`/SRES`
+  source timing, platform tick calibration, and future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
   policy,
@@ -809,7 +830,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** trace and model the A044427 sheet-1/2 local-MC68000 HALT source
-  without folding it into RESET or assuming firmware startup behavior.
+- **Next task:** trace the upstream `/MRES` connector/system source and decoded
+  `/SRES` access address/timing, keeping firmware use and physical pulse width
+  separate from the now-qualified LS123/RESET/HALT logic.
 - **Latest committed baseline before this cycle:**
-  `ce9eb4c`
+  `284bd38`

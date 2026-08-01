@@ -538,9 +538,21 @@ Changelog, and the project follows semantic versioning once releases begin.
   RESET and HALT callbacks while clamping both during FPGA initialization or
   an incomplete selected internal-SRAM scrub, plus exhaustive simulation and
   one-step formal coverage of all policy inputs.
+- Primary qualification of the populated A044427 local-MC68000 reset source,
+  backed by the pinned TI SDLS043 LS123 data sheet: `/MRES` and decoded `/SRES`
+  trigger a nominal 155.1 ms one-shot with about 2.2 ms of documented
+  early-retrigger inhibit, `SOUND.RESET` holds the result directly, and
+  separate 7406 branches deliver equal stable logic to RESET and HALT. A
+  standalone synthesizable tick-domain reconstruction exposes both outputs,
+  active hold, and trigger events without analog or real-time RTL.
 
 ### Changed
 
+- `OQ-035` now separates resolved Rev-A connectivity and nominal timing from
+  unresolved RC tolerance, power-up behavior, raw-input CDC, platform tick
+  calibration, firmware use, and the future MC68000-core interface. `SC-035`
+  records that pinned MAME pulses only RESET immediately and is not a timing
+  oracle for the paired physical source.
 - The opt-in board host-timing path now selects the complete local-memory
   bridge. Lower Y5 owns the existing program-RAM callback, Y6 owns the existing
   communication-RAM callback under CRAMEN, and timing-disabled operation keeps
@@ -689,6 +701,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The reset-source regression covers deterministic startup, exact six-tick
+  release, paused ticks, direct `SOUND.RESET`, both falling-edge trigger
+  sources, held-low behavior, an early ignored retrigger, and a post-inhibit
+  accepted retrigger. Its independent hold/inhibit-counter BMC passes 10 steps
+  and its 14-step cover run reaches release, both accepted trigger sources, an
+  ignored trigger, and direct reset. Default-parameter Yosys reports 28 cells/
+  seven retained checks with no memory, latch, or generated clock.
 - The local-reset policy passes all 32 initialization/RESET/HALT/selection/
   readiness combinations, and board simulation proves an actual sequential
   scrub clamps both processor inputs until validity address `0x1fff` clears.
@@ -1394,14 +1413,20 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The local-reset increment passes the complete 129/231/38/45/5/10 regression
   split, strict lint across 33 modules, all 23 Yosys targets, all 33 pinned
   reference hashes, and all 32 formal tasks from 16 configurations.
+- The physical reset-source increment passes the complete
+  129/231/38/46/5/10 regression split, strict lint across 34 modules, all 24
+  Yosys targets, all 34 pinned reference hashes, and all 34 formal tasks from
+  17 configurations.
 
 ### Known Issues
 
 - The optional FPGA local SRAM needs 8,192 clocks to invalidate metadata after
   `initialize_i`. This is an integration convention, not physical 6264 reset
   or wait behavior. The wrapper gates exported local RESET/HALT release, but a
-  future MC68000 integration must use that boundary and still qualify the
-  separate physical HALT source, pulse duration, and CDC under `OQ-035`.
+  future MC68000 integration must compose the now-qualified common Rev-A reset
+  source with a calibrated tick, raw-input CDC, component-tolerance policy,
+  and the selected core's reset interface under `OQ-035`. The nominal
+  155.1 ms calculation is not a production-board pulse-width guarantee.
 - A044427's `RVA`/`/DTACK`/`/RVAS` logic and same-clock board composition are
   qualified at logical bus-state resolution, but complete TTL
   propagation/loading margin, raw-pin CDC, and unreset power-up transient are

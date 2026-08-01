@@ -931,6 +931,35 @@
         "enabled": true,
         "expected_content_types": ["application/pdf", "application/octet-stream"]
       }
+    },
+    {
+      "id": "ti-sn74ls123-datasheet-sdls043",
+      "title": "Retriggerable Monostable Multivibrators",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "SDLS043",
+      "publication_date": "1983-12; revised 1988-03",
+      "revision": "March 1988 data sheet with later package addenda",
+      "source_url": "https://www.ti.com/lit/ds/symlink/sn74ls123.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/SDLS043_SN74LS123_Retriggerable_Monostable_Multivibrators.pdf",
+      "sha256": "abe37431fa9098d0230544c83e4490cc3e788f6be92ef23e99124047f2b59707",
+      "document_type": "manufacturer component data sheet",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
+      "relevance": "Primary component behavior for A044427's RC-timed local-MC68000 RESET/HALT release and 320IRQ indicator one-shots",
+      "authority_level": 2,
+      "notes": "Keep only in ignored cache; use Atari A044427 as authority for actual RC values, reset inputs, and board signal wiring.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Description, retrigger and clear waveforms, and 123/LS123 function table, printed pages 1-2",
+        "SN54LS122/SN54LS123/SN74LS122/SN74LS123 recommended operating conditions, printed page 6",
+        "Typical application data for LS122/LS123, pulse-width equations and component connection, printed pages 8-9"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
     }
   ]
 }

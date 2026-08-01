@@ -767,3 +767,33 @@ electrical result of an out-of-range access.
 - **Confidence:** VERIFIED_PRIMARY for the Rev-A decode; CORROBORATED for the
   canonical software ranges and 64 KiB payload; UNKNOWN for installed jumper
   and later board variants.
+
+## SC-035 — Physical paired RC reset hold versus instantaneous emulator reset
+
+- **Primary board evidence:** A044427 LS08 `10S` combines `/MRES` and decoded
+  `/SRES` into the active-low A trigger of LS123 `100N`. With B and clear high,
+  C43=10 µF, and R79=47 kΩ, `/Q` remains low after a falling trigger. The `/Q`
+  signal and active-low `SOUND.RESET` test input feed LS00 `40S`; separate 7406
+  open-collector outputs and pull-ups then drive local MC68000 HALT and RESET
+  with equal stable logic [atari-driver-sound-board-schematic, drawing A044427
+  Rev A, sheet 2 of 10, PDF pp. 3-4]. TI identifies the part as retriggerable
+  and gives the typical `Cext >= 1 µF` equation, yielding about 155.1 ms
+  nominal. It also states that retrigger pulses beginning before
+  `0.22 * Cext(pF)` ns are ignored, yielding about 2.2 ms with C43
+  [ti-sn74ls123-datasheet-sdls043, printed pp. 1-2 and 8-9].
+- **Secondary abstraction:** pinned MAME's `hd68k_snd_reset_w` asserts and then
+  immediately clears only `INPUT_LINE_RESET`; it does not drive HALT or model
+  the monostable interval [mame-harddriv-audio-030fefc,
+  `hd68k_snd_reset_w`].
+- **Conflict:** the emulator preserves a functional request to restart the
+  local CPU but omits two electrically observable properties: paired HALT and
+  a long RC-defined hold. It therefore cannot qualify reset pin timing.
+- **Current treatment:** `hard_drivin_sound_local_reset_source` models the
+  verified falling-edge/direct-reset Boolean behavior and the documented early
+  retrigger-inhibit rule in an explicit caller-calibrated tick domain. Its
+  deterministic initial hold is labeled an FPGA convention. It remains
+  separate from the board top and the SRAM-scrub interlock until `OQ-035`
+  resolves timebase, tolerance, and CDC policy.
+- **Confidence:** VERIFIED_PRIMARY for the populated Rev-A connectivity and
+  nominal typical calculation; CORROBORATED for MAME's functional restart
+  intent; UNKNOWN for production pulse limits and power-up behavior.
