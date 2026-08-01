@@ -306,8 +306,12 @@ module hard_drivin_sound_host_routing_formal (
             assert (sound_flag && sound_flag_valid);
           end
           TX_PARTIAL_WRITE: begin
-            assert (!main_mailbox_read_data_valid);
-            assert (!sound_flag && sound_flag_valid);
+            assert (main_mailbox_read_data ==
+                    (partial_upper_q
+                       ? {2{transaction_data_q[15:8]}}
+                       : {2{transaction_data_q[7:0]}}));
+            assert (main_mailbox_read_data_valid);
+            assert (sound_flag && sound_flag_valid);
           end
           TX_LATCH_WRITE: begin
             assert (host_latch_q ==
@@ -337,11 +341,13 @@ module hard_drivin_sound_host_routing_formal (
       cover ((step_q == 4'd8) &&
              (transaction_kind_q == TX_PARTIAL_WRITE) &&
              partial_upper_q && host_timing_partial_sound_write &&
-             !sound_flag);
+             sound_flag &&
+             (main_mailbox_read_data == {2{transaction_data_q[15:8]}}));
       cover ((step_q == 4'd8) &&
              (transaction_kind_q == TX_PARTIAL_WRITE) &&
              !partial_upper_q && host_timing_partial_sound_write &&
-             !sound_flag);
+             sound_flag &&
+             (main_mailbox_read_data == {2{transaction_data_q[7:0]}}));
       cover ((step_q == 4'd8) &&
              (transaction_kind_q == TX_LATCH_WRITE) &&
              host_timing_write_complete);

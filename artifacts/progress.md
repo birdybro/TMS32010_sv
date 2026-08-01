@@ -1,14 +1,16 @@
 # Progress summary
 
-- **Current milestone:** `OQ-026` Driver Sound sparse sample-ROM population
-  and block-selection audit
+- **Current milestone:** `OQ-031` Driver Sound original-MC68000 mailbox byte
+  capture and flag-collision audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 56 native bus/phase/wrapper tests, including CALA/RET bus/stall and
+  tests; 57 native bus/phase/wrapper tests, including exhaustive original-
+  MC68000 mailbox word/upper-byte/lower-byte normalization, CALA/RET bus/stall,
+  and
   four-boundary interrupt qualification,
   plus a zero-versus-16-pause cross-space comparison;
   one
@@ -67,7 +69,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,502 abstract cells/405 checks
+  board top retains six memories and passes at 3,773 abstract cells/409 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -126,6 +128,9 @@
   the two held strobes, and the complete `/DTACK` cone at 185 hierarchy
   cells/64 retained checks, with no memory, latch, generated clock, or
   structural problem.
+  A thirtieth target checks the storage-free original-MC68000 write-word
+  normalizer at 39 mapped cells/three retained checks, with no memory, latch,
+  generated clock, or structural problem.
 - **Formal status:** all 46 tasks from 23 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
@@ -202,12 +207,13 @@
   A fourteenth 12-step board-hierarchy BMC/cover pauses DSP execution and
   symbolically selects `/SOUNDRD`, complete or partial `/SOUNDWR`,
   `/LATCHES`, `/SPEECH`, or `/IRQCLR`. It proves exact pre-completion read
-  data/masks, S7 mailbox/control routing, partial rejection, speech non-effect,
+  data/masks, S7 mailbox/control routing, duplicated upper/lower byte capture,
+  speech non-effect,
   external-callback isolation, both partial-byte orientations, and
   invalid-carrier clamping. Seven covers reach solver step 10. Arbitrary
   host-event spacing, running-DSP interaction,
-  raw-pin CDC, collision/byte behavior, and electrical timing remain outside
-  this proof.
+  raw-pin CDC, preset-release collision behavior, and electrical timing remain
+  outside this proof.
   A nineteenth standalone main-held-strobe configuration passes a 12-step BMC
   against an independent transition model under event-exclusivity and
   phase-level/edge-consistency assumptions. Its 16-step cover reaches seven
@@ -739,13 +745,14 @@
   boundary while registered pulses remain available for tracing. Yosys
   0.67+111 reports 142 cells/24 checks with no memory/latch or structural
   problem. The board top now offers it as an explicit opt-in: all four masked
-  read quadrants remain selected through S6; S7 routes `/SOUNDRD`, whole-word
-  `/SOUNDWR`, `/LATCHES`, and `/IRQCLR`; partial mailbox writes are reported
-  and rejected; and `/SPEECH` remains visible without a side effect. External
-  callbacks remain the default and are explicitly isolated while opted in.
+  read quadrants remain selected through S6; S7 routes `/SOUNDRD`, word or
+  normalized-byte `/SOUNDWR`, `/LATCHES`, and `/IRQCLR`; byte mailbox writes
+  are reported and accepted; and `/SPEECH` remains visible without a side
+  effect. External callbacks remain the default and are explicitly isolated
+  while opted in.
   Integrated Yosys retained three memories at 3,294 cells/338 checks at that
-  checkpoint. This does
-  not close `OQ-030` open bus, `OQ-031` physical byte behavior, or `OQ-033`
+  checkpoint. At that checkpoint this did not close `OQ-030` open bus, the
+  then-open `OQ-031` byte behavior, or `OQ-033`
   raw-pin CDC, TTL margin, and physical startup. The complete current
   127/231/38/43/5/10 regression split, strict lint across 31 modules, all
   twenty-one Yosys targets, all 33 hashes, and all 28 tasks from fourteen formal
@@ -825,7 +832,7 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the current board reports
-  3,502 cells/405 checks with six memories. This interlock does not itself
+  3,773 cells/409 checks with six memories. This interlock does not itself
   select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
@@ -1133,6 +1140,18 @@
   `physical_population_proven` false. The verified cache now contains 59
   sources. `OQ-026` is `PARTIALLY_RESOLVED_PRIMARY`; no RTL changed because
   the existing wrapper already represents sparse physical blocks.
+- **New mailbox byte evidence:** A044427 LS138 `20P` generates `/MAINWR`
+  locally for physical alias `0x840000..0x843fff`; neither it nor local
+  `/SOUNDWR` uses the available byte enables. SP-327 proves `/EWEU` and
+  `/EWEL` reach the expansion connector, while Motorola Table 3-1 proves the
+  original MC68000's current implementation drives the selected byte on both
+  bus halves. Both LS374 pairs therefore capture `{byte, byte}`, not MAME's
+  retained-other-byte merge (`SC-031`). The standalone normalizer exhausts
+  all 65,536 data words in word and both byte orientations; the timed local
+  board path accepts `0xab -> 0xabab` and `0x34 -> 0x3434`, sets/clears the
+  mailbox flag, and passes both symbolic routing covers. TI's LS74 function
+  table verifies preset dominance while asserted, but not the exact read edge
+  at preset release. `OQ-031` is `PARTIALLY_RESOLVED_PRIMARY`.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1158,7 +1177,8 @@
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
   physical J3 population/field options and disconnected LS244 voltage/read
   values on `A046491-01`/`A046491-02`,
-  main/sound mailbox byte-write and coincident-strobe behavior,
+  main/sound firmware mailbox access widths, exact write-preset-release/
+  opposite-read-clock behavior, and substitute-68k inactive byte lanes,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
   main-bus peripheral response latency, exact DUART/main-clock phase and
@@ -1178,9 +1198,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-031` mailbox byte writes and coincident
-  strobes from the primary A044425/A044427 gate network and 68000 bus contract,
-  preserving explicit conflict signaling if the physical ordering remains
-  undocumented.
+- **Next task:** apply the now-qualified original-MC68000 duplicated-byte bus
+  contract to `OQ-024` communication-RAM host writes, while preserving
+  firmware-use and HM6116 timing boundaries.
 - **Latest committed baseline before this cycle:**
-  `bc166da`
+  `56b67bc`

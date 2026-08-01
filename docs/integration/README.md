@@ -41,7 +41,9 @@
 - `hard_drivin_host_reads.md`: complete and partial 68000 read targets,
   driven-lane validity, and the TMS port-3 host latch.
 - `hard_drivin_host_mailboxes.md`: bidirectional main/sound word latches,
-  LS74 pending flags, read-clear behavior, and explicit conflict validity.
+  original-MC68000 duplicated-byte capture, LS74 pending flags, read-clear
+  behavior, and explicit conflict validity. The primary-source byte/decode
+  audit is in `docs/research/hard_drivin_mailbox_byte_audit.md`.
 - `hard_drivin_mister_wrapper.md`: partial same-clock processor/program-RAM
   top, reset/ownership protocol, physical I/O callback, and test boundary.
 
@@ -140,12 +142,14 @@ peripheral.
 `CRAMEN` and `/320RES`. Its standalone RTL uses an explicit decoded host
 completion and per-bit validity. The board top can opt into Q3/Q4 and exports
   selected-control validity; the full `/RVF`/`/RVAS`/DTACK bridge remains future work.
-`hard_drivin_host_mailboxes.md` qualifies the two complete-word LS374 paths
-and LS74 `MAINFLAG`/`SOUNDFLAG` handshake. Its standalone RTL preserves
-reset-independent data, read-cleared flags, and explicit invalidity for
-unsourced coincident set/clear cases. The board top now exposes four explicit
-whole-word completion callbacks and every data/flag validity/conflict output;
-it still does not implement either physical bus.
+`hard_drivin_host_mailboxes.md` qualifies the two LS374 paths and LS74
+`MAINFLAG`/`SOUNDFLAG` handshake. Its standalone RTL preserves
+reset-independent data, read-cleared flags, and explicit invalidity for the
+unresolved coincident release/read-edge case. A separate combinational adapter
+normalizes original-MC68000 word or duplicated-byte transfers before the
+local timed write callback. The board top exposes four explicit completion
+callbacks and every data/flag validity/conflict output; it still does not
+implement the physical main-system bridge.
 `hard_drivin_host_reads.md` also defines standalone storage-free `/SWITCHES`
 and `/READSTAT` mappers. Each exports only `D15:D12` as driven and preserves
 one validity bit per raw source. The switch mapper retains exact

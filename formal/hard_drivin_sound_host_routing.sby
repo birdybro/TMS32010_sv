@@ -32,6 +32,7 @@ read -formal -sv hard_drivin_sound_320_port_latch.sv
 read -formal -sv hard_drivin_sound_output_control.sv
 read -formal -sv hard_drivin_sound_bio_generator.sv
 read -formal -sv hard_drivin_sound_host_control.sv
+read -formal -sv hard_drivin_mc68000_write_word.sv
 read -formal -sv hard_drivin_sound_mailboxes.sv
 read -formal -sv hard_drivin_sound_read_status.sv
 read -formal -sv hard_drivin_sound_switches.sv
@@ -67,6 +68,7 @@ rtl/wrappers/hard_drivin_sound_320_port_latch.sv
 rtl/wrappers/hard_drivin_sound_output_control.sv
 rtl/wrappers/hard_drivin_sound_bio_generator.sv
 rtl/wrappers/hard_drivin_sound_host_control.sv
+rtl/wrappers/hard_drivin_mc68000_write_word.sv
 rtl/wrappers/hard_drivin_sound_mailboxes.sv
 rtl/wrappers/hard_drivin_sound_read_status.sv
 rtl/wrappers/hard_drivin_sound_switches.sv

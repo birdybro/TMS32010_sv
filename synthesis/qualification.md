@@ -282,14 +282,15 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,502 abstract cells, 405
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,773 abstract cells, 409
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,
 lower, and validity arrays.
 Both structural checks pass with zero problems. This proves hierarchy and
-memory retention plus the opt-in BIO/host-control/host-timing selection and
-whole-word mailbox/raw-status boundaries only; it is not a
+memory retention plus the opt-in BIO/host-control/host-timing selection,
+original-MC68000 local byte-write normalization, and mailbox/raw-status
+boundaries only; it is not a
 technology-mapped utilization, block-RAM
 placement, fitter, or TimeQuest result.
 
@@ -390,6 +391,29 @@ symbolic proof, this qualifies only the FPGA RESET/HALT release equation; it
 is not MC68000 reset duration, physical HALT behavior, CDC, or electrical
 timing evidence.
 
+The twenty-fourth through twenty-ninth checked-in scripts qualify the newer
+board-boundary blocks at the same pre-technology level:
+
+| target | cells | retained checks | qualified scope |
+|---|---:|---:|---|
+| `hard_drivin_sound_local_reset_source` | 28 | 7 | caller-calibrated LS123 hold/retrigger state |
+| `hard_drivin_main_sound_reset_decode` | 16 | 4 | physical `/SRES` address/control decode |
+| `hard_drivin_main_rvas_timing` | 93 | 25 | same-clock request and held-strobe state |
+| `hard_drivin_main_dtack_decode` | 21 | 8 | complete combinational acknowledgement cone |
+| `hard_drivin_main_address_decode` | 49 | 20 | primary/RAM/HSBUS TTL decode |
+| `hard_drivin_main_bus_control` | 185 | 64 | address-driven timing/decode composition |
+
+Each reports zero structural problems. Their documented exclusions remain
+physical RC tolerance, raw-pin CDC, peripheral latency, electrical timing,
+power-up state, and Cyclone V fitting as applicable.
+
+The thirtieth checked-in script targets the storage-free
+`hard_drivin_mc68000_write_word`. Yosys 0.67+111 reports 39 mapped cells with
+three retained checks, no memory or latch, and zero structural problems. It
+qualifies only the exhaustive-tested original-MC68000 word/duplicated-byte
+mapping used before an unqualified pair of LS374s. It is not a substitute-68k
+bus contract, raw-pin timing, CDC, or physical mailbox fit.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -412,7 +436,8 @@ ignored JSON outputs including
 `build/yosys/hard_drivin_sound_bio_generator.json`,
 `build/yosys/hard_drivin_sound_host_control.json`,
 `build/yosys/hard_drivin_sound_320_port_latch.json`,
-`build/yosys/hard_drivin_sound_mailboxes.json`, and
+`build/yosys/hard_drivin_sound_mailboxes.json`,
+`build/yosys/hard_drivin_mc68000_write_word.json`, and
 `build/yosys/hard_drivin_sound_read_status.json`. Tool-version differences
 make the generic cell count unsuitable for direct comparison with the earlier
 Yosys 0.33 result; only same-version changes should be treated as utilization

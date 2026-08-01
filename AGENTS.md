@@ -457,10 +457,11 @@ power-up/nanosecond equivalence while `OQ-033` remains open. The standalone
 `hard_drivin_sound_host_timing` implements only that logical sequence with
 explicit edge events, exact target/completion visibility, and deterministic
 FPGA-only idle initialization. The board top now selects it only behind
-`use_host_timing_i`, using its pre-edge S7 events for masked reads,
-whole-word `/SOUNDWR`, `/SOUNDRD`, `/LATCHES`, and `/IRQCLR`; partial mailbox
-writes are disclosed and rejected under `OQ-031`, while `/SPEECH` remains an
-observable unimplemented completion. Read the timing document before changing
+`use_host_timing_i`, using its pre-edge S7 events for masked reads, word or
+normalized-byte `/SOUNDWR`, `/SOUNDRD`, `/LATCHES`, and `/IRQCLR`; byte mailbox
+writes are normalized to original-MC68000 duplicated-byte words, accepted,
+and disclosed under `OQ-031`, while `/SPEECH` remains an observable
+unimplemented completion. Read the timing document before changing
 or integrating it. Its dedicated 16-step formal harness assumes alternating
 physical-edge enables and a fully settled VPA-owned release, proves the
 common-clock logical equations and no-retry behavior, and reaches read, write,
@@ -486,7 +487,7 @@ board hierarchy with the processor paused, selects one symbolic transaction
 from six routed host classes with a symbolic partial-byte orientation, holds
 contradictory external callbacks active,
 and proves the currently implemented S7 read/write/latch/IRQ side effects plus
-partial-write rejection and speech non-effect. Treat it as bounded
+upper/lower duplicated-byte capture and speech non-effect. Treat it as bounded
 common-clock composition evidence only, not a general host-cycle or
 electrical proof.
 The partial `hard_drivin_sound_mister` connects that storage to the generic
@@ -507,19 +508,25 @@ under `OQ-030`. Follow `docs/integration/hard_drivin_communication_ram.md`,
 `docs/integration/hard_drivin_host_reads.md`, and `SC-023` through `SC-025`
 plus `SC-030` before changing these paths.
 The external main system and local sound 68000 exchange two independent
-complete 16-bit words through LS374 pairs; LS74 `20S` sets `MAINFLAG` and
+16-bit words through LS374 pairs; LS74 `20S` sets `MAINFLAG` and
 `SOUNDFLAG` on the corresponding writes, clears them on opposite-side reads,
 and clears both flags on board reset. Neither data latch has reset. The
 standalone `hard_drivin_sound_mailboxes` preserves independent data/flag
 validity and rejects coincident set/clear interpretation under `SC-031` and
-`OQ-031`. The board top connects it behind four selectable whole-word
-completion paths: the main-system callbacks remain explicit, while the local
-sound-CPU callbacks may come from the qualified S7 timing event. It exports
-all validity/conflict state and reports rather than merges partial local
-writes. Read
+`OQ-031`. The board top connects it behind four selectable complete-word
+callbacks: the main-system callbacks remain explicit, while the local
+sound-CPU callbacks may come from the qualified S7 timing event. Original
+MC68000 Table 3-1 and the Atari decode prove that a byte write clocks
+`{byte, byte}` into either unqualified latch pair; the standalone
+`hard_drivin_mc68000_write_word` normalizer implements that rule for the timed
+local path. Its byte trace is an accepted-event disclosure, not rejection.
+The external main callback remains an already captured complete-word contract.
+The top exports all validity/conflict state. Read
 `docs/integration/hard_drivin_host_mailboxes.md` before changing or integrating
-this path. Do not infer byte merging, LS74 collision priority, or a complete
-68000 bridge from the callback model.
+this path. Do not substitute MAME's byte-preserving merge, generalize the
+original-MC68000 duplicated-lane footnote to later 68k cores, assign the exact
+preset-release/read-edge result, or infer a complete 68000 bridge from the
+callback model.
 The standalone storage-free `hard_drivin_sound_read_status` maps raw
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and `/TIRDY` to host `D15:D12`, with
 fixed driven mask `0xf000` and independent per-source validity. Its low twelve

@@ -798,8 +798,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "local_processor_halt_n_i",
             "local_processor_release_blocked_o",
             "8,192 clocks",
-            "3,502",
-            "405 checks",
+            "3,773",
+            "409 checks",
             "Cyclone V",
         ):
             self.assertIn(required, wrapper)
@@ -1060,8 +1060,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "lower-Y5 program-RAM storage",
             "Y6 communication-RAM storage under CRAMEN",
             "optional lane-valid SRAM",
-            "3,502 abstract cells",
-            "405 checks",
+            "3,773 abstract cells",
+            "409 checks",
         ):
             self.assertIn(required, host_timing)
         self.assertIn("OQ-033", questions)
@@ -1159,6 +1159,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         mailboxes = (
             DOCS / "integration" / "hard_drivin_host_mailboxes.md"
         ).read_text(encoding="utf-8")
+        byte_audit = (
+            DOCS / "research" / "hard_drivin_mailbox_byte_audit.md"
+        ).read_text(encoding="utf-8")
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
@@ -1171,19 +1174,37 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "LS74 `20S`",
             "Neither data-latch pair has a clear",
             "zero flag carrier with flag validity false",
-            "whole-word only",
+            "preset dominates the clock while",
+            "`0x840000..0x843fff`",
+            "`/EWEU` or `/EWEL`",
+            "`{2{D15:D8}}`",
+            "`{2{D7:D0}}`",
+            "current implementation",
+            "hard_drivin_mc68000_write_word.sv",
+            "accepted byte write",
             "all 65,536 words in both directions",
             "Ten retained RTL checks",
             "`hard_drivin_sound_mister` instantiates the standalone adapter",
             "both coincident write/read",
-            "2,966 abstract cells",
-            "257 retained\nchecks",
+            "3,773 abstract cells",
+            "409 retained\nchecks",
         ):
             self.assertIn(required, mailboxes)
+        for required in (
+            "LS138 `20P`",
+            "Y0",
+            "`/EWEU` and `/EWEL`",
+            "`{byte, byte}`",
+            "current implementation",
+            "read edge at write-preset release",
+            "all 65,536 data words",
+            "39 mapped cells",
+        ):
+            self.assertIn(required, byte_audit)
         self.assertIn(
             "SC-031 — Physical whole-word mailboxes", conflicts
         )
-        self.assertIn("OQ-031", questions)
+        self.assertIn("PARTIALLY_RESOLVED_PRIMARY (`SC-031`)", questions)
 
     def test_hard_drivin_direct_io_preserves_asymmetric_decode(self) -> None:
         direct_io = (

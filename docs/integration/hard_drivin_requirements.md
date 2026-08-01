@@ -206,7 +206,7 @@ mask, and valid mask. An invalid selection claims no lanes. The board top
 exposes the composed values and one-hot target. In timing mode its selection
 comes from `/RVF`/`/RVAS`, and only the S7 `/SOUNDRD` completion clears the
 mailbox flag. This does not implement raw-pin CDC, physical partial-byte
-behavior, or an open-bus value.
+read-lane completion, or an open-bus value.
 
 The standalone `hard_drivin_sound_read_status` mapper now preserves the exact
 `MAINFLAG`, `SOUNDFLAG`, `SOUND.TEST`, and active-low `/TIRDY` order in
@@ -224,11 +224,24 @@ main system and the local sound 68000. LS74 `20S` asynchronously sets
 `/SOUNDRD` and `/MAINRD` clear the respective flags by clocking grounded D.
 Board reset clears only the flags, not either word latch. The standalone
 `hard_drivin_sound_mailboxes` callback exhaustively verifies nominal
-whole-word exchange and explicitly invalidates unsourced coincident set/clear
-conditions. Byte-write behavior remains `SC-031`/`OQ-031`. The main-system
-callbacks remain explicit; the local side can now use qualified S7
-`/SOUNDRD` and complete-word `/SOUNDWR`, while reporting and rejecting partial
-writes at the whole-word boundary.
+word exchange and explicitly invalidates the unresolved same-callback
+coincident write/read or reset/write conditions.
+
+A044427 LS138 `20P` generates main `/MAINWR` for the physical
+`0x840000..0x843fff` expansion alias without using connector `/EWEU` or
+`/EWEL`; local `/SOUNDWR` likewise ignores `/WEU` and `/WEL`. Motorola Table
+3-1 establishes that the original MC68000's current implementation duplicates
+the selected byte on both halves of `D15:D0`. Both latch directions therefore
+capture `{byte, byte}` for a byte transfer and preserve all sixteen bits for a
+word transfer. This is original-device behavior, not a generic 68k-substitute
+contract. Pinned MAME's local byte-preserving merge remains a secondary
+conflict under `SC-031`; firmware use and the exact write-preset-release/read-
+clock collision remain open under `OQ-031`.
+
+The main-system callback remains an explicit already-captured-word boundary;
+the local timed side now uses `hard_drivin_mc68000_write_word` before qualified
+S7 `/SOUNDWR`. Its partial-write trace output reports an accepted byte write,
+not rejection.
 Both retained words, data validity, flag validity, conflicts, and raw
 `/READSTAT` masks remain visible. This is not a raw-pin 68000 or main-system
 bus. See

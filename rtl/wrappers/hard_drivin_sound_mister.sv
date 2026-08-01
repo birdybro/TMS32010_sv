@@ -300,6 +300,9 @@ module hard_drivin_sound_mister (
   logic        selected_sound_cpu_mailbox_read_commit;
   logic        selected_sound_cpu_mailbox_write_commit;
   logic [15:0] selected_sound_cpu_mailbox_write_data;
+  logic [15:0] host_timing_mailbox_write_data;
+  logic        host_timing_mailbox_write_valid;
+  logic        host_timing_mailbox_byte_write;
   logic        selected_sound_cpu_low_read_select_valid;
   logic [1:0]  selected_sound_cpu_low_read_quadrant;
   logic        selected_host_program_select_n;
@@ -381,11 +384,11 @@ module hard_drivin_sound_mister (
     use_host_timing_i
       ? (host_timing_write_complete_event &&
          (host_timing_select_quadrant_o == 2'b00) &&
-         host_timing_whole_word_write)
+         host_timing_mailbox_write_valid)
       : sound_cpu_mailbox_write_commit_i;
   assign selected_sound_cpu_mailbox_write_data =
     use_host_timing_i
-      ? host_bus_write_data_i
+      ? host_timing_mailbox_write_data
       : sound_cpu_mailbox_write_data_i;
   assign selected_sound_cpu_low_read_select_valid =
     use_host_timing_i
@@ -401,7 +404,7 @@ module hard_drivin_sound_mister (
   assign host_timing_partial_sound_write_o =
     use_host_timing_i && host_timing_write_complete_o &&
     (host_timing_select_quadrant_o == 2'b00) &&
-    !host_timing_whole_word_write;
+    host_timing_mailbox_byte_write;
   assign host_timing_partial_program_write_o =
     use_host_timing_i && host_timing_cycle_complete_o &&
     !host_timing_latched_read_not_write_o &&
@@ -949,6 +952,19 @@ module hard_drivin_sound_mister (
     .latch_valid_o                 (host_latch_valid_o)
   );
 
+  hard_drivin_mc68000_write_word local_mailbox_write_word (
+    .bus_data_i                  (host_bus_write_data_i),
+    .upper_data_strobe_n_i       (
+      host_timing_latched_upper_data_strobe_n_o
+    ),
+    .lower_data_strobe_n_i       (
+      host_timing_latched_lower_data_strobe_n_o
+    ),
+    .captured_word_o             (host_timing_mailbox_write_data),
+    .transfer_valid_o            (host_timing_mailbox_write_valid),
+    .byte_transfer_o             (host_timing_mailbox_byte_write)
+  );
+
   hard_drivin_sound_mailboxes mailboxes (
     .clk_i                         (clk_i),
     .initialize_i                  (initialize_i),
@@ -1123,7 +1139,8 @@ module hard_drivin_sound_mister (
       assert (!host_timing_write_complete_event ||
               host_timing_cycle_complete_event);
       assert (!host_timing_partial_sound_write_o ||
-              !selected_sound_cpu_mailbox_write_commit);
+              (use_host_timing_i && host_timing_mailbox_byte_write &&
+               host_timing_mailbox_write_valid));
       assert (!host_timing_partial_program_write_o ||
               (host_timing_cycle_complete_o &&
                !selected_host_program_commit));
@@ -1205,7 +1222,9 @@ module hard_drivin_sound_mister (
         assert (selected_sound_cpu_mailbox_write_commit ==
                 (host_timing_write_complete_event &&
                  (host_timing_select_quadrant_o == 2'b00) &&
-                 host_timing_whole_word_write));
+                 host_timing_mailbox_write_valid));
+        assert (selected_sound_cpu_mailbox_write_data ==
+                host_timing_mailbox_write_data);
         assert (selected_host_latch_write_commit ==
                 (host_timing_write_complete_event &&
                  (host_timing_select_quadrant_o == 2'b01)));

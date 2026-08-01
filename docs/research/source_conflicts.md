@@ -746,24 +746,48 @@ electrical result of an out-of-range access.
   [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 2 of 10,
   PDF pp. 3–4; ti-sn74ls374-datasheet-sdls165b, printed pp. 1–3;
   ti-sn74ls74a-datasheet-sdls119, printed pp. 1–3].
+- **Primary main-decode evidence:** A044427 LS138 `20P` generates `/MAINWR`
+  locally on Y0 from `ERWN`, `EA15:EA14`, and the expansion qualifiers. This
+  is the physical `0x840000..0x843fff` write alias. SP-327 generates the main
+  MC68000 byte enables and exports them as `/EWEU` and `/EWEL` on J7, but
+  A044427 uses neither at LS138 `20P` nor either LS374 clock
+  [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheets 1–2 of
+  10, PDF pp. 1–4; atari-hard-drivin-schematic-package-sp327, SP-327 sheets
+  4 and 7, PDF pp. 5 and 8]. Local `/SOUNDWR` is similarly not qualified by
+  `/WEU` or `/WEL`.
+- **Primary CPU evidence:** original-MC68000 Table 3-1 says a selected byte is
+  driven on both halves of `D15:D0` in the current implementation. Therefore
+  either physical mailbox captures `{byte, byte}` on a byte transfer and the
+  original word on a word transfer. The footnote warns that future devices
+  need not retain this inactive-lane behavior
+  [motorola-m68000-users-manual-ninth, Table 3-1 and footnote, printed pp.
+  3-5 through 3-6].
 - **Secondary abstraction:** pinned MAME uses `COMBINE_DATA` and a `mem_mask`
   for local sound-CPU writes to `m_sounddata`; its main-side write schedules a
   complete word. Handler calls clear the flags without modeling physical
   strobe edges [mame-harddriv-audio-030fefc, `hd68k_snd_data_w`,
   `hdsnd68k_data_w`, `hd68k_snd_data_r`, and `hdsnd68k_data_r`].
-- **Conflict and ambiguity:** the board's local latch clock is not qualified
-  by UDS/LDS, and the upstream origin of connector `/MAINWR` is outside the
-  drawing. MAME's byte preservation cannot establish what appears on an
-  inactive physical data lane. Neither source resolves coincident flag set
-  and read-clear strobes.
-- **Current treatment:** `hard_drivin_sound_mailboxes` accepts only complete
-  words. It captures data during a coincident request but marks the affected
-  flag invalid, and likewise marks a reset/write preset-clear conflict
-  invalid. Any byte merging belongs to a future explicitly nonphysical bus
-  policy until `OQ-031` is resolved.
-- **Confidence:** VERIFIED_PRIMARY for nominal whole-word wiring and ordinary
-  flag behavior; CORROBORATED for MAME's normal software handshake; UNKNOWN
-  for physical byte and coincident-strobe behavior.
+- **Conflict and remaining ambiguity:** MAME preserves the unselected byte,
+  while primary hardware sources require `{byte, byte}` on the original
+  MC68000. The LS74 function table establishes that asynchronous preset
+  dominates a read-clock edge while preset remains asserted. It declares
+  simultaneous low preset and reset clear invalid, but the reviewed data
+  sheet does not define the exact result when write-preset releases at the
+  opposite bus's read-clock edge. Firmware use of byte writes is also not yet
+  audited from authorized program images.
+- **Current treatment:** `hard_drivin_mc68000_write_word` implements the
+  original word/duplicated-byte contract and the timed local `/SOUNDWR` path
+  accepts either byte orientation. The external main callback still expects
+  an already captured complete word. `hard_drivin_sound_mailboxes` marks a
+  same-callback write/read coincidence or reset/write conflict invalid as a
+  conservative abstraction of the unresolved edge case; it does not claim
+  every physical overlap is unknown. See
+  `docs/research/hard_drivin_mailbox_byte_audit.md`.
+- **Confidence:** VERIFIED_PRIMARY for original-MC68000 word/byte bus values,
+  both mailbox latch paths, nominal flags, and asserted-preset dominance;
+  CORROBORATED for MAME's normal software handshake; CONFLICT for MAME's byte
+  merge; UNKNOWN for firmware byte-write use and the exact preset-release/
+  read-clock edge.
 
 ## SC-032 — Live `/READSTAT` inputs versus fixed emulator constants
 

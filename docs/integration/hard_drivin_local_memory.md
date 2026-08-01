@@ -289,7 +289,7 @@ pass-through, selected-scrub RESET/HALT blocking, and release only after the
 timing-mode ownership, and later board tests prove the explicit-callback
 fallback still operates with timing mode disabled.
 
-The composed board hierarchy retains six memories and reports 3,502 abstract
-cells with 405 checks and zero structural problems in Yosys 0.67+111. This
+The composed board hierarchy retains six memories and reports 3,773 abstract
+cells with 409 checks and zero structural problems in Yosys 0.67+111. This
 remains pre-technology synthesis, not raw-pin CDC, a complete MC68000 data-bus
 mux, a Cyclone V fit, or electrical timing closure.

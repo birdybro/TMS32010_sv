@@ -206,22 +206,22 @@ selected interface. With it true, the board top instead:
   target and raw `A13:A12` quadrant;
 - clears `MAINFLAG` on the S7 `/SOUNDRD` completion event;
 - captures local-host write data and sets `SOUNDFLAG` on an S7 `/SOUNDWR`
-  event only when both `/UDS` and `/LDS` are active;
+  event, preserving a word or duplicating the selected original-MC68000 byte;
 - routes S7 `/LATCHES` to the existing address-encoded LS259 adapter using
   captured `A4:A1`, independently of host data and byte strobes;
 - routes S7 `/IRQCLR` to the existing 320IRQ clear callback; and
 - exposes an S7 `/SPEECH` trace pulse without assigning an unimplemented
   speech-device side effect.
 
-The full-word `/SOUNDWR` restriction is an explicit FPGA interface policy at
-the `OQ-031` boundary. A partial-byte access emits
-`host_timing_partial_sound_write_o` and cannot silently enter the whole-word
-mailbox callback; this does not claim that the physical LS374 pair ignores or
-merges such a cycle. The main-system side of both mailboxes remains on its
-separate external callbacks. Read data remains accompanied by exact driven
-and valid masks, so the bridge still assigns no `OQ-030` open-bus value.
-**Confidence: VERIFIED_SIMULATION for same-clock composition; UNKNOWN for
-raw-pin CDC, partial-byte physical behavior, and electrical timing.**
+An original-MC68000 byte access emits
+`host_timing_partial_sound_write_o` as an accepted-event diagnostic and enters
+the complete-word mailbox callback as `{byte, byte}`. The main-system side of
+both mailboxes remains on its separate already-captured-word callbacks. Read
+data remains accompanied by exact driven and valid masks, so the bridge still
+assigns no `OQ-030` open-bus value. **Confidence: VERIFIED_PRIMARY for the
+original-MC68000 byte mapping; VERIFIED_SIMULATION for same-clock composition;
+UNKNOWN for raw-pin CDC, the LS74 preset-release/read-edge collision, and
+electrical timing.**
 
 ## Verification and synthesis
 
@@ -256,13 +256,14 @@ a Cyclone V fit or `OQ-033` electrical closure.
 The integrated board regression runs all four timed read quadrants and all
 four timed write quadrants. It checks masked read data through S6, exact S7
 `/SOUNDRD`, whole-word `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` effects,
-external-callback isolation while opted in, explicit partial-mailbox
-rejection, and visible side-effect-free `/SPEECH` completion. It now also
+external-callback isolation while opted in, accepted original-MC68000
+upper/lower byte duplication, and visible side-effect-free `/SPEECH`
+completion. It now also
 checks fixed-cycle ROM/local-SRAM callbacks, byte-specific local-SRAM commits,
 the optional lane-valid SRAM's internal/external callback isolation,
 lower-Y5 program-RAM storage, upper-Y5 direct-I/O S6 timing and isolation, and
 Y6 communication-RAM storage under CRAMEN. Integrated Yosys retains six
-memories and reports 3,502 abstract cells, 405 checks, and zero structural
+memories and reports 3,773 abstract cells, 409 checks, and zero structural
 problems.
 
 `formal/hard_drivin_sound_host_routing.sby` adds a 12-step bounded composition
@@ -272,12 +273,12 @@ One symbolic transaction selects `/SOUNDRD`, complete or partial
 bits, and the partial-write byte orientation remain symbolic, while
 contradictory external callback sentinels prove timing-mode isolation.
 Assertions cover exact pre-completion read data/masks,
-S7 mailbox effects, partial-write rejection, address-coded latch state,
+S7 mailbox effects, duplicated upper/lower byte capture, address-coded latch state,
 side-effect-free speech visibility, IRQ-clear routing, and no early state
 change. Seven covers span all six classes plus both partial-byte orientations
 and reach solver step 10 after the registered effects are visible. This fixed
 common-clock event sequence does not prove raw-pin CDC,
-arbitrary event spacing, physical collision/byte behavior, or electrical
+arbitrary event spacing, physical preset-release collision behavior, or electrical
 timing.
 
 ## Diagnostic-software evidence

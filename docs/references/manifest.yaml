@@ -382,8 +382,8 @@
       "notes": "Lawfully public engineer-hosted copy; access does not grant repository redistribution.",
       "may_commit": false,
       "sections_or_pages_used": [
-        "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 /SRES decode",
-        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
+        "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 20P main-system decode including local /MAINWR Y0, /SRES Y3, /MAINRD Y4, /MAINSTAT Y5, and the physical 0x840000..0x843fff mailbox-write alias",
+        "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound LS374 word-latch clocks unqualified by /EWEU-/EWEL or /WEU-/WEL, MAINFLAG/SOUNDFLAG LS74 handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
         "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES J3 nibble with J3-1/J3-2 ground, four 1-kOhm series/two-capacitor networks and no discrete DC input pull, /IRQCLR decode, program-RAM controls, two 27256D20 program EPROMs, and alternative E1=+5V/E2=A16 links to their common pin 1",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and exact sample-ROM socket/select mapping: 65A through 5A are /SR0 through /SR5, while 65C through 5C are /SR6 through /SR11 and the complete C row is marked NOT LOADED",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
@@ -471,9 +471,9 @@
       "sections_or_pages_used": [
         "SP-327 sheet 1, PDF page 2: complete Hard Drivin' cockpit main wiring; Sound PCB 044427-XX power/audio harness groups are drawn while J3 has no cable or cabinet assignment",
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
-        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 LS138 primary decode; /RAMEN- and /RHSBUS-enabled A15:A14 LS139 subdecoders; /RHSBUS and /RDUART qualifiers; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; and separate /RVA-preset /RVAS chain",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 LS138 primary decode; /RAMEN- and /RHSBUS-enabled A15:A14 LS139 subdecoders; /RHSBUS and /RDUART qualifiers; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; separate /RVA-preset /RVAS chain; and main-MC68000 /WEU-/WEL generation from UDS/LDS and R/W",
         "SP-327 sheet 6, PDF page 7: /RDUART connection to MC68681 CS pin 35; 3.6864 MHz crystal; pin-9 /DUDTACK output with R49=4.7 kΩ pull-up; data/address wiring",
-        "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
+        "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, full ED15:ED0 data, address, and /EWEU-/EWEL byte-write wiring"
       ],
       "status": "acquired",
       "download": {
@@ -1085,12 +1085,14 @@
       "document_type": "primary microprocessor user manual",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted Motorola/Freescale/NXP manual; redistribution permission not established",
-      "relevance": "Manufacturer authority for the 68000 /AS, R/W, UDS/LDS, /DTACK, function-code, asynchronous bus, and synchronous bus-cycle behavior used by Atari A044427",
+      "relevance": "Manufacturer authority for the original MC68000 /AS, R/W, UDS/LDS, /DTACK, function-code, duplicated selected-byte bus data, asynchronous bus, and synchronous bus-cycle behavior used by Atari A044427",
       "authority_level": 2,
       "notes": "Title page says Ninth Edition and copyright 1993; the archived PDF was modified in 2006. This later manual covers the original MC68000 and compatible family members; use only original-MC68000 sections and keep the board schematic authoritative for Atari wiring.",
       "may_commit": false,
       "sections_or_pages_used": [
+        "Table 3-1 and current-implementation footnote, printed pp. 3-5 through 3-6: original-MC68000 byte writes drive the selected byte on both D15:D8 and D7:D0, while word writes preserve both independent bytes; the behavior is not promised for future implementations",
         "Section 4.1.1 read-cycle states, printed pp. 4-1 through 4-3",
+        "Section 5.1.2 write-cycle flow and timing, printed pp. 5-3 through 5-5: UDS/LDS selection, data placement, and write-cycle state ordering",
         "Section 5.5 reset operation, printed p. 5-29 (PDF page 75)",
         "Sections 5.7-5.8 asynchronous and synchronous operation, printed pp. 5-32 through 5-36",
         "MC68000 electrical timing table and Figure 10-5 read-cycle timing, printed pp. 10-24 through 10-26"

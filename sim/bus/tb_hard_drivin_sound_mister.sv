@@ -1269,9 +1269,9 @@ module tb_hard_drivin_sound_mister;
     local_host_finish(1'b1, 1'b0);
     tick();
 
-    // The local LS374 callback is deliberately whole-word only. Both byte
-    // strobes accept the raw bus word; an asserted external callback carrying
-    // a different word must be ignored while the timing bridge is selected.
+    // Both byte strobes preserve the raw bus word; an asserted external
+    // callback carrying a different word must be ignored while the timing
+    // bridge is selected.
     sound_cpu_mailbox_write_data = 16'hdead;
     sound_cpu_mailbox_write_commit = 1'b1;
     local_host_start(2'b00, 1'b0, 4'h0, 1'b0, 1'b0, 16'hb44b);
@@ -1283,7 +1283,7 @@ module tb_hard_drivin_sound_mister;
       !host_timing_upper_write_enable_n &&
       !host_timing_lower_write_enable_n &&
       sound_cpu_low_read_target_select == 4'b0000,
-      "timed S4 exposes the complete-word /SOUNDWR write path only"
+      "timed S4 exposes the complete-word /SOUNDWR write path"
     );
     local_host_finish(1'b0, 1'b1);
     require(main_mailbox_read_data == 16'hb44b &&
@@ -1298,20 +1298,42 @@ module tb_hard_drivin_sound_mister;
     tick();
     main_mailbox_read_commit = 1'b0;
     require(!sound_flag && sound_flag_valid,
-            "main-side callback clears SOUNDFLAG before partial-write test");
-    local_host_start(2'b00, 1'b0, 4'h0, 1'b0, 1'b1, 16'h1111);
+            "main-side callback clears SOUNDFLAG before byte-write tests");
+    local_host_start(2'b00, 1'b0, 4'h0, 1'b0, 1'b1, 16'hab34);
     local_host_rising_edge();
     require(!host_timing_upper_write_enable_n &&
             host_timing_lower_write_enable_n,
             "timed write retains the asymmetric physical byte strobes");
     local_host_finish(1'b0, 1'b1);
     require(host_timing_partial_sound_write &&
-            main_mailbox_read_data == 16'hb44b && !sound_flag,
-            "partial /SOUNDWR is disclosed and cannot enter whole-word storage"
+            main_mailbox_read_data == 16'habab && sound_flag &&
+            sound_flag_valid,
+            "upper-byte /SOUNDWR duplicates D15:D8 into both mailbox latches"
     );
     tick();
     require(!host_timing_partial_sound_write,
             "partial-write disclosure is exactly one trace clock");
+
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    main_mailbox_read_commit = 1'b0;
+    local_host_start(2'b00, 1'b0, 4'h0, 1'b1, 1'b0, 16'hab34);
+    local_host_rising_edge();
+    require(host_timing_upper_write_enable_n &&
+            !host_timing_lower_write_enable_n,
+            "timed lower-byte write retains the physical byte strobes");
+    local_host_finish(1'b0, 1'b1);
+    require(host_timing_partial_sound_write &&
+            main_mailbox_read_data == 16'h3434 && sound_flag &&
+            sound_flag_valid,
+            "lower-byte /SOUNDWR duplicates D7:D0 into both mailbox latches"
+    );
+    tick();
+    main_mailbox_read_commit = 1'b1;
+    tick();
+    main_mailbox_read_commit = 1'b0;
+    require(!sound_flag && sound_flag_valid,
+            "main-side read clears the byte-write pending flag");
 
     // `/LATCHES` is address/data-independent of UDS/LDS on A044427. The
     // external callback points at Q6 while the timed bus targets Q5=1.
@@ -1337,7 +1359,7 @@ module tb_hard_drivin_sound_mister;
     local_host_finish(1'b0, 1'b1);
     require(host_timing_speech_write_complete &&
             !host_timing_partial_sound_write &&
-            main_mailbox_read_data == 16'hb44b && !sound_flag,
+            main_mailbox_read_data == 16'h3434 && !sound_flag,
             "unimplemented /SPEECH completion is visible without side effects"
     );
     tick();

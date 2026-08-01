@@ -42,14 +42,16 @@ pending flag; board reset clears the flags but never the word latches.
 The flag outputs feed the storage-free `/READSTAT` mapper. External raw
 `SOUND.TEST` and `/TIRDY` inputs supply bits 13 and 12 with their own validity,
 while the integrated mapper exports data, driven mask `0xf000`, and per-lane
-valid mask. No callback contains a byte mask, and zero carrier bits outside a
-valid mask are not physical board values. `SC-031`/`OQ-031` retain byte and
-coincident-strobe uncertainty; `SC-032`/`OQ-030` retain MAME constant and
-open-bus differences. With `use_host_timing_i=1`, the local read and write
-callbacks instead come from the qualified S7 `/RVAS`/DTACK sequence. A local
-mailbox write enters this whole-word interface only with both byte strobes
-active; partial writes are surfaced explicitly and rejected under `OQ-031`.
-The main-system callbacks remain independent.
+valid mask. Zero carrier bits outside a valid mask are not physical board
+values. `SC-031`/`OQ-031` retain the MAME byte-merge conflict, firmware access
+width, and exact preset-release/read-clock edge; `SC-032`/`OQ-030` retain
+MAME constant and open-bus differences. With `use_host_timing_i=1`, the local
+read and write callbacks instead come from the qualified S7 `/RVAS`/DTACK
+sequence. The local mailbox path preserves a word write or normalizes an
+original-MC68000 byte write to `{byte, byte}` before entering the complete-word
+storage interface. Partial writes are surfaced as accepted diagnostic events.
+The main-system callbacks remain independent and expect already captured
+words.
 
 Raw `{J3-11,J3-9,J3-8,J3-7}` inputs with per-bit validity feed the separate
 `/SWITCHES` mapper. A storage-free selector then composes `/SOUNDRD`,
@@ -338,16 +340,17 @@ Before loading the processor program, the same regression exercises both
 mailbox directions. It checks exact retained words, nominal flag set/read
 clear, flag-to-status mapping, independent raw peripheral validity, both
 coincident write/read conflicts, later flag requalification, and board-reset
-flag clear with both data latches preserved. It never supplies byte writes or
-combines the masked status carrier with an open-bus value.
+flag clear with both data latches preserved. It also checks upper-byte
+`0xab -> 0xabab` and lower-byte `0x34 -> 0x3434` local writes without
+combining the masked status carrier with an open-bus value.
 
 The regression also checks an invalid selector, all four live source
 quadrants, the primary `/320PORT`-before-`/SWITCHES` order that conflicts with
 MAME's handler names, partial connector validity, `/SOUNDRD` selection without
 flag clear, and both later port-latch values through the composed masks.
 
-The pre-technology Yosys target retains six memories and reports 3,502
-abstract cells with 405 checks and zero structural problems after opt-in
+The pre-technology Yosys target retains six memories and reports 3,773
+abstract cells with 409 checks and zero structural problems after opt-in
 same-clock local-host timing, storage-callback, direct-I/O, and local-reset
 interlock integration.
 This is not a

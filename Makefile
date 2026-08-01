@@ -98,6 +98,7 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_320_port_latch.ys \
 			synthesis/yosys/hard_drivin_sound_output_control.ys \
 			synthesis/yosys/hard_drivin_sound_host_control.ys \
+			synthesis/yosys/hard_drivin_mc68000_write_word.ys \
 			synthesis/yosys/hard_drivin_sound_mailboxes.ys \
 			synthesis/yosys/hard_drivin_sound_read_status.ys \
 			synthesis/yosys/hard_drivin_sound_switches.ys \

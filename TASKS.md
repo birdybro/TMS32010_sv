@@ -1444,7 +1444,7 @@ objective passing evidence.
   `/SOUNDWR`, `/LATCHES`, `/SPEECH`, or `/IRQCLR` transaction with symbolic
   data/address bits. Contradictory explicit callbacks prove timing-mode
   isolation. Assertions check pre-completion read data/masks, exact S7
-  mailbox/control effects, both partial-byte rejection orientations, speech
+  mailbox/control effects, both original-MC68000 duplicated-byte orientations, speech
   non-effect, no early state change, and invalid-carrier clamping. Seven covers
   reach solver step 10. This is a fixed legal common-clock sequence with the processor paused,
   not arbitrary event-spacing, raw-pin, collision, byte, or electrical proof.
@@ -1604,6 +1604,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
   `docs/integration/hard_drivin_host_mailboxes.md`,
+  `docs/research/hard_drivin_mailbox_byte_audit.md`,
   `docs/research/hard_drivin_sample_rom_population_audit.md`,
   `docs/research/hard_drivin_dac_code_audit.md`,
   `docs/research/hard_drivin_switch_input_audit.md`,
@@ -1620,6 +1621,7 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_host_control.sv`,
   `sim/bus/tb_hard_drivin_sound_320_port_latch.sv`,
   `sim/bus/tb_hard_drivin_sound_mailboxes.sv`,
+  `sim/bus/tb_hard_drivin_mc68000_write_word.sv`,
   `sim/bus/tb_hard_drivin_sound_read_status.sv`,
   `sim/bus/tb_hard_drivin_sound_switches.sv`,
   `sim/bus/tb_hard_drivin_sound_host_read_mux.sv`,
@@ -1891,8 +1893,8 @@ objective passing evidence.
   targets, all 30 hashes, and all 24 formal tasks pass at this checkpoint.
   The timing-enabled board regression preserves external-callback
   fallback, overrides only the selected local paths when opted in, reads all
-  four masked targets through S6, applies `/SOUNDRD`, complete-word
-  `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports partial mailbox writes,
+  four masked targets through S6, applies `/SOUNDRD`, word or normalized-byte
+  `/SOUNDWR`, `/LATCHES`, and `/IRQCLR` at S7, reports accepted byte writes,
   and exposes `/SPEECH` without a side effect. The complete current
   127/231/38/43/5/10 regression split and strict lint across 31 modules pass;
   all twenty-one Yosys targets and all 33 hashes pass. Formal qualification now
@@ -1916,7 +1918,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,502 abstract cells/405
+  Integrated Yosys retains six memories and reports 3,773 abstract cells/409
   checks with no structural problem. Partial lower-Y5 and Y6 writes are
   reported and rejected because their unselected physical data lane remains
   unresolved under `OQ-022`/`OQ-024`.
@@ -1936,8 +1938,8 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,502 cells/
-  405 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,773 cells/
+  409 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
   separate 7406/pull-up branches drive equal logical RESET/HALT requests after
@@ -2022,6 +2024,23 @@ objective passing evidence.
   behavior. Board-top callback selection and the optional integration-specific
   local SRAM are now verified as described above; a complete upper-Y5 direct-
   I/O bus path remains acceptance work.
+  OQ-031 is now `PARTIALLY_RESOLVED_PRIMARY`: A044427 LS138 `20P` generates
+  `/MAINWR` locally for physical alias `0x840000..0x843fff`; neither that
+  decode nor local `/SOUNDWR` uses the available MC68000 byte enables. SP-327
+  proves `/EWEU` and `/EWEL` reach the expansion connector, and Motorola
+  Table 3-1 proves the original MC68000 duplicates the selected byte across
+  both halves of `D15:D0`. Both mailbox directions therefore capture
+  `{byte, byte}`, not MAME's retained-other-byte merge. The new combinational
+  `hard_drivin_mc68000_write_word` adapter exhausts all 65,536 data words in
+  word, upper-byte, and lower-byte modes plus the no-strobe state; Yosys
+  reports 39 mapped cells/three checks. Timed local writes now accept both
+  byte orientations, set `SOUNDFLAG`, and retain a one-event byte-transfer
+  diagnostic. The board routing BMC proves both symbolic orientations, and
+  integrated Yosys reports 3,773 cells/409 checks/six memories. LS74 preset
+  dominance is primary-verified while asserted, but exact preset-release/
+  opposite-read-clock coincidence and authorized-firmware byte-write use
+  remain open. The external main callback still expects an already captured
+  complete word; no raw main bus or CDC bridge is claimed.
 
 ## Milestone 22 — Release qualification
 

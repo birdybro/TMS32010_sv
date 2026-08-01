@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `OQ-031` primary-source mailbox byte audit. It traces A044427 LS138 `20P`
+  `/MAINWR` generation and physical `0x840000..0x843fff` alias, SP-327's
+  exported `/EWEU`/`/EWEL`, both unqualified LS374 latch pairs, the
+  original-MC68000 duplicated selected-byte rule, and the remaining LS74
+  preset-release/read-edge uncertainty.
+- A synthesizable `hard_drivin_mc68000_write_word` adapter plus an exhaustive
+  regression covering all 65,536 data words in word, upper-byte, and
+  lower-byte modes and the no-strobe state.
 - `OQ-026` Driver Sound sample-ROM population audit. It transcribes the exact
   sparse A044427 socket-to-`/SR` matrix, identifies the complete Rev-A C row as
   not loaded, records the Race Drivin' field-upgrade population, and defines
@@ -760,6 +768,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The timing-derived local `/SOUNDWR` path now accepts original-MC68000 byte
+  transfers and clocks `{byte, byte}` into the complete mailbox word. Its
+  existing partial-write output is now an accepted-event diagnostic rather
+  than a rejection indication; the external main callback remains an
+  already-captured complete-word contract.
+- `SC-031` now distinguishes verified asserted-preset dominance from the
+  still-unknown preset-release/read-clock edge and records MAME's retained-
+  other-byte merge as a conflict with primary hardware behavior.
 - `OQ-026` is now `PARTIALLY_RESOLVED_PRIMARY`: the Rev-A socket matrix and
   TM-356 field-upgrade locations are resolved, while factory/variant
   population, authorized firmware block writes, and absent-selection
@@ -948,6 +964,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Replaced the provisional local-mailbox byte-write rejection with the
+  documented original-MC68000 duplicated-byte result; both upper and lower
+  byte transfers now set `SOUNDFLAG` and expose the captured word.
 - Fixed registered internal-RAM output movement while the wrapper clock enable
   was clear. The existing table-transfer formal stall invariant found the
   defect; the read-side enable now holds captured data and forwarding metadata
@@ -1011,6 +1030,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The MC68000 write normalizer passes exhaustive simulation and Yosys
+  0.67+111 synthesis at 39 mapped cells/three retained checks with no memory,
+  latch, or structural problem. The integrated board test checks `0xab ->
+  0xabab` and `0x34 -> 0x3434`, flag set/read-clear, and callback isolation;
+  the board-routing BMC proves and covers both symbolic byte orientations.
+  Integrated pre-technology Yosys reports 3,773 cells, 409 checks, six
+  memories, and zero structural problems.
 - All 59 locally acquired references pass their pinned SHA-256 checks. The
   socket-based authorized sample-ROM analyzer passes four regressions for
   exact physical ordering, sparse masks, fail-closed diagnostics,
@@ -1906,11 +1932,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   Pinned MAME still conflicts by returning RAM during host ownership and by
   omitting the global `/PDEN` increment from port 2. Port 3 is now resolved;
   its undriven host low byte remains a distinct open-bus question (`OQ-030`).
-- The main/sound mailbox adapter is board-top connected but whole-word only.
-  Physical
-  byte accesses and coincident LS74 preset/read-clock/reset behavior remain
-  unresolved under `SC-031`/`OQ-031`; no full 68000 or main-system bridge
-  consumes these completion callbacks.
+- Original-MC68000 mailbox byte capture is resolved as `{byte, byte}`, but
+  authorized firmware use, exact LS74 behavior when write-preset releases at
+  the opposite read-clock edge, and substitute-68k inactive-lane behavior
+  remain unresolved under `SC-031`/`OQ-031`. No raw main-system or CDC bridge
+  consumes the already-captured-word callback.
 - The raw `/READSTAT` mapper is board-top connected to the mailbox flags and
   explicit raw test/ready inputs, but no 68000 read decode exists and physical
   `D11:D0` remain unresolved under `OQ-030`; MAME's fixed
