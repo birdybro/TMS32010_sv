@@ -69,9 +69,16 @@ A044427 and copies main `/RESET` to `/MRES`. A044427 sheet 1 asserts LS138 Y3
 so every write in `0x84c000..0x84ffff` is a physical alias. The standalone
 `hard_drivin_main_sound_reset_decode` proves this combinational boundary;
 pinned MAME's single-word mapping is `SC-036`. The exact main `/RESET` origin
-and raw `/RVAS` timing remain `OQ-036`. **Confidence: VERIFIED_PRIMARY for
-decode and signal transport; VERIFIED_SIMULATION/FORMAL for RTL; UNKNOWN for
-system reset origin and raw-pin timing.**
+remains `OQ-036`. SP-327's `/RVAS` state dependency is now separately
+reconstructed: `/AS` creates a pending request, the next rising 8 MHz edge
+asserts one-period `RVA` and asynchronously presets `/RVAS` active, and only a
+falling-edge-sampled `/DTACK` low-to-high transition releases `/RVAS`. The
+standalone event-domain model intentionally holds forever if `/DTACK` never
+samples low; the complete main acknowledgement tree and raw CDC remain
+external. See `hard_drivin_main_bus_timing.md`. **Confidence: VERIFIED_PRIMARY
+for decode, transport, and the logical hold chain; VERIFIED_SIMULATION/FORMAL
+for the two standalone RTL blocks; UNKNOWN for system reset origin,
+acknowledgement-path electrical timing, and raw-pin CDC.**
 Partial lower-Y5/Y6 writes are exposed diagnostically and rejected by the
 FPGA memories because the physical whole-bank strobe does not qualify the
 other byte's data; this preserves `OQ-022`/`OQ-024` rather than claiming a

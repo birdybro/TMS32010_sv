@@ -1,14 +1,13 @@
 # Progress summary
 
-- **Current milestone:** Hard Drivin' main-side sound-reset decode
-  qualification
+- **Current milestone:** Hard Drivin' main-board `/RVAS` hold qualification
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 129 repository/provenance/document/ISA/toolchain/program
   tests; 231
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 38 RTL
   instruction/decode tests; 5 interrupt RTL/phase
-  tests; 47 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
+  tests; 48 native bus/phase/wrapper tests, including thirteen explicit pipeline tests
   plus a zero-versus-16-pause cross-space comparison;
   one
   512-instruction seeded
@@ -103,7 +102,10 @@
   clock, and zero structural problems.
   A twenty-fifth target checks the storage-free main `/SRES` decode at 16
   cells/four retained checks, no memory/latch, and zero structural problems.
-- **Formal status:** all 36 tasks from 18 SymbiYosys configurations pass with
+  A twenty-sixth target checks the standalone main-board request/`RVA`/
+  sampled-`/DTACK`/`/RVAS` state chain at 48 cells/twelve retained checks,
+  with no memory, latch, generated clock, or structural problem.
+- **Formal status:** all 38 tasks from 19 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -177,6 +179,13 @@
   host-event spacing, running-DSP interaction,
   raw-pin CDC, collision/byte behavior, and electrical timing remain outside
   this proof.
+  A nineteenth standalone main-`/RVAS` configuration passes a 12-step BMC
+  against an independent transition model under mutually exclusive event
+  assumptions. Its 16-step cover reaches the complete request/assert/
+  low-sample/RVA-end/release chain, a held `/RVAS` after missing the low
+  `/DTACK` sample, and the release event. The proof excludes the upstream
+  acknowledgement equation, raw-pin CDC, electrical timing, and physical
+  power-up state.
 - **Phase-pause evidence:** the original part has no READY/WAIT pin. The
   platform `clock_enable_i` adaptation is now directed-tested across ordinary
   MEN, IN/DEN, OUT/WE, TBLR/MEN, and TBLW/WE phases. Sixteen inserted host
@@ -806,8 +815,16 @@
   `0x84c000..0x84ffff` mirror; A13:A0 and UDS/LDS are not decoded. The
   standalone module exhausts 8,192 cases, passes a one-step proof with four
   covers, and synthesizes to 16 cells/four checks. Pinned MAME exposes only
-  `0x84c000..0x84c001` (`SC-036`). The original system `/RESET` source and raw
-  `/RVAS` timing remain `OQ-036`.
+  `0x84c000..0x84c001` (`SC-036`).
+- **New main-bus hold evidence:** SP-327 sheet 4 proves that `/AS` clocks a
+  request latch, the next rising 8 MHz edge produces one-period `RVA`, active
+  `/RVA` asynchronously presets `/RVAS` low, and a falling-edge sample of
+  `/DTACK` must transition low-to-high before `/RVAS` releases. The standalone
+  same-clock event model preserves continued hold if the low sample is
+  missed, passes directed simulation and 12/16-step BMC/cover, and synthesizes
+  to 48 cells/twelve checks. The original system `/RESET` source, complete
+  `/DTACK` tree, raw CDC, electrical margin, and physical power-up state remain
+  `OQ-036`.
 - **Unresolved issues:** pipeline ownership remains absent beyond sequential
   one-cycle instructions, exact B/BANZ/BV/BIOZ/CALL, the six accumulator
   branches, exact IN/OUT, exact TBLR/TBLW, the basic interrupt path, and
@@ -831,8 +848,9 @@
   exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
-  local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin and raw
-  `/RVAS` timing, platform tick calibration, and future-core reset CDC,
+  local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin and
+  complete `/DTACK`/raw-CDC/electrical timing, platform tick calibration, and
+  future-core reset CDC,
   exact local-68000 E1/E2 EPROM strap/variant population,
   optional `/DACR`/unlabeled write-target loading and direct-read open-bus
   policy,
@@ -841,8 +859,8 @@
   the opcode audit
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unresolved simultaneous-update words
-- **Next task:** reconstruct or bound the SP-327 8 MHz `/RVAS` generator and
-  locate the system `/RESET` driver without conflating either with MAME's
-  functional reset callback.
+- **Next task:** trace the complete SP-327 main `/DTACK` acknowledgement tree
+  and continue locating the system `/RESET` driver without inventing a timeout
+  or conflating either with MAME's functional reset callback.
 - **Latest committed baseline before this cycle:**
-  `d210729`
+  `dd7d5a4`

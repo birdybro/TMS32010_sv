@@ -1,0 +1,10 @@
+read_verilog -sv rtl/wrappers/hard_drivin_main_rvas_timing.sv
+
+hierarchy -check -top hard_drivin_main_rvas_timing
+proc
+opt
+check -assert
+synth -top hard_drivin_main_rvas_timing
+check -assert
+stat
+write_json build/yosys/hard_drivin_main_rvas_timing.json

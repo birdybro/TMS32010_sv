@@ -22,6 +22,9 @@
   effects, and MAME conflict.
 - `hard_drivin_local_reset.md`: primary-transcribed local-MC68000 LS123 reset
   source plus the FPGA release interlock for optional validity-scrubbed SRAM.
+- `hard_drivin_main_bus_timing.md`: SP-327 main-board `/AS`-to-`RVA` request
+  capture and sampled-`/DTACK` `/RVAS` hold/release timing, kept distinct from
+  the local sound-68000 bus sequencer.
 - `hard_drivin_host_control.md`: 68000 low-I/O decode, address-encoded LS259
   state, board-reset effects, and standalone FPGA callback boundary.
 - `hard_drivin_host_timing.md`: primary-transcribed local 68000 `RVA`,
@@ -69,8 +72,14 @@ platform qualifies the timebase and CDC.
 `rtl/wrappers/hard_drivin_main_sound_reset_decode.sv` reconstructs the
 SP-327/A044427 main-side `/SRES` decode from `A23:A14`, `/AS`, `/RVAS`, and
 direction. Its reduced address port intentionally exposes the physical
-`0x84c000..0x84ffff` mirror; the main-board timing sequencer and system
-`/RESET` origin remain external.
+`0x84c000..0x84ffff` mirror; system `/RESET` and the complete main-board
+acknowledgement tree remain external.
+
+`rtl/wrappers/hard_drivin_main_rvas_timing.sv` separately reconstructs the
+SP-327 request latch, one-period `RVA`, asynchronous `/RVAS` assertion, and
+sampled-`/DTACK` release in a same-clock event domain. It intentionally has no
+timeout and remains standalone until a wrapper qualifies raw-pin CDC and the
+upstream `/DTACK` equation.
 
 `rtl/wrappers/hard_drivin_sound_communication_path.sv` combines a standalone
 512-by-16 communication-RAM adapter with the primary-defined shared-address

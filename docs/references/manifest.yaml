@@ -338,7 +338,7 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
-        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode and registered /RVAS generation",
+        "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 expansion-bus decode; /AS request latch; rising-8-MHz RVA pulse; /RVA-preset and sampled-/DTACK-release /RVAS flip-flop chain",
         "SP-327 sheet 7, PDF page 8: LS244 expansion-bus buffers and J7 /MRES, /EXTB, /ERVAS, direction, and address wiring"
       ],
       "status": "acquired",
@@ -838,7 +838,7 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for A044427's port-4 mute-state, port-5 latched 68000-interrupt path, and LS74 20S main/sound mailbox flags",
+      "relevance": "Primary component behavior for A044427's port-4 mute-state, port-5 latched 68000-interrupt path, LS74 20S main/sound mailbox flags, and SP-327 main-board RVA/RVAS timing chain",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring and reset/clear connectivity.",
       "may_commit": false,

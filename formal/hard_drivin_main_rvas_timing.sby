@@ -1,0 +1,21 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 12
+cover: mode cover
+cover: depth 16
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv hard_drivin_main_rvas_timing.sv
+read -formal -sv hard_drivin_main_rvas_timing_formal.sv
+prep -top hard_drivin_main_rvas_timing_formal
+
+[files]
+rtl/wrappers/hard_drivin_main_rvas_timing.sv
+formal/hard_drivin_main_rvas_timing_formal.sv

@@ -1386,6 +1386,7 @@ objective passing evidence.
   `docs/integration/hard_drivin_local_memory.md`,
   `docs/integration/hard_drivin_direct_io.md`,
   `docs/integration/hard_drivin_local_reset.md`,
+  `docs/integration/hard_drivin_main_bus_timing.md`,
   `docs/integration/hard_drivin_host_control.md`,
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
@@ -1410,10 +1411,12 @@ objective passing evidence.
   `sim/bus/tb_hard_drivin_sound_local_memory_bridge.sv`,
   `sim/bus/tb_hard_drivin_sound_local_ram.sv`,
   `sim/bus/tb_hard_drivin_sound_direct_io.sv`,
+  `sim/bus/tb_hard_drivin_main_rvas_timing.sv`,
   `sim/bus/tb_hard_drivin_main_sound_reset_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_source.sv`,
   `sim/bus/tb_hard_drivin_sound_local_reset_interlock.sv`,
   `formal/hard_drivin_main_sound_reset_decode.sby`,
+  `formal/hard_drivin_main_rvas_timing.sby`,
   `formal/hard_drivin_sound_direct_io.sby`,
   `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
@@ -1689,7 +1692,14 @@ objective passing evidence.
   from the decode. The standalone high-address module exhausts 8,192
   address/control cases, passes a one-step proof with four covers, and
   synthesizes to 16 cells/four checks. MAME's canonical-only mapping is
-  `SC-036`; the original system `/RESET` driver and raw `/RVAS` timing remain
+  `SC-036`. SP-327 sheet 4 now also resolves the raw logical `/RVAS` hold:
+  `/AS` is captured, rising 8 MHz creates one-period `RVA`, active `/RVA`
+  presets `/RVAS` low, and a falling-edge-sampled `/DTACK` low-to-high
+  transition alone releases it. The standalone event-domain RTL covers normal
+  release, missed-low continued hold, late recovery, and deterministic FPGA
+  reinitialization; its 12-step BMC and 16-step three-class cover pass, and
+  Yosys reports 48 cells/twelve checks. The original system `/RESET` driver,
+  complete main `/DTACK` tree, raw CDC, and electrical timing remain
   `OQ-036`.
   Production RC tolerance, power-up behavior, board-top timebase selection,
   raw-input CDC, and the future MC68000-core interface remain `OQ-035`, so this
