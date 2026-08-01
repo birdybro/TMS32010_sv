@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 54 pinned
+  until permission is demonstrated. The ignored cache now verifies 57 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -66,7 +66,10 @@ objective passing evidence.
   mapping from board wiring. Four historical MAME artifacts now trace that
   mapping from the first located 0.62 Hard Drivin' sound support through the
   2016 AM6012 migration, separating continuous signed-software behavior from
-  the migration's later unsupported schematic-inversion comment. The exact TI
+  the migration's later unsupported schematic-inversion comment. Three newly
+  pinned primary Atari publications add Hard Drivin' compact TM-329, Race
+  Drivin' compact SP-360, and Race Drivin' cockpit TM-351 provenance for
+  Sound PCB cabinet/assembly-variant research. The exact TI
   LS20, AS00, combined ALS32/AS32,
   F04, F11, and F74 component documents now support SP-327 main-bus Boolean
   and future propagation analysis without treating a gate symbol as an
@@ -1592,7 +1595,8 @@ objective passing evidence.
   `docs/integration/hard_drivin_host_timing.md`,
   `docs/integration/hard_drivin_host_reads.md`,
   `docs/integration/hard_drivin_host_mailboxes.md`,
-  `docs/research/hard_drivin_dac_code_audit.md`
+  `docs/research/hard_drivin_dac_code_audit.md`,
+  `docs/research/hard_drivin_switch_input_audit.md`
 - **Tests:** `sim/programs/hard_drivin_smoke/`,
   `sim/bus/tb_hard_drivin_sound_bus_decode.sv`,
   `sim/bus/tb_hard_drivin_sound_program_ram.sv`,
@@ -1631,7 +1635,8 @@ objective passing evidence.
   `formal/hard_drivin_sound_local_reset_source.sby`,
   `formal/hard_drivin_sound_local_reset_interlock.sby`,
   `formal/hard_drivin_sound_host_routing.sby`,
-  `tests/regressions/test_hard_drivin_dac_codes.py`
+  `tests/regressions/test_hard_drivin_dac_codes.py`,
+  `tests/regressions/test_documentation.py`
 - **Notes:** Atari production drawing A044427 Rev A is identified. Its
   TMS32010 `INT` pin connects to pull-up net `PR1` and is held inactive-high
   by `R26` (1 kΩ), while `/320BIO` is generated from 1 MHz divider logic and
@@ -1838,8 +1843,17 @@ objective passing evidence.
   `/SWITCHES` order: `J3-11`, `J3-9`, `J3-8`, and `J3-7` drive host
   `D15:D12` without inversion. The storage-free adapter exhausts all sixteen
   source nibbles and all sixteen validity masks, retains fixed driven mask
-  `0xf000`, and assigns no cabinet meaning or idle state under `OQ-032`.
-  Standalone Yosys reports 10 cells/six checks. Cross-checking pinned MAME
+  `0xf000`, and assigns no invented cabinet meaning or idle state under
+  `OQ-032`. SP-327 cockpit and SP-360 Race Drivin' compact main wiring both
+  show the `044427-XX` Sound PCB's normal harness groups but no J3 cable or
+  cabinet device. A044427 ties J3-1/J3-2 to ground but gives each signal only
+  a 1-kOhm series resistor and capacitive shunts; TI does not specify an open
+  LS244 input state. TM-327/TM-329 identify `A046491-01`, while newly pinned
+  TM-351 identifies later `A046491-02` without resolving its J3 population.
+  Thus the reviewed cabinets have no documented J3 functions, a matching
+  platform leaves all four source-valid bits clear, and physical open values
+  plus other variants remain `PARTIALLY RESOLVED_PRIMARY`. Standalone Yosys
+  reports 10 cells/six checks. Cross-checking pinned MAME
   exposed its swapped `/SWITCHES`/`/320PORT` handler names and two zero stubs;
   `SC-033` requires Atari LS138 `30N` order. The board top now connects this
   source and composes all four low reads behind a qualified combinational

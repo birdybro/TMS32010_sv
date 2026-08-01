@@ -802,17 +802,32 @@ electrical result of an out-of-range access.
   [mame-harddriv-audio-030fefc, `driversnd_68k_map`,
   `hdsnd68k_switches_r`, and `hdsnd68k_320port_r`].
 - **Conflict:** the handler names disagree with the physical read-quadrant
-  wiring, and both stubs omit populated raw sources plus the selected
+  wiring, and both stubs omit raw connector/latch sources plus the selected
   targets' undriven lanes. Their equal zero results conceal the swap.
+- **Cabinet cross-check:** SP-327 Hard Drivin' cockpit and SP-360 Race Drivin'
+  compact main wiring both draw the `044427-XX` Sound PCB's ordinary external
+  harness groups but no J3 harness or cabinet device. A044427 ties J3-1/J3-2
+  to ground but puts only 1 kOhm series resistors and capacitive shunts on the
+  four signal pins; it has no DC input pull. TI defines LS244 driven-input
+  thresholds and currents, not an open-input result. MAME's zero is therefore
+  neither a documented cabinet switch value nor a qualified disconnected
+  level [atari-hard-drivin-schematic-package-sp327, sheet 1, PDF p. 2;
+  atari-race-drivin-compact-schematic-package-sp360, sheet 1, PDF p. 2;
+  atari-driver-sound-board-schematic, sheet 3, PDF pp. 5-6;
+  ti-snx4ls24x-datasheet, printed pp. 4-5].
 - **Current treatment:** host-read selection follows LS138 `30N`.
   `hard_drivin_sound_320_port_latch` and
   `hard_drivin_sound_switches` remain distinct masked source adapters, and
-  `hard_drivin_sound_host_read_mux` composes them in the physical order. No
-  emulator zero or handler order is promoted into the board wrapper. See
-  `OQ-030` and `OQ-032`.
+  `hard_drivin_sound_host_read_mux` composes them in the physical order. A
+  platform reproducing either reviewed cabinet leaves the J3 source-valid
+  nibble clear; no emulator zero, floating-TTL tendency, or handler order is
+  promoted into the board wrapper. See `OQ-030`, `OQ-032`, and
+  `docs/research/hard_drivin_switch_input_audit.md`.
 - **Confidence:** VERIFIED_PRIMARY for the physical decode and lane maps;
-  CORROBORATED for the pinned emulator's recorded software abstraction;
-  UNKNOWN for connector semantics and undriven host lanes.
+  VERIFIED_PRIMARY for absence from the two reviewed cabinet wiring diagrams
+  and for the no-discrete-pull input network; CORROBORATED for the pinned
+  emulator's recorded software abstraction; UNKNOWN for physical open-input
+  values, other assembly revisions, and undriven host lanes.
 
 ## SC-034 — Physical local-68000 aliases versus canonical emulator windows
 

@@ -178,9 +178,17 @@ The standalone storage-free `hard_drivin_sound_switches` mapper preserves the
 non-inverting order `{J3-11,J3-9,J3-8,J3-7}` on host `D15:D12`, fixed driven
 mask `0xf000`, and independent raw-input validity. All 256 value/validity
 combinations pass; Yosys reports 10 cells and six retained checks. No
-connector function or idle level is assigned under `OQ-032`. Pinned MAME's
-swapped `/320PORT`/`/SWITCHES` handler names and two zero stubs remain isolated
-as `SC-033`; the implemented storage-free selector follows Atari LS138 `30N`.
+connector function or idle level is invented under `OQ-032`. SP-327 cockpit
+and SP-360 Race Drivin' compact main wiring both omit J3 while drawing the
+Sound PCB's ordinary external harness groups; A044427 supplies only series
+resistors and capacitive shunts, with no discrete DC pull. Thus the reviewed
+cabinets have no documented J3 functions, and a disconnected logic value
+remains unknown. A platform matching those diagrams should clear the raw
+source-valid nibble rather than force a value. The evidence and physical
+closure plan are in `docs/research/hard_drivin_switch_input_audit.md`.
+Pinned MAME's swapped `/320PORT`/`/SWITCHES` handler names and two zero stubs
+remain isolated as `SC-033`; the implemented storage-free selector follows
+Atari LS138 `30N`.
 
 `hard_drivin_sound_host_read_mux` now composes all four low read sources in
 that primary `00/01/10/11` order while forwarding each source's data, driven

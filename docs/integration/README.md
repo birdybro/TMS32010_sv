@@ -145,8 +145,12 @@ it still does not implement either physical bus.
 `hard_drivin_host_reads.md` also defines standalone storage-free `/SWITCHES`
 and `/READSTAT` mappers. Each exports only `D15:D12` as driven and preserves
 one validity bit per raw source. The switch mapper retains exact
-`J3-11/J3-9/J3-8/J3-7` order without assigning cabinet meanings; the board top
-connects it alongside the status mapper, whose flag inputs come from the
+`J3-11/J3-9/J3-8/J3-7` order without assigning cabinet meanings. SP-327 and
+SP-360 omit J3 from their published cabinet wiring, and the sound-board RC
+network has no DC pull, so a matching platform leaves those source-valid bits
+clear instead of inventing an idle value; the full audit is in
+`docs/research/hard_drivin_switch_input_audit.md`. The board top connects the
+raw mapper alongside the status mapper, whose flag inputs come from the
 mailboxes and whose other inputs remain raw `SOUND.TEST` and `/TIRDY`. A
 storage-free selector forwards the four low read sources and their masks in
 Atari LS138 order without generating a read cycle or side effect. All paths

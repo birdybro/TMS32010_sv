@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- `OQ-032` Driver Sound J3 audit using complete Atari cabinet wiring rather
+  than connector-name inference. It traces the no-discrete-pull RC network,
+  proves that SP-327 Hard Drivin' cockpit and SP-360 Race Drivin' compact do
+  not connect J3, distinguishes `A046491-01` from later `A046491-02`, and
+  defines board-identified continuity/voltage/read captures for the remaining
+  variants and physical-open value.
+- Three integrity-pinned, non-committed primary Atari references: Hard
+  Drivin' compact TM-329 second printing, Race Drivin' compact SP-360 first
+  printing, and Race Drivin' cockpit TM-351 second printing.
 - `SC-019`/`OQ-020` DAC-code lineage audit reconstructing the complete Rev-A
   positive-reference, current-output, transimpedance, and AC-coupling path;
   tracing MAME's sign-bit transform back to its first located 0.62 sound
@@ -722,6 +731,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- `OQ-032` is now `PARTIALLY RESOLVED_PRIMARY`: the reviewed cabinet wiring
+  assigns no function to `J3-11/J3-9/J3-8/J3-7`, while the sound-board
+  network and LS244 specification provide no guaranteed disconnected value.
+  The raw mapper remains unchanged; an exact published-cabinet platform
+  clears source validity instead of forcing MAME's zero or a floating-TTL
+  high assumption.
 - `OQ-020` is narrowed from an unexplained current-MAME discrepancy to a
   source-dated conflict. MAME's signed interpretation is now CORROBORATED as
   continuous software behavior since 2002, while its 2016 schematic-inversion
@@ -953,7 +968,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- All 54 locally acquired references pass their pinned SHA-256 checks. The DAC
+- All 57 locally acquired references pass their pinned SHA-256 checks. A new
+  documentation regression locks both no-J3 cabinet diagrams, the passive
+  input network, later Sound PCB assembly identity, MAME non-authority, and
+  the validity-clear FPGA policy.
+- The 54-source DAC corpus passed its pinned SHA-256 checks. The DAC
   helper proves physical `0x7ff`/`0x800` are adjacent ideal transfer steps
   while the MAME mapper crosses `0xfff`/`0x000`, and retains the known smoke
   distinction `0xf23` versus `0x723` across all low-nibble aliases.
@@ -1779,6 +1798,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Known Issues
 
+- Published cockpit/compact wiring does not connect Driver Sound J3, but
+  physical `A046491-01`/`A046491-02` header population, field options, open
+  LS244 input voltage/read value, and other cabinet revisions remain
+  unmeasured. `OQ-032` prohibits a forced zero/one production default.
 - No authenticated alternate Driver Sound drawing, ECO, rework notice, or
   physical/authorized normal-game capture resolves the Rev-A raw DAC wiring
   against MAME's signed interpretation. A production-default digital audio

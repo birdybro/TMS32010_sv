@@ -74,9 +74,13 @@ schematic path.
 ## Switch and status nibbles
 
 The `/SWITCHES` half of LS244 `10H` drives `D15:D12` from four connector J3
-inputs, each shown with a 1 kOhm/0.1 uF conditioning network. The drawing does
-not assign enough board-level meaning to those connector signals to name
-their cabinet functions or idle levels here. The non-inverting lane order is:
+inputs, each shown with a 1 kOhm series resistor and capacitive shunting. The
+network has no discrete DC pull-up or pull-down. SP-327 Hard Drivin' cockpit
+and SP-360 Race Drivin' compact main wiring both show the `044427-XX` Sound
+PCB's normal power/audio harness groups but no J3 harness or cabinet switch.
+The published configurations therefore assign no cabinet functions to these
+inputs, and an electrically disconnected value is not specified. The
+non-inverting lane order remains:
 
 | connector input | host bit |
 |---|---:|
@@ -89,11 +93,20 @@ Pinned MAME's handler only logs and returns zero, so it is not wiring
 evidence. It also assigns the names of its `/SWITCHES` and `/320PORT`
 read handlers to the opposite low-I/O quadrants from LS138 `30N`; because
 both handlers return zero, that secondary swap was software-invisible. This
-is `SC-033`; exact connector semantics remain `OQ-032`
+is `SC-033`. `OQ-032` is partially resolved for the published cabinet wiring
+but remains open for physical disconnected levels and unreviewed assemblies
 [atari-driver-sound-board-schematic, drawing A044427 Rev A, sheet 3 of 10,
-PDF pp. 5–6; ti-snx4ls24x-datasheet, SNx4LS244 logic/function table,
-printed pp. 11–13; mame-harddriv-audio-030fefc,
+PDF pp. 5–6; atari-hard-drivin-schematic-package-sp327, sheet 1, PDF p. 2;
+atari-race-drivin-compact-schematic-package-sp360, sheet 1, PDF p. 2;
+ti-snx4ls24x-datasheet, recommended operating conditions, electrical
+characteristics, and SNx4LS244 logic/function table, printed pp. 4–5 and
+11–13; mame-harddriv-audio-030fefc,
 `hdsnd68k_switches_r`, `hdsnd68k_320port_r`, and `driversnd_68k_map`].
+
+The complete source comparison and physical closure procedure are in
+`docs/research/hard_drivin_switch_input_audit.md`. Absence from the two main
+wiring diagrams does not prove that every Sound PCB omitted the header or
+that no factory fixture, field option, or other assembly revision used it.
 
 The `/READSTAT` half of LS244 `10K` drives:
 
@@ -125,11 +138,15 @@ maps directly, without inversion, to host `D15:D12`. It exports:
 - zero filler on `D11:D0` outside both masks.
 
 The adapter deliberately has no names such as coin, test, or service, no
-pull-state defaults, and no storage or reset. A later board wrapper supplies
-raw conditioned connector values and a host bridge supplies an explicit
-open-bus policy. **Confidence: VERIFIED_PRIMARY for connector-to-lane order
-and non-inversion; VERIFIED_SIMULATION for the masked FPGA convention;
-UNKNOWN for `OQ-032` connector semantics and idle state.**
+pull-state defaults, and no storage or reset. A platform reproducing either
+reviewed cabinet diagram should leave the source-valid nibble clear unless it
+implements a separately documented option or measured physical-open policy.
+A later board wrapper supplies raw connector values and a host bridge supplies
+an explicit open-bus policy. **Confidence: VERIFIED_PRIMARY for
+connector-to-lane order, non-inversion, no discrete input pull, and absence
+from the reviewed cabinet wiring; VERIFIED_SIMULATION for the masked FPGA
+convention; UNKNOWN for the physical disconnected value and other assembly
+revisions.**
 
 ## FPGA boundary for `/READSTAT`
 

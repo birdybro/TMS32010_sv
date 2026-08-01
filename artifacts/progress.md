@@ -1,9 +1,9 @@
 # Progress summary
 
-- **Current milestone:** `OQ-020` Hard Drivin' physical DAC-code versus MAME
-  signed-sample lineage audit
+- **Current milestone:** `OQ-032` Driver Sound J3 cabinet-wiring and
+  disconnected-input audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 153 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 154 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -15,7 +15,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 54 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 57 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -1093,6 +1093,20 @@
   TM-327 walking-ones/ramp plus authorized normal-game physical capture. No
   alternate drawing/ECO was located, `OQ-020` remains RESEARCHING/CONFLICT,
   and no RTL/model behavior changed.
+- **New J3 evidence:** A044427 Rev A gives `J3-11/J3-9/J3-8/J3-7` only
+  1-kOhm series resistors and capacitive shunts before non-inverting LS244
+  `10H`; only J3-1/J3-2 are grounded, and there is no discrete signal pull.
+  Complete SP-327 Hard Drivin' cockpit and SP-360 Race Drivin' compact main
+  wiring diagrams show their `044427-XX` Sound PCB power/audio harnesses but
+  no J3 cable or cabinet device. TM-327/TM-329 identify `A046491-01`, while
+  TM-351 establishes later `A046491-02` without an assembly drawing that
+  resolves J3 population. TI specifies driven LS244 thresholds/currents but
+  no open-input result. Three new primary Atari documents bring the verified
+  cache to 57; a documentation regression locks the evidence and policy.
+  `OQ-032` is now `PARTIALLY RESOLVED_PRIMARY`: matching published cabinets
+  clear the four source-valid bits rather than forcing MAME zero or an
+  assumed floating-TTL high. Physical open values and other revisions remain
+  unknown; no RTL/model behavior changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1114,7 +1128,8 @@
   BIO power-up/reset-release phase and independent-clock coincidence,
   production Rev-A port-2 `TDI15:TDI0` electrical value,
   undriven host lanes for `/320PORT`, `/SWITCHES`, and `/READSTAT`,
-  exact cabinet semantics and idle levels for the four `/SWITCHES` inputs,
+  physical J3 population/field options and disconnected LS244 voltage/read
+  values on `A046491-01`/`A046491-02`,
   main/sound mailbox byte-write and coincident-strobe behavior,
   local-68000 host-cycle TTL timing margin and unreset power-up transient,
   local-MC68000 RC tolerance/power-up behavior, main `/RESET` origin,
@@ -1134,9 +1149,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** investigate `OQ-032` using Atari cabinet wiring/interconnect
-  tables and exact Driver Sound connector `J3` routing to name the four
-  `/SWITCHES` inputs and their documented inactive levels without importing
-  MAME's fixed zero.
+- **Next task:** investigate `OQ-034` by tracing `E1/E2` from A044427 into the
+  `A046491-01`/`A046491-02` assembly evidence, populated EPROM identities, and
+  authorized mirror/continuity tests without inferring a larger-ROM mode from
+  an option footprint.
 - **Latest committed baseline before this cycle:**
-  `c5ff39e`
+  `fe2ff2b`

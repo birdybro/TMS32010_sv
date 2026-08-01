@@ -384,7 +384,7 @@
       "sections_or_pages_used": [
         "Drawing A044427 Rev A, sheet 1 of 10 (PDF pages 1-2): production title block, PR1/PR5 pull-ups, expansion-bus qualifier, and LS138 /SRES decode",
         "Drawing A044427 Rev A, sheet 2 of 10 (PDF pages 3-4): main/sound word latches, MAINFLAG/SOUNDFLAG handshake, /READSTAT nibble, /320BIO generator, local 68000 8 MHz clock, separate RESET/HALT paths, /DTACK-/VPA pins, and 320IRQ open-collector connections to 68000 IPL1/IPL0",
-        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES nibble, /IRQCLR decode, and program-RAM controls",
+        "Drawing A044427 Rev A, sheet 3 of 10 (PDF pages 5-6): /AS-to-RVA synchronizer, /DTACK and /RVAS hold logic, /VPA suppression, /RVF high-address qualification, host read/write decode, UDS/LDS write strobes, /SWITCHES J3 nibble with J3-1/J3-2 ground, four 1-kOhm series/two-capacitor networks and no discrete DC input pull, /IRQCLR decode, and program-RAM controls",
         "Drawing A044427 Rev A, sheets 4 through 6 of 10 (PDF pages 7-12): TMS32010 pins, /CPORT LS374 50L and /320PORT D15:D8 mapping, program RAM/host path, CLKOUT BIO resampling, reset, I/O decode, output LS74 latches, communication RAM, and sample-ROM block/address/data mapping and population",
         "Drawing A044427 Rev A, sheet 7 of 10 (PDF pages 13-14): DAC path, raw MUTE net, and explicitly not-loaded analog switch option"
       ],
@@ -441,6 +441,7 @@
       "notes": "Hosted by original Atari board engineer Jed Margolin.",
       "may_commit": false,
       "sections_or_pages_used": [
+        "SP-327 sheet 1, PDF page 2: complete Hard Drivin' cockpit main wiring; Sound PCB 044427-XX power/audio harness groups are drawn while J3 has no cable or cabinet assignment",
         "SP-327 sheet 3, PDF page 4: main MC68000 /RESET endpoint and RUN indicator; no reset-source driver established",
         "SP-327 sheet 4, PDF page 5: /AS-qualified A23:A21 LS138 primary decode; /RAMEN- and /RHSBUS-enabled A15:A14 LS139 subdecoders; /RHSBUS and /RDUART qualifiers; CPU-space /VPA; complete ordinary/HSBUS/DUART /DTACK cone; /AS request latch; rising-8-MHz RVA pulse; 8MHZ-OR-/S4 asynchronous /RVAS0 preset; shared sampled-/DTACK release clock; and separate /RVA-preset /RVAS chain",
         "SP-327 sheet 6, PDF page 7: /RDUART connection to MC68681 CS pin 35; 3.6864 MHz crystal; pin-9 /DUDTACK output with R49=4.7 kΩ pull-up; data/address wiring",
@@ -915,7 +916,91 @@
       "may_commit": false,
       "sections_or_pages_used": [
         "Cover and copyright page, PDF pp. 1 and 4: title, publisher, 1989 date, and third-printing code",
-        "Sound Board diagnostic descriptions, printed pp. 2-18 through 2-20 (PDF pp. 31-33): self-test memory ownership and synthetic TMS32010 sound/DAC/IRQ/block-latch exercises"
+        "Sound Board diagnostic descriptions, printed pp. 2-18 through 2-20 (PDF pp. 31-33): self-test memory ownership and synthetic TMS32010 sound/DAC/IRQ/block-latch exercises",
+        "Cabinet-mounted assemblies parts list, printed pp. 4-4 through 4-5 (PDF pp. 78-79): A046491-01 Sound PCB Assembly and A046326-01 PCB Interconnect Harness Assembly identities without a J3 pin assignment"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-hard-drivin-compact-manual-tm329-second",
+      "title": "Hard Drivin' Compact Operator's Manual with Illustrated Parts List",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "TM-329",
+      "publication_date": "1989",
+      "revision": "2nd printing",
+      "source_url": "https://www.jmargolin.com/schem/HDC_TM-329_2nd.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/TM-329_Hard_Drivin_Compact_Manual_2nd_Printing.pdf",
+      "sha256": "651ece6f4fbe4f20563153b86b3d0a9717441b278465f03b57fc5514930a0a55",
+      "document_type": "primary game service manual scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
+      "relevance": "Compact-cabinet interconnect, parts, service, and Driver Sound integration evidence that may differ from cockpit TM-327",
+      "authority_level": 2,
+      "notes": "Direct engineer-hosted mirror linked by the acquired Jed Margolin source index. Keep only in the ignored cache and do not assume cockpit equivalence.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Cover, copyright, and contents, PDF pp. 1 and 4-7: title, 1989 date, second-printing code, and document scope",
+        "Cabinet-mounted assemblies rear view, printed p. 4-3 (PDF p. 67): A046491-01 Sound PCB Assembly and A046326-01 PCB Interconnect Harness Assembly identities without a connector pinout"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-race-drivin-compact-schematic-package-sp360",
+      "title": "Race Drivin' Compact Schematic Package",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "SP-360",
+      "publication_date": "1990-11",
+      "revision": "1st printing",
+      "source_url": "https://arcarc.xmission.com/PDF_Arcade_Atari_Kee/Race_Drivin%27/Race_Drivin%27_Compact_SP-360_1st_Printing.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/SP-360_Race_Drivin_Compact_Schematic_Package_1st_Printing.pdf",
+      "sha256": "c7eb415b4fcdb6a4c151849c64b5153d598f6554e44fb0ee373e6d9ed7307024",
+      "document_type": "primary schematic package scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
+      "relevance": "Race Drivin' Compact main wiring and later-cabinet Driver Sound interconnect cross-check",
+      "authority_level": 2,
+      "notes": "Lawfully public arcade-document archive copy. Keep only in the ignored cache; do not assume electrical equivalence with Hard Drivin' cockpit.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Cover and table of contents, PDF p. 1: SP-360 identity, first-printing date, and Race Drivin' main-wiring scope",
+        "SP-360 sheet 1, PDF p. 2: complete Race Drivin' compact main wiring; Sound PCB 044427-XX power/audio harness groups are drawn while J3 has no cable or cabinet assignment"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
+      "id": "atari-race-drivin-cockpit-manual-tm351-second",
+      "title": "Race Drivin' Cockpit Operator's Manual with Illustrated Parts List",
+      "author_or_organization": "Atari Games Corporation",
+      "publication_number": "TM-351",
+      "publication_date": "1990",
+      "revision": "2nd printing",
+      "source_url": "https://arcarc.xmission.com/PDF_Arcade_Atari_Kee/Race_Drivin%27/Race_Drivin%27_Cockpit_TM-351_2nd_Pritning.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "atari/TM-351_Race_Drivin_Cockpit_Manual_2nd_Printing.pdf",
+      "sha256": "6150cb27f2dd180cb8aa7b6638751ec62fc65e1a694ee2448f9844f303e3a409",
+      "document_type": "primary game service manual scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted Atari publication; redistribution permission not established",
+      "relevance": "Race Drivin' cockpit service, cabinet, and later Driver Sound assembly-revision evidence",
+      "authority_level": 2,
+      "notes": "Lawfully public arcade-document archive copy. The upstream filename misspells 'Printing'; keep only in the ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Cabinet-mounted assemblies parts list, printed p. 4-5 (PDF p. 79): A046491-02 Sound PCB Assembly and A046326-01 PCB Interconnect Harness Assembly identities"
       ],
       "status": "acquired",
       "download": {
@@ -1021,11 +1106,12 @@
       "document_type": "manufacturer component data sheet",
       "media_type": "application/pdf",
       "license_or_redistribution_status": "Copyrighted TI data sheet; redistribution permission not established",
-      "relevance": "Primary component behavior for the A044427 sound-ROM-to-TMS input buffer",
+      "relevance": "Primary component behavior for the A044427 sound-ROM-to-TMS input buffer and /SWITCHES J3-to-host buffer",
       "authority_level": 2,
       "notes": "Keep only in ignored cache; use the schematic as authority for actual board wiring.",
       "may_commit": false,
       "sections_or_pages_used": [
+        "Recommended operating conditions and SNx4LS24x electrical characteristics, printed pp. 4-5: driven input thresholds/currents, with no specified open-input logic state",
         "Detailed Description and SNx4LS244 logic/function table, printed pages 11-13"
       ],
       "status": "acquired",

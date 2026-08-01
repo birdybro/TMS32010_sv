@@ -977,6 +977,59 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("OQ-030", questions)
         self.assertIn("OQ-032", questions)
 
+    def test_hard_drivin_j3_inputs_remain_unbiased_and_unnamed(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        by_id = {source["id"]: source for source in manifest["sources"]}
+        host_reads = (
+            DOCS / "integration" / "hard_drivin_host_reads.md"
+        ).read_text(encoding="utf-8")
+        conflicts = (
+            DOCS / "research" / "source_conflicts.md"
+        ).read_text(encoding="utf-8")
+        questions = (
+            DOCS / "research" / "open_questions.md"
+        ).read_text(encoding="utf-8")
+        audit = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "hard_drivin_switch_input_audit.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        for source_id in (
+            "atari-hard-drivin-compact-manual-tm329-second",
+            "atari-race-drivin-compact-schematic-package-sp360",
+            "atari-race-drivin-cockpit-manual-tm351-second",
+        ):
+            source = by_id[source_id]
+            self.assertEqual(source["status"], "acquired")
+            self.assertRegex(source["sha256"], r"^[0-9a-f]{64}$")
+            self.assertFalse(source["may_commit"])
+            self.assertTrue(source["sections_or_pages_used"])
+        for required in (
+            "no discrete DC pull-up or pull-down",
+            "no J3 harness or cabinet switch",
+            "source-valid nibble clear",
+            "hard_drivin_switch_input_audit.md",
+        ):
+            self.assertIn(required, host_reads)
+        self.assertIn("Cabinet cross-check", conflicts)
+        self.assertIn("PARTIALLY RESOLVED_PRIMARY", questions)
+        for required in (
+            "does not assign cabinet functions",
+            "A capacitor is open at DC",
+            "no parameter that guarantees the result of an open input",
+            "SP-327 sheet 1",
+            "SP-360 sheet 1",
+            "`A046491-02` Sound PCB Assembly",
+            "MAME is not an idle-level oracle",
+            "leave the four source-valid bits clear",
+            "No RTL or model behavior changes",
+        ):
+            self.assertIn(required, audit)
+
     def test_hard_drivin_host_timing_preserves_fixed_primary_sequence(self) -> None:
         host_timing = (
             DOCS / "integration" / "hard_drivin_host_timing.md"
