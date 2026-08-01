@@ -79,6 +79,23 @@ not prove the explicit wrapper's physical program addresses, interrupt timing,
 or original-silicon prefetch order. ADR-0003's discarded-sequential/selected-
 target address sequence remains `INFERRED` and simulation-asserted.
 
+## Exhaustive accumulator-arithmetic harness
+
+`tms32010_accumulator.sby` checks the standalone combinational signed
+32-bit accumulator block in one solver step. Both 32-bit operands, the
+add/subtract selection, and OVM remain arbitrary. The reference expression
+sign-extends both operands to 33 bits before performing the mathematical
+operation, then independently derives the representable range, modulo result,
+and positive or negative saturation endpoint.
+
+Assertions prove the wrapped result, signed-overflow predicate, and selected
+result for every input combination. Four independent step-0 covers reach
+positive and negative overflow for both addition and subtraction with OVM
+enabled. The core uses this relation for `ADD`, `SUB`, `SUBH`, `APAC`, `SPAC`,
+`LTA`, and `LTD`; their instruction sequencing, operand selection, and sticky
+OV update remain covered by the directed core tests rather than this
+combinational proof.
+
 ## Exhaustive multiplier harness
 
 `tms32010_multiplier.sby` checks the standalone combinational multiplier with
@@ -434,7 +451,8 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The twenty-two configurations leave DINT ordering, formal coverage of the
+The current 26 configurations produce 52 passing BMC/cover tasks. They still
+leave DINT ordering, formal coverage of the
 represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and
 electrical timing to

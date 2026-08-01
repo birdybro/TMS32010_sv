@@ -199,13 +199,12 @@ module tms32010_core #(
   logic        adds_overflow;
   logic [15:0] addh_high_result;
   logic [31:0] shifted_data_operand;
-  logic [31:0] add_wrapped_result;
-  logic        add_overflow;
-  logic [31:0] sub_wrapped_result;
-  logic        sub_overflow;
+  logic [31:0] accumulator_arithmetic_operand;
+  logic        accumulator_arithmetic_subtract;
+  logic [31:0] accumulator_arithmetic_wrapped_result;
+  logic        accumulator_arithmetic_overflow;
+  logic [31:0] accumulator_arithmetic_result;
   logic [31:0] subh_operand;
-  logic [31:0] subh_wrapped_result;
-  logic        subh_overflow;
   logic [31:0] subs_wrapped_result;
   logic        subs_overflow;
   logic [31:0] subc_operand;
@@ -214,10 +213,6 @@ module tms32010_core #(
   logic [31:0] subc_result;
   logic [31:0] multiplier_product;
   logic [15:0] multiplier_operand;
-  logic [31:0] apac_wrapped_result;
-  logic        apac_overflow;
-  logic [31:0] spac_wrapped_result;
-  logic        spac_overflow;
   logic        control_operand_pending;
   logic [5:0]  pending_control_operation;
   logic        computed_control_pending;
@@ -315,6 +310,16 @@ module tms32010_core #(
     .multiplicand_i (t_register_o),
     .multiplier_i   (multiplier_operand),
     .product_o      (multiplier_product)
+  );
+
+  tms32010_accumulator accumulator_arithmetic (
+    .accumulator_i    (accumulator_o),
+    .operand_i        (accumulator_arithmetic_operand),
+    .subtract_i       (accumulator_arithmetic_subtract),
+    .overflow_mode_i  (overflow_mode_o),
+    .wrapped_result_o (accumulator_arithmetic_wrapped_result),
+    .overflow_o       (accumulator_arithmetic_overflow),
+    .result_o         (accumulator_arithmetic_result)
   );
 
   assign multiplier_operand =
@@ -634,19 +639,25 @@ module tms32010_core #(
   assign addh_high_result = accumulator_o[31:16] + ram_read_data;
   assign shifted_data_operand =
     {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
-  assign add_wrapped_result = accumulator_o + shifted_data_operand;
-  assign add_overflow =
-    ~(accumulator_o[31] ^ shifted_data_operand[31]) &&
-    (accumulator_o[31] ^ add_wrapped_result[31]);
-  assign sub_wrapped_result = accumulator_o - shifted_data_operand;
-  assign sub_overflow =
-    (accumulator_o[31] ^ shifted_data_operand[31]) &&
-    (accumulator_o[31] ^ sub_wrapped_result[31]);
   assign subh_operand = {ram_read_data, 16'h0000};
-  assign subh_wrapped_result = accumulator_o - subh_operand;
-  assign subh_overflow =
-    (accumulator_o[31] ^ subh_operand[31]) &&
-    (accumulator_o[31] ^ subh_wrapped_result[31]);
+  always_comb begin
+    accumulator_arithmetic_operand = shifted_data_operand;
+    if (
+      (decoded_operation == OP_APAC) ||
+      (decoded_operation == OP_SPAC) ||
+      (decoded_operation == OP_LTA) ||
+      (decoded_operation == OP_LTD)
+    ) begin
+      accumulator_arithmetic_operand = product_register_o;
+    end else if (decoded_operation == OP_SUBH) begin
+      accumulator_arithmetic_operand = subh_operand;
+    end
+
+    accumulator_arithmetic_subtract =
+      (decoded_operation == OP_SUB) ||
+      (decoded_operation == OP_SUBH) ||
+      (decoded_operation == OP_SPAC);
+  end
   assign subs_wrapped_result =
     accumulator_o - {16'h0000, ram_read_data};
   assign subs_overflow =
@@ -661,14 +672,6 @@ module tms32010_core #(
     subc_intermediate[31]
       ? (accumulator_o << 1)
       : ((subc_intermediate << 1) | 32'h0000_0001);
-  assign apac_wrapped_result = accumulator_o + product_register_o;
-  assign apac_overflow =
-    ~(accumulator_o[31] ^ product_register_o[31]) &&
-    (accumulator_o[31] ^ apac_wrapped_result[31]);
-  assign spac_wrapped_result = accumulator_o - product_register_o;
-  assign spac_overflow =
-    (accumulator_o[31] ^ product_register_o[31]) &&
-    (accumulator_o[31] ^ spac_wrapped_result[31]);
 
   always_comb begin
     retirement_boundary = 1'b0;
@@ -1060,60 +1063,32 @@ module tms32010_core #(
           end
           OP_LTD: begin
             t_register_o <= ram_read_data;
-            if (apac_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= apac_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= apac_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_LTA: begin
             t_register_o <= ram_read_data;
-            if (apac_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= apac_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= apac_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_MPY: product_register_o <= multiplier_product;
           OP_MPYK: product_register_o <= multiplier_product;
           OP_PAC: accumulator_o <= product_register_o;
           OP_APAC: begin
-            if (apac_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= apac_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= apac_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_SPAC: begin
-            if (spac_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= spac_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= spac_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_SAR: begin
           end
@@ -1153,43 +1128,22 @@ module tms32010_core #(
             accumulator_o[15:0] | ram_read_data
           };
           OP_ADD: begin
-            if (add_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= add_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= add_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_SUB: begin
-            if (sub_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= sub_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= sub_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_SUBH: begin
-            if (subh_overflow) begin
+            if (accumulator_arithmetic_overflow) begin
               overflow_flag_o <= 1'b1;
-              if (overflow_mode_o) begin
-                accumulator_o <=
-                  accumulator_o[31] ? 32'h8000_0000 : 32'h7fff_ffff;
-              end else begin
-                accumulator_o <= subh_wrapped_result;
-              end
-            end else begin
-              accumulator_o <= subh_wrapped_result;
             end
+            accumulator_o <= accumulator_arithmetic_result;
           end
           OP_SUBS: begin
             if (subs_overflow) begin
@@ -1388,6 +1342,11 @@ module tms32010_core #(
     if (!reset_i && !initialize_i) begin
       assert (!(retired_o && illegal_o));
       assert (!(debug_data_write_i && clock_enable_i));
+      assert (
+        (accumulator_arithmetic_result !=
+         accumulator_arithmetic_wrapped_result) ==
+        (overflow_mode_o && accumulator_arithmetic_overflow)
+      );
       if (control_operand_pending) begin
         assert (!(
           data_read_o ||

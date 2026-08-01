@@ -1,0 +1,10 @@
+read_verilog -sv rtl/core/tms32010_accumulator.sv
+
+hierarchy -check -top tms32010_accumulator
+proc
+opt
+check -assert
+synth -top tms32010_accumulator
+check -assert
+stat
+write_json build/yosys/tms32010_accumulator.json

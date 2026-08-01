@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A portable combinational `tms32010_accumulator` block and one-step symbolic
+  harness. The proof covers every pair of 32-bit operands, addition and
+  subtraction, both OVM states, modulo results, signed overflow, and all four
+  saturation directions against an independent 33-bit reference.
+- A standalone Yosys smoke target for the shared accumulator arithmetic.
 - A 7-step bounded program-byte composition check. It proves arbitrary
   address/data upper- and lower-byte writes through the original-MC68000
   normalizer into reset-qualified 4K program RAM and reaches both lane covers.
@@ -774,6 +779,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- ADD, SUB, SUBH, APAC, SPAC, LTA, and LTD now share the proved signed
+  accumulator arithmetic relation. Instruction-owned operand selection,
+  sticky OV, timing, and all specialized ADDS/ADDH/SUBS/SUBC policies remain
+  separate.
 - `OQ-022` is now `PARTIALLY_RESOLVED_PRIMARY`: A044427's common `/RAMWR`
   combined with original-MC68000 Table 3-1 establishes `{byte, byte}` capture
   for program-RAM byte writes. Pinned MAME's retained-other-byte merge remains
@@ -986,6 +995,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Connected the shared accumulator's modulo result into a core invariant that
+  proves the selected result differs only for an overflowing OVM operation,
+  eliminating the strict-lint empty-pin warning without suppressing it.
 - Replaced the provisional lower-Y5 byte-write rejection with the primary-
   backed duplicated-byte result while preserving the reset-qualified ownership
   contract.
@@ -1058,22 +1070,30 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The shared accumulator proof passes for arbitrary 66-bit input combinations
+  and reaches positive/negative add/subtract saturation covers at step 0.
+  Directed core tests retain wrap, saturation, sticky-OV, addressing, and
+  cycle expectations for all seven refactored instructions. Standalone Yosys
+  maps the block to 367 cells with no storage, latch, retained check, or
+  structural problem. The complete formal matrix passes all 52 tasks from 26
+  configurations, and post-change instruction and differential suites pass
+  39 and 25 tests respectively.
 - Integrated lower-Y5 readback checks upper byte `0xde -> 0xdede` and lower
   byte `0xef -> 0xefef` while `/320RES` grants host ownership. The new BMC
   proves all symbolic addresses and data values through write/read completion;
-  both covers are reachable. Integrated Yosys reports 3,767 cells, 409 checks,
+  both covers are reachable. Integrated Yosys reports 3,752 cells, 410 checks,
   and six memories with zero structural problems.
 - Integrated Y6 readback checks lower byte `0xef -> 0xefef` and upper byte
   `0xbc -> 0xbcbc` under CRAMEN ownership. The new BMC proves all symbolic
   addresses and data values through write/read completion; both covers are
-  reachable. Integrated Yosys now reports 3,767 cells, 409 checks, and six
+  reachable. Integrated Yosys now reports 3,752 cells, 410 checks, and six
   memories with zero structural problems.
 - The MC68000 write normalizer passes exhaustive simulation and Yosys
   0.67+111 synthesis at 39 mapped cells/three retained checks with no memory,
   latch, or structural problem. The integrated board test checks `0xab ->
   0xabab` and `0x34 -> 0x3434`, flag set/read-clear, and callback isolation;
   the board-routing BMC proves and covers both symbolic byte orientations.
-  Integrated pre-technology Yosys reports 3,767 cells, 409 checks, six
+  Integrated pre-technology Yosys reports 3,752 cells, 410 checks, six
   memories, and zero structural problems.
 - All 59 locally acquired references pass their pinned SHA-256 checks. The
   socket-based authorized sample-ROM analyzer passes four regressions for
@@ -1130,28 +1150,29 @@ Changelog, and the project follows semantic versioning once releases begin.
   synthetic images with fixed clear/boundary/scan/hold symbols. Documentation
   regressions require the patent/EVM claim boundary and keep `OQ-014`
   unresolved pending original-device capture.
-- The complete repository gates pass with 145 provenance/document/tool tests,
-  232 model/unit tests, 39 instruction/decode RTL tests, 56 bus/integration
-  tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator lint
-  checks 39 modules; all 46 formal jobs from 23 configurations pass; all 29
-  Yosys targets synthesize; and all 46 acquired reference hashes verify.
+- The complete repository gates pass with 164 provenance/document/tool tests,
+  232 model/unit tests, 39 instruction/decode RTL tests, 57 bus/integration
+  tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator
+  lint checks 41 modules; all 52 formal jobs from 26 configurations pass; all
+  31 Yosys targets synthesize; and all 59 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 1,393 ALMs, 400 registers, one 144-by-16 M10K, and one
-  DSP block. TimeQuest closes the 25 MHz internal constraint with +19.196 ns
-  worst setup and +0.165 ns worst hold slack, 48.07 MHz worst slow-corner
+  on `5CSEBA6U23I7` in 1,332 ALMs, 400 registers, one 144-by-16 M10K, and one
+  DSP block. TimeQuest closes the 25 MHz internal constraint with +19.282 ns
+  worst setup and +0.164 ns worst hold slack, 48.27 MHz worst slow-corner
   Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
   warnings. The detailed 100 °C critical path improves from the original
   33.464 ns/26 levels through 29.180 ns/19 levels, 24.217 ns/16 levels, and
-  21.399 ns/14 levels to 20.034 ns/12 levels.
-- Yosys 0.67+111 reports 16,574 cells/124 checks for the synthesis harness,
-  16,526 cells/124 checks for the direct pipeline, and 16,576 cells/131 checks
+  21.399 ns/14 levels, 20.034 ns/12 levels, and the current 20.016 ns/13-level
+  shared-arithmetic result.
+- Yosys 0.67+111 reports 16,236 cells/125 checks for the synthesis harness,
+  16,183 cells/125 checks for the direct pipeline, and 16,232 cells/132 checks
   for the generic
-  MiSTer adapter, all with clean structural checks. The generic count grows
-  while Cyclone V ALMs fall, so neither representation is reported as a proxy
-  for the other.
+  MiSTer adapter, all with clean structural checks. Both the generic count and
+  Cyclone V ALMs fall in this checkpoint, but neither representation is
+  reported as a proxy for the other.
 - The address-driven bus-control regression reaches a mirrored GSP access,
   canonical MSP access with arbitrary external wait, mirrored DUART access
   with late external acknowledge, and ordinary expansion-bus `RVA`

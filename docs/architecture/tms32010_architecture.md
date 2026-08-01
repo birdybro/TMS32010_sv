@@ -306,6 +306,15 @@ overflow and OVM-controlled wrap or endpoint saturation, and performs no
 data-memory access.
 SPAC subtracts all 32 P bits from ACC with the same P preservation,
 sticky-overflow, OVM result, and program-only transaction rules.
+The portable RTL shares one signed 32-bit add/subtract primitive across these
+P-accumulation operations, `ADD`, `SUB`, and `SUBH`; ADDS, ADDH, SUBS, and
+SUBC remain separate because their documented operand/status rules differ. A
+one-step symbolic proof leaves both 32-bit operands, operation direction, and
+OVM arbitrary and compares wrap, overflow, and saturation against an
+independently sign-extended 33-bit result
+[`formal/tms32010_accumulator.sby`]. This is exhaustive combinational RTL
+evidence, not instruction sequencing, source selection, sticky-OV, or
+physical timing evidence.
 TI's separate rule deferring interrupt service through the instruction after
 MPY or MPYK is now tested in the model and RTL, including the case where the
 multiply itself occupies the already-pipelined protected slot.

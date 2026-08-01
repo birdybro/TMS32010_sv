@@ -50,6 +50,16 @@ resource; that mapping is a synthesis choice and the RTL contains no
 vendor-specific primitive. MPYK feeds the same datapath with its sign-extended
 13-bit instruction constant and performs no data-memory access.
 
+`tms32010_accumulator` is the shared combinational signed 32-bit add/subtract
+and OVM-saturation block. The core uses it for `ADD`, `SUB`, `SUBH`, `APAC`,
+`SPAC`, and the previous-P accumulation in `LTA`/`LTD`; their sticky `OV`
+register update remains in the architectural core. The block separately
+exports the modulo result, current-operation signed-overflow predicate, and
+OVM-selected result. A one-step symbolic proof compares every operand pair,
+both operations, and both OVM states against an independently widened 33-bit
+signed calculation. ADDS, ADDH, SUBS, and SUBC retain separate datapaths
+because their documented operand, status, or recurrence rules differ.
+
 This temporary core interface does not itself reproduce `MEN`, `CLKOUT`,
 fetch/execute overlap, or pin subphases. It exists to qualify decode, state
 effects, clock enables, and reset preservation. It must not be used alone as

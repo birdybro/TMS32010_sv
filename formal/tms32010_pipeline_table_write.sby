@@ -16,6 +16,7 @@ read -formal -sv tms32010_pkg.sv
 read -formal -sv tms32010_decode.sv
 read -formal -sv tms32010_internal_ram.sv
 read -formal -sv tms32010_multiplier.sv
+read -formal -sv tms32010_accumulator.sv
 read -formal -sv tms32010_fetch_execute.sv
 read -formal -sv tms32010_core.sv
 read -formal -sv tms32010_program_bus.sv
@@ -28,6 +29,7 @@ rtl/packages/tms32010_pkg.sv
 rtl/core/tms32010_decode.sv
 rtl/core/tms32010_internal_ram.sv
 rtl/core/tms32010_multiplier.sv
+rtl/core/tms32010_accumulator.sv
 rtl/core/tms32010_fetch_execute.sv
 rtl/core/tms32010_core.sv
 rtl/core/tms32010_program_bus.sv

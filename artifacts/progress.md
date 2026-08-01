@@ -1,7 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `OQ-022` Driver Sound original-MC68000 program-RAM
-  byte capture
+- **Current milestone:** `RTL-001` shared signed accumulator arithmetic
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -34,8 +33,8 @@
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
   RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
-  1,393 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 48.07 MHz worst
-  slow-corner internal Fmax, +19.196 ns setup slack, and +0.165 ns worst hold
+  1,332 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 48.27 MHz worst
+  slow-corner internal Fmax, +19.282 ns setup slack, and +0.164 ns worst hold
   slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
   fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
   claimed. TimeQuest
@@ -43,7 +42,7 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 16,574 generic cells with 124 retained checks and lowering the
+  producing 16,236 generic cells with 125 retained checks and lowering the
   registered RAM and forwarding to generic registers/muxes; its
   technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
@@ -51,12 +50,12 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 16,526 generic cells with 124 retained checks and
+  independently passes at 16,183 generic cells with 125 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 16,576 generic cells
-  with 131 retained checks and zero structural problems, including 50 cells
+  Yosys at 16,232 generic cells
+  with 132 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
@@ -69,7 +68,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,767 abstract cells/409 checks
+  board top retains six memories and passes at 3,752 abstract cells/410 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -131,7 +130,10 @@
   A thirtieth target checks the storage-free original-MC68000 write-word
   normalizer at 39 mapped cells/three retained checks, with no memory, latch,
   generated clock, or structural problem.
-- **Formal status:** all 50 tasks from 25 SymbiYosys configurations pass with
+  A thirty-first target checks the shared combinational signed accumulator
+  arithmetic at 367 mapped cells with no storage, latch, retained check, or
+  structural problem.
+- **Formal status:** all 52 tasks from 26 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -177,7 +179,12 @@
   signed product. It proves the unique `0x8000`-square exception,
   commutativity, and zero/unity identities; all four exception/extrema covers
   reach step 0. Instruction sequencing, physical timing, and technology
-  mapping remain outside that proof. An eleventh standalone RAM configuration
+  mapping remain outside that proof. A separate one-step standalone
+  accumulator proof quantifies all two-operand/add-subtract/OVM combinations,
+  checks modulo results, signed overflow, and final saturation against an
+  independent signed 33-bit reference, and reaches all four saturation
+  directions at step 0. Operand selection, sticky OV, instruction sequencing,
+  and timing remain outside that primitive. An eleventh standalone RAM configuration
   passes a six-step base case and temporal induction over a symbolic address
   spanning every qualified word. From arbitrary initial contents and under
   active-address-valid/mutually-exclusive-write interface assumptions, it
@@ -848,7 +855,7 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the current board reports
-  3,767 cells/409 checks with six memories. This interlock does not itself
+  3,752 cells/410 checks with six memories. This interlock does not itself
   select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
@@ -1187,6 +1194,21 @@
   retained-other-byte merge remains `SC-022`; authorized-firmware access
   widths, reset-handoff compliance, and electrical/substitute-CPU qualification
   remain open. `OQ-022` is `PARTIALLY_RESOLVED_PRIMARY`.
+- **New accumulator datapath evidence:** the portable core now routes the
+  common signed 32-bit ADD/SUB/SUBH/APAC/SPAC/LTA/LTD arithmetic through one
+  combinational relation while leaving instruction operand selection, sticky
+  OV, and the distinct ADDS/ADDH/SUBS/SUBC policies outside it. A one-step
+  proof quantifies every 66-bit input combination against an independent
+  signed 33-bit result and reaches positive/negative add/subtract saturation.
+  All 39 directed RTL instruction tests and all 25 differential/oracle tests
+  pass after integration; the complete 52-task/26-configuration formal sweep
+  also passes. Yosys maps the primitive to 367 cells and reduces the direct
+  pipeline to 16,183 cells/125 checks; the six-memory Driver Sound hierarchy
+  is 3,752 abstract cells/410 checks. Quartus fits the explicit pipeline in
+  1,332 ALMs with unchanged 400-register/one-M10K/one-DSP resources and closes
+  25 MHz at +19.282 ns setup, +0.164 ns hold, and 48.27 MHz worst slow-corner
+  Fmax. The current 100 °C path is 20.016 ns/13 levels from retained program
+  context into ACC.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1235,8 +1257,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** audit `OQ-032` Driver Sound `/SWITCHES` cabinet-pin functions
-  against the pinned Atari service and schematic corpus without assigning
-  inactive levels not shown by primary wiring.
+- **Next task:** continue `RTL-001` by extracting the portable signed input
+  shifter used by the qualified accumulator instructions and prove its exact
+  width, sign-extension, and shift relation independently of instruction
+  decode and timing.
 - **Latest committed baseline before this cycle:**
-  `b273e06`
+  `4f68996`

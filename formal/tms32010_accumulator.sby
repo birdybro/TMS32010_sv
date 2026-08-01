@@ -1,0 +1,21 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 1
+cover: mode cover
+cover: depth 1
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv tms32010_accumulator.sv
+read -formal -sv tms32010_accumulator_formal.sv
+prep -top tms32010_accumulator_formal
+
+[files]
+rtl/core/tms32010_accumulator.sv
+formal/tms32010_accumulator_formal.sv

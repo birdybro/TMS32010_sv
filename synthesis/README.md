@@ -48,12 +48,19 @@ cd synthesis/quartus
 
 The ignored `build/quartus/setup_paths.rpt` records complete register-to-
 register paths, logic levels, and routing/cell delay shares. Current measured
-figures and the scope of the retained core-program optimization are in
+figures and the scope of the retained core-program and shared-arithmetic
+optimizations are in
 `synthesis/qualification.md`.
 
-The command runs twenty-nine checked-in scripts. The main synthesis harness
-targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 16,574 generic cells and 124 retained
+The command runs thirty-one checked-in scripts. A standalone
+`tms32010_accumulator.ys` target maps the portable signed 32-bit add/subtract
+and OVM-result block to 367 generic cells with no storage, latch, retained
+check, or structural problem. This is a pre-technology combinational smoke
+result; exhaustive functional evidence is supplied by
+`formal/tms32010_accumulator.sby`, not by the cell count.
+
+The main synthesis harness targets the explicit fetch/execute pipeline and writes
+`build/yosys/tms32010.json`; it reports 16,236 generic cells and 125 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -77,12 +84,14 @@ table direction and its consistency assertion brought the preceding
 checkpoint to 16,506 cells and 125 checks. ADR-0004's registered array and
 forwarding plus the decoder family qualifier brought the next checkpoint to
 16,949 cells and 125 checks. Replacing the separate execute/branch/table
-carriers and direction state with one retained core-program word brings the
-current direct checkpoint to 16,526 cells, 124 checks, and zero structural-
+carriers and direction state with one retained core-program word brought the
+preceding direct checkpoint to 16,526 cells, 124 checks, and zero structural-
 check problems. The obsolete direction-consistency assertion disappears with
 its state; directed carrier checks and both table formal paths retain the
-guarded behavior. This generic
-increase coexists with the lower Cyclone V ALM count recorded by the fitter;
+guarded behavior. Sharing the signed add/subtract/OVM arithmetic block across
+seven instruction paths brings the current direct checkpoint to 16,183 cells
+and 125 checks with zero structural problems. This generic reduction coexists
+with the lower Cyclone V ALM count recorded by the fitter;
 the two representations are not interchangeable resource estimates.
 
 The third script directly targets the generic `tms32010_mister` adapter and
@@ -90,8 +99,8 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 16,576 generic cells and 131 retained checks, with zero
-structural problems; 50 cells and seven checks are local to the adapter after
+Yosys 0.67+111 reports 16,232 generic cells and 132 retained checks, with zero
+structural problems; 49 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset.
 
 The fourth script targets the storage-free A044427 Rev-A
