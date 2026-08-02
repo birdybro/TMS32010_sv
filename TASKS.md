@@ -1055,6 +1055,7 @@ objective passing evidence.
   `sim/interrupt/tb_interrupt_native_sampling.sv`,
   `sim/interrupt/tb_interrupt_phase.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt.sv`,
+  `sim/interrupt/tb_sequential_pipeline_interrupt_mask_controls.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_one_cycle.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `sim/differential/test_interrupt_model_rtl.py`,
@@ -1090,6 +1091,12 @@ objective passing evidence.
   ownership, and stacked-PC/vector entry. The explicit matrix also proves the
   concurrent MEN fetch and exact registered internal-RAM read/write direction
   and address for every family.
+  Four explicit mask-control placements now cover request arrival during EINT
+  and DINT plus EINT and DINT in the already-protected slot. They prove
+  program-only MEN ownership, request retention, ordinary versus dummy fetch
+  classification, redundant-EINT nonextension, and eventual service. The
+  protected-DINT cancellation assertion remains explicitly PROVISIONAL under
+  `OQ-019`/`SC-039` and is not physical-device evidence.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1139,7 +1146,9 @@ objective passing evidence.
   `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
   `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,
   one-cycle/program-only/clock-enable checks, native-phase retirement, and
-  seeded INTM differential comparison. Interrupt recognition, EINT's
+  seeded INTM differential comparison. Four explicit-pipeline placements
+  distinguish request-during-EINT/DINT and protected EINT/DINT while retaining
+  the protected-DINT PROVISIONAL label. Interrupt recognition, EINT's
   following-instruction service deferral, Figure 2-12 external read order,
   and every represented supported-multicycle arrival position now pass
   directed checks under `CTRL-002`; complete execute-overlap and

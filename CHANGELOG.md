@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A four-placement explicit-pipeline DINT/EINT interrupt matrix covering
+  request arrival during each mask control and each mask control in the
+  protected N+1 slot. It verifies program-only MEN ownership, pending-request
+  retention, redundant-EINT nonextension, dummy/vector classification, and
+  later service, while labeling protected-DINT cancellation PROVISIONAL under
+  OQ-019/SC-039.
 - A matching 39-case explicit fetch/execute interrupt-arrival matrix for every
   supported ordinary one-cycle family. It checks concurrent MEN program reads,
   exact registered internal-RAM read/write directions and addresses, protected
@@ -1318,6 +1324,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Explicit mask-control placement now distinguishes request-during-EINT,
+  request-during-DINT, protected redundant EINT, and protected DINT. The last
+  result is a reproducible implementation-policy check only; it does not
+  resolve the conflicting TI sequences or substitute for original-NMOS data.
 - Request arrival at LACK/NOP/control, all common data/address operations,
   MPY/MPYK, PAC/APAC/SPAC, LTA/LTD/DMOV, LST/SST, SUBC, SUBH, ABS, and ADDH now
   follows the same primary-backed core and explicit-pipeline retirement/

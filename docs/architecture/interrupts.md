@@ -85,6 +85,14 @@ registered internal-RAM read/write direction and address, including LTD/DMOV's
 distinct next-word write and SST's forced page-one destination
 [`sim/interrupt/tb_interrupt_one_cycle_arrivals.sv`,
 `sim/interrupt/tb_sequential_pipeline_interrupt_one_cycle.sv`].
+A separate explicit four-placement test covers request arrival during EINT,
+request arrival during DINT, a redundant EINT in the protected N+1 slot, and
+DINT in that protected slot. The first three verify the implemented primary-
+backed mask/retain/deferral rules. The fourth reproduces the current
+PROVISIONAL cancellation policy, proves that the request remains latched, and
+services it only after a later EINT plus protected word; it is implementation
+evidence, not resolution of `OQ-019`/`SC-039`
+[`sim/interrupt/tb_sequential_pipeline_interrupt_mask_controls.sv`].
 The native sampling test also begins a held-low request at each of the four
 modeled phases. It asserts no pending state before the enabled falling
 boundary, checks a stalled phase-2 hold, and then verifies the same protected,
@@ -136,9 +144,9 @@ address mapping remains ADR-0003 CORROBORATED for RET and INFERRED for CALA,
 not original-part physical-pin proof.
 
 This remains an incomplete pipeline claim. The explicit tests do not cover
-DINT's provisional cancellation at every placement, the `SC-039` original-
-versus-later interrupt sequence, external synchronization, physical setup
-behavior, PUSH/POP cycles, physical confirmation of
+DINT across every multicycle interval and digital subphase, the `SC-039`
+original-versus-later interrupt sequence, external synchronization, physical
+setup behavior, PUSH/POP cycles, physical confirmation of
 ADR-0003, or analog input timing (`CTRL-002`, `OQ-004`,
 `OQ-007`, `OQ-016`).
 

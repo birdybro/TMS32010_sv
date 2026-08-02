@@ -62,10 +62,15 @@ Tests also prove that an EINT executed while already enabled does not add a
 second deferral. The warning against placing EINT before branch remains a
 software restriction. The explicit pipeline now qualifies the basic
 EINT/protected-word/discarded-N+2/vector path and MPY/MPYK protected-slot
-extension. The existing core/explicit matrices plus four CALA/RET explicit
-cases cover all 36 represented arrival intervals across 17 supported
-multicycle families; physical sampling, PUSH/POP cycles, and physical
-confirmation of ADR-0003 remain `OQ-004`/`OQ-007`/`OQ-016`.
+extension. A four-placement explicit test additionally covers request arrival
+while EINT or DINT retires and either mask control in the already-protected
+slot. Request-during-DINT masks service but retains the request; protected
+redundant EINT adds no second deferral. Protected DINT reproduces the current
+cancellation policy and is labeled PROVISIONAL rather than silicon evidence
+under `OQ-019`/`SC-039`. The existing core/explicit matrices plus four
+CALA/RET explicit cases cover all 36 represented arrival intervals across 17
+supported multicycle families; physical sampling, PUSH/POP cycles, and
+physical confirmation of ADR-0003 remain `OQ-004`/`OQ-007`/`OQ-016`.
 
 ## Qualified `LST` functional slice
 

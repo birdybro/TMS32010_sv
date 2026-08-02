@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** `CTRL-002` explicit one-cycle interrupt arrivals
+- **Current milestone:** `CTRL-002` explicit mask-control interrupt placement
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
   instruction/decode tests; 6 interrupt RTL/phase
-  tests; 58 native bus/phase/wrapper tests, including exhaustive original-
+  tests; 59 native bus/phase/wrapper tests, including exhaustive original-
   MC68000 mailbox word/upper-byte/lower-byte normalization, CALA/RET bus/stall,
   and
   four-boundary interrupt qualification,
@@ -1581,6 +1581,14 @@
   direction and address, including LTD/DMOV's next-word write and SST's forced
   page-one destination. No RTL changed, so synthesis/formal evidence is
   unchanged.
+- **New mask-control placement evidence:** a four-case explicit-pipeline test
+  covers request arrival while EINT or DINT retires and either mask control in
+  the already-protected slot. It proves program-only MEN ownership, retained
+  requests, redundant-EINT nonextension, dummy/vector classification, and
+  later service. The protected-DINT cancellation case is intentionally marked
+  PROVISIONAL under `OQ-019`/`SC-039`; it records current implementation policy
+  and does not resolve original-silicon priority. No RTL changed, so synthesis/
+  formal evidence is unchanged.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1629,8 +1637,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** audit every implementable DINT/EINT placement in the explicit
-  pipeline, add tests that label the current DINT-at-protected-boundary result
-  PROVISIONAL, and keep physical resolution under `OQ-019`/`SC-039`.
+- **Next task:** audit the remaining P0 pipeline gaps after ordinary one-cycle,
+  represented multicycle, CALA/RET, and mask-control arrival coverage; keep
+  PUSH/POP ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `afcff44`
+  `b91a6eb`

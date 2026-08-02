@@ -259,7 +259,7 @@
       "overflow_behavior": "none",
       "result_behavior": "INTM receives 1",
       "branch_behavior": "none",
-      "interrupt_interaction": "disables maskable interrupt service immediately after execution and does not clear a latched request; whether that write cancels a grant already forming at original Figure 2-12's protected N+1 boundary remains OQ-019/SC-039",
+      "interrupt_interaction": "disables maskable interrupt service immediately after execution and does not clear a latched request; an explicit-pipeline test covers request arrival during DINT and reproduces cancellation when DINT is protected N+1, but that protected-slot priority remains PROVISIONAL under OQ-019/SC-039",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -293,7 +293,7 @@
       "overflow_behavior": "none",
       "result_behavior": "INTM receives 0",
       "branch_behavior": "none; TI warns not to place EINT immediately before a branch",
-      "interrupt_interaction": "clears INTM on execution, but maskable interrupt service remains inhibited until the instruction following EINT completes; does not clear a latched request",
+      "interrupt_interaction": "clears INTM on execution, but maskable interrupt service remains inhibited until the instruction following EINT completes; does not clear a latched request; explicit-pipeline tests cover request arrival during EINT and prove that redundant EINT in an already-protected slot adds no second deferral",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [

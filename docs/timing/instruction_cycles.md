@@ -174,6 +174,14 @@ stacked return PC (`OQ-019`, `SC-039`). Its strict capture classifier also
 recomputes 50 ns INT setup, a one-local-`CLKOUT` low width, and the 15 ns
 fall-time limit and requires calibrated, provenance-checked repetitions. No
 physical capture exists, so this adds no passing same-edge timing assertion.
+An explicit four-placement test now distinguishes request arrival during EINT
+or DINT from EINT or DINT occupying the already-protected slot. It verifies
+program-only MEN ownership in every case, no second deferral for protected
+redundant EINT, and retained pending state through request-during-DINT. The
+protected-DINT case deliberately asserts the current cancellation/resume
+sequence as PROVISIONAL implementation behavior and therefore does not alter
+the preceding physical-evidence boundary
+[`sim/interrupt/tb_sequential_pipeline_interrupt_mask_controls.sv`].
 A 32-case directed core matrix additionally samples a one-cycle request at
 each represented machine cycle of B, BANZ, BV, BIOZ, CALL, the six
 accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each

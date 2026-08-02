@@ -1124,6 +1124,11 @@ electrical result of an out-of-range access.
 - **Current treatment:** SPRU001B remains the original-device timing authority
   for qualified normal entry. DINT cancellation at its protected N+1 boundary
   remains PROVISIONAL, and internal analog synchronization is not claimed.
+  A four-placement explicit-pipeline regression now demonstrates the current
+  request-during-EINT/DINT and protected-EINT/DINT policy, including later
+  service of the request retained by protected DINT. That reproducible RTL
+  result is implementation evidence only and does not select a silicon
+  hypothesis.
   `docs/research/dint_interrupt_race_experiment.md` defines the stable
   original-NMOS pulse/address/stacked-PC capture required to resolve `OQ-019`
   and further constrain `OQ-004`. The strict
