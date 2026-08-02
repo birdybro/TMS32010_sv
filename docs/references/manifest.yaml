@@ -159,7 +159,9 @@
       "sections_or_pages_used": [
         "Section 2.1 first-generation device summary, printed pages 2-4 through 2-8 (PDF pages 21-25): NMOS/CMOS variant separation",
         "Section 9 documentation support, especially the BBS specification-update statement (PDF page 117) and data-sheet list naming TMS32010 SPRS02A and TMS32010-14 SPRS008",
-        "Appendix A Table A-1, printed page A-1 (PDF page 176): TMS32010NL, TMS32010NL-14, and TMS32010NL-25 as 2.4-micrometer NMOS frequency grades"
+        "Appendix A Table A-1, printed page A-1 (PDF page 176): TMS32010NL, TMS32010NL-14, and TMS32010NL-25 as 2.4-micrometer NMOS frequency grades",
+        "Section 7.2.3, printed pages 7-15 through 7-16 (PDF pages 76-77): TMS320C10 XDS/22 full-speed, every-traceable-machine-cycle BTT sampling",
+        "Section 11.19, printed page 11-19 (PDF page 144): Kontron TMS32010 clock-qualified external-fetch trace/disassembly and trigger classes"
       ],
       "status": "acquired",
       "download": {

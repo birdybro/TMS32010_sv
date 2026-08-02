@@ -63,6 +63,14 @@ does not locate it in either interval, count repetitions, or reveal a later
 address [ti-tms32010-evm-users-guide-spru005a, SB note 7, printed p. 3-58
 (PDF p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)].
 
+TI SPRU011 says its contemporary TMS320C10 XDS/22 could sample every traceable
+machine cycle and that a Kontron TMS32010 option recorded clock-qualified
+external fetches. It provides no PUSH/POP listing, so the project classifier
+and 32-run evidence-package check qualify the future measurement method only;
+they do not create a timing assertion
+[ti-development-support-spru011-1986, §7.2.3, printed pp. 7-15–7-16 (PDF
+pp. 76–77), and §11.19, printed p. 11-19 (PDF p. 144)].
+
 The individual `CALA` page likewise establishes a one-word/two-cycle total,
 opcode-PC+1 stack push, and `ACC[11:0]` target. Directed model/RTL tests assert
 that total and state transition while the logical model reports only the known

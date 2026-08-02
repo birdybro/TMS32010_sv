@@ -7,6 +7,22 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A strict `tools.trace.push_pop_capture` workflow for the unresolved original-
+  NMOS PUSH/POP bus experiment. It consumes one normalized row per falling
+  `CLKOUT` boundary, independently classifies H1/H2/H3 for PUSH and POP,
+  retains exact sampled intervals and source-conflict warnings, checks 32-run
+  repeatability, and refuses malformed, truncated, duplicate-trigger, fixture-
+  mismatch, or unclassified traces.
+- A physical-evidence sidecar validator for the PUSH/POP workflow. It records
+  device/board/clock/supply/memory/probe/analyzer identity, recomputes the exact
+  program image plus raw-capture and probe-photograph SHA-256 values, constrains
+  artifacts beneath an explicit root, and reports only `review_ready`; it
+  cannot promote `OQ-016` to hardware-verified status.
+- Seven regressions covering all retained PUSH/POP hypotheses, primary `MEN`
+  conflict disclosure, active external strobes, fixture-data disagreement,
+  strict CSV ordering/types, unique/trailing capture windows, mixed-run
+  inconsistency, complete evidence packages, path traversal, and the documented
+  claim boundary.
 - A portable combinational `tms32010_status_word` pack/extract relation and
   one-step symbolic harness. The proof leaves every stored field and complete
   LST source word arbitrary, constructs SST independently by bit index,
@@ -809,6 +825,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The PUSH/POP physical experiment now cites TI SPRU011's contemporary
+  every-traceable-machine-cycle XDS/22 capture and clock-qualified Kontron
+  external-fetch workflow, defines the normalized CSV handoff, and links the
+  reproducible classifier without treating either development-tool overview as
+  a missing instruction waveform.
 - LST and SST now share the proved status-word bitfield relation while the
   instruction owner retains INTM preservation, address selection, old/new
   ordering, retirement, and the PROVISIONAL indirect-LST next-ARP policy.
@@ -1130,9 +1151,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The PUSH/POP capture tooling recognizes the exact checked probe image at
+  addresses `0x001`/`0x004`, requires four retained following boundaries,
+  distinguishes repeated from advancing reads without using the assembler as
+  an oracle, and serializes every observed signal value. Synthetic H1 remains
+  explicitly contradictory to SPRU001B's general `MEN` rule; no physical
+  capture exists and no RTL timing sequence has been added.
 - Strict lint checks 46 RTL modules; all 62 formal tasks from 31 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass, alongside 164 repository and 232 model/unit tests. All 36
+  regressions pass, alongside 171 repository and 232 model/unit tests. All 36
   Yosys targets pass with zero structural problems. The status relation maps
   to zero cells; the direct pipeline reports 15,850 cells/128 checks, the
   synthesis harness 15,844/128, the MiSTer wrapper 15,899/135, and the

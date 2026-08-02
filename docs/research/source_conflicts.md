@@ -433,7 +433,10 @@ electrical result of an out-of-range access.
   prefetch as separately measurable hypotheses. The EVM clue is consistent
   with all three because each exposes `N+1` at some point. The synthetic
   fixture and original-device capture criteria are in
-  `docs/research/push_pop_bus_experiment.md`; see `OQ-016`.
+  `docs/research/push_pop_bus_experiment.md`; see `OQ-016`. The strict
+  `tools.trace.push_pop_capture` classifier now makes those observations
+  reproducible and preserves conflicting/unknown sequences, but synthetic
+  classifier tests are not evidence for any native sequence.
 - **MAME functional check:** the ROM-free `make mame-synthetic` workflow runs
   a separate combined stack/computed-control fixture in MAME's Hard Drivin'
   TMS320C10 device. Ten model steps match eleven debugger boundary states,

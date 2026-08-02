@@ -93,7 +93,11 @@ objective passing evidence.
   TI patent US4577282A is now integrity-pinned as non-committed architectural
   background. Its explicit RET discard/pop/target timing corroborates
   ADR-0003, while its omission of the production accumulator PUSH/POP opcodes
-  prevents it from resolving `OQ-016`.
+  prevents it from resolving `OQ-016`. SPRU011's XDS/22 and Kontron sections
+  now establish that contemporary tooling sampled individual machine cycles
+  and clock-qualified external fetches; they describe the required measurement
+  granularity but contain no PUSH/POP trace and therefore do not select a bus
+  hypothesis.
 
 ## Milestone 3 — Architecture specification
 
@@ -125,7 +129,11 @@ objective passing evidence.
   experiment preserve that boundary. TI's EVM breakpoint restriction now
   corroborates external `N+1` visibility during the multicycle context, but
   its address-driven logic supplies no exact phase, repeat count, or later
-  address and therefore does not choose a hypothesis.
+  address and therefore does not choose a hypothesis. The physical experiment
+  now has a strict normalized falling-edge classifier and evidence-package
+  validator. It can report a repeatable H1/H2/H3 result only after 32 runs and
+  verified program/raw/photo hashes, but calls that state `review_ready` and
+  cannot change architectural confidence without raw-capture review.
   `OQ-014` is now reduced to a reproducible original-NMOS measurement:
   `SC-038` preserves SPRU001B's isolated `128-144` off-by-one table, the
   consistent 144-word/`128-143` production evidence, and the related patent's
@@ -1169,7 +1177,12 @@ objective passing evidence.
   program and original-device capture procedure now define the evidence
   needed to resolve it. The primary EVM's refusal to place a breakpoint at the
   following word corroborates `N+1` address visibility but does not assign it
-  to an interval or distinguish repeated from advancing prefetch.
+  to an interval or distinguish repeated from advancing prefetch. The new
+  capture analyzer independently classifies both opcodes across every run,
+  retains the exact interval values and primary-source conflicts, fails closed
+  on malformed/truncated/unknown sequences, and recomputes all evidence hashes.
+  Its synthetic regressions are measurement-tool qualification, not RTL/native
+  instruction qualification.
   `SUBH` now passes primary-cited common-address decode/fixture/tool support,
   TI-example and boundary model/RTL tests, one-cycle native retirement, and
   seeded differential coverage. Tests distinguish ordinary/wrapped low-half
@@ -1252,7 +1265,11 @@ objective passing evidence.
   `MEN` activity in both execution intervals is constrained by TI's general
   pin rule, but the address and fetched-word ownership remain open under
   `OQ-016`/`SC-018`; `docs/research/push_pop_bus_experiment.md` defines the
-  resolving original-device trace.
+  resolving original-device trace. `tools.trace.push_pop_capture` now provides
+  the deterministic H1/H2/H3 classifier and traversal-safe provenance check;
+  seven regressions exercise every hypothesis, conflicting strobes/data,
+  truncation, inconsistent repetitions, and complete/malformed packages. No
+  original-NMOS capture is present, so this advances evidence readiness only.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
   behavior remains `OQ-017`. The related-patent timing and two stable physical

@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `RTL-001` architectural status-word relation
+- **Current milestone:** `TIMING-001` PUSH/POP physical-capture evidence path
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 171 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1314,6 +1314,21 @@
   400 registers, one M10K, and one DSP, closes 25 MHz with +17.838 ns worst
   setup and +0.164 ns worst hold, reports 45.12 MHz worst slow-corner Fmax,
   and retains the 21.476 ns/14-level retained-program-data-to-ACC path.
+- **New PUSH/POP measurement evidence:** TI SPRU011 now supplies a contemporary
+  method-level corroboration: the TMS320C10 XDS/22 sampled every traceable
+  machine cycle, while the Kontron TMS32010 option recorded clock-qualified
+  external fetches. Neither prints the missing PUSH/POP sequence. The new
+  standard-library classifier consumes a strict one-row-per-falling-CLKOUT CSV,
+  locates the hand-fixed opcodes, independently distinguishes H1 inactive,
+  H2 repeated `N+1`, and H3 `N+1`/`N+2` for both instructions, retains exact
+  signals and primary-source conflicts, and fails closed on any other pattern.
+  Its evidence validator requires 32 consistent reset-to-loop runs, exact
+  device/board/instrument metadata, and recomputed image/raw/photo hashes under
+  a traversal-safe artifact root. Seven new regressions cover all hypotheses
+  and failure boundaries. `review_ready` remains package status only: no
+  physical capture exists, `OQ-016` remains open, and no PUSH/POP RTL timing
+  has been added. Synthesis evidence is unchanged because this cycle modifies
+  no RTL.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1362,8 +1377,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** resume `RTL-002`/`ISA-002` research for the two native
-  PUSH/POP program-bus cycles under `OQ-016`; implement only if primary or
-  stronger physical evidence establishes fetched-word/address ownership.
+- **Next task:** continue `REF-001`/`TIMING-001` archival research for the
+  identified XDS/22 TMS32010 Emulator User's Guide `SPDU015` or an equivalent
+  primary trace listing. If no lawful copy or trace exists, retain the physical
+  capture boundary and select the next unblocked timing/verification task; do
+  not implement PUSH/POP from the classifier's synthetic hypotheses.
 - **Latest committed baseline before this cycle:**
-  `85319b1`
+  `e0040a1`

@@ -46,6 +46,17 @@ repeat count, or later address
 p. 99), and §9.3, printed pp. 9-2 through 9-3 (PDF pp. 179-180)]. See
 `docs/research/evm_breakpoint_evidence.md`.
 
+TI's contemporary development-support guide confirms that this question was
+observable at machine-cycle rather than merely instruction-boundary
+granularity. It says the TMS320C10 XDS/22 samples every traceable machine
+cycle into its BTT trace buffer. The same guide describes a Kontron
+TMS32010 analyzer/disassembler that records clock-qualified external program
+fetches and distinguishes reset, interrupt, port, table, and instruction-fetch
+triggers. Neither overview prints a PUSH/POP trace, but both corroborate the
+capture method and the need to preserve every cycle
+[ti-development-support-spru011-1986, §7.2.3, printed pp. 7-15–7-16
+(PDF pp. 76–77), and §11.19, printed p. 11-19 (PDF p. 144)].
+
 These facts make a completely inactive extra cycle inconsistent with the
 general pin contract. They do not establish which active-low `MEN` sample is
 accepted by the instruction pipeline, or whether the program address repeats.
@@ -130,6 +141,25 @@ a substitute for this experiment.
 7. Save raw analyzer data, a signal-name/pin map, photographs of probe
    placement, and a short decoding script. Hash every artifact before any
    conversion.
+
+Normalize a derived copy of each capture to one CSV row per falling `CLKOUT`
+boundary with the exact schema documented in `tools/trace/README.md`. Retain
+the raw transitions separately. Then classify and validate the package with:
+
+```sh
+python3 -m tools.trace.push_pop_capture normalized.csv \
+  --metadata metadata.json \
+  --program-image push_pop_bus_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The classifier independently evaluates PUSH and POP in every run, requires a
+unique opcode trigger and four retained following boundaries, verifies active
+fixture reads, recomputes every supplied hash, and refuses to merge an unknown
+sequence into H1-H3. Its `review_ready` result is evidence-package status only;
+it cannot promote confidence or replace inspection of raw transitions and
+probe loading.
 
 ## Acceptance and interpretation
 

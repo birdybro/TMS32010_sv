@@ -101,6 +101,46 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             self.assertIn(required, research)
         self.assertIn("all three hypotheses survive", questions)
 
+    def test_push_pop_capture_tool_preserves_physical_claim_boundary(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        support = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-development-support-spru011-1986"
+        )
+        experiment = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "push_pop_bus_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        trace_readme = re.sub(
+            r"\s+",
+            " ",
+            (ROOT / "tools" / "trace" / "README.md").read_text(encoding="utf-8"),
+        )
+        used_pages = " ".join(support["sections_or_pages_used"])
+        for required in (
+            "every-traceable-machine-cycle BTT sampling",
+            "Kontron TMS32010 clock-qualified external-fetch trace",
+        ):
+            self.assertIn(required, used_pages)
+        for required in (
+            "one CSV row per falling `CLKOUT` boundary",
+            "refuses to merge an unknown sequence into H1-H3",
+            "evidence-package status only",
+        ):
+            self.assertIn(required, experiment)
+        for required in (
+            "does not resolve `OQ-016`",
+            "original raw transition file must be retained",
+            "Path traversal",
+        ):
+            self.assertIn(required, trace_readme)
+
     def test_ram_boundary_evidence_stays_unresolved_and_reproducible(self) -> None:
         manifest = json.loads(
             (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
