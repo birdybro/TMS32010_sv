@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A reusable `tools.trace.specimen_evidence` validator for one original-NMOS
+  specimen. It checks normalized-trace, exact source/listing, package/date/lot,
+  custody/test-condition/tool-version, and distinct top/bottom/board-photo
+  provenance while refusing to interpret mask identity.
 - A strict paired `tools.trace.reset_retention_capture` workflow for `OQ-012`.
   It checks exact set/clear images and all 28 anchored outputs, measures BIO/RS
   routing and complete reset intervals, enforces the documented reset bus/OVM
@@ -909,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Simultaneous-AR physical packages now use the shared `OQ-008` validator,
+  require the exact 23-word listing and numeric program-memory access time,
+  report explicit single-specimen scope, and always retain
+  `acceptance_complete=false` without changing any candidate classification.
 - PUSH/POP physical evidence now fails closed unless the program is the exact
   independent 16-byte fixture, the listing contains its exact eight-word map,
   and metadata pins the normalized trace plus a
@@ -1248,6 +1256,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The six simultaneous-AR regressions now prove that a full specimen-bound
+  package can reach review readiness while a correctly rehashed unrelated
+  source/listing, mismatched decoded trace, or traversing specimen-photo path
+  cannot; no synthetic candidate is promoted to physical evidence.
 - The expanded PUSH/POP package regression proves that merely updating a
   sidecar hash cannot qualify different program bytes, while a complete exact
   single-specimen package can still reach review readiness without resolving

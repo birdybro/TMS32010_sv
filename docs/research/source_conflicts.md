@@ -1161,8 +1161,11 @@ electrical result of an out-of-range access.
   strict classifier preserves all three complete priority candidates, any
   other complete sequence, and three partial noncompletion stages. Only a
   stable complete candidate with exact image/anchor/provenance checks can be
-  `review_ready`; even that package status cannot change this conflict without
-  engineering review of the raw physical evidence.
+  `review_ready`. The package now binds exact source/listing/decoded trace and
+  a complete `OQ-008` record to one named specimen while always leaving
+  `acceptance_complete=false`; even that package status cannot change this
+  conflict without engineering review of the raw physical evidence or prove
+  cross-specimen invariance.
 - **Confidence:** VERIFIED_PRIMARY that later C1x software prohibits the
   combination; CORROBORATED that MAME and IKA choose no net update; UNKNOWN
   for original NMOS execution, timing, and stability.

@@ -85,9 +85,10 @@ the expected silicon answer.
 Use an original NMOS TMS32010, not a TMS320C10/C15, TMS32020/C25, or later
 compatible device:
 
-1. Record package marking, mask/date code, EVM or board and monitor revisions,
-   oscillator, voltage, program-memory access time, and hashes of the exact
-   hex/listing used.
+1. Record the exact multiline package marking, raw tracking/date and lot
+   strings without decoding them, stable local specimen ID, package/custody/
+   socket/temperature/reset context, EVM or board and monitor revisions,
+   oscillator, voltage, program-memory access time, and fixture tool versions.
 2. Load the synthetic image into external program memory without modifying
    raw word `0x68b8`. Never execute a downloaded legacy binary to do so.
 3. Capture `CLKOUT`, `MEN`, `DEN`, `WE`, `A11:A0`, and `D15:D0` from reset
@@ -96,9 +97,10 @@ compatible device:
 4. Run at least 32 reset-and-execute trials at nominal clock. Repeat at the
    documented slow and fast limits if the complete fixture satisfies access,
    setup, and hold requirements.
-5. Save the analyzer setup, raw capture, decoded CSV, pin map, photographs,
-   monitor transcript, exact program image/listing, and tool versions. Hash
-   every artifact before format conversion.
+5. Save the analyzer setup, raw capture, decoded CSV, pin map, probe-placement
+   photographs, distinct specimen top/bottom/board-context photographs,
+   monitor transcript, and exact project source/image/listing. Hash the
+   normalized trace and every retained artifact.
 6. Repeat on another original-part date/mask code before generalizing the
    outcome across `OQ-008`.
 
@@ -122,8 +124,11 @@ python3 -m tools.trace.simultaneous_ar_capture normalized.csv \
 The classifier checks the exact armed, forced-word, result-OUT, and terminal
 fetch anchors; exclusive port-7 writes; four falling boundaries after the
 last forced-word/output event; 32 stable runs; and all image/raw/photo hashes.
-It retains the three complete priority candidates and every unanticipated
-complete sequence without assigning a preferred silicon answer.
+Its shared `OQ-008` validator also rejects a rehashed substitute source or
+listing, binds the normalized trace to the complete specimen record, and
+scopes the result to that specimen only. It retains the three complete
+priority candidates and every unanticipated complete sequence without
+assigning a preferred silicon answer.
 
 The forced word may also prevent ordinary retirement. The classifier therefore
 retains armed-only, first-result-before-second-fetch, and second-fetch-without-
@@ -142,4 +147,6 @@ stopped, but cannot select among the three complete update hypotheses.
 
 Until such evidence exists, the combination remains unsupported, physical
 behavior remains **UNKNOWN**, and the model/RTL fail-closed rejection must not
-be relabeled as chip-equivalent trap behavior.
+be relabeled as chip-equivalent trap behavior. Even a complete package reports
+`acceptance_complete=false`; raw engineering review and a second identified
+original-NMOS specimen remain necessary before any cross-specimen claim.

@@ -495,6 +495,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Negative search results mean only",
             "Tracking mark/date code and lot code",
             "unrelated 32-bit TI32000 family",
+            "`OQ-010` simultaneous-AR workflow",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, audit)
         self.assertIn("## SC-043", conflicts)
@@ -756,6 +758,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "at least 32 reset-and-execute trials",
             "fail-closed implementation policy",
             "not treated as the expected silicon answer",
+            "raw tracking/date and lot",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, research)
         self.assertIn("## SC-040", conflicts)
@@ -766,10 +770,16 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "NONCOMPLETION_...",
             "candidate_resolved=false",
             "does not change\n`OQ-010`",
+            "specimen_evidence.py",
+            "program_memory_access_time_ns",
+            "exact project source and 23-word listing",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("three partial noncompletion stages", conflicts)
+        self.assertIn("one named specimen", conflicts)
         self.assertIn("strict capture classifier", questions)
+        self.assertIn("full `OQ-008` record", questions)
 
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (

@@ -177,6 +177,13 @@ photographs. Its report is explicitly
 bookkeeping; it does not decode a TI mask or replace the required second
 specimen for cross-device corroboration.
 
+The `OQ-010` simultaneous-AR workflow applies the reusable version of the
+same boundary. It additionally records numeric program-memory access time and
+binds its exact 23-word listing and normalized trace to the named specimen.
+Its classifications remain experiment results for `this_specimen_only`, with
+`acceptance_complete=false`; no forced-word outcome is present and the
+workflow cannot establish mask identity or invariance.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

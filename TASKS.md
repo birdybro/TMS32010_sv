@@ -217,8 +217,12 @@ objective passing evidence.
   preserves arbitrary other words, and separately records armed-only,
   first-result-before-second-fetch, and second-fetch-without-second-result
   noncompletion. Partial or noncandidate sequences can never become
-  `review_ready`; no physical capture exists and all 372 words remain rejected
-  by fail-closed policy rather than claimed silicon trap behavior.
+  `review_ready`. A shared specimen validator now binds the normalized trace,
+  exact source/listing/image, raw marking/date/lot record, access time, tool
+  versions, and three specimen photographs to one stable `OQ-008` identity;
+  `acceptance_complete` remains false. No physical capture exists and all 372
+  words remain rejected by fail-closed policy rather than claimed silicon
+  trap behavior.
   `OQ-008` now has a dated, reproducible publication/device-revision audit.
   `SC-043` separates the October-1985, February-1986, January-1987, and
   May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists

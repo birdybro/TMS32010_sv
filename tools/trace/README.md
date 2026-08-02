@@ -128,6 +128,16 @@ specimen, or establish `VERIFIED_HARDWARE`. The report always leaves
 transitions, probe loading, board identity, and the relationship between bus
 reads and subsequent execution.
 
+`specimen_evidence.py` provides the reusable subset of these checks for other
+original-device experiments. In addition to the fields shown above, migrated
+workflows require numeric `program_memory_access_time_ns`. The helper binds
+the normalized trace, exact project source and address/word listing, raw
+tracking/lot strings, test conditions and tool versions, and distinct
+top/bottom/board photographs to `specimen_scope=this_specimen_only`. It does
+not identify a mask or interpret a tracking string. Each experiment must still
+check its exact image and its own signals, anchors, repetitions, and result
+criteria.
+
 ## SUBC physical-capture classifier
 
 `subc_capture.py` consumes the same strict falling-`CLKOUT` CSV and metadata
@@ -317,7 +327,11 @@ The tool consumes the common falling-`CLKOUT` CSV and evidence metadata. It
 checks the exact armed/result/forced-word fetch anchors and ordering, exclusive
 port-7 writes, four retained boundaries after the last forced-word or output
 event, complete-flow terminal branch, at least 32 stable runs, exact big-endian
-program bytes, and program/raw/photo hashes beneath the artifact root.
+program bytes, and program/raw/photo hashes beneath the artifact root. The
+shared specimen validator additionally requires the normalized-capture hash,
+exact project source and 23-word listing, raw package/date/lot record,
+program-memory access time, fixture tool versions, and distinct specimen
+top/bottom/board-context photographs.
 
 ```sh
 python3 -m tools.assembler.tms32010_as \
@@ -332,7 +346,9 @@ python3 -m tools.trace.simultaneous_ar_capture normalized.csv \
 
 `review_ready` remains evidence-package status only. It does not change
 `OQ-010`, make `0x68b8` supported, choose MAME or IKA as an original-part
-oracle, prove mask-revision invariance, or establish `VERIFIED_HARDWARE`.
+oracle, prove `OQ-008` mask-revision invariance, generalize beyond the named
+specimen, or establish `VERIFIED_HARDWARE`. The report always leaves
+`acceptance_complete=false`.
 
 ## DMOV/LTD RAM-boundary physical-capture normalizer
 

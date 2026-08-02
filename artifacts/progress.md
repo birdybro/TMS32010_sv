@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` PUSH/POP specimen-bound evidence
+- **Current milestone:** `ARCH-001` simultaneous-AR specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1468,6 +1468,18 @@
   review readiness without changing any H1/H2/H3 result. No physical capture
   exists, cross-specimen behavior remains unknown, and synthesis/formal
   evidence is unchanged because no RTL changed.
+- **New simultaneous-AR provenance boundary:** reusable
+  `tools.trace.specimen_evidence` validation now binds the exact source,
+  23-word listing, normalized trace, program-memory access time, fixture tool
+  versions, raw multiline marking/date/lot record, and distinct specimen
+  top/bottom/board photographs to one stable identity. The `OQ-010`
+  classifier exposes `this_specimen_only` and
+  `acceptance_complete=false` without changing no-net/increment/decrement,
+  other, or partial-noncompletion classification. Six focused regressions
+  pass, including rehashed-unrelated-source/listing, decoded-trace mismatch,
+  and specimen-photo traversal rejection. No physical capture exists, mask
+  invariance remains unknown, and synthesis/formal evidence is unchanged
+  because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1516,9 +1528,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` by applying the audited `OQ-008`
-  specimen-record boundary to the remaining original-device capture workflows
-  without changing their per-experiment result criteria or inventing clock
-  matrices not required by their documented measurement plans.
+- **Next task:** continue `ARCH-001` by reusing the audited specimen validator
+  in the LST-ARP original-device workflow, keeping its bidirectional result
+  rule and acceptance boundary unchanged.
 - **Latest committed baseline before this cycle:**
-  `11aa13f`
+  `a928df0`

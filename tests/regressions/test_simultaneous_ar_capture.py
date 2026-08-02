@@ -28,6 +28,9 @@ from tools.trace.simultaneous_ar_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -256,18 +259,67 @@ class SimultaneousArCaptureTests(unittest.TestCase):
             image.write_bytes(_binary())
             raw.write_bytes(b"raw simultaneous-AR capture")
             photograph.write_bytes(b"simultaneous-AR probe photograph")
+            fixture_source = root / "simultaneous_ar_update_probe.asm"
+            fixture_source.write_bytes(
+                (
+                    ROOT / "tests" / "asm" / "simultaneous_ar_update_probe.asm"
+                ).read_bytes()
+            )
+            fixture_listing = root / "simultaneous_ar_update_probe.lst"
+            exact_listing = "".join(
+                f"{address:03x} {word:04x} synthetic:test\n"
+                for address, word in enumerate(FIXTURE_WORDS)
+            )
+            fixture_listing.write_text(exact_listing, encoding="utf-8")
+            specimen_photos = {}
+            for view in ("top", "bottom", "board_context"):
+                path = root / f"specimen-{view}.jpg"
+                path.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+                specimen_photos[view] = {
+                    "path": path.name,
+                    "sha256": sha256(path.read_bytes()).hexdigest(),
+                }
             metadata = root / "metadata.json"
             metadata_object = {
                 "schema_version": 1,
-                "device_marking": "TMS32010NL TEST FIXTURE",
+                "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                "specimen_id": "synthetic-specimen-01",
+                "tracking_date_string": "TRACKING RAW",
+                "lot_string": "LOT RAW",
+                "package_type": "40-pin plastic DIP test fixture",
+                "acquisition_provenance": "synthetic regression fixture",
+                "socketed": True,
+                "temperature_c": 25.0,
+                "reset_duration_cycles": 8,
+                "monitor_revision": "none; standalone fixture",
+                "specimen_scope": "this_specimen_only",
                 "board_revision": "synthetic test fixture",
                 "oscillator_hz": 20_000_000,
                 "supply_voltage_v": "5.00 measured",
                 "program_memory": "synthetic memory",
+                "program_memory_access_time_ns": 35.0,
                 "probe_model": "synthetic probe",
                 "analyzer_model": "synthetic analyzer",
                 "analyzer_firmware": "test",
                 "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                "normalized_capture_sha256": sha256(
+                    capture.read_bytes()
+                ).hexdigest(),
+                "fixture_tool_versions": {
+                    "assembler": "project test assembler",
+                    "capture_normalizer": "synthetic test normalizer",
+                    "analyzer_decoder": "synthetic test decoder",
+                },
+                "fixture_artifacts": {
+                    "source": {
+                        "path": fixture_source.name,
+                        "sha256": sha256(fixture_source.read_bytes()).hexdigest(),
+                    },
+                    "listing": {
+                        "path": fixture_listing.name,
+                        "sha256": sha256(fixture_listing.read_bytes()).hexdigest(),
+                    },
+                },
                 "signal_pin_map": {
                     "CLKOUT": "pin 6",
                     "MEN_N": "pin 7",
@@ -283,6 +335,7 @@ class SimultaneousArCaptureTests(unittest.TestCase):
                 "probe_photographs": {
                     photograph.name: sha256(photograph.read_bytes()).hexdigest(),
                 },
+                "specimen_photographs": specimen_photos,
             }
             metadata.write_text(
                 json.dumps(metadata_object, indent=2),
@@ -300,10 +353,14 @@ class SimultaneousArCaptureTests(unittest.TestCase):
             self.assertTrue(report.fixture_valid)
             self.assertTrue(report.evidence_package.complete)
             self.assertTrue(report.review_ready)
+            self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
             self.assertEqual(set(report.classifications), {INCREMENT_PRIORITY})
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-010", encoded)
             self.assertIn("make 0x68b8 a supported instruction", encoded)
+            self.assertIn("OQ-008 mask-revision invariance", encoded)
             self.assertIn('"output_samples"', encoded)
 
             output = io.StringIO()
@@ -341,6 +398,63 @@ class SimultaneousArCaptureTests(unittest.TestCase):
             self.assertFalse(wrong.review_ready)
             self.assertTrue(
                 any("exact big-endian" in item for item in wrong.evidence_package.errors)
+            )
+
+            image.write_bytes(_binary())
+            fixture_listing.write_text("000 0000 unrelated\n", encoding="utf-8")
+            metadata_object["program_image_sha256"] = sha256(
+                image.read_bytes()
+            ).hexdigest()
+            metadata_object["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                fixture_listing.read_bytes()
+            ).hexdigest()
+            metadata.write_text(json.dumps(metadata_object), encoding="utf-8")
+            wrong_listing = build_report(
+                capture,
+                metadata_path=metadata,
+                program_image=image,
+                artifact_root=root,
+            )
+            self.assertFalse(wrong_listing.review_ready)
+            self.assertIn(
+                "fixture listing does not contain the exact address/word map",
+                wrong_listing.evidence_package.errors,
+            )
+
+            fixture_listing.write_text(exact_listing, encoding="utf-8")
+            fixture_source.write_bytes(b"correctly hashed unrelated source")
+            malformed_provenance = json.loads(json.dumps(metadata_object))
+            malformed_provenance["normalized_capture_sha256"] = "0" * 64
+            malformed_provenance["fixture_artifacts"]["source"]["sha256"] = sha256(
+                fixture_source.read_bytes()
+            ).hexdigest()
+            malformed_provenance["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                fixture_listing.read_bytes()
+            ).hexdigest()
+            malformed_provenance["specimen_photographs"]["top"]["path"] = (
+                "../escaped-top.jpg"
+            )
+            metadata.write_text(json.dumps(malformed_provenance), encoding="utf-8")
+            malformed_report = build_report(
+                capture,
+                metadata_path=metadata,
+                program_image=image,
+                artifact_root=root,
+            )
+            self.assertFalse(malformed_report.review_ready)
+            self.assertIn(
+                "normalized capture SHA-256 mismatch",
+                malformed_report.evidence_package.errors,
+            )
+            self.assertIn(
+                "fixture source is not the exact project-authored source",
+                malformed_report.evidence_package.errors,
+            )
+            self.assertTrue(
+                any(
+                    "escapes artifact_root" in error
+                    for error in malformed_report.evidence_package.errors
+                )
             )
 
     def test_inconsistent_candidate_runs_are_not_review_ready(self) -> None:
