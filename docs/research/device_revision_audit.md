@@ -202,6 +202,13 @@ exact sparse listing and decoded trace to one device without weakening the
 electrical checks or selecting cancellation versus entry. Its report remains
 `this_specimen_only` with `acceptance_complete=false`.
 
+The paired `OQ-014` DMOV/LTD RAM-boundary workflow applies the reusable record
+independently to both exact 26-word fixtures and normalized traces, then
+requires both sidecars to identify the same raw marking/date/lot/package
+specimen. Variable scans, diagnostic words, and parallel-register results
+remain reviewable observations for `this_specimen_only`; the pair always
+leaves `acceptance_complete=false`.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

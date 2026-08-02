@@ -26,6 +26,9 @@ from tools.trace.ram_boundary_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -186,6 +189,14 @@ def _write_evidence_package(
     register_changes = register_changes or {}
     paths: dict[str, Path] = {}
     transcript_hashes: dict[str, str] = {}
+    specimen_photos: dict[str, dict[str, str]] = {}
+    for view in ("top", "bottom", "board_context"):
+        photo = root / f"specimen-{view}.jpg"
+        photo.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+        specimen_photos[view] = {
+            "path": photo.name,
+            "sha256": sha256(photo.read_bytes()).hexdigest(),
+        }
     for experiment in ("DMOV", "LTD"):
         lower = experiment.lower()
         capture = root / f"{lower}.csv"
@@ -208,6 +219,26 @@ def _write_evidence_package(
         photograph = root / f"{lower}.jpg"
         photograph.write_bytes(f"{experiment} probe photograph".encode("ascii"))
         paths[f"{lower}_photo"] = photograph
+        fixture_source = root / f"ram_boundary_{lower}_probe.asm"
+        fixture_source.write_bytes(
+            (
+                ROOT / "tests" / "asm" / f"ram_boundary_{lower}_probe.asm"
+            ).read_bytes()
+        )
+        paths[f"{lower}_source"] = fixture_source
+        fixture_listing = root / f"ram_boundary_{lower}_probe.lst"
+        image_bytes = image.read_bytes()
+        fixture_listing.write_text(
+            "".join(
+                f"{address:03x} {word:04x} synthetic:test\n"
+                for address, word in enumerate(
+                    int.from_bytes(image_bytes[offset : offset + 2], "big")
+                    for offset in range(0, len(image_bytes), 2)
+                )
+            ),
+            encoding="utf-8",
+        )
+        paths[f"{lower}_listing"] = fixture_listing
 
     observations = []
     for experiment, sequences in (("DMOV", dmov_sequences), ("LTD", ltd_sequences)):
@@ -233,18 +264,51 @@ def _write_evidence_package(
             json.dumps(
                 {
                     "schema_version": 1,
-                    "device_marking": "TMS32010NL TEST FIXTURE",
+                    "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                    "specimen_id": "synthetic-specimen-01",
+                    "tracking_date_string": "TRACKING RAW",
+                    "lot_string": "LOT RAW",
+                    "package_type": "40-pin plastic DIP test fixture",
+                    "acquisition_provenance": "synthetic regression fixture",
+                    "socketed": True,
+                    "temperature_c": 25.0,
+                    "reset_duration_cycles": 8,
+                    "monitor_revision": "synthetic monitor",
+                    "specimen_scope": "this_specimen_only",
                     "board_revision": "synthetic test fixture",
                     "oscillator_hz": 20_000_000,
                     "supply_voltage_v": "5.00 measured",
                     "program_memory": "synthetic memory",
+                    "program_memory_access_time_ns": 35.0,
                     "probe_model": "synthetic probe",
                     "analyzer_model": "synthetic analyzer",
                     "analyzer_firmware": "test",
                     "program_image_sha256": sha256(
                         paths[f"{lower}_image"].read_bytes()
                     ).hexdigest(),
+                    "normalized_capture_sha256": sha256(
+                        paths[f"{lower}_capture"].read_bytes()
+                    ).hexdigest(),
                     "register_observations_sha256": state_hash,
+                    "fixture_tool_versions": {
+                        "assembler": "project test assembler",
+                        "capture_normalizer": "synthetic test normalizer",
+                        "analyzer_decoder": "synthetic test decoder",
+                    },
+                    "fixture_artifacts": {
+                        "source": {
+                            "path": paths[f"{lower}_source"].name,
+                            "sha256": sha256(
+                                paths[f"{lower}_source"].read_bytes()
+                            ).hexdigest(),
+                        },
+                        "listing": {
+                            "path": paths[f"{lower}_listing"].name,
+                            "sha256": sha256(
+                                paths[f"{lower}_listing"].read_bytes()
+                            ).hexdigest(),
+                        },
+                    },
                     "signal_pin_map": {
                         "CLKOUT": "pin 6",
                         "MEN_N": "pin 7",
@@ -267,6 +331,7 @@ def _write_evidence_package(
                             paths[f"{lower}_photo"].read_bytes()
                         ).hexdigest(),
                     },
+                    "specimen_photographs": specimen_photos,
                 },
                 indent=2,
             ),
@@ -432,10 +497,21 @@ class RamBoundaryCaptureTests(unittest.TestCase):
             self.assertTrue(report.register_evidence.complete)
             self.assertTrue(report.review_ready)
             self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
+            self.assertEqual(report.specimen_pair_errors, ())
             self.assertFalse(report.documented_register_effects_match)
             summaries = {item.experiment: item for item in report.experiments}
             self.assertFalse(summaries["DMOV"].repeatable)
             self.assertTrue(summaries["LTD"].repeatable)
+            self.assertEqual(
+                len(summaries["DMOV"].evidence_package.verified_artifacts),
+                8,
+            )
+            self.assertEqual(
+                len(summaries["LTD"].evidence_package.verified_artifacts),
+                8,
+            )
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-014", encoded)
             self.assertIn("varied-history/sentinel behavior", encoded)
@@ -477,8 +553,26 @@ class RamBoundaryCaptureTests(unittest.TestCase):
                 paths["dmov_image"].read_bytes()
             ).hexdigest()
             metadata.pop("register_observations_sha256")
+            listing = paths["dmov_listing"]
+            listing.write_text(
+                listing.read_text(encoding="utf-8").replace(
+                    "011 690f", "011 690e"
+                ),
+                encoding="utf-8",
+            )
+            metadata["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                listing.read_bytes()
+            ).hexdigest()
             paths["dmov_metadata"].write_text(
                 json.dumps(metadata, indent=2),
+                encoding="utf-8",
+            )
+            ltd_metadata = json.loads(
+                paths["ltd_metadata"].read_text(encoding="utf-8")
+            )
+            ltd_metadata["specimen_id"] = "synthetic-specimen-02"
+            paths["ltd_metadata"].write_text(
+                json.dumps(ltd_metadata, indent=2),
                 encoding="utf-8",
             )
             report = build_report(
@@ -494,6 +588,14 @@ class RamBoundaryCaptureTests(unittest.TestCase):
             )
             self.assertFalse(report.review_ready)
             self.assertFalse(report.register_evidence.complete)
+            self.assertIsNone(report.specimen_id)
+            self.assertEqual(report.specimen_scope, "UNQUALIFIED")
+            self.assertTrue(
+                any(
+                    "specimen specimen_id" in error
+                    for error in report.specimen_pair_errors
+                )
+            )
             dmov = {item.experiment: item for item in report.experiments}["DMOV"]
             self.assertFalse(dmov.evidence_package.complete)
             self.assertTrue(
@@ -501,6 +603,12 @@ class RamBoundaryCaptureTests(unittest.TestCase):
             )
             self.assertTrue(
                 any("does not pin" in error for error in report.register_evidence.errors)
+            )
+            self.assertTrue(
+                any(
+                    "exact address/word map" in error
+                    for error in dmov.evidence_package.errors
+                )
             )
 
 

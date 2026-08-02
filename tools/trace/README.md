@@ -390,6 +390,14 @@ lowercase SHA-256. The normalizer checks only fixture-determined register
 state: ACC/T/P, DP, ARP, and AR0. It records OV, OVM, and AR1 verbatim because
 their retained/reset input state is not established by these programs.
 
+Each sidecar also passes through `specimen_evidence.py`: its normalized trace,
+exact project source and 26-word listing, numeric program-memory access time,
+raw multiline package/date/lot record, tool versions, and distinct top,
+bottom, and board-context photographs are independently rehashed. The pair
+must agree on specimen ID, marking, raw tracking/date and lot strings, and
+package type. A digest-valid substitute listing or two differently identified
+parts cannot form a review-ready paired baseline.
+
 ```sh
 python3 -m tools.assembler.tms32010_as \
   tests/asm/ram_boundary_dmov_probe.asm \
@@ -414,6 +422,8 @@ means only that both fixed baselines have complete 32-run capture/register/
 provenance packages. The report therefore always leaves
 `acceptance_complete=false`; the varied-history/sentinel work, engineering
 review, a second specimen, and `OQ-008` mask scope remain outstanding.
+Its `this_specimen_only` result never generalizes the measured words or
+register effects beyond the named part.
 
 ## Absent-RAM controlled-history read classifier
 

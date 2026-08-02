@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` DINT specimen-bound evidence
+- **Current milestone:** `ARCH-001` RAM-boundary specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1418,15 +1418,21 @@
   `tools.trace.ram_boundary_capture` workflow validates both exact 26-word
   DMOV/LTD images, 144 descending valid-RAM samples plus the diagnostic
   `0x90` word, fetch/write/terminal framing, EVM register-run identity, and
-  hashed raw/transcript/photo provenance. It lists every changed valid address
-  and preserves varying diagnostics or documented parallel-state differences
-  as possible evidence rather than failures. Partial scans, missing diagnostic
-  output, and extra output are separately retained. Six regressions cover all
-  data/framing/package boundaries. Even a review-ready fixed baseline reports
+  hashed raw/transcript/photo provenance. Shared specimen validation now also
+  binds each exact source, 26-word listing, normalized trace, numeric memory
+  access time, tool versions, raw multiline marking/date/lot record, and
+  top/bottom/board photographs, then proves both packages name the same part.
+  It lists every changed valid address and preserves varying diagnostics or
+  documented parallel-state differences as possible evidence rather than
+  failures. Partial scans, missing diagnostic output, and extra output are
+  separately retained. Six regressions cover all data/framing/package
+  boundaries, including digest-valid substitute listings and pair-identity
+  mismatch. Each complete package verifies eight artifacts. Even a review-
+  ready fixed baseline reports `this_specimen_only` and
   `acceptance_complete=false` because varied history/sentinels, raw review,
-  and another specimen remain outstanding. No physical data exists,
-  trap-before-effects stays PROVISIONAL, and `OQ-014` remains open. Synthesis
-  and formal evidence are unchanged because no RTL changed.
+  and another specimen remain outstanding. No physical data exists, trap-
+  before-effects stays PROVISIONAL, and `OQ-014` remains open. Synthesis and
+  formal evidence are unchanged because no RTL changed.
 - **New absent-RAM read evidence:** the strict
   `tools.trace.ram_invalid_read_capture` workflow validates the exact 35-word
   nondestructive image, all 451 ordered marker/predecessor/absent-read OUT
@@ -1542,7 +1548,7 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** continue `ARCH-001` by applying the audited specimen boundary
-  to the paired RAM-boundary workflow while preserving variable diagnostic,
-  scan, and register observations as reviewable evidence.
+  to the nondestructive absent-RAM read workflow without constraining any
+  history-conditioned value or run-to-run variation.
 - **Latest committed baseline before this cycle:**
-  `d1d61c4`
+  `8927912`

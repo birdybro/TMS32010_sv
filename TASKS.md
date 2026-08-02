@@ -164,7 +164,10 @@ objective passing evidence.
   exact images, all 145 outputs, fetch/write framing, EVM register rows, and
   hashed raw/transcript/photo provenance. It preserves varying diagnostics,
   valid-RAM changes, and parallel-register mismatches as evidence instead of
-  test failures. Six regressions cover full, partial, extra, malformed, and
+  test failures. Shared specimen validation now independently pins each exact
+  source/26-word listing/decoded trace and requires the two sidecars to name
+  the same raw marking/date/lot/package specimen. Six regressions cover full,
+  partial, extra, malformed, substitute-listing, mismatched-specimen, and
   complete-package flows. Fixed-baseline `review_ready` remains explicitly
   short of acceptance because varied history/sentinels, raw review, and a
   second specimen remain required. No boundary outcome has been assigned

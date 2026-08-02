@@ -258,6 +258,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "does not resolve the last original-TMS32010 location",
             "The 145th port write is the observed `0x90` read and has no expected value",
             "Until a qualified capture or authoritative production source exists",
+            "raw tracking/date and lot strings",
+            "requires the DMOV/LTD sidecars to name the same",
         ):
             self.assertIn(required, research)
         self.assertIn("RESEARCHING/CONFLICT (`SC-038`)", questions)
@@ -269,10 +271,13 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "register_observations_sha256",
             "acceptance_complete=false",
             "does not require\nrepeatable data",
+            "exact project source and 26-word listing",
+            "this_specimen_only",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("review_ready` is not acceptance completion", questions)
         self.assertIn("preserves all 144 valid words", conflicts)
+        self.assertIn("identify the same\n  `OQ-008` specimen", conflicts)
 
     def test_absent_ram_decode_stays_unknown_and_probe_order_is_safe(self) -> None:
         manifest = json.loads(
@@ -499,6 +504,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "`OQ-015` LST-ARP workflow",
             "Both `OQ-017`/`OQ-018` SUBC workflows",
             "`OQ-019` DINT workflow",
+            "paired `OQ-014` DMOV/LTD RAM-boundary workflow",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)

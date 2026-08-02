@@ -1075,7 +1075,9 @@ electrical result of an out-of-range access.
   effects. Its paired normalizer preserves all 144 valid words, the diagnostic
   word, and every captured register field even when they vary or contradict
   the conservative implementation. `review_ready` qualifies only the fixed
-  baseline package; varied history/sentinels and raw engineering review remain
+  baseline package whose exact source/listing/trace records identify the same
+  `OQ-008` specimen; it does not constrain an outcome or imply cross-specimen
+  invariance. Varied history/sentinels and raw engineering review remain
   mandatory before this conflict can advance.
 - **Confidence:** VERIFIED_PRIMARY for the 144-word implemented range;
   UNKNOWN for every access beyond it and for the boundary move outcome.

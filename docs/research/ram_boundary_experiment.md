@@ -135,9 +135,11 @@ locations against accidental change.
 Use an original NMOS TMS32010. A TMS320C10/C15, MAME, or FPGA core does not
 resolve this question.
 
-1. Record complete device markings, board revision, clock, supply voltage,
-   program-memory type, EVM/monitor revision, probe/analyzer models, and hashes
-   of both exact images.
+1. Assign one stable specimen ID and record the exact multiline device
+   marking plus raw tracking/date and lot strings without decoding them.
+   Record package/custody/socket/temperature/reset context, board revision,
+   clock, supply voltage, numeric program-memory access time, EVM/monitor
+   revision, probe/analyzer models, and fixture tool versions.
 2. Probe `CLKOUT`, active-low `MEN`, `WE`, `DEN`, `RS`, `A11:A0`, and
    `D15:D0`. Use high-impedance probes and a board-safe grounding plan.
 3. Capture from reset through the terminal loop. Decode each active `WE`
@@ -156,8 +158,10 @@ resolve this question.
 6. Run each probe at least 32 times after reset, then repeat while varying the
    immediately preceding legal RAM read and the sentinel pattern. Preserve
    every differing run.
-7. Save raw analyzer files, decoded CSV, command transcript, photographs, pin
-   map, and tool versions. Hash every artifact before conversion.
+7. Save raw analyzer files, decoded CSV, command transcript, pin map, both
+   exact source/image/listing sets, probe-placement photographs, and distinct
+   specimen top/bottom/board-context photographs. Hash the normalized traces
+   and every retained artifact.
 
 ## Fixed-baseline normalization
 
@@ -183,6 +187,12 @@ documented DMOV/LTD parallel register effects to match. Any of those outcomes
 may be the physical evidence sought. Fixture validity instead covers exact
 program images, fetch/write framing, complete output length, EVM run identity,
 and hashed raw-capture/transcript/photo provenance.
+
+The shared `OQ-008` validator checks each exact project source and 26-word
+listing, binds both normalized traces to complete specimen records, and
+requires the DMOV/LTD sidecars to name the same raw marking/date/lot/package
+specimen. This provenance boundary neither constrains a measured word nor
+replaces raw engineering review.
 
 `review_ready` describes only a complete paired fixed-baseline package. The
 report keeps `acceptance_complete=false` because these two exact images do not

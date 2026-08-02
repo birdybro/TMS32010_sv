@@ -913,6 +913,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The paired RAM-boundary workflow now validates both exact source/listing/
+  image/trace packages through the shared `OQ-008` boundary and requires DMOV
+  and LTD metadata to identify the same specimen. Variable scan, diagnostic,
+  and documented-register results remain reviewable, and
+  `acceptance_complete` remains false.
 - DINT/interrupt-boundary evidence now layers shared single-specimen
   provenance over the exact sparse fixture, pulse-measurement, sampled-level,
   and three-calibration checks, always leaving `acceptance_complete=false`
@@ -1268,6 +1273,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six RAM-boundary regressions pass with two eight-artifact specimen-bound
+  packages. Digest-valid substitute listings and mismatched paired specimen
+  identities fail closed without assigning expected scan or diagnostic data.
 - All six DINT regressions pass with the expanded ten-artifact complete
   package while retaining the 50 ns setup, local-CLKOUT low width, 15 ns fall
   limit, sampled-level, calibration, and path-traversal failure boundaries.

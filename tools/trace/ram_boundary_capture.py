@@ -20,6 +20,10 @@ from tools.trace.push_pop_capture import (
     read_normalized_capture,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 EXPERIMENTS = ("DMOV", "LTD")
@@ -30,6 +34,14 @@ BASE_WORDS = (
     0x0013, 0x4F10, 0x7F80, 0xF900, 0x0018,
 )
 BOUNDARY_WORD = {"DMOV": 0x690F, "LTD": 0x6B0F}
+FIXTURE_SOURCE_SHA256 = {
+    "DMOV": (
+        "a5bbb0248c0b68d078f4312041a38fe7f197903526e15f5a6bbf1cf22b946435"
+    ),
+    "LTD": (
+        "190913ed52c423f86387d418bacf2d6af4a954abd3bb4afa9951e0ddec345fb5"
+    ),
+}
 BOUNDARY_ADDRESS = 0x011
 SCAN_OUT = (0x013, 0x4F88)
 DIAGNOSTIC_OUT = (0x016, 0x4F10)
@@ -123,6 +135,9 @@ class CaptureReport:
     documented_register_effects_match: bool | None
     review_ready: bool
     acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
+    specimen_pair_errors: tuple[str, ...]
     experiments: tuple[ExperimentSummary, ...]
     register_evidence: RegisterEvidence
 
@@ -134,7 +149,8 @@ class CaptureReport:
                 "review_ready does not change OQ-014, prove hidden storage or an "
                 "alias, qualify varied-history/sentinel behavior, establish mask "
                 "invariance, or establish VERIFIED_HARDWARE without engineering "
-                "review of raw captures, EVM transcripts, and the physical setup."
+                "review of raw captures, EVM transcripts, and the physical setup. "
+                "It does not generalize beyond the paired, identified specimen."
             ),
             "minimum_runs": self.minimum_runs,
             "minimum_runs_met": self.minimum_runs_met,
@@ -145,6 +161,9 @@ class CaptureReport:
             ),
             "review_ready": self.review_ready,
             "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
+            "specimen_pair_errors": list(self.specimen_pair_errors),
             "experiments": [
                 {
                     "experiment": summary.experiment,
@@ -565,6 +584,41 @@ def _validate_exact_image(
     )
 
 
+def _merge_specimen_evidence(
+    package: EvidencePackage,
+    specimen: SpecimenEvidence,
+) -> EvidencePackage:
+    errors = tuple(package.errors) + tuple(specimen.errors)
+    return EvidencePackage(
+        complete=not errors,
+        errors=errors,
+        program_image_sha256=package.program_image_sha256,
+        verified_artifacts=tuple(
+            sorted(
+                set(package.verified_artifacts) | set(specimen.verified_artifacts)
+            )
+        ),
+    )
+
+
+def _validate_specimen_pair(
+    specimens: Mapping[str, SpecimenEvidence],
+) -> tuple[str, ...]:
+    errors: list[str] = []
+    dmov = specimens["DMOV"].metadata
+    ltd = specimens["LTD"].metadata
+    for field in (
+        "specimen_id",
+        "device_marking",
+        "tracking_date_string",
+        "lot_string",
+        "package_type",
+    ):
+        if dmov.get(field) != ltd.get(field):
+            errors.append(f"DMOV and LTD metadata disagree on specimen {field}")
+    return tuple(errors)
+
+
 def _metadata_object(path: Path | None) -> dict[str, object]:
     if path is None:
         return {}
@@ -646,6 +700,20 @@ def build_report(
         experiment: _read_capture(path)
         for experiment, path in capture_paths.items()
     }
+    specimens = {
+        experiment: validate_specimen_evidence(
+            metadata_paths[experiment],
+            capture_paths[experiment],
+            artifact_root,
+            fixture_source_sha256=FIXTURE_SOURCE_SHA256[experiment],
+            fixture_words={
+                address: word
+                for address, word in enumerate(_fixture_words(experiment))
+            },
+        )
+        for experiment in EXPERIMENTS
+    }
+    specimen_pair_errors = _validate_specimen_pair(specimens)
     registers: dict[tuple[str, str], RegisterObservation] = {}
     if register_observations is not None:
         try:
@@ -666,6 +734,10 @@ def build_report(
             metadata_paths[experiment],
             image_paths[experiment],
             artifact_root,
+        )
+        base_package = _merge_specimen_evidence(
+            base_package,
+            specimens[experiment],
         )
         package = _validate_exact_image(
             experiment,
@@ -713,7 +785,13 @@ def build_report(
         and fixture_valid
         and register_evidence.complete
         and all(summary.evidence_package.complete for summary in summaries)
+        and not specimen_pair_errors
     )
+    specimen_id = specimens["DMOV"].specimen_id
+    specimen_scope = specimens["DMOV"].specimen_scope
+    if specimen_pair_errors:
+        specimen_id = None
+        specimen_scope = "UNQUALIFIED"
     return CaptureReport(
         minimum_runs=minimum_runs,
         minimum_runs_met=minimum_runs_met,
@@ -722,6 +800,9 @@ def build_report(
         documented_register_effects_match=documented_match,
         review_ready=review_ready,
         acceptance_complete=False,
+        specimen_id=specimen_id,
+        specimen_scope=specimen_scope,
+        specimen_pair_errors=specimen_pair_errors,
         experiments=tuple(summaries),
         register_evidence=register_evidence,
     )
