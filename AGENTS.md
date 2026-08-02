@@ -730,10 +730,20 @@ stability under arbitrary clock-enable stalls. Its complete path reaches
 cover step 83. This is one fixed TBLW scenario under a verification-only RAM
 preload and synchronous program-memory contract, not a general memory,
 pipeline, interrupt, or electrical proof.
+A depth-57 proof over the explicit sequential-pipeline hierarchy composes
+fixed direct `TBLW 0` with interrupt entry. Twelve covers cross all three
+TBLW intervals with all four represented native request phases, while a
+separate symbolic selector inserts exactly one single-FPGA-clock pause between
+formal steps 10 and 54. BMC proves the exact RAM-0-to-program-`0x017` phase-3
+write, no midinstruction entry, protected `LACK 0x66`, discarded dummy fetch
+at `0x014`, pushed return PC `0x014`, and vector `LACK 0x55`; every cover
+reaches step 55. This is a bounded held-level logical composition, not proof
+of arbitrary pause histories, an INT synchronizer or edge latch, package
+delay, setup/hold, or electrical timing.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 84 passing BMC/cover tasks from 42
+The complete current matrix contains 86 passing BMC/cover tasks from 43
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification

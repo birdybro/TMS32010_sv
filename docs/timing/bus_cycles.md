@@ -151,6 +151,16 @@ the rewritten program word; cover reaches step 83
 synchronous fixture-memory contract, not arbitrary memory, interrupt,
 physical-clock-stop, package-delay, or electrical evidence.
 
+A depth-57 direct-TBLW/interrupt proof crosses all three table intervals with
+all four represented native request phases. With exactly one symbolically
+selected single-clock pause, it proves the RAM-0-to-program-`0x017` phase-3 WE
+commit occurs once before retirement, the protected successor retires before
+the `0x014` dummy is discarded and pushed, and vector 2 is then captured and
+executed; all twelve covers reach solver step 55
+[`formal/tms32010_pipeline_table_write_interrupt.sby`]. This is bounded
+logical phase ordering, not arbitrary composed pause histories, an INT
+synchronizer or edge latch, setup/hold, package delay, or electrical timing.
+
 Figure 2-12 now establishes the interrupt program-read order. After a request
 becomes active during fetch N, program space reads N, N+1, a dummy N+2, and
 vector 2. N and N+1 execute; N+2 is not executed before entry. The internal

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` explicit-pipeline indirect-table stack proof
+- **Current milestone:** `FORMAL-001` explicit-pipeline table/interrupt composition
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,7 +148,7 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 84 tasks from 42 SymbiYosys configurations pass with
+- **Formal status:** all 86 tasks from 43 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, three 18-, six 20-, one 22-, and one 28-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
@@ -1756,6 +1756,19 @@
   indirect controls, arbitrary programs/memory, interrupts, general-pipeline,
   arbitrary physical clock-stop, package-delay, or electrical proof. No
   synthesizable RTL changed, so prior synthesis evidence remains applicable.
+- **New explicit-pipeline direct-table-write/interrupt evidence:** a depth-57
+  BMC crosses direct `TBLW 0` request arrival over all three table intervals
+  and all four represented native phases, with exactly one symbolic
+  single-clock pause selected from formal steps 10 through 54. It proves one
+  exact phase-3 RAM-0-to-program-`0x017` write of `0x7e44`, TBLW retirement
+  before service, protected `LACK 0x66`, discarded dummy and pushed return PC
+  `0x014`, mask/pending effects, and vector `LACK 0x55`. BMC checks solver
+  steps 0 through 56; all twelve covers reach step 55, with the already-proved
+  prefix skipped and compact witnesses retained without redundant VCDs. This
+  is one bounded held-level composition, not arbitrary pause histories,
+  physical interrupt capture, package delay, setup/hold, or electrical
+  timing. No synthesizable RTL changed, so prior synthesis evidence remains
+  applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1805,9 +1818,9 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** select the next highest-priority unblocked evidence slice,
-  with explicit-pipeline table/interrupt composition a candidate, without
-  generalizing beyond documented core behavior;
+  with explicit-pipeline table-read/interrupt or indirect-table/interrupt
+  composition candidates, without generalizing beyond documented core behavior;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `46b8877`
+  `0e62fc7`

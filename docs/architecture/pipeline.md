@@ -404,19 +404,30 @@ A fourth depth-88 harness uses the same CALL-created stack before
 phase-3 `0x7e44` WE commit to distinct ACC target `0x086`, repeated-PC+1-only
 AR1/ARP/stack effects, repeated ZAC, and execution of the rewritten
 `LACK 0x44`; cover reaches step 83. These are fixed indirect scenarios, not
-arbitrary controls/programs/memory or general integrated-pipeline proof
+arbitrary controls/programs/memory or general integrated-pipeline proof.
+
+A fifth depth-57 harness composes fixed direct `TBLW 0` with interrupt entry.
+Twelve symbolic covers cross each of the instruction's three intervals with
+all four represented native request phases, while another selector places
+exactly one single-clock pause between formal steps 10 and 54. It proves the
+exact phase-3 RAM-0-to-program-`0x017` write, protected `LACK 0x66`, discarded
+dummy/pushed return PC `0x014`, and vector `LACK 0x55`; every cover reaches
+solver step 55. This is a bounded held-level composition, not arbitrary
+composed pauses, physical interrupt capture, package delay, or electrical
+timing
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
-`TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
-(PDF pp. 41 and 114–117);
+`TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67 (PDF pp. 41 and 114–117),
+and §2.10, Figures 2-11–2-12, printed pp. 2-18–2-19 (PDF pp. 42–43);
 `sim/bus/tb_sequential_pipeline_table.sv`;
 `formal/tms32010_pipeline_table.sby`;
 `formal/tms32010_pipeline_table_write.sby`;
 `formal/tms32010_pipeline_table_indirect_stack.sby`;
 `formal/tms32010_pipeline_table_indirect_stack_write.sby`;
+`formal/tms32010_pipeline_table_write_interrupt.sby`;
 `formal/README.md`].
 **Confidence: VERIFIED_PRIMARY for source ordering and native pin ownership;
 VERIFIED_SIMULATION for explicit execute ownership; bounded formal evidence
-for the four stated scenarios.**
+for the five stated scenarios.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability

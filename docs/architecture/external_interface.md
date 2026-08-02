@@ -363,6 +363,16 @@ word; cover reaches step 83. This is one synchronous fixture-memory contract,
 not arbitrary memory timing, physical clock stopping, package delay,
 electrical timing, interrupts, or general interface proof.
 
+`formal/tms32010_pipeline_table_write_interrupt.sby` separately composes
+fixed direct `TBLW 0` with a held-low interrupt beginning in each of the three
+table intervals and four represented native phases. Through depth 57 it proves
+one exact enabled phase-3 RAM-0-to-program-`0x017` write, protected successor,
+discarded dummy/pushed return PC `0x014`, and vector entry while exactly one
+symbolically selected FPGA clock is paused; all twelve covers reach step 55.
+This is bounded logical-interface evidence, not arbitrary composed stalls,
+physical INT capture/setup/hold, package delay, electrical timing, other
+table controls, or arbitrary programs/memory.
+
 ## No documented READY pin
 
 The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.

@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A depth-57 explicit-pipeline direct-TBLW/interrupt-composition formal
+  harness. Independent symbolic selectors cross the three TBLW intervals and
+  four represented native request phases, while another selector places one
+  single-clock pause anywhere from the active release boundary through the
+  final pre-vector interval.
 - A depth-88 explicit-pipeline indirect-TBLW formal harness. Four nested CALLs
   establish distinct stack entries before `TBLW *-,AR0`; a verification-only
   RAM preload and phase-3 synchronous program-memory model expose old-AR1,
@@ -1377,13 +1382,21 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- BMC through depth 57 proves one exact RAM-0-to-program-`0x017` phase-3
+  TBLW commit, no midinstruction interrupt entry, protected `LACK 0x66`,
+  discarded dummy address `0x014`, pushed return PC `0x014`, and vector
+  `LACK 0x55` across one universally selected single-clock pause. All twelve
+  TBLW-interval/native-phase covers reach solver step 55. The formal inventory
+  now has 86 passing tasks from 43 configurations. This bounded result does
+  not claim arbitrary composed pause histories, analog INT timing, a
+  synchronizer or edge latch, package delay, or electrical timing.
 - The fixed four-CALL/indirect-TBLW path passes BMC through depth 88 and
   reaches its completed-path cover at step 83. It checks discarded/repeated
   PC+1 ownership at `0x085`, one `0x7e44` phase-3 WE commit to ACC address
   `0x086`, old-AR1 RAM address 9, deferred AR1 decrement/ARP replacement and
   old-level-2 stack-bottom duplication, repeated ZAC then rewritten
   `LACK 0x44` execution, native-strobe exclusion, and arbitrary clock-enable
-  stalls. The formal inventory now has 84 passing tasks from 42
+  stalls. At that increment the formal inventory had 84 passing tasks from 42
   configurations; other controls/programs/memory, interrupts, electrical
   timing, and the general integrated pipeline remain outside this bound.
 - The fixed four-CALL/indirect-TBLR path passes BMC through depth 80 and

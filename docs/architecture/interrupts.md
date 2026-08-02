@@ -178,6 +178,19 @@ bounded logical fixture evidence, not arbitrary memory, nontrivial prior-stack,
 explicit-pipeline subphase, package-pin, electrical, simultaneous-update, or
 unbounded proof.
 
+An explicit-pipeline direct-TBLW harness independently crosses its three
+documented intervals with all four represented native request phases while
+placing exactly one symbolic single-clock pause between formal steps 10 and
+54. Through depth 57 it proves one RAM-0-to-program-`0x017` phase-3 write,
+TBLW completion before service, protected `LACK 0x66`, discarded dummy fetch
+and pushed return PC `0x014`, mask/pending effects, and vector `LACK 0x55`;
+all twelve covers reach solver step 55
+[`formal/tms32010_pipeline_table_write_interrupt.sby`]. This is a bounded
+held-level logical composition. It does not prove arbitrary composed pause
+histories, original-package interrupt setup/hold, a synchronizer or edge
+latch, package delay, electrical timing, other table controls, or arbitrary
+programs/memory.
+
 A separate four-case explicit-pipeline test pulses INT in each of CALA's and
 RET's two execution intervals. It proves that the request may latch during the
 discarded sequential or selected-target read but cannot retire, mutate the

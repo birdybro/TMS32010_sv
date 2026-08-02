@@ -367,6 +367,16 @@ generalize to other controls, arbitrary programs/memory, interrupts, or
 electrical timing
 [`formal/tms32010_pipeline_table_indirect_stack_write.sby`, `formal/README.md`].
 
+A fifth integrated-pipeline harness composes fixed direct `TBLW 0` with an
+interrupt held low from any of the four represented phases of any of its three
+intervals. Through depth 57 it proves exactly one phase-3 table write before
+retirement, one protected instruction, discarded dummy and pushed return PC
+`0x014`, and vector entry across exactly one symbolic single-clock pause; all
+twelve covers reach solver step 55. This is bounded logical composition, not
+arbitrary pause histories, physical interrupt capture, setup/hold, package
+delay, or electrical timing
+[`formal/tms32010_pipeline_table_write_interrupt.sby`, `formal/README.md`].
+
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,
 keeps BANZ in the execute slot during its nonexecutable PC+1 operand fetch,

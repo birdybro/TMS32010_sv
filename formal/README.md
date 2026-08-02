@@ -704,6 +704,39 @@ program-memory contract. It does not prove TBLR, other indirect controls,
 arbitrary programs or memory, interrupts, the general integrated pipeline,
 arbitrary physical clock stopping, package delay, or electrical timing.
 
+## Integrated direct-TBLW/native-phase interrupt harness
+
+`tms32010_pipeline_table_write_interrupt.sby` checks the complete explicit
+sequential-pipeline hierarchy with a depth-57 BMC and cover. A branch keeps
+interrupt vector location 2 distinct from the table program before the fixed
+sequence `EINT; LACK 0x17; TBLW 0; LACK 0x66`. The verification-only port
+preloads RAM word 0 with `0x7e44`, and the program fixture commits writes only
+at an enabled active phase-3 boundary.
+
+Independent symbolic selectors start and hold the active-low request from
+each of the four represented native phases in each of TBLW's three intervals.
+A separate selector inserts exactly one single-FPGA-clock pause at any formal
+step from 10 through 54. Assertions prove the discarded PC+1 interval, exact
+RAM-0-to-program-`0x017` write address/data/direction and single commit,
+repeated PC+1 fetch, no midinstruction entry, protected `LACK 0x66`, discarded
+dummy fetch at `0x014`, pushed return PC `0x014`, interrupt mask/pending
+effects, vector `LACK 0x55`, native-strobe exclusion, and harness-observed
+state/interface stability over the selected pause. BMC passes solver steps 0
+through 56. All twelve interval/phase covers reach solver step 55; the cover
+task skips the already-proved earlier prefix, retains the compact Yosys
+witness/testbench/constraints, and omits a redundant VCD.
+
+This is bounded logical evidence under the documented three-interval table
+ordering and multicycle interrupt-deferral rule. The existing table and
+interrupt harnesses separately qualify unrestricted bounded clock-enable
+stalls; this harness does not claim their arbitrary composition. It also does
+not prove physical clock stopping, an INT synchronizer or edge latch, analog
+setup/hold, package delay, electrical timing, other table controls, arbitrary
+programs/memory, or general pipeline correctness
+[ti-tms32010-users-guide-spru001b, §§2.8.2 and 2.10, Figures 2-10 through
+2-12, and `TBLW`, printed pp. 2-17 through 2-19 and 3-66 through 3-67 (PDF
+pp. 41-43 and 116-117)].
+
 ## Driver Sound same-clock host-timing harness
 
 `hard_drivin_sound_host_timing.sby` checks the isolated A044427 logical timing
@@ -787,7 +820,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 42 configurations produce 84 passing BMC/cover tasks. They still
+The current 43 configurations produce 86 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

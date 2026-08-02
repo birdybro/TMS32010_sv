@@ -1772,6 +1772,30 @@ objective passing evidence.
   full-RAM VCD. This fixed fixture does not qualify TBLR, other controls,
   arbitrary programs/memory, interrupts, physical clock stopping, package
   delay, or electrical timing.
+  A bounded explicit-pipeline acceptance slice now composes fixed direct
+  `TBLW 0` with interrupt entry. A branch keeps vector location 2 distinct
+  from the table program; `EINT; LACK 0x17; TBLW 0; LACK 0x66` supplies an
+  enabled three-cycle table write and one protected successor. Independent
+  symbolic selectors cover request assertion beginning in each of the four
+  represented native phases of each TBLW interval. BMC passes through depth
+  57 (solver steps 0 through 56) and proves that only the enabled falling-
+  CLKOUT boundary captures the held-low request, the exact RAM-0-to-program-
+  `0x017` WE transfer commits once before TBLW retirement, no interrupt entry
+  occurs midinstruction, the protected LACK retires before the `0x014` dummy
+  fetch is discarded, return PC `0x014` is pushed before vector-2 capture,
+  and phase/address/strobes/state remain stable across one universally
+  selected single-clock pause anywhere from formal steps 10 through 54.
+  All twelve interval/phase covers reach solver step 55; the cover task skips
+  the already-proved earlier prefix and retains compact witness artifacts
+  without a redundant VCD. Unrestricted pause histories remain separately
+  qualified by the existing table and interrupt harnesses; their arbitrary
+  composition is not claimed by this slice. This is a logical held-level/
+  native-phase model under the documented multicycle deferral rule, not proof
+  of INT setup/hold, synchronizer, edge-latch, package-delay, or electrical
+  timing
+  [ti-tms32010-users-guide-spru001b, §§2.8.2 and 2.10, Figures 2-10 through
+  2-12, and `TBLW`, printed pp. 2-17 through 2-19 and 3-66 through 3-67 (PDF
+  pp. 41-43 and 116-117)].
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1874,7 +1898,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 84 BMC/cover tasks from 42 checked-in
+  The current runner passes all 86 BMC/cover tasks from 43 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,
