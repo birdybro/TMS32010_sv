@@ -330,6 +330,31 @@ other control, I/O, or table families; an explicit fetch/execute wrapper;
 original-package MEN/address ownership; electrical interrupt timing; or an
 unbounded liveness property.
 
+## Accumulator-conditional-branch-arrival harness
+
+`tms32010_interrupt_accumulator_branches.sby` checks the actual portable core
+with a 20-step BMC and cover while leaving `clock_enable_i` arbitrary. Three
+symbolic constants select one of `BLZ`, `BLEZ`, `BGZ`, `BGEZ`, `BNZ`, and
+`BZ`; a negative, zero, or positive accumulator class; and request arrival in
+either represented branch interval. Two fixed initialization cycles preload
+RAM word 0 with `-1`, zero, or `+1`, and direct `LAC 0` establishes that
+class before EINT and the selected branch.
+
+Assertions use a fixture-local predicate truth table to check the selected
+target versus fallthrough PC, ACC preservation through branch retirement, no
+midinstruction entry, one protected `LACK 0x44`, the outcome-specific dummy
+return PC, stack push, mask/pending effects, program-only ownership, and
+stability across arbitrary bounded stalls. Thirty-six independent covers—one
+for every complete family/class/arrival tuple—reach completed entry at solver
+step 9.
+
+The debug preload is a formal-fixture convenience, not reset behavior. The
+three ACC values exhaust these predicates' sign/zero equivalence classes, but
+not all 2^32 accumulator magnitudes. This is bounded logical actual-core
+evidence, not explicit-pipeline subphase, original-package branch-pin,
+electrical interrupt timing, or unbounded liveness proof. ADR-0002's combined
+branch interval mapping remains `INFERRED`.
+
 ## Three-cycle table-read-arrival harness
 
 `tms32010_interrupt_table.sby` checks the actual portable core with a 20-step
@@ -623,7 +648,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 36 configurations produce 72 passing BMC/cover tasks. They still
+The current 37 configurations produce 74 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

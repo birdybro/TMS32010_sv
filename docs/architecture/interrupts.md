@@ -133,6 +133,19 @@ same interval coverage at the architectural interface
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
 `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`].
 
+A bounded actual-core harness independently crosses the six accumulator-
+conditional branch families, the negative/zero/positive ACC equivalence
+classes, and both represented branch intervals. A fixture-local truth table
+checks taken and untaken resolution without reusing the RTL predicate helper;
+the proof also checks ACC preservation, no midinstruction entry, one protected
+instruction, the outcome-specific dummy return PC, stack entry, mask/pending
+effects, and arbitrary bounded clock-enable stalls. All 36 complete selector
+tuples reach vector entry at cover step 9 through depth 20
+[`formal/tms32010_interrupt_accumulator_branches.sby`]. This is finite logical
+implementation evidence only. It does not promote ADR-0002's combined branch
+interval mapping beyond `INFERRED`, qualify original-package pins, or replace
+the explicit-pipeline bus matrix.
+
 A separate four-case explicit-pipeline test pulses INT in each of CALA's and
 RET's two execution intervals. It proves that the request may latch during the
 discarded sequential or selected-target read but cannot retire, mutate the

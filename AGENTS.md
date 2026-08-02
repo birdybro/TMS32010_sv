@@ -240,7 +240,7 @@ or user-supplied Hard Drivin' execution test.
 
 ## Current architectural status
 
-As of 2026-07-31 the machine-readable database, independent model, and local
+As of 2026-08-02 the machine-readable database, independent model, and local
 tools support all sixty documented instructions:
 `ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `LAC`, `LACK`, `LAR`, `LARK`, `LARP`, `LDP`,
 `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`,
@@ -702,18 +702,24 @@ A complementary 40-step direct-TBLW harness uses a verification-only RAM
 preload and a phase-3 synchronous program-memory model to prove one exact
 write, repeated-fetch replacement, and execution of the rewritten LACK word;
 its complete self-modifying path is reachable at step 35.
+Additional actual-core interrupt-arrival harnesses cover protected-DINT policy,
+both fixed-B intervals, all 36 combinations of the six accumulator branches
+with negative/zero/positive ACC classes and both intervals, all three direct
+TBLR and TBLW intervals, and both direct IN/OUT intervals. These are bounded
+logical fixture proofs; they do not qualify original-package branch pins,
+explicit-pipeline subphases, or electrical timing.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 60 passing BMC/cover tasks from 30
+The complete current matrix contains 74 passing BMC/cover tasks from 37
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification
 inventory, not a claim
 of complete-core proof.
-This is not a complete formal proof; no general pipeline, formally exhaustive
-interrupt entry matrix, indirect table proof, general external-memory proof,
-or complete pin timing
+This is not a complete formal proof; no general pipeline, general or unbounded
+interrupt-entry proof, indirect table proof, general external-memory proof, or
+complete pin timing
 exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

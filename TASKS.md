@@ -1059,6 +1059,7 @@ objective passing evidence.
   `sim/interrupt/tb_sequential_pipeline_interrupt_one_cycle.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `formal/tms32010_interrupt_dint.sby`,
+  `formal/tms32010_interrupt_accumulator_branches.sby`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`,
   `tests/asm/dint_interrupt_race_probe.asm`,
@@ -1103,6 +1104,16 @@ objective passing evidence.
   under arbitrary bounded clock-enable stalls; its cover reaches step 9. This
   is implementation consistency only and cannot promote the provisional
   original-silicon ordering.
+  A 20-step actual-core BMC symbolically crosses all six accumulator-
+  conditional branch families, negative/zero/positive ACC classes, and both
+  represented branch intervals. It proves the complete signed/zero predicate
+  truth table, taken and untaken PC selection, ACC preservation, no
+  midinstruction entry, one protected LACK, outcome-specific dummy return PC,
+  stack push, mask/pending effects, and arbitrary bounded clock-enable stalls.
+  All 36 family/class/arrival tuples independently reach completed entry at
+  cover step 9. This is exhaustive for that finite logical fixture matrix,
+  not original-package branch-pin or explicit-pipeline proof; ADR-0002's
+  combined branch interval mapping remains `INFERRED`.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1630,6 +1641,16 @@ objective passing evidence.
   Both arrival choices independently reach completed entry at cover step 7.
   This is one logical core scenario, not proof of the remaining multicycle
   families or original-package branch bus timing.
+  A separate 20-step actual-core accumulator-branch configuration uses a
+  verification-only RAM preload to select ACC `-1`, zero, or `+1`, then leaves
+  the six branch opcodes and both arrival intervals symbolic. It proves every
+  predicate truth-table cell, taken/untaken PC and return-PC ownership, ACC
+  preservation through branch retirement, protected LACK, dummy fetch, stack
+  push, mask, and pending state under arbitrary bounded stalls. Thirty-six
+  independent covers—one per complete selector tuple—reach step 9. This does
+  not prove the inferred original-package interval mapping, arbitrary ACC
+  magnitudes beyond the predicate-equivalent sign classes, explicit-pipeline
+  subphases, or electrical timing.
   A separate 20-step actual-core direct-TBLR configuration constrains a
   symbolic arrival selector to all three represented instruction cycles. It
   proves discarded-fetch ownership, exact program-address-0 word transfer to
@@ -1759,7 +1780,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 72 BMC/cover tasks from 36 checked-in
+  The current runner passes all 74 BMC/cover tasks from 37 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

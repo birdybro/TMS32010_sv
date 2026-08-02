@@ -200,6 +200,16 @@ This is logical implementation evidence for B only. It does not upgrade the
 INFERRED explicit-pipeline interval mapping, original-package address
 ownership, or the remaining multicycle families
 [`formal/tms32010_interrupt_branch.sby`]. A second actual-core formal harness
+crosses all six accumulator-condition opcodes with negative, zero, and
+positive ACC classes and both request-arrival intervals. An independent truth
+table checks every taken/untaken predicate cell, while assertions bind branch
+retirement, the selected protected and dummy PCs, stack entry, and interrupt
+state. All 36 complete tuples reach cover step 9 through a 20-step bound under
+arbitrary clock-enable stalls
+[`formal/tms32010_interrupt_accumulator_branches.sby`]. The three ACC values
+exhaust the predicates' sign/zero classes, not all accumulator magnitudes; the
+proof remains logical actual-core evidence and does not qualify the
+`INFERRED` original-package interval mapping. A third actual-core formal harness
 constrains a symbolic request to any of fixed direct TBLR's three cycles. It
 proves discarded PC+1 ownership, exact program-address-0 word transfer to RAM
 0, committed readback through the protected LAC 0, no midinstruction entry,

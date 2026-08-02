@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 20-step actual-core accumulator-conditional-branch interrupt-arrival
+  formal harness. Symbolic selectors cross all six predicates, negative/zero/
+  positive accumulator classes, and both represented execution intervals; 36
+  independent covers prove every tuple reaches completed vector entry.
 - An 18-step actual-core I/O interrupt-arrival formal harness with independent
   symbolic IN/OUT and first/second-interval choices. It proves exact ports,
   callback/RAM direction and data, one enabled transfer, protected signed RAM
@@ -1352,6 +1356,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 36 accumulator-branch family/ACC-class/arrival tuples pass BMC through
+  depth 20 and independently reach completed entry at cover step 9. The proof
+  checks taken and untaken target selection, ACC preservation, no
+  midinstruction entry, one protected LACK, the outcome-specific dummy return
+  PC, stack push, mask/pending effects, and arbitrary clock-enable stalls. The
+  full formal inventory now has 74 passing tasks from 37 configurations; the
+  inferred original-package branch interval mapping remains outside the
+  proof.
 - All four fixed IN/OUT and arrival-interval combinations pass BMC through
   depth 18 and independently reach completed entry at cover step 8. The proof
   exposed and now checks `LAC` sign extension of IN callback word `0xcafe` to
