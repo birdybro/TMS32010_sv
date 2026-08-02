@@ -1108,7 +1108,11 @@ electrical result of an out-of-range access.
   remains PROVISIONAL, and internal analog synchronization is not claimed.
   `docs/research/dint_interrupt_race_experiment.md` defines the stable
   original-NMOS pulse/address/stacked-PC capture required to resolve `OQ-019`
-  and further constrain `OQ-004`.
+  and further constrain `OQ-004`. The strict
+  `tools.trace.dint_interrupt_capture` classifier retains all three candidate
+  sequences and any unanticipated port words, recomputes the published pulse
+  constraints, and validates provenance; synthetic classifier fixtures do not
+  resolve this conflict.
 - **Confidence:** VERIFIED_PRIMARY that the two TI publications differ;
   CORROBORATED_PRIMARY for external asynchronous conditioning; UNKNOWN for
   original-silicon DINT priority beyond published setup/pulse requirements.

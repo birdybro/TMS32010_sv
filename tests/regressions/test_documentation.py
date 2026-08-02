@@ -502,6 +502,11 @@ class ArchitectureDocumentationTests(unittest.TestCase):
                 encoding="utf-8"
             ),
         )
+        trace_readme = re.sub(
+            r"\s+",
+            " ",
+            (ROOT / "tools" / "trace" / "README.md").read_text(encoding="utf-8"),
+        )
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
@@ -529,8 +534,21 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "at least 32 resets",
             "external NMOS synchronizer requirement is corroborated",
             "internal polarity error",
+            "normalizer must reject a run containing additional INT transitions",
+            "unanticipated sequence is retained verbatim",
+            "`review_ready` is evidence-package status only",
         ):
             self.assertIn(required, research)
+        for required in (
+            "never folded into a known candidate",
+            "at least 50 ns setup",
+            "at least one local `CLKOUT` period low",
+            "does not change `OQ-019`",
+            "no_pulse",
+            "one_fetch_earlier",
+            "one_fetch_later",
+        ):
+            self.assertIn(required, trace_readme)
         self.assertIn("## SC-039", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-039`)", questions)
         self.assertIn("PARTIALLY RESOLVED_PRIMARY/CONFLICT (`SC-039`)", questions)

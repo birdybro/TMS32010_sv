@@ -150,6 +150,85 @@ mask-revision invariance, or establish `VERIFIED_HARDWARE`. The official TI
 simulator's stop code `9950` is not an expected physical result and is not an
 input to the classifier.
 
+## DINT/interrupt-boundary physical-capture classifier
+
+`dint_interrupt_capture.py` checks the `OQ-019` fixture without adopting the
+current RTL cancellation policy or IKA's entry policy as an oracle. It retains
+the complete port-7 sequence and recognizes only:
+
+- `0033,0022`: DINT-cancels-entry candidate;
+- `0033,001c,0011,0022`: entry with original Figure 2-12 N+2 return;
+- `0033,001b,0011,0022`: earlier entry with N+1 return.
+
+Every other complete sequence is serialized as `OTHER_SEQUENCE_...` and is
+never folded into a known candidate. A stable other sequence is repeatable but
+does not set `candidate_resolved` or `review_ready`.
+
+The falling-boundary CSV adds sampled `INT_N` to the common bus columns:
+
+```text
+run,sample,time_ns,rs_n,int_n,men_n,we_n,den_n,address,data
+```
+
+The classifier requires a second derived CSV containing one independently
+measured pulse per run:
+
+```text
+run,int_assert_ns,int_release_ns,int_fall_time_ns
+```
+
+The normalizer must use a documented threshold for assertion/release and a
+10%-to-90% falling-edge measurement. It must reject additional transitions;
+it may not omit them to satisfy this schema. The tool recomputes setup from
+the checked `ARM_WINDOW` falling boundary, pulse width from the two transition
+times, and a local `CLKOUT` period from adjacent falling boundaries. It
+requires at least 50 ns setup, at least one local `CLKOUT` period low, no more
+than 15 ns fall time, and consistency between the transition interval and
+every sampled `INT_N` value. These derived files do not replace raw waveforms.
+
+Build and check the exact sparse big-endian image with:
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/dint_interrupt_race_probe.asm \
+  --binary dint_interrupt_race_probe.bin --byteorder big
+python3 -m tools.trace.dint_interrupt_capture normalized.csv \
+  --pulse-measurements pulse-measurements.csv \
+  --metadata metadata.json \
+  --program-image dint_interrupt_race_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+In addition to the common metadata fields, the sidecar requires:
+
+```json
+{
+  "interrupt_driver_circuit": "open-collector-compatible circuit",
+  "interrupt_driver_voltage_v": "measured level and instrument",
+  "pulse_generator_model": "model and firmware",
+  "pulse_measurements_sha256": "lowercase SHA-256",
+  "signal_pin_map": {
+    "INT_N": "physical pin/channel"
+  },
+  "calibrations": {
+    "no_pulse": {"path": "cal/no-pulse.sal", "sha256": "..."},
+    "one_fetch_earlier": {"path": "cal/early.sal", "sha256": "..."},
+    "one_fetch_later": {"path": "cal/late.sal", "sha256": "..."}
+  }
+}
+```
+
+The full `signal_pin_map` still needs every common bus signal. Calibration,
+raw-capture, and photograph paths are confined beneath the artifact root and
+rehashed. The classifier checks exact `ARM_WINDOW`/`RACING_DINT` fetches,
+exclusive port-7 outputs bracketing the race, terminal flow, 32 stable runs,
+the exact project-authored image, and the complete evidence package.
+
+`review_ready` remains package status only. It does not change `OQ-019`, prove
+which internal edge has priority, qualify an omitted or malformed pulse,
+establish mask invariance, or establish `VERIFIED_HARDWARE`.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

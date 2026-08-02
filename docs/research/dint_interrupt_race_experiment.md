@@ -158,6 +158,37 @@ Use an original NMOS TMS32010, not a TMS320C10/C15 or later compatible part:
    monitor transcript, and tool versions. Hash every artifact before format
    conversion.
 
+Normalize a derived copy to one row per falling `CLKOUT` with the exact DINT
+schema in `tools/trace/README.md`. Separately derive one assertion time,
+release time, and 10%-to-90% fall time per run. The normalizer must reject a
+run containing additional INT transitions rather than omitting them. Retain
+the raw transitions as the authoritative measurement.
+
+Assemble an exact sparse big-endian binary and validate the capture package:
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/dint_interrupt_race_probe.asm \
+  --binary dint_interrupt_race_probe.bin --byteorder big
+
+python3 -m tools.trace.dint_interrupt_capture normalized.csv \
+  --pulse-measurements pulse-measurements.csv \
+  --metadata metadata.json \
+  --program-image dint_interrupt_race_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The classifier recomputes setup, low width, local `CLKOUT` period, and the
+15 ns maximum falling-edge time; checks sampled INT against the transition
+interval; validates the exact ARM/DINT fetch anchors and port-7 flow; requires
+32 consistent runs and no-pulse/one-fetch-early/one-fetch-late calibration
+hashes; and independently compares the program binary with its checked sparse
+word map. An unanticipated sequence is retained verbatim but cannot become a
+known resolved candidate. `review_ready` is evidence-package status only and
+does not change `OQ-019` without review of raw waveforms, thresholds, loading,
+and board/device provenance.
+
 ## Acceptance
 
 A result can upgrade `OQ-019` only when the armed marker, pulse width/setup,

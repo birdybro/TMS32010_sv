@@ -170,7 +170,10 @@ The same-edge case where DINT is that protected word remains PROVISIONAL:
 later mixed-family Figure 3-20 does not execute N+1 at all, MAME lacks the
 overlap, and IKA represents entry-wins. The exact original-NMOS fixture in
 `docs/research/dint_interrupt_race_experiment.md` records port order and
-stacked return PC (`OQ-019`, `SC-039`).
+stacked return PC (`OQ-019`, `SC-039`). Its strict capture classifier also
+recomputes 50 ns INT setup, a one-local-`CLKOUT` low width, and the 15 ns
+fall-time limit and requires calibrated, provenance-checked repetitions. No
+physical capture exists, so this adds no passing same-edge timing assertion.
 A 32-case directed core matrix additionally samples a one-cycle request at
 each represented machine cycle of B, BANZ, BV, BIOZ, CALL, the six
 accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each

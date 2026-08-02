@@ -989,7 +989,14 @@ objective passing evidence.
   recommend external NMOS asynchronous conditioning. MAME cannot model the
   exact DINT race and pinned IKA predicts
   entry-wins. An exact synthetic program plus pulse/address/stacked-PC capture
-  procedure now defines the original-NMOS evidence needed for `OQ-019`.
+  procedure now defines the original-NMOS evidence needed for `OQ-019`. The
+  strict DINT capture classifier retains all port sequences, recomputes setup,
+  low width, local CLKOUT period, and fall time from per-run measurements,
+  validates sampled INT and exact ARM/DINT anchors, and requires 32 stable
+  runs plus exact image/raw/photo/no-pulse/early/late calibration hashes. Six
+  regressions cover every known candidate, an unanticipated sequence, pulse
+  and sample failures, malformed windows, unstable runs, complete evidence,
+  path traversal, and wrong images. No physical data is present.
   Physical setup/synchronizer behavior, PUSH/POP arrival cycles, physical
   confirmation of ADR-0003, and provisional DINT cancellation
   remain under `OQ-004`/`OQ-007`/`OQ-016`/`OQ-019`; no complete

@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `TIMING-001` SUBC physical-capture evidence path
+- **Current milestone:** `TIMING-001` DINT/interrupt physical-capture evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 178 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 184 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1359,6 +1359,22 @@
   and failure boundary. No physical capture exists, `review_ready` is package
   status only, and `OQ-017`/`OQ-018` remain open. Synthesis and formal evidence
   are unchanged because this cycle modifies no RTL.
+- **New DINT measurement evidence:** the strict
+  `tools.trace.dint_interrupt_capture` workflow preserves the entire port-7
+  sequence and independently recognizes cancellation, original-Figure-2-12
+  N+2 entry, and earlier-N+1 entry without selecting an expected result. A
+  stable other sequence remains serialized but cannot set
+  `candidate_resolved`. The tool compares the sparse program image against a
+  checked word map, requires exact ARM/DINT fetch anchors and exclusive
+  bracketing outputs, recomputes 50 ns setup/one-local-CLKOUT low width/15 ns
+  fall-time limits, and checks every sampled INT level against the per-run
+  transition interval. Review-readiness additionally requires 32 stable runs,
+  raw/photo hashes, open-collector driver metadata, and no-pulse/one-fetch-
+  early/one-fetch-late calibration hashes beneath a traversal-safe root. Six
+  regressions cover every candidate and fail-closed boundary. No physical
+  capture exists, current cancellation remains PROVISIONAL, and `OQ-019`
+  remains open. Synthesis and formal evidence are unchanged because no RTL
+  changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1407,9 +1423,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `TIMING-001` with the stable DINT/final-boundary
-  physical probe under `OQ-019`, adding a strict classifier only if it can
-  preserve cancel-versus-entry outcomes and provenance without using current
-  RTL or IKA behavior as the expected result.
+- **Next task:** return to the highest-priority unblocked architecture evidence
+  gaps under `ARCH-001`, starting with the stable LST next-ARP precedence
+  experiment under `OQ-015`/`SC-009`; add automation only if it preserves both
+  hypotheses and physical provenance without promoting MAME or IKA.
 - **Latest committed baseline before this cycle:**
-  `6925938`
+  `3e72225`
