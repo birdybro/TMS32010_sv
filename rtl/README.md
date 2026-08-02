@@ -50,6 +50,13 @@ resource; that mapping is a synthesis choice and the RTL contains no
 vendor-specific primitive. MPYK feeds the same datapath with its sign-extended
 13-bit instruction constant and performs no data-memory access.
 
+`tms32010_input_shifter` is the shared combinational 16-to-32-bit signed input
+barrel shifter used by `LAC`, `ADD`, and `SUB`. It sign-extends the selected
+data word before the decoded 0-through-15 left shift; zeros enter at the low
+end. A one-step symbolic proof constructs the expected output bit by bit and
+exhausts every data/count combination. Decode, data addressing, arithmetic,
+status, and cycle timing remain in the architectural core.
+
 `tms32010_accumulator` is the shared combinational signed 32-bit add/subtract
 and OVM-saturation block. The core uses it for `ADD`, `SUB`, `SUBH`, `APAC`,
 `SPAC`, and the previous-P accumulation in `LTA`/`LTD`; their sticky `OV`

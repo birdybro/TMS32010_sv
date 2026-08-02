@@ -79,6 +79,22 @@ not prove the explicit wrapper's physical program addresses, interrupt timing,
 or original-silicon prefetch order. ADR-0003's discarded-sequential/selected-
 target address sequence remains `INFERRED` and simulation-asserted.
 
+## Exhaustive input-shifter harness
+
+`tms32010_input_shifter.sby` checks the standalone combinational signed input
+barrel shifter in one solver step. The 16-bit source and four-bit shift count
+remain arbitrary, covering all 1,048,576 input combinations and every legal
+count from 0 through 15. Its reference constructs each output bit from a
+source index: negative indices become zero, indices 0–15 select the source,
+and higher indices select the source sign bit. It does not reuse the DUT's
+concatenation-and-shift expression.
+
+The assertion proves the complete 32-bit result. Four independent step-0
+covers reach negative shift zero plus positive, all-one, and largest-positive
+shift-15 boundaries. The core uses the result for `LAC`, `ADD`, and `SUB`;
+their addressing, arithmetic/status effects, and instruction timing remain
+outside this combinational proof.
+
 ## Exhaustive accumulator-arithmetic harness
 
 `tms32010_accumulator.sby` checks the standalone combinational signed
@@ -451,7 +467,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 26 configurations produce 52 passing BMC/cover tasks. They still
+The current 27 configurations produce 54 passing BMC/cover tasks. They still
 leave DINT ordering, formal coverage of the
 represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and

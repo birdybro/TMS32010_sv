@@ -361,6 +361,11 @@ combination against an independent signed 33-bit reference and reaches all
 four saturation directions. Instruction-owned operand selection, sticky OV,
 and timing remain outside that primitive; ADDS, ADDH, SUBS, and SUBC retain
 their distinct documented policies.
+`tms32010_input_shifter` separately implements the primary-documented signed
+16-to-32-bit operand extension followed by a 0-through-15 left shift for LAC,
+ADD, and SUB. Its one-step proof exhausts all 2^20 data/count combinations
+against an independently bit-indexed reference. Decode, addressing, status,
+and timing remain outside that primitive.
 LTA reads an internal data word into T while adding the unchanged previous P
 value to ACC with APAC's overflow policy in the same documented cycle.
 LTD adds the source-preserving copy to the next data address in that same
@@ -683,9 +688,10 @@ its complete self-modifying path is reachable at step 35.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 52 passing BMC/cover tasks from 26
+The complete current matrix contains 54 passing BMC/cover tasks from 27
 checked-in SymbiYosys configurations, including the exhaustive combinational
-accumulator relation. These counts are qualification inventory, not a claim
+accumulator and input-shifter relations. These counts are qualification
+inventory, not a claim
 of complete-core proof.
 This is not a complete formal proof; no general pipeline, formally exhaustive
 interrupt entry matrix, indirect table proof, general external-memory proof,

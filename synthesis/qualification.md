@@ -23,9 +23,9 @@ They are not complete-core resource or interface-timing results.
 - Memory: 2,304 used bits in one M10K block.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +19.282 ns at 25 MHz.
-- Worst internal hold slack across analyzed corners: +0.164 ns.
-- Slow-corner internal Fmax: 48.27 MHz at 100 °C, 48.97 MHz at -40 °C.
+- Worst internal setup slack across analyzed corners: +19.907 ns at 25 MHz.
+- Worst internal hold slack across analyzed corners: +0.165 ns.
+- Slow-corner internal Fmax: 49.79 MHz at 100 °C, 49.77 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -113,25 +113,38 @@ worst paths. The new worst 100 °C path runs from `core_program_data[4]` to
 `accumulator_o[5]`: 20.034 ns, 12 logic levels, and 64% interconnect delay.
 Worst slow-corner Fmax was 48.07 MHz.
 
-The current accepted optimization centralizes the common signed 32-bit
+The next accepted optimization centralizes the common signed 32-bit
 addition/subtraction, overflow, wrap, and OVM-result selection in one portable
 combinational block. `ADD`, `SUB`, `SUBH`, `APAC`, `SPAC`, `LTA`, and `LTD`
 select their operands around that shared relation; the specialized
 `ADDS`/`ADDH`/`SUBS`/`SUBC` policies remain separate. The fit uses 1,332 ALMs
 and the same 400 registers, one M10K, and one DSP block. The worst 100 °C path
 runs from `core_program_data[9]` to `accumulator_o[6]`: 20.016 ns, 13 logic
-levels, and 67% interconnect delay. Worst slow-corner Fmax is 48.27 MHz.
+levels, and 67% interconnect delay. Worst slow-corner Fmax was 48.27 MHz.
+
+The current source extracts the primary-documented 16-bit signed input shift
+relation into one portable combinational block shared by `LAC`, `ADD`, and
+`SUB`. The block sign-extends before applying the decoded zero-through-15
+left shift and does not own decode, addressing, status, or sequencing. The
+fit remains 1,332 ALMs, 400 registers, one M10K, and one DSP block. At 100 °C
+the worst path now runs from `core_program_data[6]` to `io_read_sample[2]`:
+19.408 ns, 13 logic levels, and 62% interconnect delay. The input shifter is
+not on this path. Slow-corner Fmax is 49.79 MHz at 100 °C and 49.77 MHz at
+-40 °C; the worst setup slack across those corners is +19.907 ns. The
+standalone exhaustive proof, rather than this fitter result, qualifies all
+1,048,576 data/count relations.
 
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
 not timing closure. The qualified 25 MHz constraint still exceeds the A044427
-Rev-A board's primary-documented 20 MHz input by 25%; the fitted 48.27 MHz
-worst slow-corner result is a 141.4% margin over the board frequency. The
+Rev-A board's primary-documented 20 MHz input by 25%; the fitted 49.77 MHz
+worst slow-corner result is a 148.9% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
 not a release requirement or a concealed pass. The retained-direction,
-RAM-staging, decoder-qualification, and retained-carrier changes raise the
-qualified worst slow-corner result to 48.27 MHz, but do not turn
+RAM-staging, decoder-qualification, retained-carrier, shared-arithmetic, and
+input-shifter changes raise the qualified worst slow-corner result to
+49.77 MHz, but do not turn
 that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
@@ -209,7 +222,7 @@ synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 125 RTL checks
 remain represented, and both the synthesis harness and directly targeted
-pipeline contain 16,236 and 16,183 cells respectively. The
+pipeline contain 16,184 and 16,172 cells respectively. The
 registered array and forwarding logic lower to flip-flops and muxes under
 generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -222,8 +235,11 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 125 RTL checks, and contains 16,183 generic
-cells. The shared accumulator primitive removes 343 cells and adds one
+zero reported problems, retains 125 RTL checks, and contains 16,172 generic
+cells. Extracting the input shifter removes 11 cells from the preceding
+16,183-cell shared-accumulator checkpoint without changing the retained-check
+count; the independently proved standalone shifter maps to 89 cells. The
+shared accumulator primitive had removed 343 cells and added one
 retained saturation-selection invariant relative to the retained-carrier
 checkpoint. The single retained carrier had removed 423 cells from the preceding
 16,949-cell decoder-qualifier checkpoint. Eliminating the now-absent table-
@@ -241,12 +257,12 @@ direct recognized-boundary derivation had added 47 cells to the earlier
 15,686-cell checkpoint without changing its retained-check count.
 The ADDH increment added 75
 cells without adding or removing retained checks; SST added 76 cells and ABS
-added 170 cells in the preceding checkpoints. This result is 1,397 cells and
-46 checks above the pre-table 15,129-cell/78-check checkpoint, 1,491 cells and
-57 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,748 cells/75 checks
-above the exact-CALL 14,778-cell/49-check checkpoint, 1,811 cells/77 checks
-above the exact-BIOZ 14,715-cell/47-check checkpoint, 2,250 cells/82 checks
-above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 2,586 cells/92
+added 170 cells in the preceding checkpoints. This result is 1,043 cells and
+47 checks above the pre-table 15,129-cell/78-check checkpoint, 1,137 cells and
+58 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,394 cells/76 checks
+above the exact-CALL 14,778-cell/49-check checkpoint, 1,457 cells/78 checks
+above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,896 cells/83 checks
+above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 2,232 cells/93
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
@@ -254,8 +270,8 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 132 checks, and reports 16,232 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 16,183-cell,
+with zero problems, retains 132 checks, and reports 16,221 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 16,172-cell,
 125-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
@@ -433,6 +449,13 @@ add/subtract, overflow, wrap, and OVM-result relation; the separate symbolic
 proof supplies exhaustive functional evidence. It is not an instruction-
 sequencing, sticky-OV, technology-timing, or Cyclone V fit result.
 
+The thirty-second checked-in script targets the storage-free
+`tms32010_input_shifter` combinational barrel shifter. Yosys 0.67+111 reports
+89 mapped cells, no retained assertion, memory, latch, or register, and zero
+structural problems. This qualifies portable elaboration only; the separate
+symbolic proof supplies exhaustive signed-extension/shift evidence, and the
+result is not instruction-timing or Cyclone V fit evidence.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -443,7 +466,8 @@ release after verifying its published SHA-256
 make YOSYS=/path/to/oss-cad-suite/bin/yosys synth-yosys
 ```
 
-The ignored outputs are `build/yosys/tms32010_accumulator.json`,
+The ignored outputs are `build/yosys/tms32010_input_shifter.json`,
+`build/yosys/tms32010_accumulator.json`,
 `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and
 `build/yosys/tms32010_mister.json`; the board-specific scripts also write

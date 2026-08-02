@@ -26,6 +26,7 @@ class ModelRtlSliceDifferentialTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_decode.sv",
             ROOT / "rtl" / "core" / "tms32010_internal_ram.sv",
             ROOT / "rtl" / "core" / "tms32010_multiplier.sv",
+            ROOT / "rtl" / "core" / "tms32010_input_shifter.sv",
             ROOT / "rtl" / "core" / "tms32010_accumulator.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "sim" / "differential" / "tb_model_rtl_slice.sv",

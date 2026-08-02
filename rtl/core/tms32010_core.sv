@@ -322,6 +322,12 @@ module tms32010_core #(
     .result_o         (accumulator_arithmetic_result)
   );
 
+  tms32010_input_shifter input_shifter (
+    .data_i   (ram_read_data),
+    .shift_i  (decoded_shift),
+    .result_o (shifted_data_operand)
+  );
+
   assign multiplier_operand =
     (decoded_operation == OP_MPYK)
       ? {{3{decoded_immediate_13[12]}}, decoded_immediate_13}
@@ -637,8 +643,6 @@ module tms32010_core #(
     ~accumulator_o[31] && adds_wrapped_result[31];
   // A 16-bit destination deliberately discards the high-half carry.
   assign addh_high_result = accumulator_o[31:16] + ram_read_data;
-  assign shifted_data_operand =
-    {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
   assign subh_operand = {ram_read_data, 16'h0000};
   always_comb begin
     accumulator_arithmetic_operand = shifted_data_operand;
@@ -1047,8 +1051,7 @@ module tms32010_core #(
         case (decoded_operation)
           OP_LACK: accumulator_o   <= {24'h000000, decoded_immediate};
           OP_LAC: begin
-            accumulator_o <=
-              {{16{ram_read_data[15]}}, ram_read_data} << decoded_shift;
+            accumulator_o <= shifted_data_operand;
           end
           OP_LAR: begin
             if (decoded_auxiliary_register) begin

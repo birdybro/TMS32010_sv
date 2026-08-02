@@ -6,6 +6,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/packages/tms32010_pkg.s
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_decode.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_internal_ram.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_multiplier.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_input_shifter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_accumulator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_fetch_execute.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_core.sv

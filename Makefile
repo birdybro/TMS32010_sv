@@ -107,7 +107,8 @@ synth-yosys:
 			synthesis/yosys/hard_drivin_sound_mister.ys \
 			synthesis/yosys/hard_drivin_sound_communication_path.ys \
 			synthesis/yosys/hard_drivin_sound_bio_generator.ys \
-			synthesis/yosys/tms32010_accumulator.ys; do \
+			synthesis/yosys/tms32010_accumulator.ys \
+			synthesis/yosys/tms32010_input_shifter.ys; do \
 			"$(YOSYS)" -s "$$script" || exit 1; \
 		done; \
 	else \

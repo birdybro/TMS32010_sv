@@ -490,6 +490,7 @@ objective passing evidence.
   simulation/formal tests pass; lint and Yosys synthesis are clean.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`,
+  `formal/tms32010_input_shifter.sby`,
   `formal/tms32010_accumulator.sby`,
   `formal/tms32010_internal_ram.sby`,
   `formal/tms32010_internal_ram_registered.sby`
@@ -499,7 +500,12 @@ objective passing evidence.
   fifty-eight-instruction slice. `ABS` verifies zero, positive, ordinary
   negative, and most-negative accumulator values under both OVM modes while
   preserving incoming OV. `LAC`
-  verifies sign extension and left shifts; `SACH` verifies its output-shifter
+  verifies sign extension and left shifts. The shared combinational
+  `tms32010_input_shifter` now supplies that same qualified operand to LAC,
+  ADD, and SUB. Its one-step proof leaves all 20 input bits arbitrary, builds
+  the expected output bit by bit, and exhausts every signed source/count
+  combination from shift 0 through 15. Decode, addressing, ALU/status effects,
+  and instruction timing remain outside the primitive. `SACH` verifies its output-shifter
   cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
   twenty-six common-address data instructions plus SST verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
@@ -1427,6 +1433,11 @@ objective passing evidence.
   an independently widened 33-bit mathematical reference. Four covers reach
   every operation/direction saturation boundary at step 0. It does not prove
   instruction decode, operand selection, sticky OV, sequencing, or timing.
+  Another one-step combinational configuration leaves the 16-bit input word
+  and four-bit shift count arbitrary. It proves all 1,048,576 signed
+  extension/zero-fill/left-shift combinations against an independent bit-
+  indexed reference and reaches sign/count boundaries at step 0. It does not
+  prove decode, addressing, ALU effects, or instruction timing.
   An eleventh standalone internal-RAM configuration passes six-step base case
   and temporal induction. It leaves initial memory arbitrary, quantifies a
   symbolic address across all 144 qualified words, and leaves both write
@@ -1498,10 +1509,10 @@ objective passing evidence.
   structural/generic synthesis. Generic technology mapping still lowers the
   registered array to flip-flops/muxes, while Quartus recognizes one M10K.
   `make synth-yosys` now reproducibly checks both the
-  synthesis harness (16,236 generic cells/125 checks) and the directly
+  synthesis harness (16,184 generic cells/125 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,183 generic cells/125 checks),
+  pipeline slice (16,172 generic cells/125 checks),
   each with zero structural problems. The Quartus harness now elaborates that
   explicit pipeline rather than the legacy fail-closed wrapper. Retained
   table direction and state-driven sampled-operand selection first
@@ -1519,11 +1530,13 @@ objective passing evidence.
   carrier fit used 1,393 ALMs/400 registers/one M10K/one DSP and
   measured 20.034 ns/12 levels from the retained core-program word to ACC.
   Sharing the proved accumulator arithmetic relation across seven instruction
-  paths reduces the current fit to 1,332 ALMs with the same register, M10K,
-  and DSP counts. It closes a 25 MHz constraint with +19.282 ns worst setup
-  and +0.164 ns worst hold slack and reports 48.27 MHz worst slow-corner Fmax.
-  The current reproducible full path measures 20.016 ns/13 levels from the
-  retained core-program word to ACC.
+  paths reduced the fit to 1,332 ALMs with the same register, M10K, and DSP
+  counts. Extracting the independently proved input-shifter relation leaves
+  those resources unchanged. The current fit closes a 25 MHz constraint with
+  +19.907 ns worst setup and +0.165 ns worst hold slack across all analyzed
+  corners and reports 49.77 MHz worst slow-corner Fmax. The reproducible
+  100 °C full path measures 19.408 ns/13 levels from retained program data
+  through decode/control into I/O sampling; the input shifter is not on it.
   An unforwarded M10K experiment failed the back-to-back IN/OUT data contract;
   an in-process bypass experiment lost RAM inference. Both were rejected.
   The board's primary-documented clock is 20 MHz. A rejected exploratory
@@ -1566,6 +1579,9 @@ objective passing evidence.
   add/subtract and OVM-result block to 367 generic cells with no storage,
   latch, retained check, or structural problem. This is portable synthesis
   evidence only; the exhaustive relation is qualified separately by formal.
+  A thirty-second standalone script maps the shared signed input shifter to 89
+  generic cells with no storage, latch, retained check, or structural problem;
+  its exhaustive relation is qualified separately by formal.
   This is not a Quartus mapping or completed sound-board fit.
   Instruction-complete resources, pin-level wrapper constraints, and final
   board timing remain.
@@ -1593,7 +1609,7 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,232 generic
+  unsupported-word parking, and reset recovery. Yosys reports 16,221 generic
   cells/132 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.

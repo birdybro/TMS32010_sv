@@ -57,6 +57,14 @@ before the ALU; a separate output shifter supports accumulator stores
 [ti-tms32010-users-guide-spru001b, §2.1 and Figures 2-1/2-2, printed
 pp. 2-1–2-7 (PDF pp. 25–31)]. **Confidence: VERIFIED_PRIMARY.**
 
+The portable RTL represents this input path as a standalone combinational
+16-to-32-bit signed shifter. A one-step symbolic proof leaves all 16 data bits
+and all four count bits arbitrary, builds an independent bit-index reference,
+and checks every 0-through-15 shift without relying on instruction decode
+[`formal/tms32010_input_shifter.sby`]. This is exhaustive RTL relation
+evidence, not proof of addressing, ALU effects, instruction timing, or the
+original physical barrel-shifter implementation.
+
 Arithmetic uses two's-complement values. The ALU is 32 bits wide. A
 data-memory operand is sign-extended before a documented left shift of 0–15
 places; zeros enter at the low end. Instructions that suppress sign extension

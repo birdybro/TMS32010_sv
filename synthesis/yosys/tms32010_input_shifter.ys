@@ -1,0 +1,10 @@
+read_verilog -sv rtl/core/tms32010_input_shifter.sv
+
+hierarchy -check -top tms32010_input_shifter
+proc
+opt
+check -assert
+synth -top tms32010_input_shifter
+check -assert
+stat
+write_json build/yosys/tms32010_input_shifter.json
