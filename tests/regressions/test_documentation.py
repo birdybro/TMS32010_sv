@@ -586,6 +586,11 @@ class ArchitectureDocumentationTests(unittest.TestCase):
                 encoding="utf-8"
             ),
         )
+        trace_readme = re.sub(
+            r"\s+",
+            " ",
+            (ROOT / "tools" / "trace" / "README.md").read_text(encoding="utf-8"),
+        )
         conflicts = (
             DOCS / "research" / "source_conflicts.md"
         ).read_text(encoding="utf-8")
@@ -605,8 +610,16 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "at least 32 reset-and-execute trials",
             "MAME nor IKA may be cited as original-silicon proof",
             "status-restore prose and example admit opposing readings",
+            "Both mixed-direction combinations and every other sequence are preserved",
+            "cannot become resolved candidates",
         ):
             self.assertIn(required, research)
+        for required in (
+            "without treating MAME's memory-word precedence",
+            "Mixed outcomes are preserved as explicit classifications",
+            "does not change `OQ-015`",
+        ):
+            self.assertIn(required, trace_readme)
         self.assertIn("## SC-009", conflicts)
         self.assertIn("literal example plus IKA", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-009`)", questions)

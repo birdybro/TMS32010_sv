@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A strict `tools.trace.lst_arp_capture` workflow for `OQ-015`. It validates
+  the exact 30-word image, three OUT anchors and exclusive port-7 writes,
+  terminal window, 32-run agreement, and raw/photo provenance without choosing
+  MAME or IKA as an original-part oracle.
+- Six LST-ARP capture regressions covering memory-word precedence, encoded-
+  field precedence, both mixed directions, arbitrary other words, wrong
+  anchors/order/controls/markers/images, unstable runs, complete packages, and
+  the no-confidence-promotion boundary.
 - A strict `tools.trace.dint_interrupt_capture` workflow for `OQ-019`. It
   preserves complete port sequences, recognizes cancel/original-N+2/early-N+1
   candidates without choosing among them, validates exact sparse image and
@@ -1187,6 +1195,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The LST-ARP classifier resolves a candidate only when both deliberately
+  opposing directions select the same precedence and all runs agree. Stable
+  mixed or unanticipated sequences remain explicit and nonresolving. With no
+  original-device capture, memory-word precedence remains PROVISIONAL and
+  `OQ-015` stays open.
 - Synthetic DINT traces distinguish the three documented experiment outcomes
   and retain any other sequence without candidate resolution. They qualify the
   measurement workflow only: no original-device capture exists, current DINT
@@ -1209,7 +1222,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   capture exists and no RTL timing sequence has been added.
 - Strict lint checks 46 RTL modules; all 62 formal tasks from 31 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass, alongside 184 repository and 232 model/unit tests. All 36
+  regressions pass, alongside 190 repository and 232 model/unit tests. All 36
   Yosys targets pass with zero structural problems. The status relation maps
   to zero cells; the direct pipeline reports 15,850 cells/128 checks, the
   synthesis harness 15,844/128, the MiSTer wrapper 15,899/135, and the

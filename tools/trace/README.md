@@ -229,6 +229,43 @@ the exact project-authored image, and the complete evidence package.
 which internal edge has priority, qualify an omitted or malformed pulse,
 establish mask invariance, or establish `VERIFIED_HARDWARE`.
 
+## Indirect-LST ARP-precedence physical-capture classifier
+
+`lst_arp_capture.py` checks the two-direction `OQ-015` fixture without treating
+MAME's memory-word precedence or IKA's encoded-field precedence as an oracle.
+It recognizes:
+
+- `0033,00a0,00b1`: memory-word ARP wins both directions;
+- `0033,00a1,00b0`: encoded next ARP wins both directions;
+- `0033,00a0,00b0`: case A memory, case B encoded;
+- `0033,00a1,00b1`: case A encoded, case B memory.
+
+Mixed outcomes are preserved as explicit classifications. They may be stable
+and fixture-valid, but cannot set `candidate_resolved` or `review_ready`
+because the experiment's acceptance rule requires both directions to agree.
+Any other complete sequence is retained verbatim as `OTHER_SEQUENCE_...`.
+
+The tool consumes the common falling-`CLKOUT` CSV and evidence metadata. It
+checks the exact three OUT fetch addresses and words, their order relative to
+exactly three exclusive port-7 writes, the `0x0033` armed marker, two retained
+terminal boundaries, at least 32 stable runs, exact big-endian program bytes,
+and program/raw/photo hashes beneath the artifact root.
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/lst_arp_precedence_probe.asm \
+  --binary lst_arp_precedence_probe.bin --byteorder big
+python3 -m tools.trace.lst_arp_capture normalized.csv \
+  --metadata metadata.json \
+  --program-image lst_arp_precedence_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+`review_ready` remains evidence-package status only. It does not change
+`OQ-015`, select MAME or IKA as an original-part oracle, prove mask-revision
+invariance, or establish `VERIFIED_HARDWARE`.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

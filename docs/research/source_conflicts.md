@@ -179,7 +179,10 @@ electrical result of an out-of-range access.
   provisional original-part behavior under `OQ-015`, not a claim that later
   C25 behavior proves the NMOS TMS32010. The exact two-direction capture in
   `docs/research/lst_arp_precedence_experiment.md` is required before changing
-  or upgrading that policy.
+  or upgrading that policy. Its strict classifier preserves memory-word,
+  encoded-field, both mixed-direction, and arbitrary other sequences and
+  validates exact-image/raw/photo provenance. Synthetic classifier fixtures
+  do not resolve the conflict.
 - **Confidence:** VERIFIED_PRIMARY that both write sources are documented and
   the worked result says ARP becomes one; PROVISIONAL for original-silicon
   precedence. Later TI plus MAME corroborate memory-wins, while the original

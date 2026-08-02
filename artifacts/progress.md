@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `TIMING-001` DINT/interrupt physical-capture evidence
+- **Current milestone:** `ARCH-001` LST next-ARP physical-capture evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 184 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 190 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1375,6 +1375,19 @@
   capture exists, current cancellation remains PROVISIONAL, and `OQ-019`
   remains open. Synthesis and formal evidence are unchanged because no RTL
   changed.
+- **New LST-ARP measurement evidence:** the existing 30-word fixture
+  independently initializes both ARs, ARP, DP, and every consumed RAM word in
+  both disagreement directions; it has no reset-retention dependency. The new
+  strict `tools.trace.lst_arp_capture` workflow validates the exact big-endian
+  image, three ordered OUT anchors and exclusive port-7 writes, terminal
+  boundaries, 32-run agreement, and raw/photo hashes. It independently labels
+  memory-word precedence, encoded-field precedence, both possible mixed
+  directions, and any other complete word sequence. Only bidirectionally
+  consistent memory or encoded results can set `candidate_resolved`; mixed and
+  other observations remain repeatable but nonresolving. Six regressions cover
+  every category and failure boundary. No physical capture exists, current
+  memory precedence remains PROVISIONAL, and `OQ-015` remains open. Synthesis
+  and formal evidence are unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1423,9 +1436,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** return to the highest-priority unblocked architecture evidence
-  gaps under `ARCH-001`, starting with the stable LST next-ARP precedence
-  experiment under `OQ-015`/`SC-009`; add automation only if it preserves both
-  hypotheses and physical provenance without promoting MAME or IKA.
+- **Next task:** continue `ARCH-001` with the stable simultaneous AR increment/
+  decrement physical experiment under `OQ-010`/`SC-040`; preserve all observed
+  values and fail closed rather than importing later-family illegality or an
+  emulator's execution order.
 - **Latest committed baseline before this cycle:**
-  `3e72225`
+  `e9120ca`

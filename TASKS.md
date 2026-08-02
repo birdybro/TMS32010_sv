@@ -1037,7 +1037,13 @@ objective passing evidence.
   precedence readings. Later TI/MAME implement memory-wins and pinned IKA
   implements encoded-wins, so current memory-word precedence remains
   PROVISIONAL under `OQ-015`/`SC-009`. The exact 30-word two-direction fixture
-  and physical procedure now define the resolving original-NMOS evidence.
+  and physical procedure now define the resolving original-NMOS evidence. A
+  strict classifier checks its exact image, three OUT anchors and exclusive
+  port-7 writes, terminal window, 32-run agreement, and raw/photo hashes. Six
+  regressions preserve both consistent hypotheses, both mixed directions,
+  arbitrary other words, bad controls/markers/windows/images, and unstable
+  repetitions. Mixed or other results never become resolved candidates, and
+  no physical capture exists.
   `SST` now passes primary-cited database/tool support, exhaustive 32-state
   model packing tests, directed RTL page-one/address/update/cycle tests,
   native-phase and explicit-pipeline retirement, and seeded differential RAM/

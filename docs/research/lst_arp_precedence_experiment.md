@@ -126,6 +126,30 @@ compatible device:
 6. Repeat on another original-part date/mask code before generalizing the
    outcome across `OQ-008`.
 
+Normalize a derived capture copy to the common one-row-per-falling-`CLKOUT`
+CSV schema in `tools/trace/README.md`, retaining the raw transitions
+separately. Assemble and validate the exact big-endian fixture:
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/lst_arp_precedence_probe.asm \
+  --binary lst_arp_precedence_probe.bin --byteorder big
+
+python3 -m tools.trace.lst_arp_capture normalized.csv \
+  --metadata metadata.json \
+  --program-image lst_arp_precedence_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The classifier validates the three exact OUT fetch anchors, exclusive port-7
+writes, armed marker, terminal boundaries, exact image, 32-run agreement, and
+raw/photo provenance. Both mixed-direction combinations and every other
+sequence are preserved explicitly, but cannot become resolved candidates.
+`review_ready` describes package completeness and agreement with one of the
+two bidirectionally consistent hypotheses only; it cannot change `OQ-015`
+without review of the raw setup and device provenance.
+
 ## Acceptance
 
 A result can upgrade `OQ-015` only when every run begins with `0033`, produces
