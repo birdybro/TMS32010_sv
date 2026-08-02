@@ -41,6 +41,7 @@ REQUIRED_FILES = {
     "docs/generated/tms32010_isa.yaml",
     "docs/release_audit.yaml",
     "docs/release_checklist.md",
+    "docs/release_evidence.yaml",
     "sim/reference_models/README.md",
     "tools/assembler/README.md",
     "tools/disassembler/README.md",
@@ -49,6 +50,7 @@ REQUIRED_FILES = {
     "synthesis/qualification.md",
     "artifacts/progress.md",
     "scripts/audit_release.py",
+    "scripts/check_release_evidence.py",
 }
 REQUIRED_DIRECTORIES = {
     "docs/architecture",

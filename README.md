@@ -354,8 +354,11 @@ passing evidence.
 
 `make audit-release` checks every tracked or nonignored pre-commit candidate
 against the machine-readable license/provenance policy in
-`docs/release_audit.yaml`. The broader `make release-check` intentionally
-remains failing while the release checklist is incomplete; see
+`docs/release_audit.yaml`. It also checks all 21 machine-readable criteria in
+`docs/release_evidence.yaml`, including their evidence paths, runnable
+commands, live blockers, and exact agreement with the human checklist. The
+broader `make release-check` intentionally remains failing while the release
+inventory is incomplete; see
 [docs/release_checklist.md](docs/release_checklist.md).
 
 ## References

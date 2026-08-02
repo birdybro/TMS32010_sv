@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "release_ready": false,
+  "claim_boundary": "Current-scope evidence inventory only. PASS_CURRENT_SCOPE is not release qualification; every criterion must become RELEASE_QUALIFIED with no blockers before release_ready may be true.",
+  "criteria": [
+    {
+      "id": "instruction_completeness",
+      "criterion": "Every documented instruction is qualified in the database, model, RTL, tools, timing, and bus tests",
+      "status": "NOT_MET",
+      "evidence_paths": ["TASKS.md", "docs/generated/tms32010_isa.yaml", "artifacts/progress.md"],
+      "verification_commands": ["make instruction-tests", "make differential"],
+      "blockers": ["OQ-016", "ISA-002", "RTL-002"]
+    },
+    {
+      "id": "cycle_timing_completeness",
+      "criterion": "Every instruction and external transaction timing case is automated and source-traceable",
+      "status": "NOT_MET",
+      "evidence_paths": ["docs/timing/instruction_cycles.md", "docs/timing/bus_cycles.md", "docs/architecture/pipeline.md"],
+      "verification_commands": ["make bus-tests", "make formal"],
+      "blockers": ["OQ-004", "OQ-016", "TIMING-001"]
+    },
+    {
+      "id": "clean_lint",
+      "criterion": "Strict Python and synthesizable RTL lint passes",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["Makefile", "artifacts/progress.md"],
+      "verification_commands": ["make lint"],
+      "blockers": ["RTL-002", "REL-001"]
+    },
+    {
+      "id": "passing_regressions",
+      "criterion": "The complete available deterministic regression suite passes",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["Makefile", ".github/workflows/ci.yml", "artifacts/progress.md"],
+      "verification_commands": ["make test"],
+      "blockers": ["ISA-002", "RTL-002", "REL-001"]
+    },
+    {
+      "id": "differential_tests",
+      "criterion": "Complete model, RTL, and reliable-oracle differential tests pass",
+      "status": "PARTIAL",
+      "evidence_paths": ["artifacts/mame_oracle.md", "artifacts/progress.md", "sim/differential/README.md"],
+      "verification_commands": ["make differential"],
+      "blockers": ["DIFF-001", "OQ-016"]
+    },
+    {
+      "id": "formal_checks",
+      "criterion": "Formal checks pass within documented bounds and assumptions",
+      "status": "PARTIAL",
+      "evidence_paths": ["formal/README.md", "artifacts/progress.md"],
+      "verification_commands": ["make formal"],
+      "blockers": ["FORMAL-001"]
+    },
+    {
+      "id": "yosys_synthesis",
+      "criterion": "Portable Yosys synthesis passes",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md", "synthesis/yosys/tms32010.ys"],
+      "verification_commands": ["make synth-yosys"],
+      "blockers": ["RTL-002", "SYNTH-001"]
+    },
+    {
+      "id": "quartus_synthesis",
+      "criterion": "Cyclone V Quartus synthesis, fit, and TimeQuest pass",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md", "synthesis/quartus/tms32010.qpf"],
+      "verification_commands": ["make synth-quartus"],
+      "blockers": ["RTL-002", "SYNTH-001"]
+    },
+    {
+      "id": "no_inferred_latches",
+      "criterion": "No inferred latches remain in the release design",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md", "artifacts/progress.md"],
+      "verification_commands": ["make lint", "make synth-yosys"],
+      "blockers": ["RTL-002", "REL-001"]
+    },
+    {
+      "id": "no_accidental_clocks",
+      "criterion": "No gated or accidental clocks remain in the release design",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["AGENTS.md", "rtl/README.md", "synthesis/qualification.md"],
+      "verification_commands": ["make lint", "make synth-yosys"],
+      "blockers": ["RTL-002", "REL-001"]
+    },
+    {
+      "id": "constrained_timing_paths",
+      "criterion": "No unconstrained primary timing path remains",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md", "synthesis/quartus/tms32010.sdc"],
+      "verification_commands": ["make synth-quartus"],
+      "blockers": ["RTL-002", "SYNTH-001"]
+    },
+    {
+      "id": "resource_utilization",
+      "criterion": "Release-design resource utilization is documented",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md"],
+      "verification_commands": ["make synth-yosys", "make synth-quartus"],
+      "blockers": ["RTL-002", "SYNTH-001"]
+    },
+    {
+      "id": "maximum_clock_frequency",
+      "criterion": "Release-design maximum clock frequency is documented from fitted timing",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["synthesis/qualification.md"],
+      "verification_commands": ["make synth-quartus"],
+      "blockers": ["RTL-002", "SYNTH-001"]
+    },
+    {
+      "id": "integration_guide",
+      "criterion": "The complete platform and MiSTer integration guide is documented",
+      "status": "PARTIAL",
+      "evidence_paths": ["docs/integration/README.md", "docs/integration/mister_wrapper.md", "docs/integration/hard_drivin_mister_wrapper.md"],
+      "verification_commands": ["make docs", "make bus-tests"],
+      "blockers": ["INTEG-001", "HD-001"]
+    },
+    {
+      "id": "programming_model",
+      "criterion": "The complete original-TMS32010 programming model is documented",
+      "status": "PARTIAL",
+      "evidence_paths": ["docs/architecture/programmers_model.md", "docs/architecture/instruction_set.md"],
+      "verification_commands": ["make docs", "make instruction-tests"],
+      "blockers": ["ARCH-001", "ISA-002", "OQ-012"]
+    },
+    {
+      "id": "native_interface_specification",
+      "criterion": "The complete native external interface is documented and verified",
+      "status": "PARTIAL",
+      "evidence_paths": ["docs/architecture/external_interface.md", "docs/timing/native_phase_contract.md"],
+      "verification_commands": ["make docs", "make bus-tests"],
+      "blockers": ["BUS-001", "OQ-016"]
+    },
+    {
+      "id": "known_issues",
+      "criterion": "Known issues, source conflicts, and open questions are complete and current",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["docs/research/open_questions.md", "docs/research/source_conflicts.md", "docs/release_checklist.md"],
+      "verification_commands": ["make docs"],
+      "blockers": ["ARCH-001", "REL-001"]
+    },
+    {
+      "id": "reproducible_toolchain",
+      "criterion": "The complete release toolchain is reproducible",
+      "status": "PARTIAL",
+      "evidence_paths": ["CONTRIBUTING.md", "README.md", ".github/workflows/ci.yml"],
+      "verification_commands": ["make docs", "make test", "make lint"],
+      "blockers": ["REPO-002", "SYNTH-001"]
+    },
+    {
+      "id": "license_and_provenance",
+      "criterion": "License and reference-provenance audits pass",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["docs/release_audit.yaml", "docs/references/manifest.yaml", "docs/release_checklist.md"],
+      "verification_commands": ["make audit-release", "make docs"],
+      "blockers": ["REL-001"]
+    },
+    {
+      "id": "realistic_dsp_program",
+      "criterion": "At least one realistic DSP program passes",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["sim/programs/fir4/README.md", "sim/programs/fir4/fir4.asm", "tests/regressions/test_fir4_program.py"],
+      "verification_commands": ["make unit"],
+      "blockers": ["REL-001"]
+    },
+    {
+      "id": "hard_drivin_qualification",
+      "criterion": "At least one legal Hard Drivin'-oriented synthetic or authorized-ROM test passes",
+      "status": "PASS_CURRENT_SCOPE",
+      "evidence_paths": ["sim/programs/hard_drivin_smoke/README.md", "sim/programs/hard_drivin_smoke/hard_drivin_smoke.asm", "tests/regressions/test_hard_drivin_smoke_program.py"],
+      "verification_commands": ["make unit", "make bus-tests"],
+      "blockers": ["HD-001", "REL-001"]
+    }
+  ]
+}

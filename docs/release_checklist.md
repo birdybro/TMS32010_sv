@@ -35,22 +35,34 @@ human source and license review.
 
 ## Release criteria
 
-| Criterion | Status | Current objective evidence or blocker |
-|---|---|---|
-| Every documented instruction in model, RTL, tools, timing, and bus tests | NOT MET | Model/tools cover all 60 mnemonics; native RTL remains at 58 because PUSH/POP bus ownership is `OQ-016` |
-| Every legal encoding and reserved/unlisted behavior qualified | NOT MET | The 65,536-word audit is exhaustive, but 28,656 primary-unlisted and 372 simultaneous-update words retain unknown silicon behavior |
-| Complete cycle and fetch/execute timing | NOT MET | Supported one-cycle/control/I/O/table/interrupt slices pass; PUSH/POP and other open timing questions remain |
-| Deterministic regressions | PASS FOR CURRENT SCOPE | `make test`; exact counts are maintained in `artifacts/progress.md` |
-| Strict lint | PASS FOR CURRENT SCOPE | `make lint`; no current inferred-latch or accidental-clock warning |
-| Differential testing | PARTIAL | Model/RTL supported slice and ROM-free MAME adapter pass; complete instruction and long-running oracle coverage remain |
-| Formal verification | PARTIAL | Bounds and assumptions are documented in `formal/README.md` and `artifacts/progress.md`; this is not a complete proof |
-| Portable Yosys synthesis | PASS FOR CURRENT SCOPE | `make synth-yosys`; qualification inventory is in `synthesis/qualification.md` |
-| Quartus fit and constrained timing | PASS FOR CURRENT SCOPE | Current partial design fit/TimeQuest evidence is in `synthesis/qualification.md`; release design is incomplete |
-| Native and MiSTer integration documentation | PARTIAL | Native interface and partial Hard Drivin' wrapper are documented; complete board/peripheral integration remains |
-| Reference provenance | PASS FOR CATALOGED SOURCES | `make docs` validates the manifest; unavailable and unresolved sources remain disclosed |
-| Tracked-file license/provenance audit | PASS FOR CURRENT TREE | `make audit-release`; zero vendored external payloads and zero binary candidates are presently allowed |
-| Realistic DSP and Hard Drivin' synthetic programs | PARTIAL | FIR and ROM-free Hard Drivin' smoke pass; authorized-ROM qualification is absent |
-| Known-issues and release evidence audit | NOT MET | Open questions and conflicts are documented, but full release evidence is incomplete |
+The canonical status and evidence links are in
+`docs/release_evidence.yaml`. This table is deliberately redundant and is
+checked against that inventory by `make audit-release` so that neither version
+can drift silently.
+
+| ID | Criterion | Status | Current objective evidence or blocker |
+|---|---|---|---|
+| `instruction_completeness` | Complete instruction implementation and qualification | NOT_MET | Model/tools cover all 60 mnemonics; native RTL remains at 58, with PUSH/POP blocked by `OQ-016` and unlisted/simultaneous-update silicon behavior unqualified |
+| `cycle_timing_completeness` | Complete instruction and external timing qualification | NOT_MET | Supported timing slices pass, but PUSH/POP and other open timing questions remain |
+| `clean_lint` | Strict Python and RTL lint | PASS_CURRENT_SCOPE | `make lint` passes for the partial design; `RTL-002` and `REL-001` remain |
+| `passing_regressions` | Complete available deterministic regression suite | PASS_CURRENT_SCOPE | `make test`; exact current counts are in `artifacts/progress.md` |
+| `differential_tests` | Model, RTL, and reliable-oracle differential qualification | PARTIAL | Current supported slice and ROM-free MAME adapter pass; complete coverage remains |
+| `formal_checks` | Documented bounded formal checks | PARTIAL | Present bounds pass, but this is not a complete proof and `FORMAL-001` remains |
+| `yosys_synthesis` | Portable Yosys synthesis | PASS_CURRENT_SCOPE | Current partial design passes; release-design qualification remains |
+| `quartus_synthesis` | Quartus fit and TimeQuest | PASS_CURRENT_SCOPE | Current partial design passes; release-design qualification remains |
+| `no_inferred_latches` | No inferred latches | PASS_CURRENT_SCOPE | Current lint and synthesis evidence pass; full RTL is incomplete |
+| `no_accidental_clocks` | No gated or accidental clocks | PASS_CURRENT_SCOPE | Current lint and synthesis evidence pass; full RTL is incomplete |
+| `constrained_timing_paths` | No unconstrained primary timing path | PASS_CURRENT_SCOPE | Current Quartus design has constrained clocks; final RTL is incomplete |
+| `resource_utilization` | Release-design utilization documented | PASS_CURRENT_SCOPE | Current partial-design utilization is recorded; final figures remain |
+| `maximum_clock_frequency` | Fitted maximum clock rate documented | PASS_CURRENT_SCOPE | Current fitted timing is recorded; final figures remain |
+| `integration_guide` | Complete generic and MiSTer integration guide | PARTIAL | Native and partial Hard Drivin' wrappers are documented; complete integration remains |
+| `programming_model` | Complete original-device programming model | PARTIAL | The supported subset is cited; architecture and ISA work remain |
+| `native_interface_specification` | Complete native-interface specification | PARTIAL | The current phase contract is tested; unresolved pin behavior remains |
+| `known_issues` | Current known-issue and conflict register | PASS_CURRENT_SCOPE | Open questions and conflicts are checked, but architecture research is ongoing |
+| `reproducible_toolchain` | Reproducible release toolchain | PARTIAL | Open-source CI is defined; complete release and synthesis qualification remain |
+| `license_and_provenance` | License and reference-provenance audit | PASS_CURRENT_SCOPE | `make audit-release` passes for the current candidate tree; final human audit remains |
+| `realistic_dsp_program` | Realistic DSP program | PASS_CURRENT_SCOPE | The deterministic four-tap FIR program passes for the current implementation |
+| `hard_drivin_qualification` | Legal Hard Drivin'-oriented test | PASS_CURRENT_SCOPE | The ROM-free synthetic smoke program passes; full board qualification remains |
 
 ## Strict release command
 

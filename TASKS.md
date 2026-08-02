@@ -2366,14 +2366,23 @@ objective passing evidence.
   documentation, realistic programs, and integration.
 - **Acceptance criteria:** every release-ready criterion in `AGENTS.md` has a
   linked reproducible artifact and no undisclosed blocker.
-- **Documentation:** `docs/release_checklist.md`, `CHANGELOG.md`
-- **Tests:** `make release-check`
+- **Documentation:** `docs/release_evidence.yaml`,
+  `docs/release_checklist.md`, `CHANGELOG.md`
+- **Tests:** `make audit-release`, `make release-check`,
+  `tests/regressions/test_release_evidence.py`
 - **Notes:** A partial implementation must remain honestly versioned and must
   not be advertised as cycle-accurate. The first release-audit slice now
   checks tracked plus nonignored pre-commit candidates against an explicit
   policy: MIT license identity, prohibited output/cache paths, third-party and
   binary allowlists, generated/canonical-data inventory, and exact hashes of
   every manifest source marked `may_commit: false`. Six regressions cover the
-  clean tree and fail-closed policy mutations. `make audit-release` passes;
-  `make release-check` remains intentionally failing because architectural,
-  timing, formal, integration, and release evidence is incomplete.
+  clean tree and fail-closed policy mutations. A second machine-readable
+  inventory maps all 21 release-ready criteria to repository paths, executable
+  `make` targets, and live task/open-question blockers. Its six regressions
+  reject missing criteria/evidence, unknown commands/blockers, checklist drift,
+  and premature release readiness. The current checked distribution is two
+  `NOT_MET`, six `PARTIAL`, thirteen `PASS_CURRENT_SCOPE`, and zero
+  `RELEASE_QUALIFIED`; `release_ready` is false. `make audit-release` passes,
+  while `make release-check` remains intentionally failing because
+  architectural, timing, formal, integration, and release evidence is
+  incomplete.

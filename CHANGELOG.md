@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A machine-readable 21-criterion release-evidence inventory and fail-closed
+  checker. Every criterion links repository evidence, runnable `make` targets,
+  and live task or open-question blockers; the checked human-readable table
+  must match its IDs and statuses exactly. The initial state contains two
+  `NOT_MET`, six `PARTIAL`, thirteen `PASS_CURRENT_SCOPE`, and zero
+  `RELEASE_QUALIFIED` criteria, so `release_ready` remains false.
 - A machine-readable tracked-file license/provenance policy, deterministic
   `make audit-release` checker, and explicit release checklist. The checker
   covers pre-commit candidates, prohibited output/cache paths, generated and
@@ -1296,6 +1302,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Six release-evidence regressions cover the complete non-release inventory,
+  a removed criterion, missing evidence, unknown command and blocker IDs,
+  premature `release_ready`, checklist drift, and deterministic CLI output.
+  `make audit-release` validates all 21 criteria without converting current-
+  scope test results into release qualification.
 - Six release-audit regressions pass for the live tree and fail closed on an
   incomplete generated inventory, undeclared third-party content, and stale or
   inapplicable binary allowlists, including a synthetic exact match to a

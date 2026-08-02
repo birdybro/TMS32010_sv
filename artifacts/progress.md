@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `REL-001` tracked-file license/provenance audit
+- **Current milestone:** `REL-001` machine-readable release-evidence inventory
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 231 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 237 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1536,6 +1536,19 @@
   `docs/release_checklist.md` remains explicitly NOT RELEASE READY;
   `make release-check` still fails intentionally after its required evidence
   commands. No RTL changed, so synthesis/formal evidence is unchanged.
+- **New release-inventory evidence:** `docs/release_evidence.yaml` maps all 21
+  release-ready criteria to existing repository evidence, runnable `make`
+  targets, and live `TASKS.md` or open-question blockers. The deterministic
+  checker verifies the exact criterion set, schemas, candidate-tree paths,
+  Makefile targets, blocker IDs, human-checklist agreement, and the invariant
+  that `release_ready` is true only after every criterion is
+  `RELEASE_QUALIFIED` without blockers. Six regressions fail closed on a
+  missing criterion or path, unknown command or blocker, premature release
+  claim, and checklist drift. The present distribution is two `NOT_MET`, six
+  `PARTIAL`, thirteen `PASS_CURRENT_SCOPE`, zero `RELEASE_QUALIFIED`, and
+  `release_ready=false`. `make audit-release` now passes over 532 candidate
+  files and both audits. This is an evidence index, not a release claim; no RTL
+  changed, so synthesis and formal results remain unchanged.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1584,8 +1597,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `REL-001` by adding a deterministic release-evidence
-  inventory that machine-checks checklist links and records which required
-  commands are passing, partial, unavailable, or deliberately failing.
+- **Next task:** continue `REL-001` by recording deterministic command-evidence
+  receipts for current-scope test, lint, formal, and synthesis results without
+  treating a listed but unexecuted command as passing evidence.
 - **Latest committed baseline before this cycle:**
-  `26c5cb6`
+  `c1d4154`

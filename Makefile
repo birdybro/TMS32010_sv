@@ -130,6 +130,7 @@ synth-quartus:
 
 audit-release:
 	$(PYTHON) scripts/audit_release.py
+	$(PYTHON) scripts/check_release_evidence.py
 
 docs: audit-release
 	$(PYTHON) scripts/check_documentation.py
