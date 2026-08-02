@@ -423,6 +423,13 @@ electrical result of an out-of-range access.
   reinforces the general strobe constraint without supplying either missing
   address [ti-dsp-microcomputer-patent-us4577282a, patent cols. 5-6 and
   34-36 (PDF pp. 29 and 43-44)].
+- **Contemporary TI simulator boundary:** the 1982 simulator guide
+  distinguishes instruction acquisition from program-ROM read breakpoints
+  and separately counts clock cycles, but its 256-state trace displays only
+  PC, ACC, AR0, and AR1. It contains no PUSH/POP trace or external signal
+  phase, so it cannot resolve this conflict
+  [ti-tms32010-simulator-users-guide-1982, §§2.6.7–2.6.8, §§2.13–2.14, and
+  §2.20, printed pp. 19, 39–40, and 43 (PDF pp. 21, 41–42, and 45)].
 - **Conflict:** the secondary implementation supplies a useful PC-hold
   hypothesis but suppresses the first program transaction that the primary
   every-cycle `MEN` wording requires. Replacing that idle with an active

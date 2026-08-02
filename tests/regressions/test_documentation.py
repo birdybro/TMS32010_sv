@@ -141,6 +141,57 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         ):
             self.assertIn(required, trace_readme)
 
+    def test_ti_simulator_evidence_stays_tool_scoped(self) -> None:
+        manifest = json.loads(
+            (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")
+        )
+        simulator = next(
+            source
+            for source in manifest["sources"]
+            if source["id"] == "ti-tms32010-simulator-users-guide-1982"
+        )
+        research = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "ti_simulator_trace_evidence.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        push_pop = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "push_pop_bus_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        subc = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "subc_pipeline_experiment.md").read_text(
+                encoding="utf-8"
+            ),
+        )
+        self.assertEqual(simulator["authority_level"], 3)
+        self.assertEqual(simulator["status"], "acquired")
+        self.assertFalse(simulator["may_commit"])
+        self.assertRegex(simulator["sha256"], r"^[0-9a-f]{64}$")
+        used_pages = " ".join(simulator["sections_or_pages_used"])
+        for required in (
+            "BIAQ instruction-acquisition and BPR program-ROM-read",
+            "256-state trace buffer containing PC, accumulator, AR0, and AR1",
+            "stop code 9950",
+        ):
+            self.assertIn(required, used_pages)
+        for required in (
+            "not a production-device data sheet",
+            "no executable or source was acquired",
+            "not the pin-level evidence required to choose",
+            "leaving `OQ-017` unresolved",
+        ):
+            self.assertIn(required, research)
+        self.assertIn("cannot select H1, H2, or H3", push_pop)
+        self.assertIn("tool diagnostic rather than physical-device behavior", subc)
+
     def test_ram_boundary_evidence_stays_unresolved_and_reproducible(self) -> None:
         manifest = json.loads(
             (DOCS / "references" / "manifest.yaml").read_text(encoding="utf-8")

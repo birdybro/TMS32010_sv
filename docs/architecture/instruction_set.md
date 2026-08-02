@@ -177,6 +177,13 @@ that violates TI's scheduling rule; exact availability remains `OQ-017`
 (PDF pp. 98–100); ti-first-generation-users-guide-1987, `SUBC` and §5.7.2,
 printed pp. 4-67–4-68 and 5-37 (PDF pp. 148–149 and 194)].
 
+TI's 1982 software simulator assigned stop code `9950` to accumulator use in
+the first clock cycle after SUBC. This is VERIFIED_PRIMARY evidence for the
+contemporary tool's enforcement of the restriction, not for any value or phase
+on physical silicon when the restriction is violated
+[ti-tms32010-simulator-users-guide-1982, Appendix A, printed p. 47
+(PDF p. 49)].
+
 A contemporary TI patent for a related DSP embodiment provides a plausible
 mechanism: it retains the unshifted ALU result through Q4/Q1/Q2 and performs
 the final quotient shift in the accumulator at Q3 of a following non-ALU/NOP

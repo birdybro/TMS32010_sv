@@ -203,6 +203,12 @@ ACC paths, logical data read, and 16 legally spaced iterations of TI's
 the next instruction cannot use ACC. Exact result availability for a
 violating schedule and the arithmetic stage responsible for OV remain
 `OQ-017`/`OQ-018`; the one-cycle assertion does not resolve them.
+TI's 1982 simulator also stops with diagnostic `9950` when ACC is used in the
+first clock cycle after SUBC. That corroborates the legal scheduling contract
+in contemporary TI reference software, but cannot establish the physical
+violating result or subphase
+[ti-tms32010-simulator-users-guide-1982, Appendix A, printed p. 47
+(PDF p. 49)].
 The related TI patent's Q4/Q1/Q2 staging and following-state Q3 accumulator
 shift explain how internal work can overlap that documented count, but its
 own two-state wording prevents treating it as a production timing diagram.

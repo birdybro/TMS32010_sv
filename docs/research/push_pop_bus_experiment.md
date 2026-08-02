@@ -57,6 +57,15 @@ capture method and the need to preserve every cycle
 [ti-development-support-spru011-1986, §7.2.3, printed pp. 7-15–7-16
 (PDF pp. 76–77), and §11.19, printed p. 11-19 (PDF p. 144)].
 
+The 1982 TI software-simulator manual separately distinguishes an instruction
+acquisition breakpoint from a program-ROM-read breakpoint, but its 256-state
+trace displays only PC, ACC, AR0, and AR1. It exposes neither `MEN` nor
+per-phase program addresses, and contains no PUSH/POP trace. This is useful
+reference-tool semantics but cannot select H1, H2, or H3
+[ti-tms32010-simulator-users-guide-1982, §§2.6.7–2.6.8 and §§2.13–2.14,
+printed pp. 19 and 39–40 (PDF pp. 21 and 41–42)]. See
+`docs/research/ti_simulator_trace_evidence.md`.
+
 These facts make a completely inactive extra cycle inconsistent with the
 general pin contract. They do not establish which active-low `MEN` sample is
 accepted by the instruction pipeline, or whether the program address repeats.

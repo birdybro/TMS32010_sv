@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- An integrity-pinned, non-committed 1982 TI *TMS32010 Simulator User's
+  Guide* plus a source-scoped research note. It records the official
+  instruction-acquisition versus program-ROM-read breakpoint distinction,
+  256-state PC/ACC/AR trace, separate simulated clock counter, and SUBC
+  dependency diagnostic without treating software-tool behavior as a silicon
+  or external-pin trace.
+- A documentation regression that locks the simulator source's provenance,
+  page use, non-redistributable status, absent PUSH/POP bus evidence, and
+  nonphysical SUBC-diagnostic boundary.
 - A strict `tools.trace.push_pop_capture` workflow for the unresolved original-
   NMOS PUSH/POP bus experiment. It consumes one normalized row per falling
   `CLKOUT` boundary, independently classifies H1/H2/H3 for PUSH and POP,
@@ -1150,6 +1159,11 @@ Changelog, and the project follows semantic versioning once releases begin.
   unconstrained physical power-up state at the pre-initialization edge.
 
 ### Verified
+
+- All 60 cached reference artifacts match their pinned SHA-256 values. The
+  official simulator's architectural trace lacks `MEN`/`WE`/`DEN` and a
+  PUSH/POP example, so `OQ-016` remains open; stop code `9950` corroborates
+  only enforcement of the legal SUBC schedule and leaves `OQ-017` open.
 
 - The PUSH/POP capture tooling recognizes the exact checked probe image at
   addresses `0x001`/`0x004`, requires four retained following boundaries,

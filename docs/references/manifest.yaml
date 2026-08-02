@@ -170,6 +170,37 @@
       }
     },
     {
+      "id": "ti-tms32010-simulator-users-guide-1982",
+      "title": "TMS32010 Simulator User's Guide",
+      "author_or_organization": "Texas Instruments",
+      "publication_number": "not stated in located scan",
+      "publication_date": "1982",
+      "revision": "not stated",
+      "source_url": "https://vtda.org/docs/computing/TI/TI_TMS32010Simulator_UsersGide.pdf",
+      "retrieval_date": "2026-07-31",
+      "local_filename": "ti/TMS32010_Simulator_Users_Guide_1982.pdf",
+      "sha256": "58bda1d1c68e39632f0a6ff6da693271d186e4242e857700e1de555775be9915",
+      "document_type": "primary simulator user's guide scan",
+      "media_type": "application/pdf",
+      "license_or_redistribution_status": "Copyrighted; redistribution permission not established",
+      "relevance": "Contemporary TMS32010 reference-software breakpoint, architectural trace, clock-count, and diagnostic semantics",
+      "authority_level": 3,
+      "notes": "Copyright page states 1982, but no publication number or revision was located in the scan. This is primary evidence for TI simulator behavior, not direct production-silicon or pin-timing evidence. Keep only in the ignored cache.",
+      "may_commit": false,
+      "sections_or_pages_used": [
+        "Sections 1.1-1.2, printed pages 3-4 (PDF pages 5-6): simulator purpose and feature summary",
+        "Sections 2.6.7-2.6.8, printed page 19 (PDF page 21): BIAQ instruction-acquisition and BPR program-ROM-read breakpoint distinction",
+        "Sections 2.13-2.14, printed pages 39-40 (PDF pages 41-42): 256-state trace buffer containing PC, accumulator, AR0, and AR1",
+        "Section 2.20, printed page 43 (PDF page 45): clock counter reports elapsed simulated clock cycles",
+        "Appendix A, printed page 47 (PDF page 49): stop code 9950 for accumulator use in the first clock cycle after SUBC"
+      ],
+      "status": "acquired",
+      "download": {
+        "enabled": true,
+        "expected_content_types": ["application/pdf", "application/octet-stream"]
+      }
+    },
+    {
       "id": "ti-first-generation-users-guide-1989",
       "title": "First-Generation TMS320 User's Guide",
       "author_or_organization": "Texas Instruments",

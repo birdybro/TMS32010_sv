@@ -68,6 +68,18 @@ overflow. Tests always insert an ACC-free successor for claimed behavior.
 That is a reversible implementation policy: it does not resolve either
 physical question.
 
+## Contemporary TI simulator diagnostic
+
+TI's 1982 software-simulator guide documents stop code `9950` for use of the
+accumulator in the first clock cycle after `SUBC`
+[ti-tms32010-simulator-users-guide-1982, Appendix A, printed p. 47
+(PDF p. 49)]. That is primary evidence that contemporary TI reference software
+actively rejected the prohibited dependency. It corroborates the legal-stream
+scheduling rule, but it is a tool diagnostic rather than physical-device
+behavior: it reveals neither the value a violating successor would sample nor
+the accumulator's production-silicon subphase. `OQ-017` therefore remains
+open.
+
 ## Dependency probe (`OQ-017`)
 
 [subc_dependency_probe.asm](../../tests/asm/subc_dependency_probe.asm)

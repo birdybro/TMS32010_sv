@@ -57,7 +57,7 @@ objective passing evidence.
   `docs/references/README.md`
 - **Tests:** `tests/regressions/test_references.py`
 - **Notes:** Redistribution status of historical manuals is assumed unclear
-  until permission is demonstrated. The ignored cache now verifies 59 pinned
+  until permission is demonstrated. The ignored cache now verifies 60 pinned
   sources, including Atari TM-327 for published Sound Board diagnostic roles,
   Motorola M68000UM Ninth Edition for local-host bus-state timing, TI's ALS32
   data sheet for the local memory gates, the 1983 AMD
@@ -97,7 +97,13 @@ objective passing evidence.
   now establish that contemporary tooling sampled individual machine cycles
   and clock-qualified external fetches; they describe the required measurement
   granularity but contain no PUSH/POP trace and therefore do not select a bus
-  hypothesis.
+  hypothesis. TI's 1982 TMS32010 simulator guide now pins the official
+  distinction between instruction acquisition and program-ROM reads, a
+  256-state PC/ACC/AR architectural trace, its separate clock-cycle counter,
+  and stop code 9950 after a prohibited SUBC dependency. These are tool
+  semantics only: the guide supplies no external-pin trace or violating-
+  silicon result. A public-index search did not locate the bibliographically
+  identified XDS/22 manual `SPDU015`.
 
 ## Milestone 3 — Architecture specification
 
@@ -134,6 +140,10 @@ objective passing evidence.
   validator. It can report a repeatable H1/H2/H3 result only after 32 runs and
   verified program/raw/photo hashes, but calls that state `review_ready` and
   cannot change architectural confidence without raw-capture review.
+  The contemporary TI software simulator additionally separates instruction
+  acquisition from program-ROM-read breakpoints but traces only PC/ACC/AR0/
+  AR1; it supplies neither a PUSH/POP bus phase nor a path to resolve
+  `OQ-016`.
   `OQ-014` is now reduced to a reproducible original-NMOS measurement:
   `SC-038` preserves SPRU001B's isolated `128-144` off-by-one table, the
   consistent 144-word/`128-143` production evidence, and the related patent's
@@ -1272,7 +1282,10 @@ objective passing evidence.
   original-NMOS capture is present, so this advances evidence readiness only.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
-  behavior remains `OQ-017`. The related-patent timing and two stable physical
+  behavior remains `OQ-017`. TI's 1982 simulator stop code 9950 corroborates
+  that contemporary reference software rejected the prohibited dependency,
+  but does not establish a physical result or subphase. The related-patent
+  timing and two stable physical
   probes are documented in `docs/research/subc_pipeline_experiment.md`; no
   production capture exists. The original TMS32010-20 clock envelope is now
   primary-qualified as 48.78–150 ns per master period and 47.5–52.5% pulse

@@ -2,7 +2,7 @@
 
 - **Current milestone:** `TIMING-001` PUSH/POP physical-capture evidence path
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 171 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 172 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -16,7 +16,7 @@
   512-instruction seeded
   40-one-cycle-instruction model/RTL differential including T, P, OV/OVM/INTM,
   all four stack levels, distinct logical source/write addresses, and all 144
-  final RAM words; 59 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
+  final RAM words; 60 reference hashes; focused two-cycle B, BANZ, BIOZ, BV,
   CALL, CALA/RET, and all six accumulator-conditional-branch model/RTL traces; focused
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
@@ -1329,6 +1329,20 @@
   physical capture exists, `OQ-016` remains open, and no PUSH/POP RTL timing
   has been added. Synthesis evidence is unchanged because this cycle modifies
   no RTL.
+- **New TI simulator evidence:** the ignored cache now pins TI's 1982
+  TMS32010 simulator guide, bringing the verified reference set to 60. Its
+  acquisition breakpoint is distinct from a program-ROM-read breakpoint; its
+  256-state trace displays PC, ACC, AR0, and AR1; and a separate counter
+  reports simulated clock cycles. The architectural trace exposes no external
+  strobes or PUSH/POP phase example, so it does not change `OQ-016`. Stop code
+  9950 corroborates contemporary TI tool enforcement of the prohibited
+  first-cycle-after-SUBC ACC dependency, but reports no physical violating
+  value or subphase and leaves `OQ-017` open. A 2026-07-31 public VTDA,
+  Bitsavers, and Internet Archive index search did not locate the cited
+  XDS/22 manual `SPDU015`; absence from those indexes is not an availability
+  claim. One new documentation regression locks these authority boundaries.
+  Synthesis and formal evidence are unchanged because this cycle modifies no
+  RTL.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1377,10 +1391,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `REF-001`/`TIMING-001` archival research for the
-  identified XDS/22 TMS32010 Emulator User's Guide `SPDU015` or an equivalent
-  primary trace listing. If no lawful copy or trace exists, retain the physical
-  capture boundary and select the next unblocked timing/verification task; do
-  not implement PUSH/POP from the classifier's synthetic hypotheses.
+- **Next task:** strengthen `TIMING-001` by turning the stable SUBC dependency
+  and overflow probe images into a strict, provenance-preserving physical-
+  capture classifier. It must never infer a silicon result from TI simulator
+  stop code 9950 or silently promote `OQ-017`/`OQ-018`.
 - **Latest committed baseline before this cycle:**
-  `e0040a1`
+  `08cc565`
