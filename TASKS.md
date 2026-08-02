@@ -212,9 +212,14 @@ objective passing evidence.
   clock/hold combinations, the reset bus contract, every architectural field,
   and raw/photo provenance. Variable and non-retained post-state remains
   reviewable; only the primary-defined unchanged OVM control can invalidate a
-  complete capture. Six regressions cover field decomposition, reserved bit 1,
-  variable review-ready packages, reset/BIO/bus timing, exact anchors and
-  pre-state, partial/extra flow, condition coverage, hashes, and exact images.
+  complete capture. Shared specimen validation now binds both exact source,
+  dense 297-word listing, image, and normalized-trace packages to the same raw
+  marking/date/lot/package identity. Each side verifies seven artifacts and
+  remains explicitly `this_specimen_only`. Six regressions cover field
+  decomposition, reserved bit 1, variable review-ready packages,
+  reset/BIO/bus timing, exact anchors and pre-state, partial/extra flow,
+  condition coverage, hashes, exact images, substitute listings, and
+  mismatched specimens.
   Original-silicon retention remains PROVISIONAL pending physical captures,
   raw review, and a second identified specimen.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical

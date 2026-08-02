@@ -412,6 +412,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "at least 32 warm-reset trials per fixture",
             "coverage of all nine combinations",
             "post-reset vector is never compared with the project model",
+            "dense 297-word address/word listing",
+            "A complete package verifies seven",
+            "`this_specimen_only` evidence scope",
             "acceptance_complete=false",
             "EVM evidence is **CORROBORATED** workflow evidence",
             "portable core's unlisted-state retention remains **PROVISIONAL**",
@@ -419,13 +422,17 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             self.assertIn(required, research)
         self.assertIn("## SC-042", conflicts)
         self.assertIn("strict paired normalizer", conflicts)
+        self.assertIn("both packages to name the same raw marking", conflicts)
         self.assertIn("RESEARCHING/CORROBORATED EVM (`SC-042`)", questions)
         self.assertIn("without requiring retention", questions)
+        self.assertIn("scope remains `this_specimen_only`", questions)
         self.assertIn("§2.11", architecture)
         for required in (
             "run,sample,time_ns,rs_n,bio_n,men_n,we_n,den_n,address,data",
             "run,rs_assert_ns,rs_release_ns,bio_assert_ns",
             "32 nominal runs per fixture",
+            "A complete SET or CLEAR package verifies seven",
+            "otherwise the report scope is `UNQUALIFIED`",
             "Variation and non-retention do not block review",
             "only OVM is an expected retention control",
         ):
@@ -515,6 +522,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "paired `OQ-014` DMOV/LTD RAM-boundary workflow",
             "nondestructive `OQ-002` stage-1 absent-RAM read workflow",
             "paired destructive `OQ-002` stage-2 workflow",
+            "paired `OQ-012` reset-retention workflow",
+            "Each complete package verifies seven artifacts",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)

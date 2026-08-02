@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` absent-RAM write specimen-bound evidence
+- **Current milestone:** `ARCH-001` reset-retention specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1479,12 +1479,17 @@
   decomposes ACC, T, P, AR0/AR1, OV/OVM/ARP/DP, and all four stack levels,
   while preserving raw vectors and reserved SST bit 1. Variable or
   non-retained fields remain reviewable; only documented unchanged OVM is a
-  validity control. Six regressions cover the field, waveform, framing,
-  condition, provenance, and exact-image boundaries. No physical data exists,
-  `observed_full_retention_candidate` cannot promote confidence, and
-  `acceptance_complete=false` leaves raw review and a second specimen open
-  under `OQ-012`/`SC-042`. Synthesis and formal evidence are unchanged because
-  no RTL changed.
+  validity control. Shared specimen validation now independently binds each
+  exact source, dense 297-word listing, normalized trace, raw multiline
+  marking/date/lot/package record, and top/bottom/board photographs, then
+  requires SET and CLEAR to name the same part. Each complete side verifies
+  seven artifacts. Six regressions cover the field, waveform, framing,
+  condition, provenance, exact-image, digest-valid substitute-listing, and
+  pair-identity boundaries. No physical data exists; the report scope remains
+  `this_specimen_only`, `observed_full_retention_candidate` cannot promote
+  confidence, and `acceptance_complete=false` leaves raw review and a second
+  specimen open under `OQ-012`/`SC-042`. Synthesis and formal evidence are
+  unchanged because no RTL changed.
 - **New PUSH/POP provenance boundary:** `tools.trace.push_pop_capture` now
   rejects any program other than the independently fixed 16-byte fixture even
   if metadata correctly hashes the substituted bytes. Its sidecar additionally
@@ -1557,8 +1562,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` by applying paired specimen provenance to
-  complementary reset-retention evidence without constraining any post-reset
-  architectural field.
+- **Next task:** continue `ARCH-001` with a cross-workflow audit of all
+  specimen-bound physical classifiers, checking that artifact, identity,
+  scope, and acceptance semantics remain consistent without changing any
+  architectural result.
 - **Latest committed baseline before this cycle:**
-  `78d5d26`
+  `872c8a5`

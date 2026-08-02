@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Reset-retention evidence now requires independently exact SET/CLEAR source,
+  dense 297-word listing, image, and normalized-trace records for the same raw
+  marking/date/lot/package specimen. All measured fields remain unconstrained,
+  the scope is `this_specimen_only`, and `acceptance_complete` remains false.
 - The paired absent-RAM write workflow now requires independently exact
   ascending/descending source, 43-word listing, image, and trace records for
   the same specimen named by the pinned stage-1 report. Chronology and all
@@ -1281,6 +1285,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six reset-retention regressions pass with two seven-artifact packages.
+  A digest-valid substitute listing or mismatched SET/CLEAR specimen fails
+  closed while every captured post-reset field and relationship remains
+  unchanged in the report.
 - All six absent-RAM write regressions pass with two seven-artifact packages.
   Mismatched stage/direction specimen identities and digest-valid substitute
   listings fail closed without changing sentinel/readback observations.

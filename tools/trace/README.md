@@ -565,6 +565,14 @@ In addition to the common provenance fields, each metadata sidecar requires:
 }
 ```
 
+The common specimen record binds each package to the exact fixture source,
+dense 297-word listing, fixed 594-byte image, normalized trace, raw multiline
+package marking, tracking/date and lot strings, package type, fixture tool
+versions, and distinct top, bottom, and board-context photographs. A complete
+SET or CLEAR package verifies seven hashed artifacts. Both records must name
+the same specimen; otherwise the report scope is `UNQUALIFIED` and
+`review_ready` is false.
+
 `clock_condition` is exactly `slow_limit`, `nominal`, or `fast_limit`; the raw
 falling-boundary times remain the measured clock evidence. The ordinary
 `oscillator_hz` field records the nominal setup. Review qualification requires

@@ -173,6 +173,34 @@ def _write_fixture_package(
     raw.write_bytes(f"raw {fixture} reset capture".encode("ascii"))
     photo = root / f"{lower}.jpg"
     photo.write_bytes(f"{fixture} reset probe placement".encode("ascii"))
+    fixture_source = root / f"reset_retention_{lower}_probe.asm"
+    fixture_source.write_bytes(
+        (
+            ROOT / "tests" / "asm" / f"reset_retention_{lower}_probe.asm"
+        ).read_bytes()
+    )
+    image_bytes = image.read_bytes()
+    fixture_listing = root / f"reset_retention_{lower}_probe.lst"
+    fixture_listing.write_text(
+        "".join(
+            f"{address:03x} {word:04x} synthetic:test\n"
+            for address, word in enumerate(
+                int.from_bytes(image_bytes[offset : offset + 2], "big")
+                for offset in range(0, len(image_bytes), 2)
+            )
+        ),
+        encoding="utf-8",
+    )
+    specimen_photos: dict[str, dict[str, str]] = {}
+    for view in ("top", "bottom", "board_context"):
+        specimen_photo = root / f"specimen-{view}.jpg"
+        specimen_photo.write_bytes(
+            f"synthetic {view} specimen view".encode("ascii")
+        )
+        specimen_photos[view] = {
+            "path": specimen_photo.name,
+            "sha256": sha256(specimen_photo.read_bytes()).hexdigest(),
+        }
     run_conditions: dict[str, object] = {}
     for run, (clock_condition, target) in zip(
         measurements, condition_specs, strict=True
@@ -186,16 +214,45 @@ def _write_fixture_package(
         json.dumps(
             {
                 "schema_version": 1,
-                "device_marking": "TMS32010NL ORIGINAL TEST SPECIMEN",
+                "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                "specimen_id": "synthetic-specimen-01",
+                "tracking_date_string": "TRACKING RAW",
+                "lot_string": "LOT RAW",
+                "package_type": "40-pin plastic DIP test fixture",
+                "acquisition_provenance": "synthetic regression fixture",
+                "socketed": True,
+                "temperature_c": 25.0,
+                "reset_duration_cycles": 8,
+                "monitor_revision": "none; standalone fixture",
+                "specimen_scope": "this_specimen_only",
                 "board_revision": "synthetic test carrier",
                 "oscillator_hz": 20_000_000,
                 "supply_voltage_v": "5.00 measured",
                 "program_memory": "synthetic memory",
+                "program_memory_access_time_ns": 35.0,
                 "probe_model": "synthetic probe",
                 "analyzer_model": "synthetic analyzer",
                 "analyzer_firmware": "test",
                 "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                "normalized_capture_sha256": sha256(
+                    capture.read_bytes()
+                ).hexdigest(),
                 "reset_measurements_sha256": sha256(reset_path.read_bytes()).hexdigest(),
+                "fixture_tool_versions": {
+                    "assembler": "project test assembler",
+                    "capture_normalizer": "synthetic test normalizer",
+                    "analyzer_decoder": "synthetic test decoder",
+                },
+                "fixture_artifacts": {
+                    "source": {
+                        "path": fixture_source.name,
+                        "sha256": sha256(fixture_source.read_bytes()).hexdigest(),
+                    },
+                    "listing": {
+                        "path": fixture_listing.name,
+                        "sha256": sha256(fixture_listing.read_bytes()).hexdigest(),
+                    },
+                },
                 "reset_driver_circuit": "open-collector-compatible synthetic driver",
                 "bio_driver_circuit": "open-collector-compatible synthetic driver",
                 "signal_pin_map": {
@@ -210,6 +267,7 @@ def _write_fixture_package(
                 },
                 "raw_artifacts": {raw.name: sha256(raw.read_bytes()).hexdigest()},
                 "probe_photographs": {photo.name: sha256(photo.read_bytes()).hexdigest()},
+                "specimen_photographs": specimen_photos,
                 "run_conditions": run_conditions,
             },
             indent=2,
@@ -221,6 +279,8 @@ def _write_fixture_package(
         "reset": reset_path,
         "image": image,
         "metadata": metadata,
+        "source": fixture_source,
+        "listing": fixture_listing,
     }
 
 
@@ -288,6 +348,15 @@ class ResetRetentionCaptureTests(unittest.TestCase):
             self.assertTrue(report.review_ready)
             self.assertFalse(report.observed_full_retention_candidate)
             self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
+            self.assertEqual(report.specimen_pair_errors, ())
+            self.assertTrue(
+                all(
+                    len(item.evidence_package.verified_artifacts) == 7
+                    for item in report.fixtures
+                )
+            )
             fields = {item.name: item for item in report.field_summaries}
             self.assertEqual(fields["ACC"].pair_classification, "MIXED_OR_VARIABLE")
             self.assertEqual(fields["OVM"].pair_classification, "RETAINED_BOTH_FIXTURES")
@@ -467,6 +536,17 @@ class ResetRetentionCaptureTests(unittest.TestCase):
             metadata = json.loads(clear_paths["metadata"].read_text(encoding="utf-8"))
             metadata["program_image_sha256"] = sha256(clear_paths["image"].read_bytes()).hexdigest()
             metadata["reset_measurements_sha256"] = "0" * 64
+            metadata["specimen_id"] = "synthetic-specimen-02"
+            listing = clear_paths["listing"]
+            listing.write_text(
+                listing.read_text(encoding="utf-8").replace(
+                    "010 7f81", "010 7f80"
+                ),
+                encoding="utf-8",
+            )
+            metadata["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                listing.read_bytes()
+            ).hexdigest()
             clear_paths["metadata"].write_text(json.dumps(metadata, indent=2), encoding="utf-8")
             report = build_report(
                 set_paths["capture"], clear_paths["capture"],
@@ -477,9 +557,18 @@ class ResetRetentionCaptureTests(unittest.TestCase):
                 artifact_root=root,
             )
             clear_summary = {item.fixture: item for item in report.fixtures}["CLEAR"]
+            self.assertIsNone(report.specimen_id)
+            self.assertEqual(report.specimen_scope, "UNQUALIFIED")
+            self.assertTrue(report.specimen_pair_errors)
             self.assertFalse(clear_summary.evidence_package.complete)
             self.assertTrue(any("exact sparse" in item for item in clear_summary.evidence_package.errors))
             self.assertTrue(any("measurements SHA-256 mismatch" in item for item in clear_summary.evidence_package.errors))
+            self.assertTrue(
+                any(
+                    "exact address/word map" in item
+                    for item in clear_summary.evidence_package.errors
+                )
+            )
             self.assertFalse(report.review_ready)
 
 

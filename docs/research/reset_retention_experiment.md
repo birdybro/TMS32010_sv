@@ -138,9 +138,20 @@ Use `tools.trace.reset_retention_capture` with one falling-boundary CSV and one
 derived reset-transition CSV per fixture. The exact schemas, additional
 metadata fields, and complete command are specified in
 [the trace-tool README](../../tools/trace/README.md). The tool validates both
-exact 594-byte sparse images, every OUT fetch/write pair, initial-high and
+exact 594-byte dense images assembled from the sparse address layouts, every
+OUT fetch/write pair, initial-high and
 post-reset-low BIO decisions, measured RS/BIO transitions, complete reset
 intervals, reset bus controls/address, terminal flow, and raw/photo hashes.
+
+Each sidecar must also bind the capture to the exact fixture source, a dense
+297-word address/word listing (including zero-filled address gaps), and the
+normalized falling-boundary trace. The SET and CLEAR packages are validated
+independently and must identify the same raw package marking, tracking/date
+string, lot string, and package type. A complete package verifies seven
+hashed artifacts: source, listing, program image, normalized trace, and the
+top, bottom, and board-context photographs. These checks establish only a
+`this_specimen_only` evidence scope; they do not decode a mask identity or
+constrain any post-reset field to the provisional implementation result.
 
 Review qualification requires 32 nominal runs per fixture and coverage of all
 nine combinations of slow/nominal/fast clock condition with 5-, 8-, and

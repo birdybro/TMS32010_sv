@@ -220,6 +220,15 @@ pinned stage-1 report. Sentinel, readback, and valid-array disturbance values
 remain unconstrained `this_specimen_only` observations, and declared ordering
 still requires raw review. `acceptance_complete` remains false.
 
+The paired `OQ-012` reset-retention workflow applies the same reusable record
+independently to the exact SET and CLEAR source, dense 297-word listing,
+594-byte image, and normalized-trace packages. It requires both records to
+name the same raw marking/date/lot/package specimen while leaving every
+post-reset architectural field unconstrained except for the documented OVM
+validity control. Each complete package verifies seven artifacts, reports
+`this_specimen_only`, and retains `acceptance_complete=false`; provenance
+cannot turn an observed retention pattern into a mask-invariant result.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

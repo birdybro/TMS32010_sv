@@ -25,6 +25,10 @@ from tools.trace.push_pop_capture import (
     EvidencePackage,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 FIXTURES = ("SET", "CLEAR")
@@ -56,6 +60,14 @@ PROGRAM_IMAGES = {
         "size": 594,
         "sha256": "f8313381163fe3238b786b755372ca8404a72dba64a04e6f7b4e87458eb6ee25",
     },
+}
+FIXTURE_SOURCE_SHA256 = {
+    "SET": (
+        "3c2e6e6ca2c3dc2cccafdda02d77f11b984deb28af162d16b1cbe4c06bf0c9c8"
+    ),
+    "CLEAR": (
+        "38dabb539d46752d733a819dfb4c316e460a56c69e617506a587e444657517f5"
+    ),
 }
 PRE_VECTORS = {
     "SET": (
@@ -200,6 +212,9 @@ class CaptureReport:
     review_ready: bool
     observed_full_retention_candidate: bool
     acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
+    specimen_pair_errors: tuple[str, ...]
     fixtures: tuple[FixtureSummary, ...]
     field_summaries: tuple[FieldSummary, ...]
 
@@ -212,7 +227,8 @@ class CaptureReport:
                 "OQ-012 or the PROVISIONAL model/RTL policy, prove which physical "
                 "latches RS affects, establish mask-revision invariance, or establish "
                 "VERIFIED_HARDWARE without raw engineering review and a second "
-                "identified original specimen."
+                "identified original specimen. It does not generalize beyond the "
+                "paired, identified specimen."
             ),
             "minimum_nominal_runs": self.minimum_nominal_runs,
             "minimum_nominal_runs_met": self.minimum_nominal_runs_met,
@@ -224,6 +240,9 @@ class CaptureReport:
                 self.observed_full_retention_candidate
             ),
             "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
+            "specimen_pair_errors": list(self.specimen_pair_errors),
             "fixtures": [_fixture_json(item) for item in self.fixtures],
             "field_summaries": [_field_summary_json(item) for item in self.field_summaries],
         }
@@ -720,6 +739,57 @@ def _read_capture(path: Path) -> dict[str, tuple[EdgeSample, ...]]:
         raise CaptureError(f"cannot read capture {path}: {error}") from error
 
 
+def _merge_specimen_evidence(
+    package: EvidencePackage,
+    specimen: SpecimenEvidence,
+) -> EvidencePackage:
+    errors = package.errors + specimen.errors
+    return EvidencePackage(
+        complete=not errors,
+        errors=errors,
+        program_image_sha256=package.program_image_sha256,
+        verified_artifacts=tuple(
+            sorted(
+                set(package.verified_artifacts)
+                | set(specimen.verified_artifacts)
+            )
+        ),
+    )
+
+
+def _validate_specimen_pair(
+    specimens: Mapping[str, SpecimenEvidence],
+) -> tuple[str, ...]:
+    errors: list[str] = []
+    set_metadata = specimens["SET"].metadata
+    clear_metadata = specimens["CLEAR"].metadata
+    for field in (
+        "specimen_id",
+        "device_marking",
+        "tracking_date_string",
+        "lot_string",
+        "package_type",
+    ):
+        if set_metadata.get(field) != clear_metadata.get(field):
+            errors.append(f"SET and CLEAR metadata disagree on specimen {field}")
+    return tuple(errors)
+
+
+def _program_image_words(path: Path | None) -> dict[int, int]:
+    if path is None or not path.is_file():
+        return {}
+    try:
+        image = path.read_bytes()
+    except OSError:
+        return {}
+    if len(image) % 2:
+        return {}
+    return {
+        address: int.from_bytes(image[offset : offset + 2], "big")
+        for address, offset in enumerate(range(0, len(image), 2))
+    }
+
+
 def _read_measurements(path: Path) -> dict[str, ResetMeasurement]:
     try:
         with path.open("r", encoding="utf-8", newline="") as input_file:
@@ -821,6 +891,17 @@ def build_report(
     }
     metadata_paths = {"SET": set_metadata, "CLEAR": clear_metadata}
     image_paths = {"SET": set_image, "CLEAR": clear_image}
+    specimens = {
+        fixture: validate_specimen_evidence(
+            metadata_paths[fixture],
+            capture_paths[fixture],
+            artifact_root,
+            fixture_source_sha256=FIXTURE_SOURCE_SHA256[fixture],
+            fixture_words=_program_image_words(image_paths[fixture]),
+        )
+        for fixture in FIXTURES
+    }
+    specimen_pair_errors = _validate_specimen_pair(specimens)
     summaries: list[FixtureSummary] = []
     for fixture in FIXTURES:
         runs = _read_capture(capture_paths[fixture])
@@ -833,6 +914,7 @@ def build_report(
             artifact_root,
             set(runs),
         )
+        package = _merge_specimen_evidence(package, specimens[fixture])
         if set(runs) != set(measurements):
             raise CaptureError(
                 f"{fixture} capture and reset-measurement run names must match"
@@ -882,7 +964,13 @@ def build_report(
         and complete
         and fixture_valid
         and all(item.evidence_package.complete for item in fixture_tuple)
+        and not specimen_pair_errors
     )
+    specimen_id = specimens["SET"].specimen_id
+    specimen_scope = specimens["SET"].specimen_scope
+    if specimen_pair_errors:
+        specimen_id = None
+        specimen_scope = "UNQUALIFIED"
     return CaptureReport(
         minimum_nominal_runs=minimum_nominal_runs,
         minimum_nominal_runs_met=minimum_met,
@@ -896,6 +984,9 @@ def build_report(
             and all(item.pair_classification == "RETAINED_BOTH_FIXTURES" for item in field_summaries)
         ),
         acceptance_complete=False,
+        specimen_id=specimen_id,
+        specimen_scope=specimen_scope,
+        specimen_pair_errors=specimen_pair_errors,
         fixtures=fixture_tuple,
         field_summaries=field_summaries,
     )

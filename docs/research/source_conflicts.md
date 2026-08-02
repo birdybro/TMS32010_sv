@@ -1263,10 +1263,13 @@ electrical result of an out-of-range access.
   `docs/research/reset_retention_experiment.md` are required before upgrading
   original-silicon confidence. A strict paired normalizer now checks the exact
   images, BIO/RS timing, the nine clock/hold combinations, reset bus contract,
-  every field relationship, and provenance without expecting retention.
+  every field relationship, and provenance without expecting retention. Its
+  shared specimen boundary independently binds each exact source, dense
+  297-word listing, normalized trace, and three photographs, then requires
+  both packages to name the same raw marking/date/lot/package specimen.
   `review_ready` remains package status and never closes the question without
-  raw review and a second specimen. The EVM manual is CORROBORATED workflow
-  evidence only.
+  raw review and a second specimen. Every result remains scoped to
+  `this_specimen_only`; the EVM manual is CORROBORATED workflow evidence only.
 - **Confidence:** VERIFIED_PRIMARY for the named reset effects and unchanged
   OVM; CORROBORATED for EVM register recoverability; UNKNOWN for the exact
   physical reset network and mask invariance of all unlisted state.
