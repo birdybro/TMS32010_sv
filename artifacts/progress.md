@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` absent-RAM controlled-history read evidence
+- **Current milestone:** `ARCH-001` absent-RAM paired write evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 208 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 214 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1427,6 +1427,20 @@
   always reports `acceptance_complete=false`; both write directions, targeted
   follow-up, raw review, and another specimen remain under `OQ-002`/`SC-041`.
   Synthesis and formal evidence are unchanged because no RTL changed.
+- **New absent-RAM write evidence:** the paired
+  `tools.trace.ram_invalid_write_capture` workflow validates both exact
+  43-word images and both 258-output direction streams, lists every nonzero
+  valid-array word, and preserves each direction-specific absent address,
+  intended sentinel, measured readback, and descriptive sentinel/zero/other
+  relation. It requires a pinned qualified stage-1 report plus an explicit
+  post-read capture declaration while warning that those records do not prove
+  wall-clock order. No primary write-trial minimum is invented. Six
+  regressions cover both mappings, every data category, disturbances,
+  partial/extra/malformed flow, complete variable packages, workflow links,
+  and exact images. No physical data exists and stage 2 still reports
+  `acceptance_complete=false`; raw/order review, targeted/alternate-sentinel
+  follow-up, and another specimen remain under `OQ-002`/`SC-041`. Synthesis
+  and formal evidence are unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1475,9 +1489,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with the ordered stage-2 absent-RAM write
-  capture normalizer under `OQ-002`/`SC-041`, comparing both unique-sentinel
-  directions while preserving every valid-array disturbance and absent-region
-  readback without inferring an alias map.
+- **Next task:** continue `ARCH-001` with strict complementary original-NMOS
+  reset-retention capture normalization under `OQ-012`/`SC-042`, preserving
+  every unlisted register/stack field and the external BIO path selector
+  without treating EVM warm-save behavior as production-silicon proof.
 - **Latest committed baseline before this cycle:**
-  `6a521f1`
+  `552e95e`

@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A paired `tools.trace.ram_invalid_write_capture` workflow for destructive
+  `OQ-002` stage 2. It checks both exact images and 258-output streams, lists
+  every valid-RAM disturbance, preserves direction-specific intended
+  sentinels/readbacks, and requires a pinned qualified stage-1 report plus an
+  explicit capture-order declaration.
+- Six absent-RAM write-capture regressions covering both address directions,
+  sentinel/zero/other readbacks, valid-array disturbance, partial/extra
+  streams, markers/anchors/controls/windows, variable complete packages,
+  prior-stage/order failures, and wrong exact images.
 - A strict `tools.trace.ram_invalid_read_capture` workflow for nondestructive
   `OQ-002` stage 1. It checks the exact image, all 451 marker/predecessor/
   absent-read outputs and fetch anchors, 32 reset plus eight cold-power run
@@ -1222,6 +1231,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The absent-RAM write normalizer retains every directional measurement and
+  allows variable or implementation-disagreeing data in a review-ready
+  package. It discloses that the pinned report/order declaration does not
+  prove chronology and always reports `acceptance_complete=false`; no physical
+  capture exists and `OQ-002` stays open.
 - The absent-RAM read classifier preserves both raw values for every address
   and permits a complete variable package to reach review. It always reports
   `acceptance_complete=false`: destructive writes, targeted alias follow-up,
@@ -1264,7 +1278,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   capture exists and no RTL timing sequence has been added.
 - Strict lint checks 46 RTL modules; all 62 formal tasks from 31 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass, alongside 208 repository and 232 model/unit tests. All 36
+  regressions pass, alongside 214 repository and 232 model/unit tests. All 36
   Yosys targets pass with zero structural problems. The status relation maps
   to zero cells; the direct pipeline reports 15,850 cells/128 checks, the
   synthesis harness 15,844/128, the MiSTer wrapper 15,899/135, and the

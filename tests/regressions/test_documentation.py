@@ -316,10 +316,15 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "run_conditions",
             "at\nleast 32 reset-and-execute trials and eight cold-power trials",
             "acceptance_complete=false",
+            "ram_invalid_write_capture.py",
+            "prior_read_report_sha256",
+            "do\nnot independently prove",
+            "defaults to one\ncomplete run per direction rather than inventing a count",
         ):
             self.assertIn(required, trace_readme)
-        self.assertIn("stage-1 `review_ready` is not overall acceptance", questions)
+        self.assertIn("not overall acceptance or proof of physical chronology", questions)
         self.assertIn("strict stage-1 classifier", conflicts)
+        self.assertIn("paired stage-2 normalizer", conflicts)
 
     def test_reset_retention_keeps_evm_evidence_below_silicon_proof(self) -> None:
         manifest = json.loads(

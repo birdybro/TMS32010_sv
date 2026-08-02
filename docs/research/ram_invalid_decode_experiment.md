@@ -142,6 +142,39 @@ no expected value. If multiple selects collapse onto one valid word, the two
 directional sweeps reveal only the first/last surviving sentinel; follow with
 a single-target probe before claiming an exact alias map.
 
+### Stage-2 normalization and ordering record
+
+Assemble both exact big-endian images and normalize one falling-boundary row
+per sample. Each write metadata sidecar must pin the prior review-ready stage-1
+JSON report and declare `capture_stage=write_after_pinned_read_only` as defined
+in [the trace-tool README](../../tools/trace/README.md). Then run:
+
+```sh
+python3 -m tools.trace.ram_invalid_write_capture ascending.csv descending.csv \
+  --ascending-metadata ascending-metadata.json \
+  --descending-metadata descending-metadata.json \
+  --ascending-image ram_invalid_write_ascending_probe.bin \
+  --descending-image ram_invalid_write_descending_probe.bin \
+  --prior-read-report read-stage-report.json \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The normalizer checks all 258 marker/valid-scan/absent-readback outputs and
+their exact fetch/write order for both directions. It preserves every nonzero
+valid word, intended address/sentinel pair, and measured absent value. Neither
+zero nor sentinel match is an expected passing result. Run variation does not
+block review.
+
+The prior-report hash and capture-stage declaration create a machine-checked
+audit link, not independent proof of physical chronology. Confirm the order
+from raw acquisition timestamps and setup records during engineering review.
+No primary source specifies a stage-2 repetition count, so the tool defaults
+to one run per direction rather than inventing one; a documented measurement
+plan may set a stricter minimum. Even a complete paired package retains
+`acceptance_complete=false` pending any indicated targeted/alternate-sentinel
+follow-up, raw review, and a second specimen.
+
 ## Physical capture procedure
 
 Use an original NMOS TMS32010, not a TMS320C10/C15 or another family member:

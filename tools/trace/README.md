@@ -391,6 +391,49 @@ provenance complete. The report always leaves `acceptance_complete=false`:
 both destructive write directions, any indicated single-target follow-up,
 raw engineering review, and another original specimen remain outstanding.
 
+## Absent-RAM paired sentinel-write normalizer
+
+`ram_invalid_write_capture.py` qualifies the ascending and descending stage-2
+fixtures together. Each run retains all 258 port-7 words: its direction marker,
+144 descending valid-RAM samples, 112 direction-ordered absent readbacks, and
+the terminal marker. The report lists every nonzero valid address and records,
+for every absent address, its intended unique sentinel, measured value, and a
+descriptive `STORED_SENTINEL`, `ZERO_VALUE`, or `OTHER_xxxx` relationship.
+None of those labels alone proves storage, suppression, or an alias.
+
+Both ordinary evidence metadata files must add:
+
+```json
+{
+  "prior_read_report_sha256": "lowercase SHA-256",
+  "capture_stage": "write_after_pinned_read_only"
+}
+```
+
+The supplied prior report must be a structurally complete, review-ready output
+from `ram_invalid_read_capture.py` with its acceptance still incomplete. This
+creates an auditable workflow link. A file hash and operator declaration do
+not independently prove that the read-only physical capture occurred first;
+raw timestamps, setup records, and engineering review remain necessary.
+
+```sh
+python3 -m tools.trace.ram_invalid_write_capture ascending.csv descending.csv \
+  --ascending-metadata ascending-metadata.json \
+  --descending-metadata descending-metadata.json \
+  --ascending-image ram_invalid_write_ascending_probe.bin \
+  --descending-image ram_invalid_write_descending_probe.bin \
+  --prior-read-report read-stage-report.json \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+No primary source sets a write-trial minimum, so the tool defaults to one
+complete run per direction rather than inventing a count; `--minimum-runs`
+can enforce a documented experiment plan. Complete results may vary without
+blocking review. `acceptance_complete=false` remains mandatory until raw
+review, any alias-directed single-target/alternate-sentinel follow-up, and a
+second identified original specimen are complete.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate
