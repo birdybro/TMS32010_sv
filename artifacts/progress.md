@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` LST-ARP specimen-bound evidence
+- **Current milestone:** `ARCH-001` SUBC specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1349,16 +1349,21 @@
   `tools.trace.subc_capture` workflow validates exact independently checked
   big-endian probe images, ordered OUT fetch/write pairs, exclusive port-7
   strobes, fixture status fields, 32-run consistency, and traversal-safe
-  program/raw/photo hashes. Dependency mode assigns no expected first word and
-  retains a stable unanticipated value as `OTHER_LOW`; it requires only the
-  legal NOP-separated `0x000b` comparator. Overflow mode interprets bit 15,
-  preserves all four stage pairs, and deliberately masks separately disputed
-  reserved status bit 1 under `SC-008`. The overflow image now explicitly
-  initializes ARP zero so `OQ-012` reset retention cannot contaminate those
-  consistency checks. Six regressions cover every category
-  and failure boundary. No physical capture exists, `review_ready` is package
-  status only, and `OQ-017`/`OQ-018` remain open. Synthesis and formal evidence
-  are unchanged because this cycle modifies no RTL.
+  program/raw/photo hashes. Shared specimen validation now additionally binds
+  each fixture's exact source/listing, normalized trace, numeric memory access
+  time, tool versions, multiline marking/date/lot record, and distinct
+  top/bottom/board photographs to one stable identity. Dependency mode assigns
+  no expected first word and retains a stable unanticipated value as
+  `OTHER_LOW`; it requires only the legal NOP-separated `0x000b` comparator.
+  Overflow mode interprets bit 15, preserves all four stage pairs, and
+  deliberately masks separately disputed reserved status bit 1 under
+  `SC-008`. The overflow image explicitly initializes ARP zero so `OQ-012`
+  reset retention cannot contaminate those consistency checks. Six regressions
+  cover every category and failure boundary, including complete packages for
+  both fixtures. No physical capture exists, `review_ready` is package status
+  only, `acceptance_complete=false`, and `OQ-017`/`OQ-018` remain open.
+  Synthesis and formal evidence are unchanged because this cycle modifies no
+  RTL.
 - **New DINT measurement evidence:** the strict
   `tools.trace.dint_interrupt_capture` workflow preserves the entire port-7
   sequence and independently recognizes cancellation, original-Figure-2-12
@@ -1533,7 +1538,7 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** continue `ARCH-001` by reusing the audited specimen validator
-  in the paired SUBC original-device workflows, preserving the deliberately
-  unconstrained dependency result and four overflow-stage candidates.
+  in the DINT/interrupt-boundary workflow without changing its pulse
+  qualification, calibration, or candidate-resolution criteria.
 - **Latest committed baseline before this cycle:**
-  `39dd81f`
+  `0781cdf`

@@ -161,8 +161,11 @@ word list.
 
 Use an original NMOS TMS32010, not a CMOS variant or compatible model:
 
-1. Record complete package marking, board/EVM and monitor revisions, clock,
-   voltage, program-memory type, analyzer/probe models, and fixture hashes.
+1. Record the exact multiline package marking, raw tracking/date and lot
+   strings without decoding them, stable local specimen ID, package/custody/
+   socket/temperature/reset context, board/EVM and monitor revisions, clock,
+   voltage, program-memory access time, analyzer/probe models, and fixture tool
+   versions.
 2. Probe `CLKOUT`, active-low `MEN`, `WE`, `DEN`, `RS`, `A11:A0`, and
    `D15:D0`. Decode port-7 writes from the physical strobes and address pins.
 3. Trigger before the selected SUBC and retain the complete program through
@@ -175,7 +178,9 @@ Use an original NMOS TMS32010, not a CMOS variant or compatible model:
    input patterns whose old, trial, and final halves are all distinct. Record
    every varying result.
 6. Save raw analyzer data, decoded CSV, monitor transcript, pin map,
-   photographs, and tool versions; hash every artifact before conversion.
+   probe-placement photographs, distinct specimen top/bottom/board-context
+   photographs, and exact project source/image/listing; hash the normalized
+   trace and every retained artifact.
 
 Normalize a derived capture copy to the strict one-row-per-falling-`CLKOUT`
 CSV schema in `tools/trace/README.md`, retaining the raw transitions
@@ -201,9 +206,12 @@ The dependency classifier deliberately accepts a stable unexpected first word
 as `OTHER_LOW_0x....`; inventing an expected result would defeat this probe.
 The overflow classifier uses status bit 15 and masks reserved status bit 1
 under `SC-008`. Both require exact OUT fetch anchors, exclusive port-7 writes,
-32 consistent runs, the exact image, and verified raw/photo hashes.
-`review_ready` describes package completeness only and never changes
-architectural confidence automatically.
+32 consistent runs, the exact image, and verified raw/photo hashes. The shared
+`OQ-008` validator additionally rejects substitute rehashed source/listing
+content and binds each fixture's normalized trace to a complete record for one
+named specimen. `review_ready` describes package completeness only and never
+changes architectural confidence automatically; `acceptance_complete` remains
+false.
 
 ## Acceptance and interpretation
 
@@ -220,4 +228,5 @@ Until production documentation or qualified original-device captures exist,
 the patent timing remains **CORROBORATED RELATED-EMBODIMENT** evidence, the
 intermediate-only OV stage remains **PROVISIONAL**, and the current same-
 boundary final-ACC commit remains an implementation convenience for legal
-instruction streams.
+instruction streams. Raw engineering review and another identified
+original-NMOS specimen remain necessary before any cross-specimen claim.

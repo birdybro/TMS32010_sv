@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Both SUBC physical workflows now use the shared `OQ-008` validator for their
+  independently exact source/listing/image packages and expose
+  single-specimen scope with `acceptance_complete=false`; dependency outputs
+  and overflow-stage candidates remain unconstrained by provenance.
 - LST-ARP physical packages now use the shared `OQ-008` validator, require the
   exact 30-word listing and numeric program-memory access time, and expose
   single-specimen scope plus `acceptance_complete=false` without changing the
@@ -1260,6 +1264,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six SUBC regressions pass with complete specimen-bound dependency and
+  overflow packages. A stable arbitrary dependency low word remains
+  review-ready evidence, while all four overflow pairs retain equal status.
 - All six LST-ARP regressions pass with complete specimen-bound provenance;
   memory-wins, encoded-wins, mixed, other, and unstable outcomes retain their
   prior candidate and review semantics, and no synthetic result is promoted.

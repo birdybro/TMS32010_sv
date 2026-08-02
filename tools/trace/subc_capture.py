@@ -23,6 +23,10 @@ from tools.trace.push_pop_capture import (
     read_normalized_capture,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 DEPENDENCY = "dependency"
@@ -47,6 +51,14 @@ OVERFLOW_WORDS = (
 FIXTURE_WORDS = {
     DEPENDENCY: DEPENDENCY_WORDS,
     OVERFLOW: OVERFLOW_WORDS,
+}
+FIXTURE_SOURCE_SHA256 = {
+    DEPENDENCY: (
+        "e45098709c66bf38264316bf07d78ff707640f29972ff2a31fcab6a68d8edb56"
+    ),
+    OVERFLOW: (
+        "390f7731175b7b61d9799d3ff66001d04cb7fc3407a134f628e4dc603bcd551e"
+    ),
 }
 OUT_ANCHORS = {
     DEPENDENCY: ((0x014, 0x4F03), (0x016, 0x4F04)),
@@ -94,6 +106,9 @@ class CaptureReport:
     repeatable: bool
     fixture_valid: bool
     review_ready: bool
+    acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
     classifications: tuple[str, ...]
     observations: tuple[Observation, ...]
     evidence_package: EvidencePackage
@@ -105,7 +120,9 @@ class CaptureReport:
                 "Classification and package validation only; this output does not "
                 "change OQ-017 or OQ-018, establish a production-silicon subphase, "
                 "or establish VERIFIED_HARDWARE without engineering review of raw "
-                "captures and the physical setup."
+                "captures and the physical setup. It does not establish OQ-008 "
+                "mask-revision invariance or generalize beyond the identified "
+                "specimen."
             ),
             "capture_sha256": self.capture_sha256,
             "experiment": self.experiment,
@@ -115,6 +132,9 @@ class CaptureReport:
             "repeatable": self.repeatable,
             "fixture_valid": self.fixture_valid,
             "review_ready": self.review_ready,
+            "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
             "classifications": list(self.classifications),
             "observations": [
                 {
@@ -302,8 +322,11 @@ def _validate_checked_image(
     experiment: str,
     program_image: Path | None,
     package: EvidencePackage,
+    specimen: SpecimenEvidence,
 ) -> EvidencePackage:
-    errors = list(package.errors)
+    errors = list(package.errors) + list(specimen.errors)
+    verified = set(package.verified_artifacts)
+    verified.update(specimen.verified_artifacts)
     if program_image is not None and program_image.is_file():
         try:
             image = program_image.read_bytes()
@@ -318,7 +341,7 @@ def _validate_checked_image(
         complete=not errors,
         errors=tuple(errors),
         program_image_sha256=package.program_image_sha256,
-        verified_artifacts=package.verified_artifacts,
+        verified_artifacts=tuple(sorted(verified)),
     )
 
 
@@ -343,10 +366,21 @@ def build_report(
     classifications = tuple(item.classification for item in observations)
     repeatable = len(set(classifications)) == 1
     fixture_valid = all(item.fixture_valid for item in observations)
+    specimen = validate_specimen_evidence(
+        metadata_path,
+        capture_path,
+        artifact_root,
+        fixture_source_sha256=FIXTURE_SOURCE_SHA256[experiment],
+        fixture_words={
+            address: word
+            for address, word in enumerate(FIXTURE_WORDS[experiment])
+        },
+    )
     package = _validate_checked_image(
         experiment,
         program_image,
         validate_evidence_package(metadata_path, program_image, artifact_root),
+        specimen,
     )
     minimum_runs_met = len(runs) >= minimum_runs
     return CaptureReport(
@@ -360,6 +394,9 @@ def build_report(
         review_ready=(
             minimum_runs_met and repeatable and fixture_valid and package.complete
         ),
+        acceptance_complete=False,
+        specimen_id=specimen.specimen_id,
+        specimen_scope=specimen.specimen_scope,
         classifications=classifications,
         observations=observations,
         evidence_package=package,

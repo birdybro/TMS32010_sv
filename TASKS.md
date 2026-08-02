@@ -229,6 +229,11 @@ objective passing evidence.
   specimen while leaving `acceptance_complete=false`. The classifier still
   requires both directions to select one precedence rule; no physical capture
   exists and memory-wins remains PROVISIONAL.
+  `OQ-017`/`OQ-018` now apply the same boundary independently to their exact
+  dependency and overflow fixtures. Complete packages bind each decoded trace
+  and source/listing/image to one specimen, but the dependency's first word
+  remains unconstrained, all four overflow pairs remain retainable, and
+  `acceptance_complete` is always false. No physical capture exists.
   `OQ-008` now has a dated, reproducible publication/device-revision audit.
   `SC-043` separates the October-1985, February-1986, January-1987, and
   May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists
@@ -1190,7 +1195,9 @@ objective passing evidence.
   related Q4/Q1/Q2 intermediate path, following-state Q3 shift, and earlier
   ALU-derived status, but differs in cycle accounting. Two exact assembler
   fixtures now define the required original-NMOS dependency and overflow-stage
-  captures without assigning an expected result.
+  captures without assigning an expected result. Their shared specimen
+  validation now binds exact source/listing/image, normalized trace, test
+  context, and package/date/lot provenance without choosing an outcome.
   `LAR` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests, including its documented
   suppression of indirect post-modification when the target is the selected

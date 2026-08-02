@@ -190,6 +190,12 @@ other classifications remain scoped to `this_specimen_only`, and its report
 always leaves `acceptance_complete=false`. Provenance completeness cannot
 resolve the primary-document contradiction or establish mask invariance.
 
+Both `OQ-017`/`OQ-018` SUBC workflows now apply the reusable boundary
+independently to their exact dependency and overflow fixtures. A stable
+unanticipated dependency word and any of the four status pairs remain valid
+one-specimen observations; provenance validation does not choose among them.
+Both reports are `this_specimen_only` with `acceptance_complete=false`.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

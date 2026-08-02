@@ -31,6 +31,9 @@ from tools.trace.subc_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -222,20 +225,75 @@ class SubcCaptureTests(unittest.TestCase):
             raw.write_bytes(b"raw SUBC transition artifact")
             photograph = root / "probe.jpg"
             photograph.write_bytes(b"SUBC probe photograph fixture")
+            fixture_source = root / "subc_overflow_stage_probe.asm"
+            fixture_source.write_bytes(
+                (
+                    ROOT / "tests" / "asm" / "subc_overflow_stage_probe.asm"
+                ).read_bytes()
+            )
+            fixture_listing = root / "subc_overflow_stage_probe.lst"
+            fixture_listing.write_text(
+                "".join(
+                    f"{address:03x} {word:04x} synthetic:test\n"
+                    for address, word in enumerate(OVERFLOW_WORDS)
+                ),
+                encoding="utf-8",
+            )
+            specimen_photos = {}
+            for view in ("top", "bottom", "board_context"):
+                path = root / f"specimen-{view}.jpg"
+                path.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+                specimen_photos[view] = {
+                    "path": path.name,
+                    "sha256": sha256(path.read_bytes()).hexdigest(),
+                }
             metadata = root / "metadata.json"
             metadata.write_text(
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "device_marking": "TMS32010NL TEST FIXTURE",
+                        "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                        "specimen_id": "synthetic-specimen-01",
+                        "tracking_date_string": "TRACKING RAW",
+                        "lot_string": "LOT RAW",
+                        "package_type": "40-pin plastic DIP test fixture",
+                        "acquisition_provenance": "synthetic regression fixture",
+                        "socketed": True,
+                        "temperature_c": 25.0,
+                        "reset_duration_cycles": 8,
+                        "monitor_revision": "none; standalone fixture",
+                        "specimen_scope": "this_specimen_only",
                         "board_revision": "synthetic test fixture",
                         "oscillator_hz": 20_000_000,
                         "supply_voltage_v": "5.00 measured",
                         "program_memory": "synthetic test memory",
+                        "program_memory_access_time_ns": 35.0,
                         "probe_model": "synthetic probe",
                         "analyzer_model": "synthetic analyzer",
                         "analyzer_firmware": "test",
                         "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                        "normalized_capture_sha256": sha256(
+                            capture.read_bytes()
+                        ).hexdigest(),
+                        "fixture_tool_versions": {
+                            "assembler": "project test assembler",
+                            "capture_normalizer": "synthetic test normalizer",
+                            "analyzer_decoder": "synthetic test decoder",
+                        },
+                        "fixture_artifacts": {
+                            "source": {
+                                "path": fixture_source.name,
+                                "sha256": sha256(
+                                    fixture_source.read_bytes()
+                                ).hexdigest(),
+                            },
+                            "listing": {
+                                "path": fixture_listing.name,
+                                "sha256": sha256(
+                                    fixture_listing.read_bytes()
+                                ).hexdigest(),
+                            },
+                        },
                         "signal_pin_map": {
                             "CLKOUT": "pin 6",
                             "MEN_N": "pin 7",
@@ -253,6 +311,7 @@ class SubcCaptureTests(unittest.TestCase):
                                 photograph.read_bytes()
                             ).hexdigest(),
                         },
+                        "specimen_photographs": specimen_photos,
                     },
                     indent=2,
                 ),
@@ -270,9 +329,13 @@ class SubcCaptureTests(unittest.TestCase):
             self.assertTrue(report.fixture_valid)
             self.assertTrue(report.evidence_package.complete)
             self.assertTrue(report.review_ready)
+            self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
             self.assertEqual(set(report.classifications), {OVERFLOW_INTERMEDIATE})
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-017 or OQ-018", encoded)
+            self.assertIn("OQ-008 mask-revision invariance", encoded)
 
             output = io.StringIO()
             with redirect_stdout(output):
@@ -293,18 +356,18 @@ class SubcCaptureTests(unittest.TestCase):
             self.assertEqual(return_code, 0)
             self.assertTrue(json.loads(output.getvalue())["review_ready"])
 
-            wrong_image = root / "wrong.bin"
-            wrong_image.write_bytes(_binary(DEPENDENCY_WORDS))
+            dependency_image = root / "dependency.bin"
+            dependency_image.write_bytes(_binary(DEPENDENCY_WORDS))
             changed = json.loads(metadata.read_text(encoding="utf-8"))
             changed["program_image_sha256"] = sha256(
-                wrong_image.read_bytes()
+                dependency_image.read_bytes()
             ).hexdigest()
             metadata.write_text(json.dumps(changed), encoding="utf-8")
             wrong_report = build_report(
                 capture,
                 OVERFLOW,
                 metadata_path=metadata,
-                program_image=wrong_image,
+                program_image=dependency_image,
                 artifact_root=root,
             )
             self.assertFalse(wrong_report.evidence_package.complete)
@@ -312,6 +375,53 @@ class SubcCaptureTests(unittest.TestCase):
             self.assertIn(
                 "program image is not the exact big-endian overflow fixture",
                 wrong_report.evidence_package.errors,
+            )
+
+            capture.write_text(
+                _capture_text(DEPENDENCY, [(0x1234, 0x000B)] * 32),
+                encoding="utf-8",
+            )
+            fixture_source = root / "subc_dependency_probe.asm"
+            fixture_source.write_bytes(
+                (ROOT / "tests" / "asm" / "subc_dependency_probe.asm").read_bytes()
+            )
+            fixture_listing = root / "subc_dependency_probe.lst"
+            fixture_listing.write_text(
+                "".join(
+                    f"{address:03x} {word:04x} synthetic:test\n"
+                    for address, word in enumerate(DEPENDENCY_WORDS)
+                ),
+                encoding="utf-8",
+            )
+            dependency_metadata = json.loads(metadata.read_text(encoding="utf-8"))
+            dependency_metadata["program_image_sha256"] = sha256(
+                dependency_image.read_bytes()
+            ).hexdigest()
+            dependency_metadata["normalized_capture_sha256"] = sha256(
+                capture.read_bytes()
+            ).hexdigest()
+            dependency_metadata["fixture_artifacts"] = {
+                "source": {
+                    "path": fixture_source.name,
+                    "sha256": sha256(fixture_source.read_bytes()).hexdigest(),
+                },
+                "listing": {
+                    "path": fixture_listing.name,
+                    "sha256": sha256(fixture_listing.read_bytes()).hexdigest(),
+                },
+            }
+            metadata.write_text(json.dumps(dependency_metadata), encoding="utf-8")
+            dependency_report = build_report(
+                capture,
+                DEPENDENCY,
+                metadata_path=metadata,
+                program_image=dependency_image,
+                artifact_root=root,
+            )
+            self.assertTrue(dependency_report.review_ready)
+            self.assertFalse(dependency_report.acceptance_complete)
+            self.assertEqual(
+                set(dependency_report.classifications), {"OTHER_LOW_0x1234"}
             )
 
 

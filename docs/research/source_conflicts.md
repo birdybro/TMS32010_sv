@@ -228,7 +228,12 @@ electrical result of an out-of-range access.
   Tests place an ACC-free instruction after every SUBC; behavior of a
   violating dependent sequence is not claimed. Stable assembler fixtures now
   provide an original-device dependency probe and a two-vector physical probe
-  that isolates the overflow stages; neither has a captured result. See
+  that isolates the overflow stages; neither has a captured result. Their
+  strict classifiers bind exact source/listing/image, decoded trace, test
+  context, and a complete `OQ-008` record to one named specimen while leaving
+  `acceptance_complete=false`. Stable unanticipated dependency words and all
+  four overflow pairs remain retainable; provenance completeness chooses no
+  result and proves no cross-specimen invariance. See
   `docs/research/subc_pipeline_experiment.md`, `OQ-017`, and `OQ-018`.
 - **Confidence:** VERIFIED_PRIMARY for encoding, conditional ACC transform,
   scheduling prohibition, word count, and cycle count; PROVISIONAL for the

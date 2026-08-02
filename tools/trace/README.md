@@ -183,13 +183,18 @@ supplied binary byte-for-byte with the independently checked fixture word
 list. It requires exactly two exclusive port-write samples, their checked
 program-fetch anchors in order, two following falling boundaries, at least 32
 runs by default, stable classification, valid fixture consistency checks, and
-complete raw/photo provenance.
+complete raw/photo provenance. For each independently captured fixture, the
+shared specimen validator additionally binds the normalized trace, exact
+project source and complete listing, numeric program-memory access time, raw
+package/date/lot record, fixture tool versions, and distinct
+top/bottom/board-context photographs to one named specimen.
 
 `review_ready` is evidence-package status only. It does not change `OQ-017`
 or `OQ-018`, establish which internal phase produced a captured word, prove
-mask-revision invariance, or establish `VERIFIED_HARDWARE`. The official TI
-simulator's stop code `9950` is not an expected physical result and is not an
-input to the classifier.
+`OQ-008` mask-revision invariance, generalize beyond the named specimen, or
+establish `VERIFIED_HARDWARE`. The report always leaves
+`acceptance_complete=false`. The official TI simulator's stop code `9950` is
+not an expected physical result and is not an input to the classifier.
 
 ## DINT/interrupt-boundary physical-capture classifier
 

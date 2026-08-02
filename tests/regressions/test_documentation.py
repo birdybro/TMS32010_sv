@@ -497,6 +497,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "unrelated 32-bit TI32000 family",
             "`OQ-010` simultaneous-AR workflow",
             "`OQ-015` LST-ARP workflow",
+            "Both `OQ-017`/`OQ-018` SUBC workflows",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)
@@ -548,18 +549,24 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Status bit 12 is one of the fixed-one",
             "executes `LARP 0`",
             "none of these three values alone proves",
+            "raw tracking/date and lot",
+            "acceptance_complete` remains false",
         ):
             self.assertIn(required, research)
         for required in (
             "repeatable unanticipated value is evidence to retain",
             "does not change `OQ-017` or `OQ-018`",
             "stop code `9950` is not an expected physical result",
+            "exact project source and complete listing",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("RESEARCHING/CORROBORATED RELATED-EMBODIMENT", questions)
         self.assertIn("PROVISIONAL, NARROWED", questions)
         self.assertIn("## SC-010", conflicts)
         self.assertIn("physical probe", conflicts)
+        self.assertIn("complete `OQ-008` record", conflicts)
+        self.assertIn("named `OQ-008` specimen provenance", questions)
 
     def test_dint_race_preserves_ti_timing_conflict_and_physical_boundary(self) -> None:
         manifest = json.loads(
