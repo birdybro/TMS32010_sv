@@ -191,11 +191,14 @@ objective passing evidence.
   directions, any targeted follow-up, raw review, and a second specimen. A
   paired stage-2 normalizer now checks both exact 258-output directions,
   preserves every valid disturbance and address/sentinel/readback tuple, and
-  requires a pinned stage-1 report plus an explicit order declaration. Six
-  further regressions cover direction mapping, all result categories,
-  disturbances, framing, variable packages, exact images, and bad workflow
-  links. The hash/declaration does not itself prove physical chronology and
-  no primary-backed write-run count is invented.
+  requires a pinned stage-1 report plus an explicit order declaration. Shared
+  specimen validation pins both exact source/43-word listing/decoded-trace
+  packages to the same identity as stage 1 without constraining any result.
+  Six further regressions cover direction mapping, all result categories,
+  disturbances, framing, variable packages, substitute listings, exact
+  images, mismatched specimens, and bad workflow links. The hash/declaration
+  does not itself prove physical chronology and no primary-backed write-run
+  count is invented.
   `OQ-012` now has a similarly reproducible boundary. `SC-042` separates the
   production guide's unlisted register values from SPRU005A's statement that
   warm EVM RESET saves every register except PC, its separate

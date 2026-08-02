@@ -1224,9 +1224,9 @@ electrical result of an out-of-range access.
   until the ordered destructive stages, any targeted follow-up, raw review,
   and another specimen are complete. The paired stage-2 normalizer preserves
   every valid disturbance and direction-specific address/sentinel/readback
-  tuple.
-  It requires a pinned stage-1 report plus an explicit order declaration while
-  disclosing that those records do not independently prove physical chronology.
+  tuple. It binds both exact fixture records to the same specimen identity as
+  the pinned stage-1 report without constraining a result. Its explicit order
+  declaration still does not independently prove physical chronology.
 - **Confidence:** VERIFIED_PRIMARY for `0x00`-`0x8f` implemented storage;
   UNKNOWN for original NMOS reads, writes, retirement, aliasing, disturbance,
   electrical stability, and mask invariance across `0x90`-`0xff`.

@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The paired absent-RAM write workflow now requires independently exact
+  ascending/descending source, 43-word listing, image, and trace records for
+  the same specimen named by the pinned stage-1 report. Chronology and all
+  measured results remain unconstrained, and `acceptance_complete` is false.
 - The nondestructive absent-RAM read workflow now binds its exact source,
   35-word listing, image, normalized trace, and complete `OQ-008` record to one
   specimen while preserving every history-conditioned and variable read.
@@ -1277,6 +1281,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six absent-RAM write regressions pass with two seven-artifact packages.
+  Mismatched stage/direction specimen identities and digest-valid substitute
+  listings fail closed without changing sentinel/readback observations.
 - All six absent-RAM read regressions pass with a seven-artifact specimen-bound
   package. A digest-valid substitute listing fails closed while the arbitrary
   measured absent-read words remain unchanged in the report.

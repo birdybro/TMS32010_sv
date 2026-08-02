@@ -491,6 +491,11 @@ Both ordinary evidence metadata files must add:
 }
 ```
 
+Each direction must also pass `specimen_evidence.py` with its exact project
+source and 43-word listing. Ascending, descending, and the pinned stage-1
+report must identify the same specimen. This identity link does not prove the
+declared acquisition order or constrain any sentinel/readback/disturbance.
+
 The supplied prior report must be a structurally complete, review-ready output
 from `ram_invalid_read_capture.py` with its acceptance still incomplete. This
 creates an auditable workflow link. A file hash and operator declaration do
@@ -514,6 +519,7 @@ can enforce a documented experiment plan. Complete results may vary without
 blocking review. `acceptance_complete=false` remains mandatory until raw
 review, any alias-directed single-target/alternate-sentinel follow-up, and a
 second identified original specimen are complete.
+The report scope remains `this_specimen_only`.
 
 ## Physical-reset retention normalizer
 

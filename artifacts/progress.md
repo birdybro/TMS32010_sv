@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` absent-RAM read specimen-bound evidence
+- **Current milestone:** `ARCH-001` absent-RAM write specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1458,11 +1458,16 @@
   intended sentinel, measured readback, and descriptive sentinel/zero/other
   relation. It requires a pinned qualified stage-1 report plus an explicit
   post-read capture declaration while warning that those records do not prove
-  wall-clock order. No primary write-trial minimum is invented. Six
-  regressions cover both mappings, every data category, disturbances,
-  partial/extra/malformed flow, complete variable packages, workflow links,
-  and exact images. No physical data exists and stage 2 still reports
-  `acceptance_complete=false`; raw/order review, targeted/alternate-sentinel
+  wall-clock order. Shared specimen validation now binds each exact source,
+  43-word listing, normalized trace, numeric memory access time, tool versions,
+  raw marking/date/lot record, and top/bottom/board photographs, then requires
+  both directions to match the pinned stage-1 identity. No primary write-trial
+  minimum is invented. Six regressions cover both mappings, every data
+  category, disturbances, partial/extra/malformed flow, complete variable
+  packages, workflow links, substitute listing, pair/stage identity, and exact
+  images. Each complete direction verifies seven artifacts. No physical data
+  exists; stage 2 reports `this_specimen_only` and
+  `acceptance_complete=false`. Raw/order review, targeted/alternate-sentinel
   follow-up, and another specimen remain under `OQ-002`/`SC-041`. Synthesis
   and formal evidence are unchanged because no RTL changed.
 - **New physical-reset evidence:** the paired
@@ -1552,8 +1557,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` by applying paired specimen and chronology
-  boundaries to both destructive absent-RAM write directions without
-  constraining any sentinel, readback, or valid-array disturbance.
+- **Next task:** continue `ARCH-001` by applying paired specimen provenance to
+  complementary reset-retention evidence without constraining any post-reset
+  architectural field.
 - **Latest committed baseline before this cycle:**
-  `ba6c096`
+  `78d5d26`

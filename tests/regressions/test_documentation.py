@@ -333,6 +333,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "cannot establish mask invariance",
             "exact project source and 35-word listing",
             "raw tracking/date and lot strings",
+            "each exact source/43-word listing/normalized trace",
         ):
             self.assertIn(required, research)
         self.assertIn("RESEARCHING/CONFLICT (`SC-041`)", questions)
@@ -350,12 +351,14 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "prior_read_report_sha256",
             "do\nnot independently prove",
             "defaults to one\ncomplete run per direction rather than inventing a count",
+            "Ascending, descending, and the pinned stage-1",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("not overall acceptance or proof of physical chronology", questions)
         self.assertIn("strict stage-1 classifier", conflicts)
         self.assertIn("one named specimen", conflicts)
         self.assertIn("paired stage-2 normalizer", conflicts)
+        self.assertIn("same specimen identity", conflicts)
 
     def test_reset_retention_keeps_evm_evidence_below_silicon_proof(self) -> None:
         manifest = json.loads(
@@ -511,6 +514,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "`OQ-019` DINT workflow",
             "paired `OQ-014` DMOV/LTD RAM-boundary workflow",
             "nondestructive `OQ-002` stage-1 absent-RAM read workflow",
+            "paired destructive `OQ-002` stage-2 workflow",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)

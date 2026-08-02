@@ -175,6 +175,10 @@ block review.
 The prior-report hash and capture-stage declaration create a machine-checked
 audit link, not independent proof of physical chronology. Confirm the order
 from raw acquisition timestamps and setup records during engineering review.
+Shared specimen validation separately checks each exact source/43-word
+listing/normalized trace and requires ascending, descending, and the pinned
+stage-1 report to identify the same part. That identity check does not assign
+an absent value, alias, or disturbance.
 No primary source specifies a stage-2 repetition count, so the tool defaults
 to one run per direction rather than inventing one; a documented measurement
 plan may set a stricter minimum. Even a complete paired package retains

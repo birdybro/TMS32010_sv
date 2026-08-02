@@ -23,6 +23,9 @@ from tools.trace.ram_invalid_write_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -137,6 +140,8 @@ def _prior_report(root: Path, *, valid: bool = True) -> Path:
                 ),
                 "review_ready": valid,
                 "acceptance_complete": False,
+                "specimen_id": "synthetic-specimen-01",
+                "specimen_scope": "this_specimen_only",
                 "complete": True,
                 "fixture_valid": True,
                 "minimum_conditions_met": True,
@@ -158,6 +163,16 @@ def _write_package(
     prior = _prior_report(root)
     paths["prior"] = prior
     prior_hash = sha256(prior.read_bytes()).hexdigest()
+    specimen_photos: dict[str, dict[str, str]] = {}
+    for view in ("top", "bottom", "board_context"):
+        specimen_photo = root / f"specimen-{view}.jpg"
+        specimen_photo.write_bytes(
+            f"synthetic {view} specimen view".encode("ascii")
+        )
+        specimen_photos[view] = {
+            "path": specimen_photo.name,
+            "sha256": sha256(specimen_photo.read_bytes()).hexdigest(),
+        }
     for direction, sequences in (
         ("ASCENDING", ascending_sequences),
         ("DESCENDING", descending_sequences),
@@ -173,22 +188,78 @@ def _write_package(
         raw.write_bytes(f"raw {direction} write capture".encode("ascii"))
         photograph = root / f"{lower}.jpg"
         photograph.write_bytes(f"{direction} write probe".encode("ascii"))
+        fixture_source = root / f"ram_invalid_write_{lower}_probe.asm"
+        fixture_source.write_bytes(
+            (
+                ROOT
+                / "tests"
+                / "asm"
+                / f"ram_invalid_write_{lower}_probe.asm"
+            ).read_bytes()
+        )
+        paths[f"{lower}_source"] = fixture_source
+        image_words = tuple(
+            int.from_bytes(image.read_bytes()[offset : offset + 2], "big")
+            for offset in range(0, len(image.read_bytes()), 2)
+        )
+        fixture_listing = root / f"ram_invalid_write_{lower}_probe.lst"
+        fixture_listing.write_text(
+            "".join(
+                f"{address:03x} {word:04x} synthetic:test\n"
+                for address, word in enumerate(image_words)
+            ),
+            encoding="utf-8",
+        )
+        paths[f"{lower}_listing"] = fixture_listing
         metadata = root / f"{lower}_metadata.json"
         metadata.write_text(
             json.dumps(
                 {
                     "schema_version": 1,
-                    "device_marking": "TMS32010NL TEST FIXTURE",
+                    "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                    "specimen_id": "synthetic-specimen-01",
+                    "tracking_date_string": "TRACKING RAW",
+                    "lot_string": "LOT RAW",
+                    "package_type": "40-pin plastic DIP test fixture",
+                    "acquisition_provenance": "synthetic regression fixture",
+                    "socketed": True,
+                    "temperature_c": 25.0,
+                    "reset_duration_cycles": 8,
+                    "monitor_revision": "none; standalone fixture",
+                    "specimen_scope": "this_specimen_only",
                     "board_revision": "synthetic test fixture",
                     "oscillator_hz": 20_000_000,
                     "supply_voltage_v": "5.00 measured",
                     "program_memory": "synthetic memory",
+                    "program_memory_access_time_ns": 35.0,
                     "probe_model": "synthetic probe",
                     "analyzer_model": "synthetic analyzer",
                     "analyzer_firmware": "test",
                     "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                    "normalized_capture_sha256": sha256(
+                        capture.read_bytes()
+                    ).hexdigest(),
                     "prior_read_report_sha256": prior_hash,
                     "capture_stage": "write_after_pinned_read_only",
+                    "fixture_tool_versions": {
+                        "assembler": "project test assembler",
+                        "capture_normalizer": "synthetic test normalizer",
+                        "analyzer_decoder": "synthetic test decoder",
+                    },
+                    "fixture_artifacts": {
+                        "source": {
+                            "path": fixture_source.name,
+                            "sha256": sha256(
+                                fixture_source.read_bytes()
+                            ).hexdigest(),
+                        },
+                        "listing": {
+                            "path": fixture_listing.name,
+                            "sha256": sha256(
+                                fixture_listing.read_bytes()
+                            ).hexdigest(),
+                        },
+                    },
                     "signal_pin_map": {
                         "CLKOUT": "pin 6",
                         "MEN_N": "pin 7",
@@ -204,6 +275,7 @@ def _write_package(
                     "probe_photographs": {
                         photograph.name: sha256(photograph.read_bytes()).hexdigest(),
                     },
+                    "specimen_photographs": specimen_photos,
                 },
                 indent=2,
             ),
@@ -363,9 +435,20 @@ class RamInvalidWriteCaptureTests(unittest.TestCase):
             self.assertTrue(report.prior_read_evidence.complete)
             self.assertTrue(report.review_ready)
             self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
+            self.assertEqual(report.specimen_pair_errors, ())
             summaries = {item.direction: item for item in report.directions}
             self.assertFalse(summaries["ASCENDING"].repeatable)
             self.assertTrue(summaries["DESCENDING"].repeatable)
+            self.assertEqual(
+                len(summaries["ASCENDING"].evidence_package.verified_artifacts),
+                7,
+            )
+            self.assertEqual(
+                len(summaries["DESCENDING"].evidence_package.verified_artifacts),
+                7,
+            )
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not independently prove wall-clock order", encoded)
             self.assertIn("does not change OQ-002", encoded)
@@ -411,6 +494,17 @@ class RamInvalidWriteCaptureTests(unittest.TestCase):
                 paths["descending_image"].read_bytes()
             ).hexdigest()
             metadata["capture_stage"] = "unordered_write"
+            metadata["specimen_id"] = "synthetic-specimen-02"
+            listing = paths["descending_listing"]
+            listing.write_text(
+                listing.read_text(encoding="utf-8").replace(
+                    "010 7e42", "010 7e43"
+                ),
+                encoding="utf-8",
+            )
+            metadata["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                listing.read_bytes()
+            ).hexdigest()
             paths["descending_metadata"].write_text(
                 json.dumps(metadata, indent=2),
                 encoding="utf-8",
@@ -427,6 +521,9 @@ class RamInvalidWriteCaptureTests(unittest.TestCase):
             )
             self.assertFalse(report.prior_read_evidence.complete)
             self.assertFalse(report.review_ready)
+            self.assertIsNone(report.specimen_id)
+            self.assertEqual(report.specimen_scope, "UNQUALIFIED")
+            self.assertTrue(report.specimen_pair_errors)
             descending_summary = {
                 item.direction: item for item in report.directions
             }["DESCENDING"]
@@ -440,6 +537,12 @@ class RamInvalidWriteCaptureTests(unittest.TestCase):
             self.assertTrue(
                 any(
                     "write_after_pinned_read_only" in item
+                    for item in descending_summary.evidence_package.errors
+                )
+            )
+            self.assertTrue(
+                any(
+                    "exact address/word map" in item
                     for item in descending_summary.evidence_package.errors
                 )
             )

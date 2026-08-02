@@ -214,6 +214,12 @@ same boundary to its exact 35-word fixture and normalized trace. Every
 history-conditioned word and run-to-run variation remains reviewable for
 `this_specimen_only`; the report always leaves `acceptance_complete=false`.
 
+The paired destructive `OQ-002` stage-2 workflow now validates both exact
+43-word fixture records and requires their specimen identity to match the
+pinned stage-1 report. Sentinel, readback, and valid-array disturbance values
+remain unconstrained `this_specimen_only` observations, and declared ordering
+still requires raw review. `acceptance_complete` remains false.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

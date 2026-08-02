@@ -18,6 +18,10 @@ from tools.trace.push_pop_capture import (
     read_normalized_capture,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 DIRECTIONS = ("ASCENDING", "DESCENDING")
@@ -36,6 +40,14 @@ DESCENDING_REPLACEMENTS = {
     0x017: 0x3191,
     0x01F: 0x70FF,
     0x022: 0x4F91,
+}
+FIXTURE_SOURCE_SHA256 = {
+    "ASCENDING": (
+        "8945f392bde5090bfbe84a57582ba1236dd616335980a4f3cae9c7f73491cac7"
+    ),
+    "DESCENDING": (
+        "ee8be3f52da8323a65773709b4bbaf014d0299f866239f6806c649dbb8f1b0d0"
+    ),
 }
 START_OUT = (0x012, 0x4F00)
 VALID_SCAN_OUT = (0x01C, 0x4F88)
@@ -93,6 +105,8 @@ class PriorReadEvidence:
     complete: bool
     errors: tuple[str, ...]
     report_sha256: str | None
+    specimen_id: str | None
+    specimen_scope: str
 
 
 @dataclass(frozen=True)
@@ -103,6 +117,9 @@ class CaptureReport:
     fixture_valid: bool
     review_ready: bool
     acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
+    specimen_pair_errors: tuple[str, ...]
     directions: tuple[DirectionSummary, ...]
     prior_read_evidence: PriorReadEvidence
 
@@ -115,7 +132,8 @@ class CaptureReport:
                 "not independently prove wall-clock order. review_ready does not "
                 "change OQ-002, prove write suppression, hidden storage, or an exact "
                 "alias map, establish mask invariance, or establish VERIFIED_HARDWARE "
-                "without engineering review of all raw captures and physical setups."
+                "without engineering review of all raw captures and physical setups. "
+                "It does not generalize beyond the paired, identified specimen."
             ),
             "minimum_runs": self.minimum_runs,
             "minimum_runs_met": self.minimum_runs_met,
@@ -123,6 +141,9 @@ class CaptureReport:
             "fixture_valid": self.fixture_valid,
             "review_ready": self.review_ready,
             "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
+            "specimen_pair_errors": list(self.specimen_pair_errors),
             "directions": [
                 {
                     "direction": summary.direction,
@@ -145,6 +166,8 @@ class CaptureReport:
                 "complete": self.prior_read_evidence.complete,
                 "errors": list(self.prior_read_evidence.errors),
                 "report_sha256": self.prior_read_evidence.report_sha256,
+                "specimen_id": self.prior_read_evidence.specimen_id,
+                "specimen_scope": self.prior_read_evidence.specimen_scope,
             },
         }
 
@@ -454,12 +477,24 @@ def _metadata_object(path: Path | None) -> dict[str, object]:
 
 def _validate_prior_read_report(path: Path | None) -> PriorReadEvidence:
     if path is None:
-        return PriorReadEvidence(False, ("prior stage-1 report was not supplied",), None)
+        return PriorReadEvidence(
+            False,
+            ("prior stage-1 report was not supplied",),
+            None,
+            None,
+            "UNQUALIFIED",
+        )
     try:
         report_hash = _hash_file(path)
         report = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, UnicodeError, json.JSONDecodeError) as error:
-        return PriorReadEvidence(False, (f"cannot read prior stage-1 report: {error}",), None)
+        return PriorReadEvidence(
+            False,
+            (f"cannot read prior stage-1 report: {error}",),
+            None,
+            None,
+            "UNQUALIFIED",
+        )
     errors: list[str] = []
     if not isinstance(report, dict):
         errors.append("prior stage-1 report root must be an object")
@@ -480,7 +515,65 @@ def _validate_prior_read_report(path: Path | None) -> PriorReadEvidence:
     claim = report.get("claim_boundary")
     if not isinstance(claim, str) or "Stage-1 controlled-history" not in claim:
         errors.append("prior report is not identified as the stage-1 read workflow")
-    return PriorReadEvidence(not errors, tuple(errors), report_hash)
+    specimen_id = report.get("specimen_id")
+    if not isinstance(specimen_id, str) or not specimen_id.strip():
+        errors.append("prior stage-1 report lacks a specimen_id")
+        specimen_id = None
+    specimen_scope = report.get("specimen_scope")
+    if specimen_scope != "this_specimen_only":
+        errors.append("prior stage-1 report is not this_specimen_only")
+        specimen_scope = "UNQUALIFIED"
+    return PriorReadEvidence(
+        not errors,
+        tuple(errors),
+        report_hash,
+        specimen_id,
+        specimen_scope,
+    )
+
+
+def _merge_specimen_evidence(
+    package: EvidencePackage,
+    specimen: SpecimenEvidence,
+) -> EvidencePackage:
+    errors = package.errors + specimen.errors
+    return EvidencePackage(
+        complete=not errors,
+        errors=errors,
+        program_image_sha256=package.program_image_sha256,
+        verified_artifacts=tuple(
+            sorted(
+                set(package.verified_artifacts)
+                | set(specimen.verified_artifacts)
+            )
+        ),
+    )
+
+
+def _validate_specimen_pair(
+    specimens: Mapping[str, SpecimenEvidence],
+    prior: PriorReadEvidence,
+) -> tuple[str, ...]:
+    errors: list[str] = []
+    ascending = specimens["ASCENDING"].metadata
+    descending = specimens["DESCENDING"].metadata
+    for field in (
+        "specimen_id",
+        "device_marking",
+        "tracking_date_string",
+        "lot_string",
+        "package_type",
+    ):
+        if ascending.get(field) != descending.get(field):
+            errors.append(
+                f"ascending and descending metadata disagree on specimen {field}"
+            )
+    if (
+        prior.specimen_id is not None
+        and ascending.get("specimen_id") != prior.specimen_id
+    ):
+        errors.append("write metadata specimen_id differs from the stage-1 report")
+    return tuple(errors)
 
 
 def _validate_workflow_link(
@@ -542,6 +635,20 @@ def build_report(
         "DESCENDING": descending_image,
     }
     prior = _validate_prior_read_report(prior_read_report)
+    specimens = {
+        direction: validate_specimen_evidence(
+            metadata_paths[direction],
+            capture_paths[direction],
+            artifact_root,
+            fixture_source_sha256=FIXTURE_SOURCE_SHA256[direction],
+            fixture_words={
+                address: word
+                for address, word in enumerate(_fixture_words(direction))
+            },
+        )
+        for direction in DIRECTIONS
+    }
+    specimen_pair_errors = _validate_specimen_pair(specimens, prior)
     summaries: list[DirectionSummary] = []
     for direction in DIRECTIONS:
         runs = _read_capture(capture_paths[direction])
@@ -551,6 +658,7 @@ def build_report(
             image_paths[direction],
             artifact_root,
         )
+        package = _merge_specimen_evidence(package, specimens[direction])
         package = _validate_exact_image(direction, image_paths[direction], package)
         package = _validate_workflow_link(
             direction,
@@ -583,7 +691,13 @@ def build_report(
         and fixture_valid
         and prior.complete
         and all(item.evidence_package.complete for item in summaries)
+        and not specimen_pair_errors
     )
+    specimen_id = specimens["ASCENDING"].specimen_id
+    specimen_scope = specimens["ASCENDING"].specimen_scope
+    if specimen_pair_errors:
+        specimen_id = None
+        specimen_scope = "UNQUALIFIED"
     return CaptureReport(
         minimum_runs=minimum_runs,
         minimum_runs_met=minimum_met,
@@ -591,6 +705,9 @@ def build_report(
         fixture_valid=fixture_valid,
         review_ready=review_ready,
         acceptance_complete=False,
+        specimen_id=specimen_id,
+        specimen_scope=specimen_scope,
+        specimen_pair_errors=specimen_pair_errors,
         directions=tuple(summaries),
         prior_read_evidence=prior,
     )
