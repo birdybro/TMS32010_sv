@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 20-step actual-core direct-TBLR interrupt-arrival formal harness with a
+  constrained symbolic choice across all three represented instruction
+  cycles. It proves the discarded fetch, program-word-to-RAM transfer,
+  committed-word readback through the protected instruction, table stack
+  state, dummy fetch, stack push, and vector selection under arbitrary bounded
+  clock-enable stalls.
 - An 18-step actual-core unconditional-B interrupt-arrival formal harness with
   a symbolic choice between both documented execution intervals. It proves
   operand ownership, no midinstruction entry, resolved-target retirement, one
@@ -1335,13 +1341,18 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All three symbolic interrupt-arrival choices for fixed direct `TBLR 0` pass
+  BMC through depth 20 and independently reach completed entry at cover step
+  8. The full formal inventory now has 68 passing tasks from 34 configurations;
+  this remains one logical direct-TBLR scenario, not TBLW, indirect-table,
+  explicit-pipeline, original-package, or electrical proof.
 - Both symbolic interrupt-arrival choices for the fixed two-cycle `B` program
   pass BMC through depth 18 and independently reach completed entry at cover
   step 7. This is one actual-core logical-sequencing proof, not complete
   multicycle-family or original-package bus evidence.
 - The protected-DINT BMC passes through depth 18 and its complete retained-
-  request service path reaches cover step 9. The full formal inventory now has
-  66 passing tasks from 33 configurations; this remains bounded
+  request service path reaches cover step 9. The formal inventory then had 66
+  passing tasks from 33 configurations; this remains bounded
   implementation evidence, not original-silicon DINT priority proof.
 - Explicit mask-control placement now distinguishes request-during-EINT,
   request-during-DINT, protected redundant EINT, and protected DINT. The last
@@ -2517,15 +2528,16 @@ Changelog, and the project follows semantic versioning once releases begin.
   express the exact overlap, while pinned IKA predicts entry-wins. That
   ordering is targeted-tested but PROVISIONAL under `OQ-019`/`SC-039`, with a
   stable physical experiment now defined.
-- Formal evidence currently covers six fixed interrupt-entry programs,
+- Formal evidence currently covers seven fixed interrupt-entry programs,
   including protected-DINT policy and both arrival intervals of one fixed B,
-  plus one fixed CALA/RET call/return program, at 12-, 14-, two 18-, and two
-  20-step bounds, one standalone ownership register, and
+  all three arrival intervals of one fixed direct TBLR, plus one fixed CALA/RET
+  call/return program, at 12-, 14-, two 18-, and three 20-step bounds, one
+  standalone ownership register, and
   fixed direct-TBLR and direct-TBLW integrated-pipeline programs at 40 steps.
   It excludes arbitrary DINT placement and original-silicon priority, the
   other indirect MPY control/update cases, arbitrary multiply-chain
-  placement/length, the remaining represented multicycle-arrival families,
-  indirect table addressing, the general
+  placement/length, the remaining represented multicycle-arrival families
+  including TBLW, indirect table addressing, the general
   pipeline, general external-memory behavior, and broad decode/datapath
   properties.
 - Original-part ADDH status behavior is resolved only at CORROBORATED

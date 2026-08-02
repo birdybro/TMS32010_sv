@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded two-cycle branch arrivals
+- **Current milestone:** `FORMAL-001` bounded three-cycle TBLR arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,10 +148,10 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 66 tasks from 33 SymbiYosys configurations pass with
+- **Formal status:** all 68 tasks from 34 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
-  12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
-  choices. The
+  12-, 14-, two 18-, and three 20-step actual-core interrupt BMCs across
+  arbitrary clock-enable choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
   held-low request relatching at step 8; the third deterministic
@@ -175,6 +175,12 @@
   dummy/vector sequencing, and stack/mask/pending effects under arbitrary
   bounded stalls; both arrival covers reach step 7. This is one logical B
   scenario, not complete multicycle-family or physical branch-bus proof. A
+  separate 20-step actual-core BMC constrains a symbolic request to all three
+  cycles of fixed direct TBLR 0. It proves the discarded fetch, exact
+  program-word-to-RAM-0 transfer, committed `0x7f82` readback through protected
+  LAC 0, table-final stack state, dummy/vector sequencing, and entry state;
+  all three covers reach step 8. This is one direct-table logical scenario,
+  not TBLW, indirect-table, explicit-pipeline, or physical-pin proof. A
   separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -1610,10 +1616,19 @@
   B. It proves operand retention, no midinstruction entry, target resolution,
   protected LACK, dummy fetch, stack push, and vector selection under arbitrary
   bounded clock-enable stalls. Both choices reach cover step 7; the complete
-  suite now has 66 passing tasks from 33 configurations. Physical branch bus
+  suite then had 66 passing tasks from 33 configurations. Physical branch bus
   ownership and all other multicycle families remain outside this proof. No
   synthesizable RTL changed, so the prior Yosys and Quartus results remain the
   applicable synthesis evidence rather than a newly generated receipt.
+- **New TBLR-arrival formal evidence:** a 20-step actual-core BMC constrains a
+  symbolic selector to all three represented cycles of fixed direct TBLR 0.
+  It proves the discarded following fetch, exact address-0 program read and
+  RAM-0 write, committed `0x7f82` readback through protected LAC 0, no early
+  retirement/entry, table stack state, dummy fetch, stack push, and vector
+  selection under arbitrary bounded clock-enable stalls. All choices reach
+  cover step 8; the complete suite now has 68 passing tasks from 34
+  configurations. No synthesizable RTL changed, so prior synthesis evidence
+  remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1662,9 +1677,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend bounded formal interrupt-arrival coverage to one fixed
-  represented three-cycle family without generalizing beyond documented core
-  behavior, or advance another unblocked P0 evidence slice; keep PUSH/POP
+- **Next task:** extend bounded formal interrupt-arrival coverage to fixed
+  direct TBLW or another represented family without generalizing beyond
+  documented core behavior, or advance another unblocked P0 evidence slice;
+  keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `d21b951`
+  `1835b7a`

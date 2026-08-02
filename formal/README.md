@@ -330,6 +330,25 @@ other control, I/O, or table families; an explicit fetch/execute wrapper;
 original-package MEN/address ownership; electrical interrupt timing; or an
 unbounded liveness property.
 
+## Three-cycle table-read-arrival harness
+
+`tms32010_interrupt_table.sby` checks the actual portable core with a 20-step
+BMC and cover while leaving `clock_enable_i` arbitrary. A constrained symbolic
+constant selects request arrival during the opcode, discarded-following-word,
+or program-to-data transfer cycle of fixed direct `TBLR 0`. Program address 0
+contains the EINT word `0x7f82`; the table transfer writes that exact word to
+internal RAM 0, and protected `LAC 0` reads the committed value back into ACC
+before the address-3 dummy fetch and vector entry. Assertions also check all
+program/data directions and addresses, no early retirement or entry, the
+table-final stack state, stacked return PC, mask, and pending state. Separate
+covers for all three choices reach completed entry at solver step 8.
+
+This qualifies one direct TBLR logical core sequence and portable internal-RAM
+effect only. It does not prove TBLW, indirect table addressing, nonzero table
+program addresses, nontrivial preexisting stack contents, an explicit
+fetch/execute wrapper, original-package pin ownership, electrical interrupt
+timing, or an unbounded liveness property.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -560,7 +579,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 33 configurations produce 66 passing BMC/cover tasks. They still
+The current 34 configurations produce 68 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

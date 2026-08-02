@@ -199,7 +199,14 @@ depth 18 with arbitrary clock-enable stalls; both choices reach cover step 7.
 This is logical implementation evidence for B only. It does not upgrade the
 INFERRED explicit-pipeline interval mapping, original-package address
 ownership, or the remaining multicycle families
-[`formal/tms32010_interrupt_branch.sby`]. A separate native test drives
+[`formal/tms32010_interrupt_branch.sby`]. A second actual-core formal harness
+constrains a symbolic request to any of fixed direct TBLR's three cycles. It
+proves discarded PC+1 ownership, exact program-address-0 word transfer to RAM
+0, committed readback through the protected LAC 0, no midinstruction entry,
+dummy fetch, stack entry, and vector selection through depth 20; all three
+covers reach step 8. This is direct-TBLR logical implementation evidence, not
+TBLW, indirect-table, explicit-pipeline, or original-package proof
+[`formal/tms32010_interrupt_table.sby`]. A separate native test drives
 a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin
