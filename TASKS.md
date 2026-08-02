@@ -223,6 +223,12 @@ objective passing evidence.
   `acceptance_complete` remains false. No physical capture exists and all 372
   words remain rejected by fail-closed policy rather than claimed silicon
   trap behavior.
+  `OQ-015` now uses the same specimen boundary around its exact 30-word
+  bidirectional fixture: complete review packages bind source/listing/image,
+  normalized trace, test context, and raw package/date/lot provenance to one
+  specimen while leaving `acceptance_complete=false`. The classifier still
+  requires both directions to select one precedence rule; no physical capture
+  exists and memory-wins remains PROVISIONAL.
   `OQ-008` now has a dated, reproducible publication/device-revision audit.
   `SC-043` separates the October-1985, February-1986, January-1987, and
   May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists
@@ -1110,8 +1116,10 @@ objective passing evidence.
   PROVISIONAL under `OQ-015`/`SC-009`. The exact 30-word two-direction fixture
   and physical procedure now define the resolving original-NMOS evidence. A
   strict classifier checks its exact image, three OUT anchors and exclusive
-  port-7 writes, terminal window, 32-run agreement, and raw/photo hashes. Six
-  regressions preserve both consistent hypotheses, both mixed directions,
+  port-7 writes, terminal window, 32-run agreement, and raw/photo hashes. Its
+  shared `OQ-008` validator additionally binds exact source/listing/decoded
+  trace and a complete single-specimen record while leaving acceptance open.
+  Six regressions preserve both consistent hypotheses, both mixed directions,
   arbitrary other words, bad controls/markers/windows/images, and unstable
   repetitions. Mixed or other results never become resolved candidates, and
   no physical capture exists.

@@ -23,6 +23,9 @@ from tools.trace.lst_arp_capture import (
 from tools.trace.push_pop_capture import CAPTURE_COLUMNS, read_normalized_capture
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -169,20 +172,75 @@ class LstArpCaptureTests(unittest.TestCase):
             image.write_bytes(_binary())
             raw.write_bytes(b"raw LST ARP capture")
             photograph.write_bytes(b"LST ARP probe photograph")
+            fixture_source = root / "lst_arp_precedence_probe.asm"
+            fixture_source.write_bytes(
+                (
+                    ROOT / "tests" / "asm" / "lst_arp_precedence_probe.asm"
+                ).read_bytes()
+            )
+            fixture_listing = root / "lst_arp_precedence_probe.lst"
+            fixture_listing.write_text(
+                "".join(
+                    f"{address:03x} {word:04x} synthetic:test\n"
+                    for address, word in enumerate(FIXTURE_WORDS)
+                ),
+                encoding="utf-8",
+            )
+            specimen_photos = {}
+            for view in ("top", "bottom", "board_context"):
+                path = root / f"specimen-{view}.jpg"
+                path.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+                specimen_photos[view] = {
+                    "path": path.name,
+                    "sha256": sha256(path.read_bytes()).hexdigest(),
+                }
             metadata = root / "metadata.json"
             metadata.write_text(
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "device_marking": "TMS32010NL TEST FIXTURE",
+                        "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                        "specimen_id": "synthetic-specimen-01",
+                        "tracking_date_string": "TRACKING RAW",
+                        "lot_string": "LOT RAW",
+                        "package_type": "40-pin plastic DIP test fixture",
+                        "acquisition_provenance": "synthetic regression fixture",
+                        "socketed": True,
+                        "temperature_c": 25.0,
+                        "reset_duration_cycles": 8,
+                        "monitor_revision": "none; standalone fixture",
+                        "specimen_scope": "this_specimen_only",
                         "board_revision": "synthetic test fixture",
                         "oscillator_hz": 20_000_000,
                         "supply_voltage_v": "5.00 measured",
                         "program_memory": "synthetic memory",
+                        "program_memory_access_time_ns": 35.0,
                         "probe_model": "synthetic probe",
                         "analyzer_model": "synthetic analyzer",
                         "analyzer_firmware": "test",
                         "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                        "normalized_capture_sha256": sha256(
+                            capture.read_bytes()
+                        ).hexdigest(),
+                        "fixture_tool_versions": {
+                            "assembler": "project test assembler",
+                            "capture_normalizer": "synthetic test normalizer",
+                            "analyzer_decoder": "synthetic test decoder",
+                        },
+                        "fixture_artifacts": {
+                            "source": {
+                                "path": fixture_source.name,
+                                "sha256": sha256(
+                                    fixture_source.read_bytes()
+                                ).hexdigest(),
+                            },
+                            "listing": {
+                                "path": fixture_listing.name,
+                                "sha256": sha256(
+                                    fixture_listing.read_bytes()
+                                ).hexdigest(),
+                            },
+                        },
                         "signal_pin_map": {
                             "CLKOUT": "pin 6",
                             "MEN_N": "pin 7",
@@ -200,6 +258,7 @@ class LstArpCaptureTests(unittest.TestCase):
                                 photograph.read_bytes()
                             ).hexdigest(),
                         },
+                        "specimen_photographs": specimen_photos,
                     },
                     indent=2,
                 ),
@@ -217,10 +276,14 @@ class LstArpCaptureTests(unittest.TestCase):
             self.assertTrue(report.fixture_valid)
             self.assertTrue(report.evidence_package.complete)
             self.assertTrue(report.review_ready)
+            self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
             self.assertEqual(set(report.classifications), {ENCODED_WINS})
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-015", encoded)
             self.assertIn("choose between MAME and IKA", encoded)
+            self.assertIn("identified specimen", encoded)
 
             output = io.StringIO()
             with redirect_stdout(output):

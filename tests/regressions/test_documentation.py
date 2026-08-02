@@ -496,6 +496,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Tracking mark/date code and lot code",
             "unrelated 32-bit TI32000 family",
             "`OQ-010` simultaneous-AR workflow",
+            "`OQ-015` LST-ARP workflow",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)
@@ -691,17 +692,24 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "status-restore prose and example admit opposing readings",
             "Both mixed-direction combinations and every other sequence are preserved",
             "cannot become resolved candidates",
+            "raw tracking/date and lot",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, research)
         for required in (
             "without treating MAME's memory-word precedence",
             "Mixed outcomes are preserved as explicit classifications",
             "does not change `OQ-015`",
+            "exact project source and 30-word listing",
+            "program-memory access time",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("## SC-009", conflicts)
         self.assertIn("literal example plus IKA", conflicts)
+        self.assertIn("named\n  single-specimen provenance", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-009`)", questions)
+        self.assertIn("one named `OQ-008` specimen record", questions)
 
     def test_simultaneous_ar_update_stays_unsupported_and_hardware_unknown(
         self,

@@ -18,6 +18,10 @@ from tools.trace.push_pop_capture import (
     read_normalized_capture,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 FIXTURE_WORDS = (
@@ -26,6 +30,9 @@ FIXTURE_WORDS = (
     0x5010, 0x7E01, 0x5030, 0x2830, 0x5020, 0x4F00,
     0x7010, 0x7112, 0x6880, 0x7BA1, 0x4F88, 0x7022,
     0x7120, 0x6881, 0x7BA0, 0x4F88, 0xF900, 0x001C,
+)
+FIXTURE_SOURCE_SHA256 = (
+    "08a9c9b5d9745164b604a7a43c93f3577e83a685d036edb4a311c33d5e0f6a6b"
 )
 OUT_ANCHORS = ((0x011, 0x4F00), (0x016, 0x4F88), (0x01B, 0x4F88))
 
@@ -57,6 +64,9 @@ class CaptureReport:
     candidate_resolved: bool
     fixture_valid: bool
     review_ready: bool
+    acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
     classifications: tuple[str, ...]
     observations: tuple[Observation, ...]
     evidence_package: EvidencePackage
@@ -68,7 +78,8 @@ class CaptureReport:
                 "Classification and package validation only; this output does not "
                 "change OQ-015, choose between MAME and IKA, prove mask-revision "
                 "invariance, or establish VERIFIED_HARDWARE without engineering "
-                "review of raw captures and the physical setup."
+                "review of raw captures and the physical setup. It does not "
+                "generalize beyond the identified specimen."
             ),
             "capture_sha256": self.capture_sha256,
             "run_count": self.run_count,
@@ -78,6 +89,9 @@ class CaptureReport:
             "candidate_resolved": self.candidate_resolved,
             "fixture_valid": self.fixture_valid,
             "review_ready": self.review_ready,
+            "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
             "classifications": list(self.classifications),
             "observations": [
                 {
@@ -226,8 +240,11 @@ def analyze_runs(
 def _validate_checked_image(
     program_image: Path | None,
     package: EvidencePackage,
+    specimen: SpecimenEvidence,
 ) -> EvidencePackage:
-    errors = list(package.errors)
+    errors = list(package.errors) + list(specimen.errors)
+    verified = set(package.verified_artifacts)
+    verified.update(specimen.verified_artifacts)
     if program_image is not None and program_image.is_file():
         try:
             image = program_image.read_bytes()
@@ -242,7 +259,7 @@ def _validate_checked_image(
         complete=not errors,
         errors=tuple(errors),
         program_image_sha256=package.program_image_sha256,
-        verified_artifacts=package.verified_artifacts,
+        verified_artifacts=tuple(sorted(verified)),
     )
 
 
@@ -265,9 +282,19 @@ def build_report(
     repeatable = len(set(classifications)) == 1
     candidate_resolved = repeatable and classifications[0] in RESOLVED_CANDIDATES
     fixture_valid = all(item.fixture_valid for item in observations)
+    specimen = validate_specimen_evidence(
+        metadata_path,
+        capture_path,
+        artifact_root,
+        fixture_source_sha256=FIXTURE_SOURCE_SHA256,
+        fixture_words={
+            address: word for address, word in enumerate(FIXTURE_WORDS)
+        },
+    )
     package = _validate_checked_image(
         program_image,
         validate_evidence_package(metadata_path, program_image, artifact_root),
+        specimen,
     )
     minimum_runs_met = len(runs) >= minimum_runs
     return CaptureReport(
@@ -285,6 +312,9 @@ def build_report(
             and fixture_valid
             and package.complete
         ),
+        acceptance_complete=False,
+        specimen_id=specimen.specimen_id,
+        specimen_scope=specimen.specimen_scope,
         classifications=classifications,
         observations=observations,
         evidence_package=package,

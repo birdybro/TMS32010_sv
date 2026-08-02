@@ -181,8 +181,10 @@ electrical result of an out-of-range access.
   `docs/research/lst_arp_precedence_experiment.md` is required before changing
   or upgrading that policy. Its strict classifier preserves memory-word,
   encoded-field, both mixed-direction, and arbitrary other sequences and
-  validates exact-image/raw/photo provenance. Synthetic classifier fixtures
-  do not resolve the conflict.
+  validates exact source/listing/image, decoded-trace, raw/photo, and named
+  single-specimen provenance. `acceptance_complete` remains false; synthetic
+  classifier fixtures and complete bookkeeping do not resolve the conflict or
+  prove cross-specimen invariance.
 - **Confidence:** VERIFIED_PRIMARY that both write sources are documented and
   the worked result says ARP becomes one; PROVISIONAL for original-silicon
   precedence. Later TI plus MAME corroborate memory-wins, while the original

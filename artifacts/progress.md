@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` simultaneous-AR specimen-bound evidence
+- **Current milestone:** `ARCH-001` LST-ARP specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1380,14 +1380,18 @@
   both disagreement directions; it has no reset-retention dependency. The new
   strict `tools.trace.lst_arp_capture` workflow validates the exact big-endian
   image, three ordered OUT anchors and exclusive port-7 writes, terminal
-  boundaries, 32-run agreement, and raw/photo hashes. It independently labels
-  memory-word precedence, encoded-field precedence, both possible mixed
-  directions, and any other complete word sequence. Only bidirectionally
-  consistent memory or encoded results can set `candidate_resolved`; mixed and
-  other observations remain repeatable but nonresolving. Six regressions cover
-  every category and failure boundary. No physical capture exists, current
-  memory precedence remains PROVISIONAL, and `OQ-015` remains open. Synthesis
-  and formal evidence are unchanged because no RTL changed.
+  boundaries, 32-run agreement, and raw/photo hashes. Shared specimen
+  validation now additionally binds the exact source, 30-word listing,
+  normalized trace, numeric memory access time, fixture tool versions, raw
+  multiline marking/date/lot record, and top/bottom/board photographs to one
+  stable identity. The classifier independently labels memory-word
+  precedence, encoded-field precedence, both possible mixed directions, and
+  any other complete word sequence. Only bidirectionally consistent memory or
+  encoded results can set `candidate_resolved`; mixed and other observations
+  remain repeatable but nonresolving, and `acceptance_complete=false`. Six
+  regressions cover every category and failure boundary. No physical capture
+  exists, current memory precedence remains PROVISIONAL, and `OQ-015` remains
+  open. Synthesis and formal evidence are unchanged because no RTL changed.
 - **New simultaneous-AR measurement evidence:** the strict
   `tools.trace.simultaneous_ar_capture` workflow validates the exact 23-word
   raw-instruction image, ordered armed/forced/result/terminal fetch anchors,
@@ -1529,7 +1533,7 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** continue `ARCH-001` by reusing the audited specimen validator
-  in the LST-ARP original-device workflow, keeping its bidirectional result
-  rule and acceptance boundary unchanged.
+  in the paired SUBC original-device workflows, preserving the deliberately
+  unconstrained dependency result and four overflow-stage candidates.
 - **Latest committed baseline before this cycle:**
-  `a928df0`
+  `39dd81f`

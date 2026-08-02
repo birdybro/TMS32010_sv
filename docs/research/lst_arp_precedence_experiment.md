@@ -109,9 +109,10 @@ is accepted.
 Use an original NMOS TMS32010, not a TMS320C10/C15, TMS32020/C25, or later
 compatible device:
 
-1. Record package marking, mask/date code, EVM or board and monitor revisions,
-   oscillator, voltage, program-memory access time, and hashes of the exact
-   hex/listing used.
+1. Record the exact multiline package marking, raw tracking/date and lot
+   strings without decoding them, stable local specimen ID, package/custody/
+   socket/temperature/reset context, EVM or board and monitor revisions,
+   oscillator, voltage, program-memory access time, and fixture tool versions.
 2. Load the synthetic image into external program memory without modifying its
    words. Never execute a downloaded legacy binary to perform this step.
 3. Decode port 7 writes or capture `WE`, `A11:A0`, and `D15:D0`. Retain the raw
@@ -120,9 +121,10 @@ compatible device:
 4. Run at least 32 reset-and-execute trials at nominal clock. Repeat at the
    documented slow and fast limits if the memory fixture meets all access,
    setup, and hold requirements.
-5. Save the analyzer setup, raw capture, decoded CSV, pin map, photographs,
-   monitor transcript, and tool versions. Hash every artifact before format
-   conversion.
+5. Save the analyzer setup, raw capture, decoded CSV, pin map, probe-placement
+   photographs, distinct specimen top/bottom/board-context photographs,
+   monitor transcript, and exact project source/image/listing. Hash the
+   normalized trace and every retained artifact.
 6. Repeat on another original-part date/mask code before generalizing the
    outcome across `OQ-008`.
 
@@ -144,11 +146,13 @@ python3 -m tools.trace.lst_arp_capture normalized.csv \
 
 The classifier validates the three exact OUT fetch anchors, exclusive port-7
 writes, armed marker, terminal boundaries, exact image, 32-run agreement, and
-raw/photo provenance. Both mixed-direction combinations and every other
-sequence are preserved explicitly, but cannot become resolved candidates.
-`review_ready` describes package completeness and agreement with one of the
-two bidirectionally consistent hypotheses only; it cannot change `OQ-015`
-without review of the raw setup and device provenance.
+raw/photo provenance. Its shared `OQ-008` validator additionally rejects
+rehashed substitute source/listing content and binds the normalized trace to a
+complete single-specimen record. Both mixed-direction combinations and every
+other sequence are preserved explicitly, but cannot become resolved
+candidates. `review_ready` describes package completeness and agreement with
+one of the two bidirectionally consistent hypotheses only; it cannot change
+`OQ-015` without review of the raw setup and device provenance.
 
 ## Acceptance
 
@@ -159,4 +163,7 @@ new architectural observation, not permission to average or discard trials.
 
 Until then, memory-word precedence remains **PROVISIONAL**, the original
 worked example must be disclosed as competing primary evidence, and neither
-MAME nor IKA may be cited as original-silicon proof.
+MAME nor IKA may be cited as original-silicon proof. Even a complete package
+reports `acceptance_complete=false`; raw engineering review and a second
+identified original-NMOS specimen remain necessary before any cross-specimen
+claim.

@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- LST-ARP physical packages now use the shared `OQ-008` validator, require the
+  exact 30-word listing and numeric program-memory access time, and expose
+  single-specimen scope plus `acceptance_complete=false` without changing the
+  bidirectional precedence acceptance rule.
 - Simultaneous-AR physical packages now use the shared `OQ-008` validator,
   require the exact 23-word listing and numeric program-memory access time,
   report explicit single-specimen scope, and always retain
@@ -1256,6 +1260,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six LST-ARP regressions pass with complete specimen-bound provenance;
+  memory-wins, encoded-wins, mixed, other, and unstable outcomes retain their
+  prior candidate and review semantics, and no synthetic result is promoted.
 - The six simultaneous-AR regressions now prove that a full specimen-bound
   package can reach review readiness while a correctly rehashed unrelated
   source/listing, mismatched decoded trace, or traversing specimen-photo path

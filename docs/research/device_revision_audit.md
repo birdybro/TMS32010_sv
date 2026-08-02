@@ -184,6 +184,12 @@ Its classifications remain experiment results for `this_specimen_only`, with
 `acceptance_complete=false`; no forced-word outcome is present and the
 workflow cannot establish mask identity or invariance.
 
+The `OQ-015` LST-ARP workflow now applies that same reusable boundary to its
+exact 30-word bidirectional fixture. Its memory-wins, encoded-wins, mixed, and
+other classifications remain scoped to `this_specimen_only`, and its report
+always leaves `acceptance_complete=false`. Provenance completeness cannot
+resolve the primary-document contradiction or establish mask invariance.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

@@ -290,7 +290,11 @@ The tool consumes the common falling-`CLKOUT` CSV and evidence metadata. It
 checks the exact three OUT fetch addresses and words, their order relative to
 exactly three exclusive port-7 writes, the `0x0033` armed marker, two retained
 terminal boundaries, at least 32 stable runs, exact big-endian program bytes,
-and program/raw/photo hashes beneath the artifact root.
+and program/raw/photo hashes beneath the artifact root. The shared specimen
+validator additionally binds the normalized trace, exact project source and
+30-word listing, numeric program-memory access time, raw package/date/lot
+record, fixture tool versions, and distinct top/bottom/board-context
+photographs to one named specimen.
 
 ```sh
 python3 -m tools.assembler.tms32010_as \
@@ -305,7 +309,8 @@ python3 -m tools.trace.lst_arp_capture normalized.csv \
 
 `review_ready` remains evidence-package status only. It does not change
 `OQ-015`, select MAME or IKA as an original-part oracle, prove mask-revision
-invariance, or establish `VERIFIED_HARDWARE`.
+invariance, generalize beyond the named specimen, or establish
+`VERIFIED_HARDWARE`. The report always leaves `acceptance_complete=false`.
 
 ## Simultaneous auxiliary-register update physical-capture classifier
 
