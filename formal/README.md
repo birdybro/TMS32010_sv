@@ -423,6 +423,35 @@ preexisting stacks, the explicit fetch/execute wrapper, native four-subphase
 write placement, external-memory access timing, or an unbounded liveness
 property.
 
+## Indirect three-cycle table-arrival harness
+
+`tms32010_interrupt_table_indirect.sby` checks the actual portable core with
+a depth-28 BMC and cover while leaving `clock_enable_i` arbitrary. Independent
+symbolic constants select TBLR versus TBLW, old ARP 0 versus 1, no update
+versus increment versus decrement, ARP preservation versus replacement with
+the other AR, and request arrival in the opcode, discarded-prefetch, or
+ACC-addressed transfer interval. Four fixed debug-preload cycles establish
+distinct complete AR words and distinct RAM words at their old addresses.
+
+Assertions prove discarded PC+1 ownership, ACC address `0x020` ownership of
+the program transfer, and exact opposing data paths: TBLR writes program word
+`0xb33c` to the old selected RAM address, while TBLW writes the distinct old
+selected RAM word to a mutable program fixture. AR and ARP remain unchanged
+through the transfer and change only at repeated-prefetch retirement; only
+the selected AR low nine bits change. A direct protected LAC proves the
+completed transfer before dummy fetch, return-PC push, mask/pending completion,
+and vector entry. The harness also proves one target transfer and stability
+across arbitrary bounded stalls. Seventy-two independent covers—one per
+complete selector tuple—reach solver step 15.
+
+The RAM preload and mutable program word are verification fixtures, not reset
+or physical-memory models. Their observers are scoped through the first
+completed vector entry because the synthetic vector naturally loops through
+the setup program. Simultaneous increment/decrement remains excluded under
+`OQ-010`. This is bounded logical actual-core evidence, not arbitrary program/
+data, nontrivial prior-stack, explicit-pipeline subphase, package-pin,
+electrical, or unbounded liveness proof.
+
 ## Two-cycle I/O-arrival harness
 
 `tms32010_interrupt_io.sby` checks the actual portable core with an 18-step
@@ -700,7 +729,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 39 configurations produce 78 passing BMC/cover tasks. They still
+The current 40 configurations produce 80 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

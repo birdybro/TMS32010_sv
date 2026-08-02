@@ -1062,6 +1062,7 @@ objective passing evidence.
   `formal/tms32010_interrupt_accumulator_branches.sby`,
   `formal/tms32010_interrupt_banz_bv_bioz_call.sby`,
   `formal/tms32010_interrupt_io_indirect.sby`,
+  `formal/tms32010_interrupt_table_indirect.sby`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`,
   `tests/asm/dint_interrupt_race_probe.asm`,
@@ -1133,6 +1134,16 @@ objective passing evidence.
   mask/pending effects, and arbitrary bounded stalls. All 48 complete tuples
   reach cover step 13. This is logical callback evidence, not peripheral,
   explicit-pipeline subphase, package-pin, electrical, or unbounded proof.
+  A depth-28 actual-core indirect-table BMC crosses TBLR/TBLW, AR0/AR1
+  selection, no/increment/decrement update, ARP preserve/switch, and all three
+  represented execution intervals. It proves discarded-prefetch ownership,
+  the old RAM address and ACC[11:0] program address, exact opposing RAM/program
+  direction and data, one transfer, repeated-prefetch-only AR/ARP effects,
+  protected readback, dummy/vector ownership, mask/pending effects, and
+  arbitrary bounded stalls. All 72 complete tuples reach cover step 15. This
+  is logical fixture evidence, not arbitrary program/data, nontrivial prior-
+  stack, explicit-pipeline subphase, package-pin, electrical, or unbounded
+  proof.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1718,6 +1729,17 @@ objective passing evidence.
   tuple-specific covers reach step 13. It does not cover simultaneous update,
   other ports/data, peripherals, explicit-pipeline subphases, electrical
   timing, or unbounded liveness.
+  A complementary depth-28 actual-core indirect-table configuration crosses
+  TBLR/TBLW, both old ARP selections, no/increment/decrement, ARP preserve/
+  switch, and all three represented instruction intervals. It proves the old
+  selected RAM address owns the transfer, ACC[11:0] owns the program address,
+  exact opposing RAM/program direction and data, repeated-prefetch-only AR/ARP
+  changes, low-nine-bit selected-AR updates with upper-bit preservation,
+  protected readback, dummy return PC, stack/vector, mask/pending state, one
+  transfer, and arbitrary bounded stalls. All 72 complete tuples reach cover
+  step 15. Simultaneous increment/decrement remains excluded under `OQ-010`;
+  arbitrary program/data, nontrivial prior stacks, explicit-pipeline subphase,
+  package-pin, electrical, and unbounded behavior remain outside this proof.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1820,7 +1842,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 78 BMC/cover tasks from 39 checked-in
+  The current runner passes all 80 BMC/cover tasks from 40 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

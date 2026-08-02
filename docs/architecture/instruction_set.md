@@ -614,6 +614,17 @@ stack-bottom duplication, but is not used as pin-timing proof
 [mame-tms320c1x-core-030fefc, table handlers and opcode table, lines
 761–772 and 823–826]. **Confidence: CORROBORATED.**
 
+A depth-28 actual-core formal harness crosses TBLR/TBLW, both old ARP
+selections, all three legal single-update choices, ARP preserve/switch, and all
+three represented interrupt-arrival intervals. It proves discarded-prefetch
+ownership, old-RAM-address and ACC-program-address ownership, exact opposing
+data paths, repeated-prefetch-only AR/ARP commit, protected readback, and
+completed entry. All 72 complete tuples reach cover step 15
+[`formal/tms32010_interrupt_table_indirect.sby`]. This is bounded logical
+fixture evidence, not arbitrary program/data, nontrivial prior-stack, explicit-
+pipeline subphase, package-pin, electrical, simultaneous-update, or unbounded
+proof.
+
 ## Model/tool-qualified, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

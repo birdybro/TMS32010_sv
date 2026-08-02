@@ -707,21 +707,23 @@ both fixed-B intervals, all 36 combinations of the six accumulator branches
 with negative/zero/positive ACC classes and both intervals, all 14 BANZ/BV/
 BIOZ/CALL scenario/interval tuples, all three direct TBLR and TBLW intervals,
 both direct IN/OUT intervals, and all 48 tuples of indirect IN/OUT direction,
-selected AR, legal update, ARP action, and arrival interval. These are bounded
-logical fixture proofs; they do not qualify original-package branch pins,
-explicit-pipeline subphases, peripheral behavior, or electrical timing.
+selected AR, legal update, ARP action, and arrival interval. A further 72
+tuples cross indirect TBLR/TBLW direction, selected AR, legal update, ARP
+action, and all three arrival intervals. These are bounded logical fixture
+proofs; they do not qualify original-package branch pins, explicit-pipeline
+subphases, peripheral behavior, or electrical timing.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 78 passing BMC/cover tasks from 39
+The complete current matrix contains 80 passing BMC/cover tasks from 40
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification
 inventory, not a claim
 of complete-core proof.
 This is not a complete formal proof; no general pipeline, general or unbounded
-interrupt-entry proof, indirect table proof, general external-memory proof, or
-complete pin timing
+interrupt-entry proof, nontrivial-prior-stack indirect-table proof, general
+external-memory proof, or complete pin timing
 exists.
 The project must not be called instruction-complete or cycle-accurate. Consult
 `TASKS.md` and `artifacts/progress.md` for the exact current evidence.

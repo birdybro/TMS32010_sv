@@ -336,6 +336,15 @@ new word. `sim/instruction/tb_table_transfers_rtl.sv`
 checks direct/indirect data addressing and stack effects; the focused
 differential additionally validates final RAM and program-memory contents.
 
+`formal/tms32010_interrupt_table_indirect.sby` independently crosses TBLR/
+TBLW, both old ARP selections, no/increment/decrement, ARP preserve/switch, and
+all three represented interrupt-arrival intervals. Through depth 28 it proves
+discarded PC+1 ownership, ACC-addressed program transfer, exact opposing RAM/
+program direction and data, repeated-prefetch-only AR/ARP commit, protected/
+dummy/vector ordering, and one transfer; all 72 tuples reach cover step 15.
+This is bounded logical-interface evidence, not arbitrary memory, nontrivial
+prior-stack, native subphase, package-pin, electrical, or unbounded proof.
+
 ## No documented READY pin
 
 The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.

@@ -167,6 +167,17 @@ reach cover step 13 through depth 22 under arbitrary clock-enable stalls
 evidence, not peripheral, explicit-pipeline subphase, package-pin, electrical,
 or unbounded proof; simultaneous increment/decrement remains `OQ-010`.
 
+A complementary actual-core harness crosses all three represented TBLR/TBLW
+intervals with both directions, both old ARP selections, all three legal
+single-update choices, and ARP preserve/switch. It proves discarded-prefetch
+ownership, exact RAM/program ownership and data, repeated-prefetch-only AR/ARP
+effects, one protected readback, dummy return-PC ownership, and vector entry.
+All 72 complete tuples reach cover step 15 through depth 28 under arbitrary
+clock-enable stalls [`formal/tms32010_interrupt_table_indirect.sby`]. This is
+bounded logical fixture evidence, not arbitrary memory, nontrivial prior-stack,
+explicit-pipeline subphase, package-pin, electrical, simultaneous-update, or
+unbounded proof.
+
 A separate four-case explicit-pipeline test pulses INT in each of CALA's and
 RET's two execution intervals. It proves that the request may latch during the
 discarded sequential or selected-target read but cannot retire, mutate the

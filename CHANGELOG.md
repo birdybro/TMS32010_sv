@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A depth-28 actual-core indirect-TBLR/TBLW interrupt-arrival formal harness.
+  Symbolic selectors cross both directions, both selected auxiliary registers,
+  all three legal update modes, ARP preservation/replacement, and all three
+  represented request intervals, exposing 72 independent completed-entry
+  covers.
 - A 22-step actual-core indirect-IN/OUT interrupt-arrival formal harness.
   Symbolic selectors cross direction, both selected auxiliary registers, all
   three legal update modes, ARP preservation/replacement, and both request
@@ -1364,6 +1369,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 72 indirect-TBLR/TBLW direction/AR/update/ARP-action/arrival tuples pass
+  BMC through depth 28 and independently reach completed entry at cover step
+  15. The proof checks discarded-prefetch ownership, ACC-addressed program
+  transfer, exact opposing RAM/program direction and data, one transfer,
+  repeated-prefetch-only AR/ARP commit, protected readback, dummy/vector
+  sequencing, and arbitrary clock-enable stalls. The formal inventory now has
+  80 passing tasks from 40 configurations; arbitrary program/data, nontrivial
+  prior stacks, explicit-pipeline subphase, and electrical behavior remain
+  outside this proof.
 - All 48 indirect-IN/OUT direction/AR/update/ARP-action/arrival tuples pass
   BMC through depth 22 and independently reach completed entry at cover step
   13. The proof checks old-address transfer ownership, exact callback and RAM

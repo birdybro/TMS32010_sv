@@ -231,7 +231,16 @@ one enabled logical external-memory mutation before protected/dummy/vector
 sequencing. All three covers reach step 9 through depth 20. The fixture commit
 is not native four-subphase placement, electrical write timing, indirect-table,
 or explicit-pipeline proof
-[`formal/tms32010_interrupt_table_write.sby`]. A further actual-core harness
+[`formal/tms32010_interrupt_table_write.sby`]. A complementary depth-28
+actual-core harness crosses indirect TBLR/TBLW direction, both selected ARs,
+all three legal single-update modes, ARP preserve/switch, and all three arrival
+positions. It proves discarded PC+1 ownership, exact ACC-addressed program and
+old-addressed RAM transfer direction/data, repeated-prefetch-only AR/ARP
+commit, protected readback, dummy fetch, and vector entry. All 72 complete
+tuples reach cover step 15 under arbitrary clock-enable stalls
+[`formal/tms32010_interrupt_table_indirect.sby`]. It does not prove arbitrary
+memory, nontrivial prior stacks, explicit-pipeline subphase, electrical,
+simultaneous-update, or unbounded behavior. A further actual-core harness
 independently selects direct IN versus OUT and either two-cycle request-arrival
 position. It proves exact ports, callback/RAM direction and data, one enabled
 transfer, protected signed readback, no midinstruction entry, dummy fetch,
