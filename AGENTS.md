@@ -712,17 +712,25 @@ tuples cross indirect TBLR/TBLW direction, selected AR, legal update, ARP
 action, and all three arrival intervals. These are bounded logical fixture
 proofs; they do not qualify original-package branch pins, explicit-pipeline
 subphases, peripheral behavior, or electrical timing.
+A separate depth-80 proof over the explicit sequential-pipeline hierarchy
+chains four CALLs before fixed indirect `TBLR *+,AR1`. It proves distinct
+preexisting stack words, all three native table intervals, exact MEN/data
+ownership, repeated-prefetch-only RAM/AR/ARP/stack commit, following-LAC
+consumption, and harness-observed state/program-data-interface stability under
+arbitrary clock-enable stalls; its
+complete path reaches cover step 74. This is one fixed TBLR scenario, not a
+general pipeline or electrical proof.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 80 passing BMC/cover tasks from 40
+The complete current matrix contains 82 passing BMC/cover tasks from 41
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification
 inventory, not a claim
 of complete-core proof.
 This is not a complete formal proof; no general pipeline, general or unbounded
-interrupt-entry proof, nontrivial-prior-stack indirect-table proof, general
+interrupt-entry proof, arbitrary-program/stack indirect-table proof, general
 external-memory proof, or complete pin timing
 exists.
 The project must not be called instruction-complete or cycle-accurate. Consult

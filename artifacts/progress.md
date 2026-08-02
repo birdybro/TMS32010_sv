@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded indirect-table interrupt arrivals
+- **Current milestone:** `FORMAL-001` explicit-pipeline indirect-table stack proof
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,7 +148,7 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 80 tasks from 40 SymbiYosys configurations pass with
+- **Formal status:** all 82 tasks from 41 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, three 18-, six 20-, one 22-, and one 28-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
@@ -223,7 +223,14 @@
   an explicit enabled phase-3 synchronous program-memory contract. It proves
   the old PC+1 word persists until the exact write boundary, address 2 receives
   `0x7e44` exactly once, and only the repeated replacement fetch executes as
-  `LACK 0x44`; its complete cover reaches step 35. An eighth 10-step
+  `LACK 0x44`; its complete cover reaches step 35. A separate depth-80
+  explicit-pipeline BMC chains four CALLs into fixed indirect
+  `TBLR *+,AR1`. It proves distinct full-stack setup, discarded PC+1,
+  ACC-addressed MEN transfer of `0xb33c` to old AR0 address 5, repeated PC+1,
+  deferred AR0/ARP and stack-bottom commit, and following direct-LAC
+  consumption under arbitrary stalls; its complete cover reaches step 74.
+  This is one fixed path, not a general indirect-table or pipeline proof. An
+  eighth 10-step
   actual-core BMC proves recognized-reset controls, transaction and
   instruction-valid suppression, clock-enable priority, documented OVM
   retention, and the explicitly provisional retention bundle under `OQ-012`;
@@ -1721,6 +1728,19 @@
   arbitrary-memory, nontrivial-prior-stack, explicit-pipeline subphase,
   package-pin, electrical, simultaneous-update, or unbounded proof. No
   synthesizable RTL changed, so prior synthesis evidence remains applicable.
+- **New explicit-pipeline indirect-table/stack evidence:** a depth-80 BMC
+  composes four nested CALLs, distinct return words, indirect
+  `TBLR *+,AR1`, and a following direct LAC. It proves all three native table
+  intervals, old-AR0 and ACC address ownership, exact `0xb33c` transfer,
+  repeated-prefetch-only RAM/AR/ARP effects, old-level-2 stack-bottom
+  duplication, LAC sign extension to `0xffff_b33c`, native-strobe exclusion,
+  and harness-observed state/program-data-interface stability during arbitrary
+  bounded stalls. The completed path
+  reaches cover step 74; the complete suite now has 82 passing tasks from 41
+  configurations. One-clock `sample_o`/`retired_o` diagnostics are not
+  retained-state claims. This is not TBLW, arbitrary-control/program/memory,
+  general-pipeline, arbitrary physical clock-stop, or electrical proof. No
+  synthesizable RTL changed, so prior synthesis evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1769,11 +1789,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend bounded table evidence to a nontrivial preexisting stack
-  or explicit-pipeline indirect scenario without generalizing beyond documented
-  core behavior, or
-  advance another unblocked P0 evidence slice;
+- **Next task:** extend explicit-pipeline bounded evidence to an indirect TBLW
+  control scenario or advance another unblocked P0 evidence slice without
+  generalizing beyond documented core behavior;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `1af5592`
+  `479bf17`

@@ -1740,6 +1740,20 @@ objective passing evidence.
   step 15. Simultaneous increment/decrement remains excluded under `OQ-010`;
   arbitrary program/data, nontrivial prior stacks, explicit-pipeline subphase,
   package-pin, electrical, and unbounded behavior remain outside this proof.
+  A depth-80 explicit-pipeline TBLR configuration chains four nested direct
+  CALLs to establish distinct stack words before `LARK AR0,5; LARK AR1,9;
+  LACK 0x20; TBLR *+,AR1`. It proves opcode ownership through discarded PC+1,
+  ACC-addressed MEN transfer of program word `0xb33c` to old AR0 address 5,
+  repeated-PC+1 fetch, phase/strobe exclusivity, no early RAM/AR/ARP/stack
+  effect, low-nine-bit AR0 increment, ARP replacement, documented old-level-2
+  stack-bottom duplication, following direct-LAC consumption, and checked
+  harness-observed state/program-data-interface stability during arbitrary
+  clock-enable stalls. The completed
+  path reaches cover step 74. `sample_o` and `retired_o` are intentionally
+  excluded from retained-stall assertions because they are one-FPGA-clock
+  diagnostic pulses, not native pins or architectural state. This fixed
+  fixture does not qualify TBLW, other addressing controls, arbitrary memory,
+  electrical timing, or the general integrated pipeline.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1842,7 +1856,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 80 BMC/cover tasks from 40 checked-in
+  The current runner passes all 82 BMC/cover tasks from 41 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

@@ -128,6 +128,14 @@ holding state.** The caller continues to own every commit boundary and
 external cycle. In particular, the primitive does not resolve `PUSH`/`POP`
 program-bus ownership under `OQ-016`.
 
+A depth-80 composed-pipeline proof now reaches the same final table relation
+from four distinct CALL-created stack words: fixed indirect TBLR preserves
+`{TOS,L1,L2}` and replaces the old bottom with old L2 only at the repeated-
+prefetch boundary. The complete transfer/following-LAC path reaches cover step
+74 [`formal/tms32010_pipeline_table_indirect_stack.sby`]. This is bounded
+evidence for one fixed path, not visibility of the temporary internal stack
+state or a general stack/pipeline proof.
+
 The portable `tms32010_auxiliary_counter` block expresses the documented AR
 post-modification arithmetic as a combinational relation. Hold preserves all
 16 bits. Exclusive increment or decrement wraps only `AR[8:0]` modulo 512 and

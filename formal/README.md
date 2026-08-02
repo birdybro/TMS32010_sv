@@ -646,6 +646,32 @@ the stated program-memory model. It does not prove indirect addressing,
 arbitrary write targets/data, interrupt arrival, asynchronous or electrical
 memory timing, or the general integrated pipeline.
 
+## Integrated indirect-TBLR full-stack pipeline harness
+
+`tms32010_pipeline_table_indirect_stack.sby` checks the complete explicit
+sequential-pipeline hierarchy with a depth-80 BMC and cover. Four fixed direct
+CALLs build stack state `{0x052, 0x032, 0x012, 0x002}` before `LARK AR0,5`,
+`LARK AR1,9`, `LACK 0x20`, and indirect `TBLR *+,AR1`. Program word `0x020`
+contains `0xb33c`; repeated PC+1 contains direct `LAC 5`.
+
+Assertions prove all four return-address pushes, retained TBLR ownership over
+the discarded `0x084` fetch, the address-`0x020` MEN transfer into old AR0
+address 5, and no early RAM, AR, ARP, or stack effect. Only the
+repeated `0x084` fetch releases ownership, increments AR0 from 5 to 6, selects
+ARP 1, duplicates old stack level 2 into the bottom, and exposes the RAM word
+to the following LAC. That LAC must sign-extend `0xb33c` to
+`0xffff_b33c`. Native strobe exclusion, exact program/data direction, one
+transfer, and the harness-observed retained architectural state and program/
+data interface controls, addresses, and data remain checked under arbitrary
+clock-enable stalls. The one-FPGA-clock
+`sample_o` and `retired_o` diagnostic pulses are deliberately not classified
+as retained state. The complete path reaches cover step 74.
+
+This proof qualifies one fixed indirect TBLR path with a nonzero full prior
+stack. It does not prove TBLW, other indirect controls, arbitrary programs or
+memory, interrupts, the general integrated pipeline, arbitrary physical clock
+stopping, or electrical timing.
+
 ## Driver Sound same-clock host-timing harness
 
 `hard_drivin_sound_host_timing.sby` checks the isolated A044427 logical timing
@@ -729,7 +755,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 40 configurations produce 80 passing BMC/cover tasks. They still
+The current 41 configurations produce 82 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

@@ -133,6 +133,15 @@ deferred architectural commit, and uses self-modifying TBLW to prove the
 discarded word never enters execution. These tests validate logical phases,
 not analog delay or arbitrary physical-device clock stoppage.
 
+A depth-80 composed-pipeline proof adds one fixed indirect TBLR case after
+four nested CALLs. It proves distinct preexisting stack state, old-AR0 address
+5, ACC program address `0x020`, exact `0xb33c` MEN transfer, repeated-prefetch-
+only AR/ARP/stack/RAM effects, and following-LAC consumption under arbitrary
+bounded clock-enable stalls; cover reaches step 74
+[`formal/tms32010_pipeline_table_indirect_stack.sby`]. It does not generalize
+to TBLW, other indirect controls, arbitrary programs/memory, physical clock
+stopping, or electrical timing.
+
 Figure 2-12 now establishes the interrupt program-read order. After a request
 becomes active during fetch N, program space reads N, N+1, a dummy N+2, and
 vector 2. N and N+1 execute; N+2 is not executed before entry. The internal

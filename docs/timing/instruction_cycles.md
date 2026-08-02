@@ -349,6 +349,15 @@ does not widen the direct TBLR bound to indirect addressing, arbitrary memory
 timing, or arbitrary instruction contexts
 [`formal/tms32010_pipeline_table_write.sby`, `formal/README.md`].
 
+A third integrated-pipeline harness reaches one fixed indirect
+`TBLR *+,AR1` path with four distinct preexisting CALL stack words at cover
+step 74 and proves it through depth 80. It checks discarded PC+1 MEN,
+ACC-addressed MEN transfer, repeated PC+1 MEN, deferred AR0/ARP and stack-
+bottom effects, and following LAC consumption under arbitrary clock-enable
+stalls. This does not generalize to TBLW, other indirect controls, arbitrary
+programs/memory, or electrical timing
+[`formal/tms32010_pipeline_table_indirect_stack.sby`, `formal/README.md`].
+
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,
 keeps BANZ in the execute slot during its nonexecutable PC+1 operand fetch,

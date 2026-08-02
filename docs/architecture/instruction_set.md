@@ -625,6 +625,15 @@ fixture evidence, not arbitrary program/data, nontrivial prior-stack, explicit-
 pipeline subphase, package-pin, electrical, simultaneous-update, or unbounded
 proof.
 
+A separate depth-80 explicit-pipeline harness reaches fixed indirect
+`TBLR *+,AR1` only after four CALLs create distinct full-stack state. It proves
+old-AR0 transfer ownership, all three native table intervals, deferred AR0/
+ARP and stack-bottom effects, exact `0xb33c` RAM commit, and following-LAC
+consumption; cover reaches step 74
+[`formal/tms32010_pipeline_table_indirect_stack.sby`]. This closes one fixed
+nontrivial-stack/explicit-pipeline case, not TBLW, other control fields,
+arbitrary code/memory, or general pipeline behavior.
+
 ## Model/tool-qualified, RTL-deferred `PUSH`/`POP`
 
 `PUSH` is exact word `0x7f9c`; it copies `ACC[11:0]` to the top of the

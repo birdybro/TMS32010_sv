@@ -345,6 +345,15 @@ dummy/vector ordering, and one transfer; all 72 tuples reach cover step 15.
 This is bounded logical-interface evidence, not arbitrary memory, nontrivial
 prior-stack, native subphase, package-pin, electrical, or unbounded proof.
 
+`formal/tms32010_pipeline_table_indirect_stack.sby` separately composes four
+CALL-created stack words with fixed indirect `TBLR *+,AR1` in the explicit
+four-subphase wrapper. Through depth 80 it proves discarded/repeated PC+1 MEN,
+ACC-addressed table MEN, exact old-AR0/data direction, deferred architectural
+commit, and following-LAC consumption under arbitrary bounded phase stalls;
+the complete path reaches cover step 74. This is one logical native-phase
+scenario, not arbitrary physical clock stopping, package delay, electrical
+timing, TBLW, or general interface proof.
+
 ## No documented READY pin
 
 The original 40-pin pinout contains no `READY`, `WAIT`, or equivalent input.
