@@ -107,6 +107,11 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     ) -> None:
         self._run_testbench("tb_sequential_pipeline_interrupt_multicycle")
 
+    def test_one_cycle_arrivals_preserve_explicit_interrupt_ownership(
+        self,
+    ) -> None:
+        self._run_testbench("tb_sequential_pipeline_interrupt_one_cycle")
+
     def test_computed_control_arrivals_defer_until_target_capture(self) -> None:
         self._run_testbench("tb_sequential_pipeline_interrupt_computed")
 

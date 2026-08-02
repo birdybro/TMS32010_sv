@@ -709,7 +709,7 @@
       "overflow_behavior": "signed ACC-plus-P overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "when both endpoints are implemented, T receives the selected internal data word, the next higher data-memory address receives the same word, and ACC receives ACC plus the previous P value subject to OVM; P and the source word are unchanged; whether the parallel effects complete for source 0x8f and unresolved destination 0x90 remains OQ-014",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special LTD interaction documented; when LTD follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; the core-level one-cycle matrix covers request arrival while LTD retires, while matching explicit-pipeline family coverage remains untested",
+      "interrupt_interaction": "no special LTD interaction documented; when LTD follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; paired core and explicit-pipeline one-cycle matrices cover request arrival while LTD retires, including concurrent MEN and registered internal-RAM read/next-word-write ownership",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -759,7 +759,7 @@
       "overflow_behavior": "signed ACC-plus-P overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "T receives the complete selected internal data word while ACC receives ACC plus the previous P value subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special LTA interaction documented; when LTA follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; the core-level one-cycle matrix covers request arrival while LTA retires, while matching explicit-pipeline family coverage remains untested",
+      "interrupt_interaction": "no special LTA interaction documented; when LTA follows MPY or MPYK, its completion reaches the generic, implemented multiply-deferral retirement boundary; paired core and explicit-pipeline one-cycle matrices cover request arrival while LTA retires, including concurrent MEN and registered internal-RAM-read ownership",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -881,7 +881,7 @@
       "overflow_behavior": "does not affect OV or apply OVM saturation",
       "result_behavior": "ACC receives the complete 32-bit contents of P; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special PAC interaction documented; when PAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; the core-level one-cycle matrix covers request arrival while PAC retires, while matching explicit-pipeline family coverage remains untested",
+      "interrupt_interaction": "no special PAC interaction documented; when PAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; paired core and explicit-pipeline one-cycle matrices cover request arrival while PAC retires, including its program-only explicit bus shape",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -915,7 +915,7 @@
       "overflow_behavior": "signed overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "ACC receives the 32-bit sum of ACC and P subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special APAC interaction documented; when APAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; the core-level one-cycle matrix covers request arrival while APAC retires, while matching explicit-pipeline family coverage remains untested",
+      "interrupt_interaction": "no special APAC interaction documented; when APAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; paired core and explicit-pipeline one-cycle matrices cover request arrival while APAC retires, including its program-only explicit bus shape",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [
@@ -949,7 +949,7 @@
       "overflow_behavior": "signed overflow sets sticky OV; OVM clear stores the wrapped result and OVM set saturates to 0x7fffffff or 0x80000000 according to overflow direction",
       "result_behavior": "ACC receives the 32-bit difference ACC minus P subject to OVM; P is unchanged",
       "branch_behavior": "none",
-      "interrupt_interaction": "no special SPAC interaction documented; when SPAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; the core-level one-cycle matrix covers request arrival while SPAC retires, while matching explicit-pipeline family coverage remains untested",
+      "interrupt_interaction": "no special SPAC interaction documented; when SPAC follows MPY or MPYK, its completion reaches the generic multiply-deferral retirement boundary; paired core and explicit-pipeline one-cycle matrices cover request arrival while SPAC retires, including its program-only explicit bus shape",
       "documented_cycle_count": 1,
       "conditional_cycle_differences": [],
       "external_bus_cycles": [

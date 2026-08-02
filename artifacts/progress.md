@@ -1,13 +1,13 @@
 # Progress summary
 
-- **Current milestone:** `CTRL-002` ordinary one-cycle interrupt arrivals
+- **Current milestone:** `CTRL-002` explicit one-cycle interrupt arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
   instruction/decode tests; 6 interrupt RTL/phase
-  tests; 57 native bus/phase/wrapper tests, including exhaustive original-
+  tests; 58 native bus/phase/wrapper tests, including exhaustive original-
   MC68000 mailbox word/upper-byte/lower-byte normalization, CALA/RET bus/stall,
   and
   four-boundary interrupt qualification,
@@ -1565,7 +1565,8 @@
   bounded formal configurations, all Yosys targets, and Quartus fit/TimeQuest.
   Its six logs remain ignored and hash-bound to that exact commit/tree; later
   work cannot reuse it as current-revision evidence.
-- **New one-cycle interrupt evidence:** a 39-case core matrix pulses active-low
+- **New one-cycle interrupt evidence:** paired 39-case core and explicit-
+  pipeline matrices pulse active-low
   INT while every supported ordinary one-cycle operation retires, excluding
   only DINT/EINT because their mask/race rules already have dedicated tests.
   The matrix includes all program-only, internal-read/write, multiply,
@@ -1574,9 +1575,11 @@
   protected retirement, a nonexecuting return-PC dummy fetch, PC 3 stacked,
   internal acknowledge, and vector-2 selection. An independent regression
   derives the expected family set from the canonical ISA, requires 39 distinct
-  representatives, and decodes every word back to its named mnemonic. This is
-  retirement-mapped core evidence only; a matching 39-family explicit fetch/
-  execute matrix remains open. No RTL changed, so synthesis/formal evidence is
+  representatives, decodes every word back to its named mnemonic, and proves
+  that both matrices use the identical ordered set. The explicit matrix also
+  proves concurrent MEN ownership and exact registered internal-RAM read/write
+  direction and address, including LTD/DMOV's next-word write and SST's forced
+  page-one destination. No RTL changed, so synthesis/formal evidence is
   unchanged.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
@@ -1626,8 +1629,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend `CTRL-002` with the matching 39-family explicit-
-  pipeline arrival matrix, retaining per-family program/internal-bus ownership
-  and the separate DINT/EINT confidence boundaries.
+- **Next task:** audit every implementable DINT/EINT placement in the explicit
+  pipeline, add tests that label the current DINT-at-protected-boundary result
+  PROVISIONAL, and keep physical resolution under `OQ-019`/`SC-039`.
 - **Latest committed baseline before this cycle:**
-  `2d9da93`
+  `afcff44`

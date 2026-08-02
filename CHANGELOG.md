@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A matching 39-case explicit fetch/execute interrupt-arrival matrix for every
+  supported ordinary one-cycle family. It checks concurrent MEN program reads,
+  exact registered internal-RAM read/write directions and addresses, protected
+  retirement, dummy classification, stacked return PC, acknowledge, and vector
+  capture; its representatives must match the core matrix and canonical ISA.
 - A 39-case core-level interrupt-arrival matrix spanning every supported
   ordinary one-cycle operation except the separately qualified DINT/EINT mask
   controls. Each case checks current retirement with request capture, one safe
@@ -1315,10 +1320,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 - Request arrival at LACK/NOP/control, all common data/address operations,
   MPY/MPYK, PAC/APAC/SPAC, LTA/LTD/DMOV, LST/SST, SUBC, SUBH, ABS, and ADDH now
-  follows the same primary-backed core retirement/deferral/entry contract.
+  follows the same primary-backed core and explicit-pipeline retirement/
+  deferral/entry contract.
   An independent regression derives all ordinary one-cycle mnemonics from the
-  canonical ISA and decodes the 39 distinct testbench words. Matching explicit-
-  pipeline coverage remains disclosed rather than inferred.
+  canonical ISA, decodes the 39 distinct words, and requires both matrices to
+  use the identical ordered representative set.
 - Eight command-receipt regressions cover a successful clean revision, dirty-
   tree preflight, retained formal failure with later commands still executed,
   revision and log tampering, command/summary rewriting, output confinement,
