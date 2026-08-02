@@ -156,6 +156,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "specimen_scope",
             "specimen_photographs",
             "same `specimen_evidence.py` validator",
+            "empty specimen ID is reported as `null`",
+            "reported as `UNQUALIFIED`",
             "exact 16-byte fixture",
             "acceptance_complete=false",
         ):
@@ -164,6 +166,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "single-specimen subset",
             "uses the reusable validator",
             "verifies seven artifacts",
+            "Direct shared-validator regressions",
+            "Empty IDs normalize to `null`",
             "this_specimen_only",
             "does not decode a TI mask",
         ):

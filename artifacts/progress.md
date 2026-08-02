@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` cross-workflow specimen-contract audit
+- **Current milestone:** `ARCH-001` shared specimen-validator direct coverage
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 221 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 225 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1519,6 +1519,13 @@
   and specimen-photo traversal rejection. No physical capture exists, mask
   invariance remains unknown, and synthesis/formal evidence is unchanged
   because no RTL changed.
+- **New shared-validator direct coverage:** five focused regressions now prove
+  the complete five-artifact specimen subset and fail-closed handling of
+  malformed identity, timing, tool versions, exact source/listing/normalized
+  trace, duplicate photograph roles, and artifact-root traversal. Empty
+  specimen IDs report `null`; invalid scope reports `UNQUALIFIED`. These
+  reporting changes do not alter any physical classifier result or confidence
+  level, and synthesis/formal evidence is unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1567,8 +1574,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with direct shared-validator unit coverage
-  for malformed identity, tool-version, listing, and photograph records,
-  preserving every experiment's independent result semantics.
+- **Next task:** begin `REL-001` with an automated tracked-file license and
+  provenance audit that distinguishes project-authored MIT material from
+  external references, generated outputs, and prohibited binaries.
 - **Latest committed baseline before this cycle:**
-  `1b24c62`
+  `d54e18c`

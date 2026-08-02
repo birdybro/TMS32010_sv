@@ -139,7 +139,9 @@ tracking/lot strings, test conditions and tool versions, and distinct
 top/bottom/board photographs to `specimen_scope=this_specimen_only`. It does
 not identify a mask or interpret a tracking string. Each experiment must still
 check its exact image and its own signals, anchors, repetitions, and result
-criteria.
+criteria. An empty specimen ID is reported as `null`, and any scope other than
+the exact `this_specimen_only` declaration is reported as `UNQUALIFIED` while
+the evidence package fails closed.
 
 ## SUBC physical-capture classifier
 

@@ -913,6 +913,8 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Shared specimen reports now normalize empty IDs to `null` and any invalid
+  scope to `UNQUALIFIED`; the underlying evidence package remains incomplete.
 - PUSH/POP evidence now uses the shared specimen validator rather than a
   private duplicate and requires numeric program-memory access time. Its exact
   image, H1/H2/H3 classification, single-specimen scope, and always-open
@@ -1289,6 +1291,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Five direct shared-validator regressions cover a complete five-artifact
+  package and malformed identity, timing, tool versions, source, listing,
+  normalized trace, and specimen photographs without interpreting any result.
 - A structural cross-workflow regression proves that all nine physical
   classifiers invoke the shared specimen validator, retain
   `acceptance_complete=false`, and carry no private listing validator. All six

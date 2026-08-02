@@ -45,12 +45,12 @@ class SpecimenEvidence:
     @property
     def specimen_id(self) -> str | None:
         value = self.metadata.get("specimen_id")
-        return value if isinstance(value, str) else None
+        return value if isinstance(value, str) and value.strip() else None
 
     @property
     def specimen_scope(self) -> str:
         value = self.metadata.get("specimen_scope")
-        return value if isinstance(value, str) else "UNQUALIFIED"
+        return value if value == "this_specimen_only" else "UNQUALIFIED"
 
 
 def _hash_file(path: Path) -> str:

@@ -231,6 +231,13 @@ validity control. Each complete package verifies seven artifacts, reports
 `this_specimen_only`, and retains `acceptance_complete=false`; provenance
 cannot turn an observed retention pattern into a mask-invariant result.
 
+Direct shared-validator regressions now exercise the complete five-artifact
+specimen subset plus malformed identity, timing, tool-version, source,
+listing, normalized-trace, and photograph records. Empty IDs normalize to
+`null`, invalid scope normalizes to `UNQUALIFIED`, and every malformed package
+remains ineligible for review. These are evidence-handling guarantees only;
+they do not add a physical result or decode a manufacturing string.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

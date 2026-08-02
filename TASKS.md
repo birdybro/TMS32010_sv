@@ -263,6 +263,11 @@ objective passing evidence.
   the located corpus. Full raw package/date/lot provenance and at least two
   specimens are now required for physical generalization; no RTL behavior
   changed and `OQ-008` remains RESEARCHING/NO REVISION MAP.
+  Five direct shared-validator regressions now cover its complete
+  five-artifact subset and malformed identity, timing, tool-version, exact
+  source/listing/trace, and photograph records. Empty IDs and invalid scope
+  fail closed as `null`/`UNQUALIFIED`; no experiment result or confidence
+  classification changes.
 
 ## Milestone 4 — Instruction encoding database
 
