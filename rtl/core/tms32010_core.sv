@@ -199,6 +199,8 @@ module tms32010_core #(
   logic        adds_overflow;
   logic [15:0] addh_high_result;
   logic [31:0] shifted_data_operand;
+  logic        output_shift_valid;
+  logic [15:0] shifted_accumulator_word;
   logic [31:0] accumulator_arithmetic_operand;
   logic        accumulator_arithmetic_subtract;
   logic [31:0] accumulator_arithmetic_wrapped_result;
@@ -326,6 +328,13 @@ module tms32010_core #(
     .data_i   (ram_read_data),
     .shift_i  (decoded_shift),
     .result_o (shifted_data_operand)
+  );
+
+  tms32010_output_shifter output_shifter (
+    .accumulator_high_i (accumulator_o[31:12]),
+    .shift_i            (decoded_shift[2:0]),
+    .shift_valid_o      (output_shift_valid),
+    .result_o           (shifted_accumulator_word)
   );
 
   assign multiplier_operand =
@@ -574,17 +583,7 @@ module tms32010_core #(
         data_page_pointer_o
       };
     end else if (decoded_operation == OP_SACH) begin
-      case (decoded_shift)
-        4'd1: data_write_data_o = {
-          accumulator_o[30:16],
-          accumulator_o[15]
-        };
-        4'd4: data_write_data_o = {
-          accumulator_o[27:16],
-          accumulator_o[15:12]
-        };
-        default: data_write_data_o = accumulator_o[31:16];
-      endcase
+      data_write_data_o = shifted_accumulator_word;
     end
   end
   always_comb begin
@@ -1350,6 +1349,9 @@ module tms32010_core #(
          accumulator_arithmetic_wrapped_result) ==
         (overflow_mode_o && accumulator_arithmetic_overflow)
       );
+      if (decoded_valid && (decoded_operation == OP_SACH)) begin
+        assert (output_shift_valid);
+      end
       if (control_operand_pending) begin
         assert (!(
           data_read_o ||

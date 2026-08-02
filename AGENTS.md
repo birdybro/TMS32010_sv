@@ -332,7 +332,11 @@ evidence for correct core integration.
 The shared boundary includes
 `ADD`/`ADDH`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SUB`/`SUBC`/`SUBH`/`SUBS`/`XOR`/`ZALH`/`ZALS`
 reads and `DMOV`/`LTD`/`SACL`/`SACH`/`SAR`/`SST` writes in a 144-word internal RAM, plus SACH output shifts
-0, 1, and 4. ADD and SUB have directed sign-extension, shift, positive/negative
+0, 1, and 4. SACH uses a standalone portable output-shift relation whose
+one-step symbolic harness leaves the full ACC/field arbitrary, proves the
+legal result and ACC[11:0] independence, and treats invalid local zeroing only
+as fail-closed implementation policy. ADD and SUB have directed sign-
+extension, shift, positive/negative
 wrap/saturation, and sticky-OV evidence. SUBH has directed high-half alignment,
 low-half preservation, both signed-overflow directions, full-accumulator OVM
 saturation, and common-address evidence. ADDH has directed modulo high-half
@@ -688,9 +692,9 @@ its complete self-modifying path is reachable at step 35.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 54 passing BMC/cover tasks from 27
+The complete current matrix contains 56 passing BMC/cover tasks from 28
 checked-in SymbiYosys configurations, including the exhaustive combinational
-accumulator and input-shifter relations. These counts are qualification
+accumulator, input-shifter, and SACH output-shifter relations. These counts are qualification
 inventory, not a claim
 of complete-core proof.
 This is not a complete formal proof; no general pipeline, formally exhaustive

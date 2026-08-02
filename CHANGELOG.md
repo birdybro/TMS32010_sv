@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A portable combinational `tms32010_output_shifter` and one-step symbolic
+  harness. The proof leaves the complete ACC and SACH field arbitrary, derives
+  each stored bit independently for shifts zero, one, and four, proves
+  ACC[11:0] independence, and reaches six primary/boundary/invalid covers.
+- A standalone Yosys smoke target for the SACH output shifter.
 - A portable combinational `tms32010_input_shifter` and one-step symbolic
   harness. The proof exhausts all 1,048,576 data/count combinations against an
   independent bit-indexed sign-extension/zero-fill reference and reaches
@@ -784,6 +789,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- SACH now consumes the proved shared output-shifter result; its decode,
+  effective address, write ownership, one-cycle timing, and ACC preservation
+  remain unchanged. Invalid fields remain decoder-rejected, while the local
+  primitive's zero result is explicitly implementation-only fail-closed
+  policy.
 - LAC, ADD, and SUB now consume the proved shared signed input-shifter result;
   instruction decode, addressing, arithmetic/status effects, and timing are
   unchanged.
@@ -1078,6 +1088,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The SACH output-shifter proof passes for every full-ACC/three-bit-field
+  combination and reaches all six primary-example, cross-half, and invalid
+  covers at step 0. Directed SACH tests retain all three legal shifts,
+  invalid-field trapping, ACC preservation, addressing, writes, and one-cycle
+  counts. Standalone Yosys maps the block to 86 combinational cells with no
+  storage, latch, retained check, or structural problem. The complete
+  56-task/28-configuration formal matrix and all repository, model/unit,
+  instruction, bus, interrupt, and differential suites pass after integration.
 - The shared input-shifter proof passes for every 20-bit source/count
   combination and reaches all four signed/count boundary covers at step 0.
   Focused LAC, ADD, and SUB RTL tests retain their sign-extension, shift,
@@ -1169,25 +1187,26 @@ Changelog, and the project follows semantic versioning once releases begin.
 - The complete repository gates pass with 164 provenance/document/tool tests,
   232 model/unit tests, 39 instruction/decode RTL tests, 57 bus/integration
   tests, 5 interrupt RTL tests, and 25 differential/oracle tests. Verilator
-  lint checks 42 modules; all 54 formal jobs from 27 configurations pass; all
-  32 Yosys targets synthesize; and all 59 acquired reference hashes verify.
+  lint checks 43 modules; all 56 formal jobs from 28 configurations pass; all
+  33 Yosys targets synthesize; and all 59 acquired reference hashes verify.
 - Quartus 17.0.2 fits the fifty-eight-instruction explicit-pipeline hierarchy
-  on `5CSEBA6U23I7` in 1,332 ALMs, 400 registers, one 144-by-16 M10K, and one
-  DSP block. TimeQuest closes the 25 MHz internal constraint with +19.907 ns
-  worst setup and +0.165 ns worst hold slack, 49.77 MHz worst slow-corner
+  on `5CSEBA6U23I7` in 1,372 ALMs, 400 registers, one 144-by-16 M10K, and one
+  DSP block. TimeQuest closes the 25 MHz internal constraint with +18.860 ns
+  worst setup and +0.165 ns worst hold slack, 47.3 MHz worst slow-corner
   Fmax, and
   zero unconstrained categories across 415 explicitly virtual/false-pathed
   harness pins. The three remaining full-flow warnings are harness-only pin/
   Lite-license notices; analysis/synthesis and TimeQuest each report zero
   warnings. The detailed 100 °C critical path improves from the original
   33.464 ns/26 levels through 29.180 ns/19 levels, 24.217 ns/16 levels, and
-  21.399 ns/14 levels, 20.034 ns/12 levels, 20.016 ns/13 levels, and the
-  current 19.408 ns/13-level program-data-to-I/O-sample result.
-- Yosys 0.67+111 reports 16,184 cells/125 checks for the synthesis harness,
-  16,172 cells/125 checks for the direct pipeline, and 16,221 cells/132 checks
+  21.399 ns/14 levels, 20.034 ns/12 levels, 20.016 ns/13 levels,
+  19.408 ns/13 levels, and the current 20.866 ns/14-level
+  program-data-to-overflow-state result.
+- Yosys 0.67+111 reports 16,225 cells/126 checks for the synthesis harness,
+  16,193 cells/126 checks for the direct pipeline, and 16,242 cells/133 checks
   for the generic
-  MiSTer adapter, all with clean structural checks. Both the generic count and
-  Cyclone V ALMs fall in this checkpoint, but neither representation is
+  MiSTer adapter, all with clean structural checks. The generic and Cyclone V
+  counts both increase at this checkpoint, but neither representation is
   reported as a proxy for the other.
 - The address-driven bus-control regression reaches a mirrored GSP access,
   canonical MSP access with arbitrary external wait, mirrored DUART access

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `RTL-001` shared signed input shifter
+- **Current milestone:** `RTL-001` SACH output shifter
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -33,8 +33,8 @@
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
   RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
-  1,332 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 49.77 MHz worst
-  slow-corner internal Fmax, +19.907 ns setup slack, and +0.165 ns worst hold
+  1,372 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 47.3 MHz worst
+  slow-corner internal Fmax, +18.860 ns setup slack, and +0.165 ns worst hold
   slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
   fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
   claimed. TimeQuest
@@ -42,7 +42,7 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 16,184 generic cells with 125 retained checks and lowering the
+  producing 16,225 generic cells with 126 retained checks and lowering the
   registered RAM and forwarding to generic registers/muxes; its
   technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
@@ -50,12 +50,12 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 16,172 generic cells with 125 retained checks and
+  independently passes at 16,193 generic cells with 126 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 16,221 generic cells
-  with 132 retained checks and zero structural problems, including 49 cells
+  Yosys at 16,242 generic cells
+  with 133 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
@@ -68,7 +68,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,752 abstract cells/410 checks
+  board top retains six memories and passes at 3,759 abstract cells/411 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -136,7 +136,10 @@
   A thirty-second target checks the shared combinational signed input shifter
   at 89 mapped cells with no storage, latch, retained check, or structural
   problem.
-- **Formal status:** all 54 tasks from 27 SymbiYosys configurations pass with
+  A thirty-third target checks the shared combinational SACH output shifter at
+  86 mapped cells with no storage, latch, retained check, or structural
+  problem.
+- **Formal status:** all 56 tasks from 28 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -862,7 +865,7 @@
   active-scrub blocking, and release after validity address `0x1fff`; formal
   proves every input combination and reaches four nonvacuity classes.
   Standalone Yosys reports 13 cells/seven checks, and the current board reports
-  3,752 cells/410 checks with six memories. This interlock does not itself
+  3,759 cells/411 checks with six memories. This interlock does not itself
   select
   the separate physical-source model, establish RC tolerance, or implement
   cross-domain deassertion (`OQ-035`).
@@ -1230,6 +1233,23 @@
   ns worst hold across analyzed corners with 49.77 MHz worst slow-corner Fmax.
   The 100 °C detailed path is 19.408 ns/13 levels from retained program data
   through decode/control into I/O sampling, and does not traverse the shifter.
+- **New output-shifter evidence:** the portable core now routes SACH's
+  primary-documented zero/one/four ACC-to-store relation through one
+  combinational block while leaving decode, effective addressing, write
+  ownership, one-cycle timing, and ACC preservation in the core. A one-step
+  proof leaves the full ACC and field arbitrary, independently indexes all 16
+  result bits, proves ACC[11:0] independence, and reaches six primary,
+  cross-half, and invalid-field covers. The local invalid zero is explicitly
+  fail-closed implementation policy; architecture still traps every invalid
+  field. The complete 56-task/28-configuration formal matrix and all
+  164/232/39/57/5/25 regression groups pass. Yosys maps the primitive to 86
+  cells and reports 16,225 cells/126 checks for the harness, 16,193/126 for
+  the direct pipeline, 16,242/133 for the generic MiSTer wrapper, and
+  3,759/411 with six memories for the Driver Sound hierarchy. Quartus fits
+  1,372 ALMs, 400 registers, one M10K, and one DSP, closes 25 MHz at +18.860 ns
+  setup and +0.165 ns worst hold, and reports 47.3 MHz worst slow-corner Fmax.
+  The detailed 100 °C path is 20.866 ns/14 levels from retained program data
+  to sticky-overflow state and does not use the output-shift result.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1278,9 +1298,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `RTL-001` by extracting the portable SACH output
-  shifter for the primary-documented 0/1/4 shifts and prove its complete
-  accumulator-to-store relation independently of instruction decode,
-  addressing, and timing.
+- **Next task:** continue `RTL-001` by extracting a portable four-level,
+  12-bit stack transition primitive for the already qualified CALL, CALA, RET,
+  and table-transfer mutations, while keeping unresolved PUSH/POP external
+  cycle ownership outside the integration claim.
 - **Latest committed baseline before this cycle:**
-  `6fcac47`
+  `58ad6b9`

@@ -65,6 +65,21 @@ and checks every 0-through-15 shift without relying on instruction decode
 evidence, not proof of addressing, ALU effects, instruction timing, or the
 original physical barrel-shifter implementation.
 
+The portable RTL represents SACH's separate output path as a combinational
+ACC-to-word shifter for the only primary-documented counts, zero, one, and
+four [ti-tms32010-users-guide-spru001b, §2.2.4.2, printed p. 2-16
+(PDF p. 40), and SACH, printed p. 3-53 (PDF p. 103)]. Only ACC[31:12] can
+reach the stored high word at those counts, so the
+module's narrowed input is an implementation convenience rather than a claim
+about the original physical shifter. Its one-step symbolic harness leaves the
+full 32-bit ACC and three-bit field arbitrary and constructs every stored bit
+from an independent source index [`formal/tms32010_output_shifter.sby`]. It
+therefore also proves that ACC[11:0] cannot affect the result. The local zero
+result for the five invalid fields is fail-closed implementation policy; the
+architectural decoder rejects those fields, and no original-silicon behavior
+is assigned to them. This relation evidence does not prove SACH addressing,
+write timing, or bus ownership.
+
 Arithmetic uses two's-complement values. The ALU is 32 bits wide. A
 data-memory operand is sign-extended before a documented left shift of 0–15
 places; zeros enter at the low end. Instructions that suppress sign extension

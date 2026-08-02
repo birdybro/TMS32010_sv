@@ -52,11 +52,17 @@ figures and the scope of the retained core-program and shared-arithmetic
 optimizations are in
 `synthesis/qualification.md`.
 
-The command runs thirty-two checked-in scripts. A standalone
+The command runs thirty-three checked-in scripts. A standalone
 `tms32010_input_shifter.ys` target maps the portable signed input barrel
 shifter to 89 generic cells with no storage, latch, retained check, or
 structural problem. The exhaustive data/count relation is supplied by
 `formal/tms32010_input_shifter.sby`, not by the cell count.
+
+A standalone `tms32010_output_shifter.ys` target maps the portable SACH
+ACC-to-store relation to 86 generic combinational cells with no storage,
+latch, retained check, or structural problem. Its exhaustive full-ACC/field
+relation is supplied by `formal/tms32010_output_shifter.sby`; invalid-field
+zeroing is explicitly local fail-closed policy.
 
 A standalone `tms32010_accumulator.ys` target maps the portable signed 32-bit add/subtract
 and OVM-result block to 367 generic cells with no storage, latch, retained
@@ -65,7 +71,7 @@ result; exhaustive functional evidence is supplied by
 `formal/tms32010_accumulator.sby`, not by the cell count.
 
 The main synthesis harness targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 16,184 generic cells and 125 retained
+`build/yosys/tms32010.json`; it reports 16,225 generic cells and 126 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -95,9 +101,11 @@ check problems. The obsolete direction-consistency assertion disappears with
 its state; directed carrier checks and both table formal paths retain the
 guarded behavior. Sharing the signed add/subtract/OVM arithmetic block across
 seven instruction paths brought the next direct checkpoint to 16,183 cells.
-Extracting the signed input-shift relation used by LAC, ADD, and SUB brings
-the current direct checkpoint to 16,172 cells and 125 checks with zero
-structural problems. This generic reduction coexists
+Extracting the signed input-shift relation used by LAC, ADD, and SUB brought
+the next direct checkpoint to 16,172 cells and 125 checks. Extracting SACH's
+output-shift relation and retaining a decoded-SACH legality invariant brings
+the current direct checkpoint to 16,193 cells and 126 checks with zero
+structural problems. This generic change coexists
 with the lower Cyclone V ALM count recorded by the fitter;
 the two representations are not interchangeable resource estimates.
 
@@ -106,9 +114,10 @@ writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 16,221 generic cells and 132 retained checks, with zero
+Yosys 0.67+111 reports 16,242 generic cells and 133 retained checks, with zero
 structural problems; 49 cells and seven checks are local to the adapter after
-separating deterministic initialization from processor reset.
+separating deterministic initialization from processor reset; the remainder
+of the delta is the core output-shifter checkpoint above.
 
 The fourth script targets the storage-free A044427 Rev-A
 `hard_drivin_sound_bus_decode`. It reports 15 generic combinational cells,

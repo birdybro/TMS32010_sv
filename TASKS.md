@@ -491,6 +491,7 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`,
   `formal/tms32010_input_shifter.sby`,
+  `formal/tms32010_output_shifter.sby`,
   `formal/tms32010_accumulator.sby`,
   `formal/tms32010_internal_ram.sby`,
   `formal/tms32010_internal_ram_registered.sby`
@@ -505,8 +506,14 @@ objective passing evidence.
   ADD, and SUB. Its one-step proof leaves all 20 input bits arbitrary, builds
   the expected output bit by bit, and exhausts every signed source/count
   combination from shift 0 through 15. Decode, addressing, ALU/status effects,
-  and instruction timing remain outside the primitive. `SACH` verifies its output-shifter
-  cross-half behavior; `ZALH`/`ZALS` verify accumulator half placement; all
+  and instruction timing remain outside the primitive. `SACH` now uses a
+  separate combinational output shifter for its primary-documented zero, one,
+  and four counts. Its one-step proof leaves the complete ACC and field
+  arbitrary, independently indexes every result bit, proves ACC[11:0]
+  independence, reaches primary examples, and checks local fail-closed
+  invalid-field behavior. Decode, address selection, the data write, and
+  one-cycle timing remain instruction-owned and directed-tested. `ZALH`/`ZALS`
+  verify accumulator half placement; all
   twenty-six common-address data instructions plus SST verify direct/indirect read/write
   addressing and low-nine-bit AR updates. `LAR` additionally verifies that an
   indirect load into the selected address register suppresses its otherwise
@@ -571,7 +578,7 @@ objective passing evidence.
   CPU/debug writes. It proves both write paths, preservation under non-target
   writes, all eight-bit validity results, and zero output for invalid reads;
   that invalid-read value remains implementation policy under `OQ-002`.
-  Remaining specialized ALU behavior, other output-shifter consumers,
+  Remaining specialized ALU behavior,
   remaining stack operations and remaining status behavior remain. The CALL
   path implements and exposes all four 12-bit stack levels, including
   nested pushes and old-bottom discard.
@@ -1438,6 +1445,12 @@ objective passing evidence.
   extension/zero-fill/left-shift combinations against an independent bit-
   indexed reference and reaches sign/count boundaries at step 0. It does not
   prove decode, addressing, ALU effects, or instruction timing.
+  A second shifter configuration leaves the full 32-bit ACC and three-bit
+  SACH field arbitrary. It independently assembles every legal stored bit,
+  proves exact zero/one/four qualification and ACC[11:0] independence, and
+  reaches six primary/boundary/invalid covers at step 0. Its invalid zero is
+  implementation policy; decode, addressing, writes, and instruction timing
+  remain outside the proof.
   An eleventh standalone internal-RAM configuration passes six-step base case
   and temporal induction. It leaves initial memory arbitrary, quantifies a
   symbolic address across all 144 qualified words, and leaves both write
@@ -1477,6 +1490,8 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
+  The current runner passes all 56 BMC/cover tasks from 28 checked-in
+  configurations, including the standalone SACH output-shifter relation.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, general
@@ -1509,10 +1524,10 @@ objective passing evidence.
   structural/generic synthesis. Generic technology mapping still lowers the
   registered array to flip-flops/muxes, while Quartus recognizes one M10K.
   `make synth-yosys` now reproducibly checks both the
-  synthesis harness (16,184 generic cells/125 checks) and the directly
+  synthesis harness (16,225 generic cells/126 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,172 generic cells/125 checks),
+  pipeline slice (16,193 generic cells/126 checks),
   each with zero structural problems. The Quartus harness now elaborates that
   explicit pipeline rather than the legacy fail-closed wrapper. Retained
   table direction and state-driven sampled-operand selection first
@@ -1531,12 +1546,15 @@ objective passing evidence.
   measured 20.034 ns/12 levels from the retained core-program word to ACC.
   Sharing the proved accumulator arithmetic relation across seven instruction
   paths reduced the fit to 1,332 ALMs with the same register, M10K, and DSP
-  counts. Extracting the independently proved input-shifter relation leaves
-  those resources unchanged. The current fit closes a 25 MHz constraint with
-  +19.907 ns worst setup and +0.165 ns worst hold slack across all analyzed
-  corners and reports 49.77 MHz worst slow-corner Fmax. The reproducible
-  100 °C full path measures 19.408 ns/13 levels from retained program data
-  through decode/control into I/O sampling; the input shifter is not on it.
+  counts. Extracting the independently proved input shifter left those
+  resources unchanged; extracting the separately proved SACH output shifter
+  and retaining its decode-legality invariant brings the current fit to 1,372
+  ALMs with 400 registers, one M10K, and one DSP. The current fit closes a
+  25 MHz constraint with +18.860 ns worst setup and +0.165 ns worst hold slack
+  across all analyzed corners and reports 47.3 MHz worst slow-corner Fmax.
+  The reproducible 100 °C full path measures 20.866 ns/14 levels from retained
+  program data to sticky-overflow state; neither standalone shifter is the
+  endpoint relation.
   An unforwarded M10K experiment failed the back-to-back IN/OUT data contract;
   an in-process bypass experiment lost RAM inference. Both were rejected.
   The board's primary-documented clock is 20 MHz. A rejected exploratory
@@ -1582,6 +1600,9 @@ objective passing evidence.
   A thirty-second standalone script maps the shared signed input shifter to 89
   generic cells with no storage, latch, retained check, or structural problem;
   its exhaustive relation is qualified separately by formal.
+  A thirty-third standalone script maps the SACH output shifter to 86 generic
+  combinational cells with no storage, latch, retained check, or structural
+  problem; its full-ACC/field relation is qualified separately by formal.
   This is not a Quartus mapping or completed sound-board fit.
   Instruction-complete resources, pin-level wrapper constraints, and final
   board timing remain.
@@ -1609,8 +1630,8 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,221 generic
-  cells/132 checks with no structural problems. This is an IMPLEMENTING
+  unsupported-word parking, and reset recovery. Yosys reports 16,242 generic
+  cells/133 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
 
@@ -1959,7 +1980,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,752 abstract cells/410
+  Integrated Yosys retains six memories and reports 3,759 abstract cells/411
   checks with no structural problem. At that checkpoint, partial lower-Y5 and
   Y6 writes were reported and rejected pending inactive-lane evidence under
   `OQ-022`/`OQ-024`; the later original-MC68000 audits below supersede both
@@ -1980,8 +2001,8 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,752 cells/
-  410 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,759 cells/
+  411 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
   separate 7406/pull-up branches drive equal logical RESET/HALT requests after
@@ -2078,7 +2099,7 @@ objective passing evidence.
   reports 39 mapped cells/three checks. Timed local writes now accept both
   byte orientations, set `SOUNDFLAG`, and retain a one-event byte-transfer
   diagnostic. The board routing BMC proves both symbolic orientations, and
-  integrated Yosys reports 3,752 cells/410 checks/six memories. LS74 preset
+  integrated Yosys reports 3,759 cells/411 checks/six memories. LS74 preset
   dominance is primary-verified while asserted, but exact preset-release/
   opposite-read-clock coincidence and authorized-firmware byte-write use
   remain open. The external main callback still expects an already captured
@@ -2093,7 +2114,7 @@ objective passing evidence.
   while authorized-firmware access widths, raw CDC, HM6116 electrical timing,
   and substitute-68k inactive lanes remain open. The timing-disabled callback
   stays an already captured complete-word contract. Integrated Yosys remains
-  3,752 cells/410 checks/six memories with zero structural problems.
+  3,759 cells/411 checks/six memories with zero structural problems.
   OQ-022 is now `PARTIALLY_RESOLVED_PRIMARY`: original-MC68000 Table 3-1 and
   A044427's common `/RAMWR` prove that a lower-Y5 program-RAM byte write clocks
   `{byte, byte}` into all four SRAM slices. The timing-derived lower-Y5 path

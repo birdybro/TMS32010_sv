@@ -57,6 +57,16 @@ end. A one-step symbolic proof constructs the expected output bit by bit and
 exhausts every data/count combination. Decode, data addressing, arithmetic,
 status, and cycle timing remain in the architectural core.
 
+`tms32010_output_shifter` is the shared combinational SACH path. It accepts
+ACC[31:12], because lower bits cannot reach the stored high word for the only
+legal shifts (zero, one, and four), and returns the exact 16-bit write word.
+The architectural core asserts that every decoded SACH selects a legal mode.
+The block itself fails closed with an invalid qualifier and zero data for the
+other five fields; that is implementation policy, not undocumented silicon
+behavior. A one-step symbolic proof leaves the full ACC and shift field
+arbitrary, checks an independently bit-indexed result, proves low-bit
+independence, and reaches primary examples plus invalid-field covers.
+
 `tms32010_accumulator` is the shared combinational signed 32-bit add/subtract
 and OVM-saturation block. The core uses it for `ADD`, `SUB`, `SUBH`, `APAC`,
 `SPAC`, and the previous-P accumulation in `LTA`/`LTD`; their sticky `OV`

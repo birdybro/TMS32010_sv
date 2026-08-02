@@ -95,6 +95,24 @@ shift-15 boundaries. The core uses the result for `LAC`, `ADD`, and `SUB`;
 their addressing, arithmetic/status effects, and instruction timing remain
 outside this combinational proof.
 
+## Exhaustive output-shifter harness
+
+`tms32010_output_shifter.sby` checks the standalone combinational SACH output
+shifter in one solver step. The full 32-bit accumulator and three-bit shift
+field remain arbitrary. An independent reference assembles every stored bit
+from ACC bit `bit + 16 - shift` for the legal zero, one, and four counts; it
+does not reuse the DUT's part selects. This checks all accumulator values,
+all eight field values, and proves that ACC[11:0] cannot affect a legal stored
+word.
+
+Assertions prove exact legality and result data. Six independent step-0 covers
+reach two primary-manual examples, zero- and four-shift cross-half boundaries,
+and invalid fields two and seven. Invalid fields producing zero with a clear
+qualifier is local fail-closed policy; the core decoder separately rejects
+those SACH encodings, and no silicon behavior is claimed. Address resolution,
+RAM writes, the one-cycle instruction boundary, and external bus timing remain
+outside this combinational proof.
+
 ## Exhaustive accumulator-arithmetic harness
 
 `tms32010_accumulator.sby` checks the standalone combinational signed
@@ -467,7 +485,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 27 configurations produce 54 passing BMC/cover tasks. They still
+The current 28 configurations produce 56 passing BMC/cover tasks. They still
 leave DINT ordering, formal coverage of the
 represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and

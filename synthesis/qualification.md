@@ -18,14 +18,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,332 ALMs (3%).
+- Logic: 1,372 ALMs (3%).
 - Registers: 400.
 - Memory: 2,304 used bits in one M10K block.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +19.907 ns at 25 MHz.
+- Worst internal setup slack across analyzed corners: +18.860 ns at 25 MHz.
 - Worst internal hold slack across analyzed corners: +0.165 ns.
-- Slow-corner internal Fmax: 49.79 MHz at 100 °C, 49.77 MHz at -40 °C.
+- Slow-corner internal Fmax: 47.3 MHz at 100 °C, 47.87 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -122,7 +122,7 @@ and the same 400 registers, one M10K, and one DSP block. The worst 100 °C path
 runs from `core_program_data[9]` to `accumulator_o[6]`: 20.016 ns, 13 logic
 levels, and 67% interconnect delay. Worst slow-corner Fmax was 48.27 MHz.
 
-The current source extracts the primary-documented 16-bit signed input shift
+The next accepted source extracted the primary-documented 16-bit signed input shift
 relation into one portable combinational block shared by `LAC`, `ADD`, and
 `SUB`. The block sign-extends before applying the decoded zero-through-15
 left shift and does not own decode, addressing, status, or sequencing. The
@@ -131,8 +131,21 @@ the worst path now runs from `core_program_data[6]` to `io_read_sample[2]`:
 19.408 ns, 13 logic levels, and 62% interconnect delay. The input shifter is
 not on this path. Slow-corner Fmax is 49.79 MHz at 100 °C and 49.77 MHz at
 -40 °C; the worst setup slack across those corners is +19.907 ns. The
-standalone exhaustive proof, rather than this fitter result, qualifies all
+standalone exhaustive proof, rather than that fitter result, qualifies all
 1,048,576 data/count relations.
+
+The current source also extracts SACH's separate zero/one/four output shift
+into a portable combinational block and retains a core assertion that every
+decoded SACH selects one of those modes. The block consumes only ACC[31:12],
+because no lower bit can reach the stored high word at the maximum shift.
+Quartus now uses 1,372 ALMs with the same 400 registers, one M10K, and one DSP.
+The worst 100 °C setup path runs from retained `core_program_data[12]` to
+`overflow_flag_o`: 20.866 ns, 14 logic levels, and 69% interconnect delay.
+The output shifter is not the endpoint or arithmetic relation on this path.
+Slow-corner Fmax is 47.3 MHz at 100 °C and 47.87 MHz at -40 °C; worst setup
+and hold slack across all analyzed corners are +18.860 ns and +0.165 ns.
+The standalone symbolic proof, not this fit, qualifies every ACC/field
+combination and the lower-ACC-bit independence relation.
 
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
@@ -143,8 +156,8 @@ worst slow-corner result is a 148.9% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
 not a release requirement or a concealed pass. The retained-direction,
 RAM-staging, decoder-qualification, retained-carrier, shared-arithmetic, and
-input-shifter changes raise the qualified worst slow-corner result to
-49.77 MHz, but do not turn
+input/output-shifter changes raise the qualified worst slow-corner result to
+47.3 MHz, but do not turn
 that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
@@ -220,9 +233,9 @@ The generated `build/quartus/setup_paths.rpt` is intentionally untracked.
 Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
-passes report zero problems; no latches are inferred, 125 RTL checks
+passes report zero problems; no latches are inferred, 126 RTL checks
 remain represented, and both the synthesis harness and directly targeted
-pipeline contain 16,184 and 16,172 cells respectively. The
+pipeline contain 16,225 and 16,193 cells respectively. The
 registered array and forwarding logic lower to flip-flops and muxes under
 generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -235,10 +248,13 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 125 RTL checks, and contains 16,172 generic
-cells. Extracting the input shifter removes 11 cells from the preceding
+zero reported problems, retains 126 RTL checks, and contains 16,193 generic
+cells. Extracting the input shifter removed 11 cells from the preceding
 16,183-cell shared-accumulator checkpoint without changing the retained-check
-count; the independently proved standalone shifter maps to 89 cells. The
+count; the independently proved standalone input shifter maps to 89 cells.
+Extracting the output shifter then added 21 mapped cells and one retained
+decoded-SACH legality invariant; its independently proved standalone block
+maps to 86 combinational cells. The
 shared accumulator primitive had removed 343 cells and added one
 retained saturation-selection invariant relative to the retained-carrier
 checkpoint. The single retained carrier had removed 423 cells from the preceding
@@ -270,9 +286,9 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 132 checks, and reports 16,221 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 16,172-cell,
-125-check pipeline checkpoint. This result covers the five-cycle synchronous
+with zero problems, retains 133 checks, and reports 16,242 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 16,193-cell,
+126-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
 pinout, I/O timing result, or evidence for unresolved PUSH/POP bus ownership.
@@ -309,7 +325,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,752 abstract cells, 410
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,759 abstract cells, 411
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,
