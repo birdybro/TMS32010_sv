@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 import unittest
 from pathlib import Path
 
@@ -93,6 +94,33 @@ class IsaDatabaseTests(unittest.TestCase):
         )
         self.assertFalse(coverage["complete"])
         self.assertFalse(coverage["reserved_encoding_audit_complete"])
+
+    def test_one_cycle_interrupt_matrix_covers_canonical_families(self) -> None:
+        testbench = (
+            ROOT / "sim" / "interrupt" / "tb_interrupt_one_cycle_arrivals.sv"
+        ).read_text(encoding="utf-8")
+        representatives = re.findall(
+            r"^\s+\d+:\s+family_opcode = 16'h([0-9a-f]{4});\s+// ([A-Z]+)",
+            testbench,
+            re.MULTILINE,
+        )
+        expected_mnemonics = {
+            entry["mnemonic"]
+            for entry in self.database["instructions"]
+            if entry["documented_cycle_count"] == 1
+        } - {"DINT", "EINT"}
+        self.assertEqual(len(representatives), 39)
+        self.assertEqual(
+            {mnemonic for _, mnemonic in representatives},
+            expected_mnemonics,
+        )
+        self.assertEqual(len({word for word, _ in representatives}), 39)
+        for word_text, mnemonic in representatives:
+            with self.subTest(mnemonic=mnemonic):
+                decoded = decode_word(self.database, int(word_text, 16))
+                self.assertIsNotNone(decoded)
+                assert decoded is not None
+                self.assertEqual(decoded[0]["mnemonic"], mnemonic)
 
     def test_exhaustive_opcode_space_classification_is_stable(self) -> None:
         counts = audit_opcode_space(self.database)

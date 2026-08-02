@@ -884,9 +884,10 @@ and trap-before-either parallel effect on an unresolved address. Native-phase
 and seeded differential tests cover the internal read beside a normal program
 fetch. If LTA follows MPY or MPYK, its completion is the end of that multiply
 instruction's documented interrupt-deferral window. The generic interrupt
-sequencer now recognizes that retirement boundary, although a targeted
-arrival matrix for every possible following instruction remains under
-`CTRL-002`. Simultaneous indirect update controls remain under `OQ-010`.
+sequencer now recognizes that retirement boundary, and a targeted core matrix
+includes request arrival while LTA itself retires. A matching explicit-
+pipeline family matrix remains under `CTRL-002`. Simultaneous indirect update
+controls remain under `OQ-010`.
 
 ## Qualified `LTD` functional slice
 
@@ -1031,8 +1032,8 @@ Native-phase and seeded differential tests verify the ordinary program fetch
 and inactive logical data-memory strobes. When PAC follows MPY or MPYK, its
 completion is also the end of the multiply instruction's documented interrupt
 deferral window. The generic sequencer recognizes that retirement shape, but
-the PAC instruction tests themselves are not an exhaustive interrupt-arrival
-matrix.
+only the 39-family core arrival matrix is exhaustive at this boundary; the
+matching explicit-pipeline matrix remains future `CTRL-002` work.
 
 ## Qualified `APAC` functional slice
 
@@ -1059,8 +1060,9 @@ and absence of a logical data-memory transaction. Native-phase and seeded
 differential tests cover the ordinary program fetch and randomized arithmetic
 states. As with PAC, an APAC immediately after MPY or MPYK reaches the
 documented interrupt-deferral boundary. The generic sequencer handles that
-retirement, while APAC-specific interrupt arrival combinations remain future
-`CTRL-002` coverage.
+retirement, and the 39-family core matrix now covers request arrival while
+APAC retires. Matching explicit-pipeline coverage remains future `CTRL-002`
+work.
 
 ## Qualified `SPAC` functional slice
 
@@ -1088,8 +1090,9 @@ fixed-word decode, and absence of a logical data-memory transaction.
 Native-phase and seeded differential tests cover the ordinary program fetch
 and randomized arithmetic states. A SPAC immediately after MPY or MPYK
 reaches the documented interrupt-deferral boundary. The generic sequencer
-handles that retirement, while SPAC-specific interrupt arrival combinations
-remain future `CTRL-002` coverage.
+handles that retirement, and the 39-family core matrix now covers request
+arrival while SPAC retires. Matching explicit-pipeline coverage remains
+future `CTRL-002` work.
 
 ## Qualified `SACL` research slice
 

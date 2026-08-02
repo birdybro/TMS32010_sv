@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 39-case core-level interrupt-arrival matrix spanning every supported
+  ordinary one-cycle operation except the separately qualified DINT/EINT mask
+  controls. Each case checks current retirement with request capture, one safe
+  protected retirement, nonexecuting return-PC dummy ownership, stacked PC,
+  acknowledge state, and vector-2 selection.
 - A clean-tree `make evidence-current` runner for local current-scope command
   receipts. It binds a fixed six-gate vector and SHA-256 log set to exact Git
   commit/tree IDs, records controlled environment and tool-version metadata,
@@ -1308,6 +1313,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Request arrival at LACK/NOP/control, all common data/address operations,
+  MPY/MPYK, PAC/APAC/SPAC, LTA/LTD/DMOV, LST/SST, SUBC, SUBH, ABS, and ADDH now
+  follows the same primary-backed core retirement/deferral/entry contract.
+  An independent regression derives all ordinary one-cycle mnemonics from the
+  canonical ISA and decodes the 39 distinct testbench words. Matching explicit-
+  pipeline coverage remains disclosed rather than inferred.
 - Eight command-receipt regressions cover a successful clean revision, dirty-
   tree preflight, retained formal failure with later commands still executed,
   revision and log tampering, command/summary rewriting, output confinement,

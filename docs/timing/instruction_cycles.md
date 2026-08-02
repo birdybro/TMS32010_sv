@@ -188,6 +188,16 @@ a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin
 setup aperture or a physical asynchronous synchronizer.
+A separate 39-case core matrix samples a request at the retirement of every
+supported ordinary one-cycle operation other than the separately tested mask
+controls. Every case requires the one-cycle instruction to retire while the
+request latches, one following safe instruction to retire, the return-PC read
+to become a noninstruction dummy, and entry to stack that PC before selecting
+vector 2. This exhausts the retirement-mapped core's ordinary one-cycle
+operation families, including MPY/MPYK and SUBC with an ACC-independent
+protected word. It does not yet duplicate all 39 cases through the explicit
+fetch/execute wrapper
+[`sim/interrupt/tb_interrupt_one_cycle_arrivals.sv`].
 SPRU013's later instruction sequence conflicts with the original guide under
 `SC-039`; its external-synchronizer note instead corroborates original Section
 2.14. Neither is passing timing evidence for this implementation.

@@ -71,6 +71,17 @@ return PC, `0x002` with ordinary `MEN` phases
 `sim/interrupt/tb_interrupt_native_sampling.sv`,
 `sim/interrupt/tb_interrupt_phase.sv`,
 `sim/differential/test_interrupt_model_rtl.py`].
+A separate 39-case core matrix samples a request while each supported
+ordinary one-cycle operation retires. It covers every one-cycle family except
+the separately qualified `DINT` and `EINT` mask controls, including both
+multiply operations, all three P/ACC operations, the parallel LTA/LTD paths,
+SUBC, status load/store, and every ordinary data/address operation. Each case
+asserts current-instruction retirement with request capture, exactly one safe
+`LARK` protected retirement, a nonexecuting return-PC dummy fetch, and vector
+entry with the resolved PC stacked
+[`sim/interrupt/tb_interrupt_one_cycle_arrivals.sv`]. This is core-level
+retirement evidence; a matching 39-family explicit-pipeline matrix remains
+future `CTRL-002` work.
 The native sampling test also begins a held-low request at each of the four
 modeled phases. It asserts no pending state before the enabled falling
 boundary, checks a stalled phase-2 hold, and then verifies the same protected,
@@ -122,7 +133,8 @@ address mapping remains ADR-0003 CORROBORATED for RET and INFERRED for CALA,
 not original-part physical-pin proof.
 
 This remains an incomplete pipeline claim. The explicit tests do not cover
-DINT's provisional cancellation at every placement, the `SC-039` original-
+the complete 39-family ordinary one-cycle arrival matrix, DINT's provisional
+cancellation at every placement, the `SC-039` original-
 versus-later interrupt sequence, external synchronization, physical setup
 behavior, PUSH/POP cycles, physical confirmation of
 ADR-0003, or analog input timing (`CTRL-002`, `OQ-004`,

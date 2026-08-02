@@ -1,12 +1,12 @@
 # Progress summary
 
-- **Current milestone:** `REL-001` clean-revision command-evidence receipts
+- **Current milestone:** `CTRL-002` ordinary one-cycle interrupt arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 245 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
-  instruction/decode tests; 5 interrupt RTL/phase
+  instruction/decode tests; 6 interrupt RTL/phase
   tests; 57 native bus/phase/wrapper tests, including exhaustive original-
   MC68000 mailbox word/upper-byte/lower-byte normalization, CALA/RET bus/stall,
   and
@@ -1560,8 +1560,24 @@
   Python Boolean/integer substitutions in typed fields. Eight regressions cover
   these boundaries. The receipt remains mutable local evidence rather than
   attestation, cannot promote any of the 21 criteria, and cannot make
-  `release_ready` true. No RTL changed in this implementation increment; a
-  full clean-revision gate receipt is the next validation step.
+  `release_ready` true. Clean commit `2d9da93` subsequently produced and
+  verified a six-command passing receipt for audit, all regressions, lint, all
+  bounded formal configurations, all Yosys targets, and Quartus fit/TimeQuest.
+  Its six logs remain ignored and hash-bound to that exact commit/tree; later
+  work cannot reuse it as current-revision evidence.
+- **New one-cycle interrupt evidence:** a 39-case core matrix pulses active-low
+  INT while every supported ordinary one-cycle operation retires, excluding
+  only DINT/EINT because their mask/race rules already have dedicated tests.
+  The matrix includes all program-only, internal-read/write, multiply,
+  P/ACC, parallel move/accumulate, status, and SUBC families. Each case proves
+  current retirement with request capture, exactly one ACC-independent LARK
+  protected retirement, a nonexecuting return-PC dummy fetch, PC 3 stacked,
+  internal acknowledge, and vector-2 selection. An independent regression
+  derives the expected family set from the canonical ISA, requires 39 distinct
+  representatives, and decodes every word back to its named mnemonic. This is
+  retirement-mapped core evidence only; a matching 39-family explicit fetch/
+  execute matrix remains open. No RTL changed, so synthesis/formal evidence is
+  unchanged.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1610,8 +1626,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** commit the command-receipt implementation, then run and verify
-  all six gates on that exact clean revision before selecting the next P0
-  architecture or timing blocker.
+- **Next task:** extend `CTRL-002` with the matching 39-family explicit-
+  pipeline arrival matrix, retaining per-family program/internal-bus ownership
+  and the separate DINT/EINT confidence boundaries.
 - **Latest committed baseline before this cycle:**
-  `b6bde09`
+  `2d9da93`

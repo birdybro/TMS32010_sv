@@ -1050,6 +1050,7 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/interrupts.md`
 - **Tests:** `sim/interrupt/tb_interrupt_mask.sv`,
   `sim/interrupt/tb_interrupt_entry.sv`,
+  `sim/interrupt/tb_interrupt_one_cycle_arrivals.sv`,
   `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`,
   `sim/interrupt/tb_interrupt_native_sampling.sv`,
   `sim/interrupt/tb_interrupt_phase.sv`,
@@ -1081,6 +1082,11 @@ objective passing evidence.
   prove no early stack effect or service, selected-target completion, one
   protected retirement, and subsequent dummy/vector ownership under the
   `INFERRED` ADR-0003 address sequence.
+  A separate 39-case core matrix now samples a request while every supported
+  ordinary one-cycle operation retires, excluding only the separately tested
+  DINT/EINT mask controls. Each case proves current retirement/request capture,
+  one safe protected retirement, dummy return-PC ownership, and stacked-PC/
+  vector entry. The matching explicit-pipeline 39-family matrix remains open.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1274,20 +1280,23 @@ objective passing evidence.
   `PAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for full-width P-to-ACC
   transfer, P/T/status preservation, and no data-memory transaction. A PAC
-  following MPY/MPYK uses the generic recognized retirement boundary, though
-  PAC-specific interrupt arrival combinations remain under `CTRL-002`.
+  following MPY/MPYK uses the generic recognized retirement boundary, and the
+  39-case core matrix covers request arrival while PAC retires; matching
+  explicit-pipeline family coverage remains under `CTRL-002`.
   `APAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f8f` decode,
   full-width P-plus-ACC results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
   no data-memory transaction. Its retirement can end generic multiply
-  deferral; APAC-specific interrupt arrivals remain future coverage.
+  deferral; the core matrix covers APAC-time arrival, while matching explicit-
+  pipeline coverage remains future work.
   `SPAC` now passes primary-cited database/model/tool/RTL, one-cycle,
   native-phase, and randomized differential tests for exact `0x7f90` decode,
   full-width ACC-minus-P results, sticky OV, both signed-overflow directions,
   OVM-clear wrap, OVM-set endpoint saturation, P/T/address preservation, and
   no data-memory transaction. Its retirement can end generic multiply
-  deferral; SPAC-specific interrupt arrivals remain future coverage.
+  deferral; the core matrix covers SPAC-time arrival, while matching explicit-
+  pipeline coverage remains future work.
   `RET` now passes primary-cited exact decode, hand fixture, assembler/
   disassembler, model/RTL/differential, bus, stall, interrupt-boundary, and
   bounded-formal tests for its old-TOS PC load, four-level

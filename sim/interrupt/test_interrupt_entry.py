@@ -76,6 +76,10 @@ class InterruptEntryRtlTests(unittest.TestCase):
         output = self._run_testbench("tb_interrupt_multicycle_arrivals")
         self.assertIn("(32 arrival cases)", output)
 
+    def test_every_ordinary_one_cycle_family_arrival(self) -> None:
+        output = self._run_testbench("tb_interrupt_one_cycle_arrivals")
+        self.assertIn("(39 arrival cases)", output)
+
 
 if __name__ == "__main__":
     unittest.main()
