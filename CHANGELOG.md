@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- An 18-step actual-core protected-DINT formal harness with BMC and non-vacuity
+  cover. Under arbitrary bounded clock-enable stalls it proves the current
+  cancellation/retention policy, ordinary masked continuation, later EINT and
+  protected word, dummy fetch, stack push, and vector selection while keeping
+  OQ-019/SC-039 explicitly PROVISIONAL.
 - A four-placement explicit-pipeline DINT/EINT interrupt matrix covering
   request arrival during each mask control and each mask control in the
   protected N+1 slot. It verifies program-only MEN ownership, pending-request
@@ -1324,6 +1329,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The protected-DINT BMC passes through depth 18 and its complete retained-
+  request service path reaches cover step 9. The full formal inventory now has
+  64 passing tasks from 32 configurations; this remains bounded
+  implementation evidence, not original-silicon DINT priority proof.
 - Explicit mask-control placement now distinguishes request-during-EINT,
   request-during-DINT, protected redundant EINT, and protected DINT. The last
   result is a reproducible implementation-policy check only; it does not

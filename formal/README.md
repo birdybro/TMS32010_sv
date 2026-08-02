@@ -288,6 +288,28 @@ positions, held-low relatching, the complete fetch/execute pipeline, and
 electrical timing. Other harnesses cover several of those gaps, but this first
 fixture remains intentionally independent.
 
+## Protected-DINT implementation-policy harness
+
+`tms32010_interrupt_dint.sby` checks the actual portable core with an 18-step
+BMC and cover while leaving `clock_enable_i` arbitrary. Its fixed program:
+
+1. executes EINT request-free and samples a request during the following NOP;
+2. executes DINT in the already-protected N+1 slot;
+3. continues with one ordinary masked LARK while retaining the request;
+4. executes a later EINT and its protected LARK;
+5. performs the return-PC dummy fetch and vector entry.
+
+Assertions check program-only ownership, every PC/mask/pending boundary,
+ordinary execution after DINT, both LARK results, dummy classification, stack
+entry, vector selection, and state/output stability across arbitrary bounded
+stalls. The complete path reaches cover step 9.
+
+This proves only that the current RTL implements its selected policy
+consistently at the stated bound. DINT cancellation at protected N+1 remains
+PROVISIONAL under `OQ-019`/`SC-039`; the harness is not production-silicon
+priority evidence, does not represent the alternate entry-wins hypothesis,
+and does not prove arbitrary DINT placement or electrical interrupt timing.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -518,11 +540,11 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 30 configurations produce 60 passing BMC/cover tasks. They still
-leave DINT ordering, formal coverage of the
-represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
-placement/length, the complete integrated fetch/execute pipeline, and
-electrical timing to
+The current 32 configurations produce 64 passing BMC/cover tasks. They still
+leave original-silicon DINT ordering, arbitrary DINT placement, formal
+coverage of the represented multicycle interrupt-arrival matrix, arbitrary
+multiply-chain placement/length, the complete integrated fetch/execute
+pipeline, and electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
 `OQ-004`, and `OQ-019`.
 No liveness theorem is claimed because arbitrary clock-enable or

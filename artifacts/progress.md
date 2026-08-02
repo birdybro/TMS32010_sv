@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `CTRL-002` explicit mask-control interrupt placement
+- **Current milestone:** `FORMAL-001` bounded protected-DINT policy
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,7 +148,7 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 62 tasks from 31 SymbiYosys configurations pass with
+- **Formal status:** all 64 tasks from 32 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -164,8 +164,12 @@
   24-step actual-core CALA/RET BMC proves both execution boundaries,
   retirement-only push/pop, target/return PC selection, no side-bus activity,
   and arbitrary clock-enable stalls; its complete call/return cover reaches
-  step 9. A separate
-  12-step standalone fetch/execute BMC covers arbitrary input values under
+  step 9. A further 18-step actual-core BMC proves the current PROVISIONAL
+  protected-DINT cancellation, retained request, ordinary masked continuation,
+  later EINT and protected word, dummy fetch, stack push, and vector selection
+  under arbitrary bounded clock-enable stalls; its cover reaches step 9. This
+  is implementation consistency, not original-silicon priority proof. A
+  separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
   prime/stall/replace/flush/target cover reaches step 7. It does not prove
@@ -1589,6 +1593,12 @@
   PROVISIONAL under `OQ-019`/`SC-039`; it records current implementation policy
   and does not resolve original-silicon priority. No RTL changed, so synthesis/
   formal evidence is unchanged.
+- **New protected-DINT formal evidence:** an 18-step actual-core BMC proves the
+  fixed cancellation/retention/resume path under arbitrary bounded clock-enable
+  stalls, and a cover reaches completed vector selection at solver step 9. The
+  full suite now contains 64 passing BMC/cover tasks from 32 configurations.
+  This binds the current RTL policy only; `OQ-019`/`SC-039` remain unresolved
+  for original silicon.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1637,8 +1647,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** audit the remaining P0 pipeline gaps after ordinary one-cycle,
-  represented multicycle, CALA/RET, and mask-control arrival coverage; keep
-  PUSH/POP ownership blocked under `OQ-016` rather than inventing bus phases.
+- **Next task:** add bounded formal coverage for a represented multicycle
+  interrupt-arrival family without generalizing beyond its fixed program, or
+  advance another unblocked P0 evidence slice; keep PUSH/POP ownership blocked
+  under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `b91a6eb`
+  `691b94a`

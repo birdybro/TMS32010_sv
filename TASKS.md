@@ -1058,6 +1058,7 @@ objective passing evidence.
   `sim/interrupt/tb_sequential_pipeline_interrupt_mask_controls.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_one_cycle.sv`,
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
+  `formal/tms32010_interrupt_dint.sby`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`,
   `tests/asm/dint_interrupt_race_probe.asm`,
@@ -1097,6 +1098,11 @@ objective passing evidence.
   classification, redundant-EINT nonextension, and eventual service. The
   protected-DINT cancellation assertion remains explicitly PROVISIONAL under
   `OQ-019`/`SC-039` and is not physical-device evidence.
+  An 18-step actual-core BMC proves the same fixed protected-DINT cancellation,
+  masked continuation, later EINT/protection, dummy, stack, and vector path
+  under arbitrary bounded clock-enable stalls; its cover reaches step 9. This
+  is implementation consistency only and cannot promote the provisional
+  original-silicon ordering.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1589,7 +1595,7 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Five actual-core configurations pass bounded checks over
+- **Notes:** Six actual-core configurations pass bounded checks over
   arbitrary clock-enable sequences. The 12-step
   EINT/protected-LACK/dummy/vector fixture
   reaches vector execution at step 6. The 14-step
@@ -1609,6 +1615,13 @@ objective passing evidence.
   opcode-PC+1 push, old-top pop/target, target and returned instructions,
   program-only ownership, no early stack effect, and arbitrary clock-enable
   stalls; its complete call/return cover reaches step 9.
+  An 18-step actual-core protected-DINT configuration samples a request during
+  NOP, follows the current PROVISIONAL DINT-cancels policy, proves ordinary
+  masked continuation with the request retained, then reaches later EINT,
+  protected retirement, dummy entry, stack push, and vector selection. Its
+  complete cover reaches step 9 under arbitrary bounded clock-enable stalls.
+  It proves implementation consistency, not original-silicon priority under
+  `OQ-019`/`SC-039`.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1711,7 +1724,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 60 BMC/cover tasks from 30 checked-in
+  The current runner passes all 64 BMC/cover tasks from 32 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,
@@ -1720,9 +1733,10 @@ objective passing evidence.
   independently derives low-nine-bit carry/borrow, proves upper-bit
   preservation and validity, and reaches six step-0 covers; it assigns no
   selected-register, instruction, timing, or dual-control silicon behavior.
-  SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
-  the other indirect MPY control/update cases, arbitrary chain
-  placement/length, formal multicycle-arrival coverage, general
+  SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. Arbitrary DINT
+  placement and original-silicon priority, the other indirect MPY control/
+  update cases, arbitrary chain placement/length, formal multicycle-arrival
+  coverage, general
   FSM and remaining integrated decode/RAM/arithmetic properties, and
   liveness
   assumptions remain.
