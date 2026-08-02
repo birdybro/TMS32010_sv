@@ -1286,8 +1286,17 @@ objective passing evidence.
   that contemporary reference software rejected the prohibited dependency,
   but does not establish a physical result or subphase. The related-patent
   timing and two stable physical
-  probes are documented in `docs/research/subc_pipeline_experiment.md`; no
-  production capture exists. The original TMS32010-20 clock envelope is now
+  probes are documented in `docs/research/subc_pipeline_experiment.md`. The
+  strict `tools.trace.subc_capture` classifier checks exact big-endian images,
+  OUT-fetch/write ordering, the dependency probe's known comparator without
+  assigning its first word, all four bit-15 OV pairs, 32-run consistency, and
+  traversal-safe raw/photo provenance. The overflow fixture explicitly loads
+  ARP zero so `OQ-012` reset retention cannot enter its SST consistency check.
+  Six regressions retain unexpected dependency results, mask disputed SST bit
+  1, and reject wrong anchors,
+  controls, fixed fields, comparators, images, or packages. No production
+  capture exists, and `review_ready` cannot change confidence. The original
+  TMS32010-20 clock envelope is now
   primary-qualified as 48.78–150 ns per master period and 47.5–52.5% pulse
   duration; electrical delays are wrapper constraints, not RTL delays.
 

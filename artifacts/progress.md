@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `TIMING-001` PUSH/POP physical-capture evidence path
+- **Current milestone:** `TIMING-001` SUBC physical-capture evidence path
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 172 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 178 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1343,6 +1343,22 @@
   claim. One new documentation regression locks these authority boundaries.
   Synthesis and formal evidence are unchanged because this cycle modifies no
   RTL.
+- **New SUBC measurement evidence:** audit of the stable physical probes found
+  and corrected a documentation error: SST `OV` is bit 15, while the prior
+  experiment text incorrectly named fixed-one bit 12. The new strict
+  `tools.trace.subc_capture` workflow validates exact independently checked
+  big-endian probe images, ordered OUT fetch/write pairs, exclusive port-7
+  strobes, fixture status fields, 32-run consistency, and traversal-safe
+  program/raw/photo hashes. Dependency mode assigns no expected first word and
+  retains a stable unanticipated value as `OTHER_LOW`; it requires only the
+  legal NOP-separated `0x000b` comparator. Overflow mode interprets bit 15,
+  preserves all four stage pairs, and deliberately masks separately disputed
+  reserved status bit 1 under `SC-008`. The overflow image now explicitly
+  initializes ARP zero so `OQ-012` reset retention cannot contaminate those
+  consistency checks. Six regressions cover every category
+  and failure boundary. No physical capture exists, `review_ready` is package
+  status only, and `OQ-017`/`OQ-018` remain open. Synthesis and formal evidence
+  are unchanged because this cycle modifies no RTL.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1391,9 +1407,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** strengthen `TIMING-001` by turning the stable SUBC dependency
-  and overflow probe images into a strict, provenance-preserving physical-
-  capture classifier. It must never infer a silicon result from TI simulator
-  stop code 9950 or silently promote `OQ-017`/`OQ-018`.
+- **Next task:** continue `TIMING-001` with the stable DINT/final-boundary
+  physical probe under `OQ-019`, adding a strict classifier only if it can
+  preserve cancel-versus-entry outcomes and provenance without using current
+  RTL or IKA behavior as the expected result.
 - **Latest committed baseline before this cycle:**
-  `08cc565`
+  `6925938`

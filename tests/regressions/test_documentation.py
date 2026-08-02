@@ -440,6 +440,11 @@ class ArchitectureDocumentationTests(unittest.TestCase):
                 encoding="utf-8"
             ),
         )
+        trace_readme = re.sub(
+            r"\s+",
+            " ",
+            (ROOT / "tools" / "trace" / "README.md").read_text(encoding="utf-8"),
+        )
         questions = (
             DOCS / "research" / "open_questions.md"
         ).read_text(encoding="utf-8")
@@ -459,8 +464,18 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "**CORROBORATED RELATED-EMBODIMENT**",
             "cannot set `OV`",
             "final-stage hypothesis",
+            "status bit 15 (`OV`)",
+            "Status bit 12 is one of the fixed-one",
+            "executes `LARP 0`",
+            "none of these three values alone proves",
         ):
             self.assertIn(required, research)
+        for required in (
+            "repeatable unanticipated value is evidence to retain",
+            "does not change `OQ-017` or `OQ-018`",
+            "stop code `9950` is not an expected physical result",
+        ):
+            self.assertIn(required, trace_readme)
         self.assertIn("RESEARCHING/CORROBORATED RELATED-EMBODIMENT", questions)
         self.assertIn("PROVISIONAL, NARROWED", questions)
         self.assertIn("## SC-010", conflicts)

@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A strict `tools.trace.subc_capture` workflow for the two unresolved original-
+  NMOS SUBC experiments. It checks independently fixed big-endian probe images,
+  OUT-fetch/write ordering, exclusive port-7 outputs, 32-run consistency, and
+  raw/photo provenance while preserving every measured word.
+- Six SUBC capture regressions covering all three anticipated dependency low
+  words plus an arbitrary other result, a bad legal comparator, all four
+  overflow-stage pairs, status consistency, malformed anchors/order/windows,
+  unstable runs, bad strobes, exact images, complete packages, and the no-
+  confidence-promotion boundary.
 - An integrity-pinned, non-committed 1982 TI *TMS32010 Simulator User's
   Guide* plus a source-scoped research note. It records the official
   instruction-acquisition versus program-ROM-read breakpoint distinction,
@@ -1076,6 +1085,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Corrected the SUBC physical-probe interpretation from status bit 12 to the
+  primary-defined `OV` position at bit 15. Bit 12 is a fixed-one SST field;
+  reserved bit 1 remains excluded from capture validation under `SC-008`.
+  The probe now explicitly loads ARP zero so unresolved physical reset
+  retention under `OQ-012` cannot invalidate its status consistency check.
+
 - Qualified current-instruction auxiliary-counter controls with decoder
   validity and the internal-data-addressed family, plus the documented MAR
   exception. The new core invariant and the seeded differential/formal runs
@@ -1160,6 +1175,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The SUBC capture tool accepts a stable unexpected dependency result instead
+  of inventing an oracle, requires the legal comparison word `0x000b`, and
+  distinguishes all bit-15 OV pairs without using fixed bit 12. Synthetic
+  fixtures qualify the measurement workflow only; `OQ-017` and `OQ-018`
+  remain open with no physical capture.
 - All 60 cached reference artifacts match their pinned SHA-256 values. The
   official simulator's architectural trace lacks `MEN`/`WE`/`DEN` and a
   PUSH/POP example, so `OQ-016` remains open; stop code `9950` corroborates

@@ -97,6 +97,59 @@ prove mask-revision invariance, or establish `VERIFIED_HARDWARE`. Engineering
 review must still inspect the raw transitions, probe loading, board identity,
 and the relationship between bus reads and subsequent execution.
 
+## SUBC physical-capture classifier
+
+`subc_capture.py` consumes the same strict falling-`CLKOUT` CSV and metadata
+schema. It has two explicitly selected modes:
+
+- `dependency` checks the two OUT-opcode fetches in
+  `subc_dependency_probe.asm`, preserves the first port-7 word without an
+  expected result, and requires the NOP-separated comparator to be `0x000b`;
+- `overflow` checks the two OUT-opcode fetches in
+  `subc_overflow_stage_probe.asm`, interprets architectural `OV` at status
+  word bit 15, and classifies all four `(first OV, second OV)` pairs.
+
+The dependency result is labeled as old-low-word, trial-low-word,
+final-low-word, or `OTHER_LOW_0x....`. An arbitrary other word is not rejected:
+the violating sequence is undocumented, so a repeatable unanticipated value
+is evidence to retain. Runs disagreeing on the exact classification are not
+repeatable.
+
+The overflow fixture validates every known status-word bit except `OV` and
+reserved bit 1. Bit 1 is intentionally masked because its physical SST output
+remains only CORROBORATED under `SC-008`; the tool may not turn that separate
+question into a reason to discard a SUBC capture. The fixture explicitly loads
+ARP zero so `OQ-012` reset retention cannot leak into the comparison. Status
+bit 12 is fixed one, not `OV`.
+
+Build the exact big-endian images and classify captures with:
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/subc_dependency_probe.asm \
+  --binary subc_dependency_probe.bin --byteorder big
+python3 -m tools.trace.subc_capture dependency.csv \
+  --experiment dependency \
+  --metadata dependency-metadata.json \
+  --program-image subc_dependency_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+Use `--experiment overflow` and the overflow probe image for the second
+fixture. In addition to the sidecar SHA-256 check, the tool compares the
+supplied binary byte-for-byte with the independently checked fixture word
+list. It requires exactly two exclusive port-write samples, their checked
+program-fetch anchors in order, two following falling boundaries, at least 32
+runs by default, stable classification, valid fixture consistency checks, and
+complete raw/photo provenance.
+
+`review_ready` is evidence-package status only. It does not change `OQ-017`
+or `OQ-018`, establish which internal phase produced a captured word, prove
+mask-revision invariance, or establish `VERIFIED_HARDWARE`. The official TI
+simulator's stop code `9950` is not an expected physical result and is not an
+input to the classifier.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

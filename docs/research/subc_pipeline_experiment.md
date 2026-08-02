@@ -98,13 +98,15 @@ the legal final value with `SACL 4`. It then exports both low words on port 7.
 
 | Observed first port word | Candidate interpretation |
 |---:|---|
-| `0x0005` | successor sampled old ACC |
-| `0x8005` | successor sampled unshifted trial/intermediate |
-| `0x000b` | successor sampled final shifted result |
+| `0x0005` | low word is consistent with old ACC |
+| `0x8005` | low word is consistent with unshifted trial/intermediate |
+| `0x000b` | low word is consistent with final shifted result |
 | other or unstable | control contention, different internal ordering, or history dependence |
 
 The second port word must be `0x000b` before the capture is considered valid.
-The first word intentionally has no repository expected result.
+The first word intentionally has no repository expected result. Because SACL
+exports only the low half, none of these three values alone proves the
+successor's complete 32-bit ACC view.
 
 ## Overflow-stage probe (`OQ-018`)
 
@@ -120,7 +122,16 @@ uses legal NOP successors and stores status after two separated cases:
 unsaturated result because TI explicitly says OVM is ignored. An intervening
 `LST` of a zero status word clears OV/OVM before the second `SOVM`. `SST 0`
 and `SST 1` store the two results at page-one words `0x80` and `0x81`; port-7
-OUT writes export them. Interpret only status bit 12 (`OV`):
+OUT writes export them.
+The fixture executes `LARP 0` before either case so the exported ARP field is
+known independently of the unresolved physical reset-retention question
+`OQ-012`. It also establishes DP with `LDPK 0`; the classifier checks all
+known status fields and fixed bits except separately disputed reserved bit 1.
+
+Interpret only status bit 15 (`OV`). Status bit 12 is one of the fixed-one SST
+representation bits and is not an overflow result
+[ti-tms32010-users-guide-spru001b, §2.2.3 Figure 2-7 and `SST`, printed
+pp. 2-15 and 3-59 (PDF pp. 39 and 109)]:
 
 | First OV | Second OV | Candidate stage policy |
 |---:|---:|---|
@@ -144,7 +155,9 @@ python3 -m tools.assembler.tms32010_as \
 ```
 
 Repository tests lock every emitted word and symbol location. Hash the exact
-hex and listing used for a capture.
+binary and listing used for a capture. The evidence classifier requires the
+exact big-endian binary and independently compares it with the checked fixture
+word list.
 
 Use an original NMOS TMS32010, not a CMOS variant or compatible model:
 
@@ -163,6 +176,34 @@ Use an original NMOS TMS32010, not a CMOS variant or compatible model:
    every varying result.
 6. Save raw analyzer data, decoded CSV, monitor transcript, pin map,
    photographs, and tool versions; hash every artifact before conversion.
+
+Normalize a derived capture copy to the strict one-row-per-falling-`CLKOUT`
+CSV schema in `tools/trace/README.md`, retaining the raw transitions
+separately. Validate dependency and overflow packages independently:
+
+```sh
+python3 -m tools.trace.subc_capture dependency.csv \
+  --experiment dependency \
+  --metadata dependency-metadata.json \
+  --program-image subc_dependency_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+
+python3 -m tools.trace.subc_capture overflow.csv \
+  --experiment overflow \
+  --metadata overflow-metadata.json \
+  --program-image subc_overflow_stage_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The dependency classifier deliberately accepts a stable unexpected first word
+as `OTHER_LOW_0x....`; inventing an expected result would defeat this probe.
+The overflow classifier uses status bit 15 and masks reserved status bit 1
+under `SC-008`. Both require exact OUT fetch anchors, exclusive port-7 writes,
+32 consistent runs, the exact image, and verified raw/photo hashes.
+`review_ready` describes package completeness only and never changes
+architectural confidence automatically.
 
 ## Acceptance and interpretation
 
