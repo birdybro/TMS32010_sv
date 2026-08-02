@@ -238,7 +238,16 @@ transfer, protected signed readback, no midinstruction entry, dummy fetch,
 stack entry, and vector selection through depth 18; all four covers reach step
 8. This is fixed logical I/O evidence, not indirect updates, peripheral side
 effects, explicit-pipeline subphases, or electrical timing
-[`formal/tms32010_interrupt_io.sby`]. A separate native test drives
+[`formal/tms32010_interrupt_io.sby`]. A complementary 22-step actual-core
+harness crosses indirect IN/OUT direction, both selected ARs, all three legal
+single-update modes, ARP preserve/switch, and both arrival positions. It proves
+old-address transfer ownership, exact callback/RAM data and direction,
+post-transfer nine-bit AR updates with upper-bit preservation, optional next-
+ARP selection, protected readback, dummy fetch, and vector entry. All 48
+complete tuples reach cover step 13 under arbitrary clock-enable stalls
+[`formal/tms32010_interrupt_io_indirect.sby`]. It does not prove peripheral,
+explicit-pipeline subphase, electrical, simultaneous-update, or unbounded
+behavior. A separate native test drives
 a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin

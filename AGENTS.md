@@ -706,13 +706,14 @@ Additional actual-core interrupt-arrival harnesses cover protected-DINT policy,
 both fixed-B intervals, all 36 combinations of the six accumulator branches
 with negative/zero/positive ACC classes and both intervals, all 14 BANZ/BV/
 BIOZ/CALL scenario/interval tuples, all three direct TBLR and TBLW intervals,
-and both direct IN/OUT intervals. These are bounded logical fixture proofs;
-they do not qualify original-package branch pins, explicit-pipeline subphases,
-or electrical timing.
+both direct IN/OUT intervals, and all 48 tuples of indirect IN/OUT direction,
+selected AR, legal update, ARP action, and arrival interval. These are bounded
+logical fixture proofs; they do not qualify original-package branch pins,
+explicit-pipeline subphases, peripheral behavior, or electrical timing.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 76 passing BMC/cover tasks from 38
+The complete current matrix contains 78 passing BMC/cover tasks from 39
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification

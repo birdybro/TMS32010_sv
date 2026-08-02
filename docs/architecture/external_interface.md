@@ -303,6 +303,14 @@ trap-before-effects, while the focused differential compares model and RTL
 cycles, transactions, state, and final RAM. The core exposes no READY input
 because the original pinout contains none.
 
+`formal/tms32010_interrupt_io_indirect.sby` independently crosses IN/OUT,
+both old ARP selections, no/increment/decrement, ARP preserve/switch, and both
+represented interrupt-arrival intervals. Through depth 22 it proves the old
+address owns the callback and that AR/ARP changes occur only after the exact
+transfer, followed by protected/dummy/vector ownership; all 48 tuples reach
+cover step 13. This is bounded logical-interface evidence, not native
+subphase, peripheral, package-pin, electrical, or unbounded proof.
+
 For `TBLR` and `TBLW`, the opcode prefetch at PC enters the execute slot.
 Execution cycle 1 performs a full `MEN` read at PC+1 but classifies its input
 as nonexecutable and discards it. Execution cycle 2 changes

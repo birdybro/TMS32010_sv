@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 22-step actual-core indirect-IN/OUT interrupt-arrival formal harness.
+  Symbolic selectors cross direction, both selected auxiliary registers, all
+  three legal update modes, ARP preservation/replacement, and both request
+  intervals, exposing 48 independent completed-entry covers.
 - A 20-step actual-core BANZ/BV/BIOZ/CALL interrupt-arrival formal
   harness. Seven control scenarios cover both conditional outcomes plus CALL,
   cross both represented execution intervals, and expose 14 independent
@@ -1360,6 +1364,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 48 indirect-IN/OUT direction/AR/update/ARP-action/arrival tuples pass
+  BMC through depth 22 and independently reach completed entry at cover step
+  13. The proof checks old-address transfer ownership, exact callback and RAM
+  direction/data, low-nine-bit post-update with upper-bit preservation,
+  optional ARP replacement, protected readback, dummy/vector sequencing, and
+  arbitrary clock-enable stalls. The full formal inventory now has 78 passing
+  tasks from 39 configurations; peripheral, explicit-pipeline subphase, and
+  electrical behavior remain outside this proof.
 - All 14 BANZ/BV/BIOZ/CALL scenario/arrival tuples pass BMC through depth 20
   and independently reach completed entry at cover step 9. The proof checks
   target/fallthrough selection, BANZ test-before-decrement and low-nine-bit

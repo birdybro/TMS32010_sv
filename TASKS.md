@@ -1061,6 +1061,7 @@ objective passing evidence.
   `formal/tms32010_interrupt_dint.sby`,
   `formal/tms32010_interrupt_accumulator_branches.sby`,
   `formal/tms32010_interrupt_banz_bv_bioz_call.sby`,
+  `formal/tms32010_interrupt_io_indirect.sby`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`,
   `tests/asm/dint_interrupt_race_probe.asm`,
@@ -1124,6 +1125,14 @@ objective passing evidence.
   reach completed entry at cover step 9. This does not prove dynamic BIO
   transition timing, explicit-pipeline subphases, original-package ownership,
   or electrical timing; ADR-0002 remains `INFERRED` for the combined mapping.
+  A 22-step actual-core indirect-I/O BMC crosses IN/OUT, AR0/AR1 selection,
+  no/increment/decrement update, ARP preserve/switch, and both represented
+  execution intervals. It proves old-address transfer ownership, exact port/
+  RAM direction and data, low-nine-bit post-update with upper-bit preservation,
+  optional ARP replacement, one protected readback, dummy/vector ownership,
+  mask/pending effects, and arbitrary bounded stalls. All 48 complete tuples
+  reach cover step 13. This is logical callback evidence, not peripheral,
+  explicit-pipeline subphase, package-pin, electrical, or unbounded proof.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1699,6 +1708,16 @@ objective passing evidence.
   four covers reach completed entry at step 8. This is fixed logical callback
   evidence, not other ports/addresses, indirect updates, peripheral effects,
   explicit-pipeline subphases, or electrical proof.
+  A complementary 22-step actual-core indirect-I/O configuration uses four
+  verification-only RAM preload cycles and crosses direction, selected AR,
+  every legal single-update choice, ARP preserve/switch, and both arrival
+  intervals. It proves the old selected address owns the callback, IN commits
+  `0xcafe`, OUT emits the selected fixture word, AR[8:0] changes only after
+  transfer while AR[15:9] is preserved, optional next-ARP takes effect, and
+  protected/dummy/vector entry remains ordered under arbitrary stalls. All 48
+  tuple-specific covers reach step 13. It does not cover simultaneous update,
+  other ports/data, peripherals, explicit-pipeline subphases, electrical
+  timing, or unbounded liveness.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1801,7 +1820,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 76 BMC/cover tasks from 38 checked-in
+  The current runner passes all 78 BMC/cover tasks from 39 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

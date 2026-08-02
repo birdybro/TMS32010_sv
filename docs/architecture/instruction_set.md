@@ -563,6 +563,16 @@ functional corroborator, not pin-timing proof
 [mame-tms320c1x-core-030fefc, `in_p()`/`out_p()` and opcode table,
 lines 530–535, 654–659, and 818–825]. **Confidence: CORROBORATED.**
 
+A 22-step actual-core formal harness crosses IN/OUT, both old ARP selections,
+no/increment/decrement, ARP preservation/replacement, and both represented
+interrupt-arrival intervals. It proves the old selected address owns the
+transfer, the legal post-update changes only AR[8:0], AR[15:9] is preserved,
+the encoded next ARP takes effect only after transfer, and entry remains
+deferred through one protected instruction. All 48 complete tuples reach
+cover step 13 [`formal/tms32010_interrupt_io_indirect.sby`]. This is bounded
+logical implementation evidence, not peripheral, explicit-pipeline subphase,
+package-pin, electrical, or unbounded proof.
+
 ## Qualified `TBLR`/`TBLW`
 
 `TBLR` (`0x67xx`) and `TBLW` (`0x7dxx`) use the common direct/indirect

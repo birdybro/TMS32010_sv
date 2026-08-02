@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded remaining two-word control arrivals
+- **Current milestone:** `FORMAL-001` bounded indirect-I/O interrupt arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,9 +148,9 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 76 tasks from 38 SymbiYosys configurations pass with
+- **Formal status:** all 78 tasks from 39 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
-  12-, 14-, three 18-, and six 20-step actual-core interrupt BMCs across
+  12-, 14-, three 18-, six 20-, and one 22-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
@@ -1698,6 +1698,17 @@
   configurations. The proof does not cover dynamic BIO transitions or promote
   inferred package-level ownership. No synthesizable RTL changed, so prior
   synthesis evidence remains applicable.
+- **New indirect-I/O-arrival formal evidence:** a 22-step actual-core BMC
+  crosses IN/OUT, AR0/AR1 selection, no/increment/decrement, ARP preserve/
+  switch, and both represented interrupt-arrival intervals. It proves old-
+  address transfer ownership, exact callback/RAM direction and data, low-nine-
+  bit post-update with upper-bit preservation, optional ARP replacement,
+  protected readback, dummy/vector ordering, and interrupt state under
+  arbitrary bounded stalls. All 48 tuple-specific covers reach step 13; the
+  complete suite now has 78 passing tasks from 39 configurations. This is not
+  peripheral, explicit-pipeline subphase, package-pin, electrical, simultaneous-
+  update, or unbounded proof. No synthesizable RTL changed, so prior synthesis
+  evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1746,11 +1757,11 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend bounded formal interrupt-arrival coverage to another
-  represented control or multicycle family without generalizing beyond
-  documented core behavior, or
+- **Next task:** extend bounded formal interrupt-arrival coverage to indirect
+  table transfers or another represented multicycle family without
+  generalizing beyond documented core behavior, or
   advance another unblocked P0 evidence slice;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `2876c35`
+  `2231b97`

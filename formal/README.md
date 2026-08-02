@@ -444,6 +444,32 @@ prove other ports/addresses, indirect I/O updates, real peripheral side
 effects, explicit fetch/execute ownership, native subphase placement,
 electrical timing, or an unbounded liveness property.
 
+## Indirect two-cycle I/O-arrival harness
+
+`tms32010_interrupt_io_indirect.sby` checks the actual portable core with a
+22-step BMC and cover while leaving `clock_enable_i` arbitrary. Independent
+symbolic constants select IN versus OUT, old ARP 0 versus 1, no update versus
+increment versus decrement, ARP preservation versus replacement with the
+other AR, and request arrival in either represented I/O interval. Four fixed
+debug-preload cycles establish distinct AR0/AR1 words and distinct RAM data at
+their old addresses.
+
+Assertions prove that the old selected address owns the I/O transfer; IN
+writes fixed callback word `0xcafe`, while OUT drives the distinct selected
+RAM word. The selected AR changes only after the transfer, only its low nine
+bits change, the unselected AR is preserved, and optional next-ARP replacement
+is deferred to that same completion. A direct protected LAC then proves the
+committed word before dummy fetch, return-PC push, mask/pending completion, and
+vector entry. The harness also proves one enabled callback and stability
+across arbitrary bounded stalls. Forty-eight independent covers—one for every
+complete selector tuple—reach solver step 13.
+
+The RAM preload and callback are formal fixtures, not reset or peripheral
+models. Simultaneous increment/decrement is excluded under `OQ-010`, exactly
+as the documented legal decoder excludes it. This is bounded logical actual-
+core evidence, not another-port/data proof, explicit-pipeline subphase,
+package-pin, peripheral, electrical, or unbounded liveness proof.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -674,7 +700,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 38 configurations produce 76 passing BMC/cover tasks. They still
+The current 39 configurations produce 78 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

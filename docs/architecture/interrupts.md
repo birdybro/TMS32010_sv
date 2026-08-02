@@ -157,6 +157,16 @@ the live target-word sample. This finite proof does not promote ADR-0002's
 combined interval mapping beyond `INFERRED` or qualify package/electrical
 timing.
 
+A separate actual-core harness crosses both represented IN/OUT intervals with
+both directions, both old ARP selections, all three legal single-update
+choices, and ARP preserve/switch. It proves exact callback/RAM ownership,
+old-address transfer ordering, post-transfer AR/ARP effects, one protected
+readback, dummy return-PC ownership, and vector entry. All 48 complete tuples
+reach cover step 13 through depth 22 under arbitrary clock-enable stalls
+[`formal/tms32010_interrupt_io_indirect.sby`]. This is bounded logical core
+evidence, not peripheral, explicit-pipeline subphase, package-pin, electrical,
+or unbounded proof; simultaneous increment/decrement remains `OQ-010`.
+
 A separate four-case explicit-pipeline test pulses INT in each of CALA's and
 RET's two execution intervals. It proves that the request may latch during the
 discarded sequential or selected-target read but cannot retire, mutate the
