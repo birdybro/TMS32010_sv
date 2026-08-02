@@ -191,7 +191,15 @@ sequence. This exhausts the currently modeled multicycle machine-cycle
 boundaries. A matching explicit-pipeline matrix checks those 32 execution
 intervals with family-specific MEN/DEN/WE ownership, no midinstruction entry,
 one protected retirement, dummy discard, stack entry, acknowledge state, and
-vector capture. A separate native test drives
+vector capture. A bounded actual-core formal harness independently selects
+either execution interval of one fixed unconditional `B`. It proves canonical
+operand presentation, no midinstruction entry, resolved target `0x010`, one
+protected LACK, return-PC dummy fetch, stack push, and vector selection through
+depth 18 with arbitrary clock-enable stalls; both choices reach cover step 7.
+This is logical implementation evidence for B only. It does not upgrade the
+INFERRED explicit-pipeline interval mapping, original-package address
+ownership, or the remaining multicycle families
+[`formal/tms32010_interrupt_branch.sby`]. A separate native test drives
 a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin

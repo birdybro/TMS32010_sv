@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- An 18-step actual-core unconditional-B interrupt-arrival formal harness with
+  a symbolic choice between both documented execution intervals. It proves
+  operand ownership, no midinstruction entry, resolved-target retirement, one
+  protected instruction, dummy fetch, stack push, and vector selection under
+  arbitrary bounded clock-enable stalls, while excluding unresolved physical
+  branch pin timing.
 - An 18-step actual-core protected-DINT formal harness with BMC and non-vacuity
   cover. Under arbitrary bounded clock-enable stalls it proves the current
   cancellation/retention policy, ordinary masked continuation, later EINT and
@@ -1329,9 +1335,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Both symbolic interrupt-arrival choices for the fixed two-cycle `B` program
+  pass BMC through depth 18 and independently reach completed entry at cover
+  step 7. This is one actual-core logical-sequencing proof, not complete
+  multicycle-family or original-package bus evidence.
 - The protected-DINT BMC passes through depth 18 and its complete retained-
   request service path reaches cover step 9. The full formal inventory now has
-  64 passing tasks from 32 configurations; this remains bounded
+  66 passing tasks from 33 configurations; this remains bounded
   implementation evidence, not original-silicon DINT priority proof.
 - Explicit mask-control placement now distinguishes request-during-EINT,
   request-during-DINT, protected redundant EINT, and protected DINT. The last
@@ -2507,13 +2517,15 @@ Changelog, and the project follows semantic versioning once releases begin.
   express the exact overlap, while pinned IKA predicts entry-wins. That
   ordering is targeted-tested but PROVISIONAL under `OQ-019`/`SC-039`, with a
   stable physical experiment now defined.
-- Formal evidence currently covers four fixed interrupt-entry programs,
-  one fixed CALA/RET call/return program,
-  at 12-, 14-, and two 20-step bounds, one standalone ownership register, and
+- Formal evidence currently covers six fixed interrupt-entry programs,
+  including protected-DINT policy and both arrival intervals of one fixed B,
+  plus one fixed CALA/RET call/return program, at 12-, 14-, two 18-, and two
+  20-step bounds, one standalone ownership register, and
   fixed direct-TBLR and direct-TBLW integrated-pipeline programs at 40 steps.
-  It excludes DINT, the other indirect MPY control/update cases, arbitrary
-  multiply-chain placement/length, formal coverage of the represented
-  multicycle-arrival matrix, indirect table addressing, the general
+  It excludes arbitrary DINT placement and original-silicon priority, the
+  other indirect MPY control/update cases, arbitrary multiply-chain
+  placement/length, the remaining represented multicycle-arrival families,
+  indirect table addressing, the general
   pipeline, general external-memory behavior, and broad decode/datapath
   properties.
 - Original-part ADDH status behavior is resolved only at CORROBORATED

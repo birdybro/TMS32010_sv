@@ -1595,7 +1595,7 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Six actual-core configurations pass bounded checks over
+- **Notes:** Seven actual-core configurations pass bounded checks over
   arbitrary clock-enable sequences. The 12-step
   EINT/protected-LACK/dummy/vector fixture
   reaches vector execution at step 6. The 14-step
@@ -1622,6 +1622,14 @@ objective passing evidence.
   complete cover reaches step 9 under arbitrary bounded clock-enable stalls.
   It proves implementation consistency, not original-silicon priority under
   `OQ-019`/`SC-039`.
+  A separate 18-step actual-core unconditional-B configuration leaves the
+  interrupt arrival interval symbolically selected between both represented B
+  cycles. It proves canonical target-word ownership without midinstruction
+  entry, target resolution before deferral, one protected LACK, dummy fetch,
+  return-PC stack push, and vector selection under arbitrary bounded stalls.
+  Both arrival choices independently reach completed entry at cover step 7.
+  This is one logical core scenario, not proof of the remaining multicycle
+  families or original-package branch bus timing.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1724,7 +1732,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 64 BMC/cover tasks from 32 checked-in
+  The current runner passes all 66 BMC/cover tasks from 33 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,
@@ -1735,8 +1743,8 @@ objective passing evidence.
   selected-register, instruction, timing, or dual-control silicon behavior.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. Arbitrary DINT
   placement and original-silicon priority, the other indirect MPY control/
-  update cases, arbitrary chain placement/length, formal multicycle-arrival
-  coverage, general
+  update cases, arbitrary chain placement/length, formal coverage of the
+  remaining represented multicycle-arrival families, general
   FSM and remaining integrated decode/RAM/arithmetic properties, and
   liveness
   assumptions remain.

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded protected-DINT policy
+- **Current milestone:** `FORMAL-001` bounded two-cycle branch arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,7 +148,7 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 64 tasks from 32 SymbiYosys configurations pass with
+- **Formal status:** all 66 tasks from 33 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -169,6 +169,12 @@
   later EINT and protected word, dummy fetch, stack push, and vector selection
   under arbitrary bounded clock-enable stalls; its cover reaches step 9. This
   is implementation consistency, not original-silicon priority proof. A
+  separate 18-step actual-core BMC symbolically selects request arrival during
+  either interval of fixed unconditional B. It proves target-word retention,
+  no midinstruction entry, resolved target, one protected instruction,
+  dummy/vector sequencing, and stack/mask/pending effects under arbitrary
+  bounded stalls; both arrival covers reach step 7. This is one logical B
+  scenario, not complete multicycle-family or physical branch-bus proof. A
   separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -1596,9 +1602,18 @@
 - **New protected-DINT formal evidence:** an 18-step actual-core BMC proves the
   fixed cancellation/retention/resume path under arbitrary bounded clock-enable
   stalls, and a cover reaches completed vector selection at solver step 9. The
-  full suite now contains 64 passing BMC/cover tasks from 32 configurations.
+  full suite then contained 64 passing BMC/cover tasks from 32 configurations.
   This binds the current RTL policy only; `OQ-019`/`SC-039` remain unresolved
   for original silicon.
+- **New branch-arrival formal evidence:** an 18-step actual-core BMC uses a
+  symbolic constant to cover both execution intervals of fixed unconditional
+  B. It proves operand retention, no midinstruction entry, target resolution,
+  protected LACK, dummy fetch, stack push, and vector selection under arbitrary
+  bounded clock-enable stalls. Both choices reach cover step 7; the complete
+  suite now has 66 passing tasks from 33 configurations. Physical branch bus
+  ownership and all other multicycle families remain outside this proof. No
+  synthesizable RTL changed, so the prior Yosys and Quartus results remain the
+  applicable synthesis evidence rather than a newly generated receipt.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1647,9 +1662,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** add bounded formal coverage for a represented multicycle
-  interrupt-arrival family without generalizing beyond its fixed program, or
-  advance another unblocked P0 evidence slice; keep PUSH/POP ownership blocked
-  under `OQ-016` rather than inventing bus phases.
+- **Next task:** extend bounded formal interrupt-arrival coverage to one fixed
+  represented three-cycle family without generalizing beyond documented core
+  behavior, or advance another unblocked P0 evidence slice; keep PUSH/POP
+  ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `691b94a`
+  `d21b951`

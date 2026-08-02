@@ -310,6 +310,26 @@ PROVISIONAL under `OQ-019`/`SC-039`; the harness is not production-silicon
 priority evidence, does not represent the alternate entry-wins hypothesis,
 and does not prove arbitrary DINT placement or electrical interrupt timing.
 
+## Two-cycle branch-arrival harness
+
+`tms32010_interrupt_branch.sby` checks the actual portable core with an
+18-step BMC and cover while leaving `clock_enable_i` arbitrary. One symbolic
+constant selects request arrival during either execution interval of the fixed
+program `EINT; B 0x010`. Assertions prove that the first interval retains B
+while presenting its canonical operand, the second resolves PC `0x010` before
+interrupt deferral, `LACK 0x44` is the sole protected instruction, address
+`0x011` is a nonretiring dummy fetch, and entry stacks `0x011`, masks, clears
+pending state, and selects vector 2. Separate covers for both symbolic choices
+reach completed entry at solver step 7.
+
+The branch operand at address 2 is necessarily also the vector word in this
+fixed program. Bus-exclusion assertions therefore stop at the dummy boundary;
+the subsequently decoded vector word is outside the scenario. This proof
+qualifies one unconditional-B logical sequence only. It does not prove the
+other control, I/O, or table families; an explicit fetch/execute wrapper;
+original-package MEN/address ownership; electrical interrupt timing; or an
+unbounded liveness property.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -540,11 +560,11 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 32 configurations produce 64 passing BMC/cover tasks. They still
+The current 33 configurations produce 66 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
-coverage of the represented multicycle interrupt-arrival matrix, arbitrary
-multiply-chain placement/length, the complete integrated fetch/execute
-pipeline, and electrical timing to
+coverage of the remaining represented multicycle interrupt-arrival families,
+arbitrary multiply-chain placement/length, the complete integrated
+fetch/execute pipeline, and electrical timing to
 simulation/research or future formal work under `CTRL-002`, `FORMAL-001`,
 `OQ-004`, and `OQ-019`.
 No liveness theorem is claimed because arbitrary clock-enable or
