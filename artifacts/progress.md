@@ -148,7 +148,7 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 82 tasks from 41 SymbiYosys configurations pass with
+- **Formal status:** all 84 tasks from 42 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, three 18-, six 20-, one 22-, and one 28-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
@@ -1741,6 +1741,21 @@
   retained-state claims. This is not TBLW, arbitrary-control/program/memory,
   general-pipeline, arbitrary physical clock-stop, or electrical proof. No
   synthesizable RTL changed, so prior synthesis evidence remains applicable.
+- **New explicit-pipeline indirect-table-write/full-stack evidence:** a
+  depth-88 BMC composes four nested CALLs, distinct return words, old AR1
+  address 9, indirect `TBLW *-,AR0`, distinct PC+1 address `0x085`, and ACC
+  target `0x086`. It proves all three native table intervals, one exact
+  `0x7e44` WE transfer and enabled phase-3 synchronous program-memory commit,
+  repeated-prefetch-only AR1 decrement/ARP replacement/stack-bottom
+  duplication, repeated ZAC, newly written `LACK 0x44` execution,
+  native-strobe exclusion, and harness-observed retained state/interface
+  stability during arbitrary bounded stalls. BMC passes through depth 88 and
+  the complete path reaches cover step 83; the cover retains a compact Yosys
+  witness while omitting redundant full-RAM VCD generation. The complete
+  suite now has 84 passing tasks from 42 configurations. This is not other
+  indirect controls, arbitrary programs/memory, interrupts, general-pipeline,
+  arbitrary physical clock-stop, package-delay, or electrical proof. No
+  synthesizable RTL changed, so prior synthesis evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1789,10 +1804,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend explicit-pipeline bounded evidence to an indirect TBLW
-  control scenario or advance another unblocked P0 evidence slice without
+- **Next task:** select the next highest-priority unblocked evidence slice,
+  with explicit-pipeline table/interrupt composition a candidate, without
   generalizing beyond documented core behavior;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `479bf17`
+  `46b8877`

@@ -358,6 +358,15 @@ stalls. This does not generalize to TBLW, other indirect controls, arbitrary
 programs/memory, or electrical timing
 [`formal/tms32010_pipeline_table_indirect_stack.sby`, `formal/README.md`].
 
+A fourth integrated-pipeline harness proves fixed indirect `TBLW *-,AR0`
+through depth 88 after the same four-CALL stack setup. It checks the discarded
+PC+1, ACC-addressed three-cycle transfer, one phase-3 program-memory commit,
+repeated PC+1, repeated-prefetch-only AR1/ARP/stack effects, and subsequent
+ZAC/newly-written-LACK execution; cover reaches step 83. This does not
+generalize to other controls, arbitrary programs/memory, interrupts, or
+electrical timing
+[`formal/tms32010_pipeline_table_indirect_stack_write.sby`, `formal/README.md`].
+
 Legacy `BANZ` tests assert the opcode and operand transactions on both taken
 and untaken paths. The explicit-pipeline test separately primes `0xf400`,
 keeps BANZ in the execute slot during its nonexecutable PC+1 operand fetch,

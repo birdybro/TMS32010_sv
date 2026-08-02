@@ -672,6 +672,38 @@ stack. It does not prove TBLW, other indirect controls, arbitrary programs or
 memory, interrupts, the general integrated pipeline, arbitrary physical clock
 stopping, or electrical timing.
 
+## Integrated indirect-TBLW full-stack pipeline harness
+
+`tms32010_pipeline_table_indirect_stack_write.sby` checks the complete
+explicit sequential-pipeline hierarchy with a depth-88 BMC and cover. Four
+fixed direct CALLs build stack state `{0x052, 0x032, 0x012, 0x002}` before
+`LARK AR0,5`, `LARK AR1,9`, `LARP 1`, `LACK 0x86`, and indirect
+`TBLW *-,AR0`. The verification-only port preloads RAM word 9 with
+`0x7e44`; PC+1 is distinct address `0x085`, and the mutable table target is
+program address `0x086`.
+
+Assertions prove all four return-address pushes, retained TBLW ownership over
+the discarded `0x085` fetch, old-AR1 address 9 as the RAM source, ACC address
+`0x086` as the program target, exact data `0x7e44`, and no early RAM, AR,
+ARP, stack, or program-memory effect. The program fixture commits exactly once
+on the enabled active phase-3 WE boundary. Only the repeated `0x085` fetch
+releases ownership, decrements AR1 from 9 to 8, selects ARP 0, and duplicates
+old stack level 2 into the bottom. The repeated original ZAC then executes,
+followed by the newly written `LACK 0x44` at `0x086`. Native strobe exclusion,
+exact transfer direction, and harness-observed retained architectural state
+and interface values remain checked under arbitrary clock-enable stalls.
+`sample_o` and `retired_o` remain excluded because they are diagnostic pulses,
+not retained state. The complete path reaches cover step 83. To avoid
+enumerating the full internal RAM into a redundant waveform, the cover task
+disables VCD generation but retains the compact Yosys witness, generated
+testbench, and constraints.
+
+This proof qualifies one fixed indirect TBLW path with a nonzero full prior
+stack, verification-only RAM preload, and enabled phase-3 synchronous
+program-memory contract. It does not prove TBLR, other indirect controls,
+arbitrary programs or memory, interrupts, the general integrated pipeline,
+arbitrary physical clock stopping, package delay, or electrical timing.
+
 ## Driver Sound same-clock host-timing harness
 
 `hard_drivin_sound_host_timing.sby` checks the isolated A044427 logical timing
@@ -755,7 +787,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 41 configurations produce 82 passing BMC/cover tasks. They still
+The current 42 configurations produce 84 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

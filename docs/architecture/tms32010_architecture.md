@@ -136,6 +136,15 @@ prefetch boundary. The complete transfer/following-LAC path reaches cover step
 evidence for one fixed path, not visibility of the temporary internal stack
 state or a general stack/pipeline proof.
 
+A complementary depth-88 composed-pipeline proof reaches the same final
+table relation from the same four CALL-created stack words with fixed indirect
+`TBLW *-,AR0`. It proves one exact old-AR1-to-ACC-addressed program write,
+repeated-prefetch-only AR1/ARP/stack commit, and execution of the repeated ZAC
+followed by the newly written `LACK 0x44`; cover reaches step 83
+[`formal/tms32010_pipeline_table_indirect_stack_write.sby`]. This remains one
+bounded fixture under a verification-only RAM preload and synchronous
+program-memory contract, not a general stack, memory, or pipeline proof.
+
 The portable `tms32010_auxiliary_counter` block expresses the documented AR
 post-modification arithmetic as a combinational relation. Hold preserves all
 16 bits. Exclusive increment or decrement wraps only `AR[8:0]` modulo 512 and

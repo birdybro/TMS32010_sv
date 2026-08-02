@@ -720,10 +720,20 @@ consumption, and harness-observed state/program-data-interface stability under
 arbitrary clock-enable stalls; its
 complete path reaches cover step 74. This is one fixed TBLR scenario, not a
 general pipeline or electrical proof.
+A complementary depth-88 proof over the same hierarchy chains four CALLs
+before fixed indirect `TBLW *-,AR0`. It proves old-AR1 address 9 and ACC
+program address `0x086` ownership, one phase-3 WE commit of `0x7e44`, the
+distinct discarded/repeated PC+1 fetch at `0x085`, deferred AR1/ARP/stack
+effects, execution of repeated ZAC and then the newly written `LACK 0x44`,
+native-strobe exclusion, and harness-observed retained state/interface
+stability under arbitrary clock-enable stalls. Its complete path reaches
+cover step 83. This is one fixed TBLW scenario under a verification-only RAM
+preload and synchronous program-memory contract, not a general memory,
+pipeline, interrupt, or electrical proof.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 82 passing BMC/cover tasks from 41
+The complete current matrix contains 84 passing BMC/cover tasks from 42
 checked-in SymbiYosys configurations, including the exhaustive combinational
 accumulator, input-shifter, SACH output-shifter, stack, and auxiliary-counter
 relations. These counts are qualification

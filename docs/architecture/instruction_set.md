@@ -631,8 +631,16 @@ old-AR0 transfer ownership, all three native table intervals, deferred AR0/
 ARP and stack-bottom effects, exact `0xb33c` RAM commit, and following-LAC
 consumption; cover reaches step 74
 [`formal/tms32010_pipeline_table_indirect_stack.sby`]. This closes one fixed
-nontrivial-stack/explicit-pipeline case, not TBLW, other control fields,
-arbitrary code/memory, or general pipeline behavior.
+nontrivial-stack/explicit-pipeline TBLR case.
+
+A complementary depth-88 explicit-pipeline harness uses the same four-CALL
+stack setup before `TBLW *-,AR0`, with old AR1 address 9, ACC target `0x086`,
+and a distinct PC+1 at `0x085`. It proves one `0x7e44` WE transfer, deferred
+AR1 decrement/ARP replacement and stack-bottom duplication, repeated ZAC,
+and subsequent execution of the newly written `LACK 0x44`; cover reaches step
+83 [`formal/tms32010_pipeline_table_indirect_stack_write.sby`]. The two
+fixtures do not prove other control fields, arbitrary code/memory, interrupts,
+electrical timing, or general pipeline behavior.
 
 ## Model/tool-qualified, RTL-deferred `PUSH`/`POP`
 

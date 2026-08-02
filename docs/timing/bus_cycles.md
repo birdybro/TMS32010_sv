@@ -139,8 +139,17 @@ four nested CALLs. It proves distinct preexisting stack state, old-AR0 address
 only AR/ARP/stack/RAM effects, and following-LAC consumption under arbitrary
 bounded clock-enable stalls; cover reaches step 74
 [`formal/tms32010_pipeline_table_indirect_stack.sby`]. It does not generalize
-to TBLW, other indirect controls, arbitrary programs/memory, physical clock
-stopping, or electrical timing.
+to other indirect controls, arbitrary programs/memory, physical clock stopping,
+or electrical timing.
+
+A complementary depth-88 proof composes the same full-stack setup with fixed
+indirect `TBLW *-,AR0`. It proves discarded/repeated PC+1 MEN at `0x085`,
+old-AR1 RAM address 9, one `0x7e44` WE transfer and enabled phase-3 commit at
+distinct ACC target `0x086`, deferred AR1/ARP/stack effects, and execution of
+the rewritten program word; cover reaches step 83
+[`formal/tms32010_pipeline_table_indirect_stack_write.sby`]. This is one
+synchronous fixture-memory contract, not arbitrary memory, interrupt,
+physical-clock-stop, package-delay, or electrical evidence.
 
 Figure 2-12 now establishes the interrupt program-read order. After a request
 becomes active during fetch N, program space reads N, N+1, a dummy N+2, and

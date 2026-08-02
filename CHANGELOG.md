@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A depth-88 explicit-pipeline indirect-TBLW formal harness. Four nested CALLs
+  establish distinct stack entries before `TBLW *-,AR0`; a verification-only
+  RAM preload and phase-3 synchronous program-memory model expose old-AR1,
+  distinct ACC-target, self-modification, and post-table execution behavior.
 - A depth-80 explicit-pipeline indirect-TBLR formal harness. Four nested
   CALLs establish distinct stack entries before `TBLR *+,AR1`, allowing one
   primary-backed native-phase path to prove nonzero prior-stack behavior and
@@ -1373,6 +1377,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The fixed four-CALL/indirect-TBLW path passes BMC through depth 88 and
+  reaches its completed-path cover at step 83. It checks discarded/repeated
+  PC+1 ownership at `0x085`, one `0x7e44` phase-3 WE commit to ACC address
+  `0x086`, old-AR1 RAM address 9, deferred AR1 decrement/ARP replacement and
+  old-level-2 stack-bottom duplication, repeated ZAC then rewritten
+  `LACK 0x44` execution, native-strobe exclusion, and arbitrary clock-enable
+  stalls. The formal inventory now has 84 passing tasks from 42
+  configurations; other controls/programs/memory, interrupts, electrical
+  timing, and the general integrated pipeline remain outside this bound.
 - The fixed four-CALL/indirect-TBLR path passes BMC through depth 80 and
   reaches its completed-path cover at step 74. It checks discarded PC+1 and
   ACC-addressed MEN ownership, old-AR0 RAM addressing, exact `0xb33c`

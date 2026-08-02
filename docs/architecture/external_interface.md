@@ -352,7 +352,16 @@ ACC-addressed table MEN, exact old-AR0/data direction, deferred architectural
 commit, and following-LAC consumption under arbitrary bounded phase stalls;
 the complete path reaches cover step 74. This is one logical native-phase
 scenario, not arbitrary physical clock stopping, package delay, electrical
-timing, TBLW, or general interface proof.
+timing, or general interface proof.
+
+`formal/tms32010_pipeline_table_indirect_stack_write.sby` composes the same
+four-CALL stack with fixed indirect `TBLW *-,AR0`. Through depth 88 it proves
+discarded/repeated PC+1 MEN at `0x085`, old-AR1 internal-RAM source ownership,
+ACC-addressed WE at distinct target `0x086`, one enabled phase-3 external
+commit, deferred AR1/ARP/stack effects, and execution of the rewritten program
+word; cover reaches step 83. This is one synchronous fixture-memory contract,
+not arbitrary memory timing, physical clock stopping, package delay,
+electrical timing, interrupts, or general interface proof.
 
 ## No documented READY pin
 

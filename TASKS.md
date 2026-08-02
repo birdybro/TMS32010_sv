@@ -1754,6 +1754,24 @@ objective passing evidence.
   diagnostic pulses, not native pins or architectural state. This fixed
   fixture does not qualify TBLW, other addressing controls, arbitrary memory,
   electrical timing, or the general integrated pipeline.
+  A complementary depth-88 explicit-pipeline indirect-TBLW configuration
+  chains the same four direct CALLs into distinct full-stack state, preloads
+  exact word `0x7e44` at RAM address 9 through the verification-only port, and
+  executes `LARK AR0,5; LARK AR1,9; LARP 1; LACK 0x86; TBLW *-,AR0`. It proves
+  that old AR1 address 9 supplies exactly one WE transfer to distinct ACC
+  program address `0x086` while PC+1 is `0x085`; no RAM, AR1, ARP, stack, or
+  program mutation occurs in the discarded interval; the external fixture
+  commits only at its enabled phase-3 boundary; and the repeated-prefetch
+  boundary alone decrements AR1[8:0] from 9 to 8, selects ARP 0, and duplicates
+  old stack level 2 into the bottom. The repeated original ZAC at `0x085`
+  executes before the newly written `LACK 0x44` at `0x086`. Native-strobe
+  exclusion, one write, and harness-observed retained state/program-data-
+  interface stability hold under arbitrary bounded clock-enable stalls. BMC
+  passes through depth 88 and the complete path reaches cover step 83; cover
+  retains a compact Yosys witness while intentionally omitting the redundant
+  full-RAM VCD. This fixed fixture does not qualify TBLR, other controls,
+  arbitrary programs/memory, interrupts, physical clock stopping, package
+  delay, or electrical timing.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1856,7 +1874,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 82 BMC/cover tasks from 41 checked-in
+  The current runner passes all 84 BMC/cover tasks from 42 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

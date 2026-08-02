@@ -397,19 +397,26 @@ state, `LARK AR0,5; LARK AR1,9; LACK 0x20`, indirect `TBLR *+,AR1`, and a
 following direct LAC. It proves all three native table intervals, exact old-
 AR0/ACC address ownership and `0xb33c` data, repeated-prefetch-only RAM/AR/
 ARP/stack commit, old-level-2 stack-bottom duplication, and following-LAC
-consumption under arbitrary clock-enable stalls; cover reaches step 74. This
-is one fixed indirect TBLR scenario, not TBLW, arbitrary indirect controls,
-or general integrated-pipeline proof
+consumption under arbitrary clock-enable stalls; cover reaches step 74.
+
+A fourth depth-88 harness uses the same CALL-created stack before
+`LARP 1; LACK 0x86; TBLW *-,AR0`. It proves old-AR1 RAM ownership, a single
+phase-3 `0x7e44` WE commit to distinct ACC target `0x086`, repeated-PC+1-only
+AR1/ARP/stack effects, repeated ZAC, and execution of the rewritten
+`LACK 0x44`; cover reaches step 83. These are fixed indirect scenarios, not
+arbitrary controls/programs/memory or general integrated-pipeline proof
 [ti-tms32010-users-guide-spru001b, §2.8.2, Figure 2-10, and
 `TBLR`/`TBLW`, printed pp. 2-17 and 3-64–3-67
 (PDF pp. 41 and 114–117);
 `sim/bus/tb_sequential_pipeline_table.sv`;
 `formal/tms32010_pipeline_table.sby`;
 `formal/tms32010_pipeline_table_write.sby`;
-`formal/tms32010_pipeline_table_indirect_stack.sby`; `formal/README.md`].
+`formal/tms32010_pipeline_table_indirect_stack.sby`;
+`formal/tms32010_pipeline_table_indirect_stack_write.sby`;
+`formal/README.md`].
 **Confidence: VERIFIED_PRIMARY for source ordering and native pin ownership;
 VERIFIED_SIMULATION for explicit execute ownership; bounded formal evidence
-for the three stated scenarios.**
+for the four stated scenarios.**
 
 `SUBC` is documented as one cycle, but TI explicitly prohibits the immediately
 following instruction from using ACC. This exposes a result-availability
