@@ -102,12 +102,43 @@ compatible device:
 6. Repeat on another original-part date/mask code before generalizing the
    outcome across `OQ-008`.
 
+## Normalization and automated classification
+
+Export one row per falling `CLKOUT` boundary using the strict common CSV
+schema documented in [the trace-tool README](../../tools/trace/README.md).
+Then assemble and check the exact project-authored image before classifying:
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/simultaneous_ar_update_probe.asm \
+  --binary simultaneous_ar_update_probe.bin --byteorder big
+python3 -m tools.trace.simultaneous_ar_capture normalized.csv \
+  --metadata metadata.json \
+  --program-image simultaneous_ar_update_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The classifier checks the exact armed, forced-word, result-OUT, and terminal
+fetch anchors; exclusive port-7 writes; four falling boundaries after the
+last forced-word/output event; 32 stable runs; and all image/raw/photo hashes.
+It retains the three complete priority candidates and every unanticipated
+complete sequence without assigning a preferred silicon answer.
+
+The forced word may also prevent ordinary retirement. The classifier therefore
+retains armed-only, first-result-before-second-fetch, and second-fetch-without-
+second-result flows as distinct noncompletion observations. These partial
+flows can be repeatable and structurally valid, but are never
+`candidate_resolved` or `review_ready` and do not establish a priority rule.
+
 ## Acceptance
 
 A result can constrain `OQ-010` only when every run begins with `0033`, emits
 exactly two result words in order, reaches the terminal loop, and is stable
 across the required resets. A varying or unmatched sequence is architectural
 evidence in its own right and must not be discarded as an inconvenient test.
+A stable noncompletion classification likewise records where observable flow
+stopped, but cannot select among the three complete update hypotheses.
 
 Until such evidence exists, the combination remains unsupported, physical
 behavior remains **UNKNOWN**, and the model/RTL fail-closed rejection must not

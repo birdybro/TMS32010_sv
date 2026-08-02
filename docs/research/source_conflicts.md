@@ -1151,7 +1151,12 @@ electrical result of an out-of-range access.
   trap before effects in the model/RTL. This is an explicit fail-closed
   project policy, not a physical trap claim. The exact two-boundary raw-word
   capture in `docs/research/simultaneous_ar_update_experiment.md` assigns no
-  expected silicon sequence and is required before implementing a result.
+  expected silicon sequence and is required before implementing a result. Its
+  strict classifier preserves all three complete priority candidates, any
+  other complete sequence, and three partial noncompletion stages. Only a
+  stable complete candidate with exact image/anchor/provenance checks can be
+  `review_ready`; even that package status cannot change this conflict without
+  engineering review of the raw physical evidence.
 - **Confidence:** VERIFIED_PRIMARY that later C1x software prohibits the
   combination; CORROBORATED that MAME and IKA choose no net update; UNKNOWN
   for original NMOS execution, timing, and stability.

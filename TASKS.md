@@ -119,7 +119,8 @@ objective passing evidence.
   behavior is silently assigned to the TMS32010.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
 - **Tests:** `tests/regressions/test_documentation.py`,
-  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`,
+  `tests/regressions/test_simultaneous_ar_capture.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. The status register
   is now qualified as exactly five architectural bits plus a 16-bit LST/SST
   representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
@@ -172,6 +173,13 @@ objective passing evidence.
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
   Physical pin timing and logical transaction timing must remain distinct.
+  `OQ-010` now has a strict physical-capture classifier around its stable exact
+  raw-word fixture. It distinguishes all three complete priority candidates,
+  preserves arbitrary other words, and separately records armed-only,
+  first-result-before-second-fetch, and second-fetch-without-second-result
+  noncompletion. Partial or noncandidate sequences can never become
+  `review_ready`; no physical capture exists and all 372 words remain rejected
+  by fail-closed policy rather than claimed silicon trap behavior.
   `OQ-008` now has a dated, reproducible publication/device-revision audit.
   `SC-043` separates the October-1985, February-1986, January-1987, and
   May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists
@@ -200,7 +208,8 @@ objective passing evidence.
 - **Tests:** `tests/regressions/test_isa_database.py`,
   `tests/expected/opcode_fixtures.yaml`,
   `tests/asm/simultaneous_ar_update_probe.asm`,
-  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`,
+  `tests/regressions/test_simultaneous_ar_capture.py`
 - **Notes:** All sixty documented mnemonics (`ABS`, `ADD`, `ADDH`, `ADDS`, `AND`, `APAC`, `B`, `BANZ`, `BGEZ`, `BGZ`, `BIOZ`, `BLEZ`, `BLZ`, `BNZ`, `BV`, `BZ`, `CALA`, `CALL`, `DINT`, `DMOV`, `EINT`, `IN`, `LAC`, `LACK`, `LAR`,
   `LARK`, `LARP`, `LDP`, `LDPK`, `LST`, `LT`, `LTA`, `LTD`, `MAR`, `MPY`, `MPYK`, `NOP`, `OR`, `OUT`, `ROVM`,
   `PAC`, `POP`, `PUSH`, `RET`, `SACL`, `SACH`, `SAR`,
@@ -236,7 +245,12 @@ objective passing evidence.
   not define forced-word behavior on the original NMOS part. Pinned MAME and
   IKA choose no net update; the current decoder rejection remains fail-closed
   and the stable two-boundary original-device probe assigns no expected
-  result. Exact
+  result. A strict capture classifier now verifies the exact image, ordered
+  fetch/output anchors, terminal/trailing boundaries, 32-run consistency, and
+  raw/photo provenance. Six regressions distinguish the three complete
+  priority candidates, arbitrary complete results, and three explicit partial
+  noncompletion stages. Only complete priority candidates can be review-ready,
+  and no physical data is present. Exact
   `ABS=0x7f88`, accumulator result, OVM-selected
   most-negative wrap/saturation, and one-cycle program-only boundary are
   primary-verified. Original-part OV preservation is `CORROBORATED` by
@@ -1019,7 +1033,8 @@ objective passing evidence.
   `tests/asm/lst_arp_precedence_probe.asm`,
   `tests/asm/simultaneous_ar_update_probe.asm`,
   `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_lst_arp_precedence_probe_image_is_stable`,
-  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_simultaneous_ar_update_probe_image_is_stable`,
+  `tests/regressions/test_simultaneous_ar_capture.py`
 - **Notes:** First control/immediate slice (`LACK`, `NOP`, `ZAC`, `ROVM`,
   `SOVM`) passes model, RTL, toolchain, and differential tests. `DINT` and
   `EINT` now pass exact-opcode fixtures, model/tool/RTL state effects,

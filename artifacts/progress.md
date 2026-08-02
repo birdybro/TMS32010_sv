@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` LST next-ARP physical-capture evidence
+- **Current milestone:** `ARCH-001` simultaneous AR-update physical-capture evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 190 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 196 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1388,6 +1388,19 @@
   every category and failure boundary. No physical capture exists, current
   memory precedence remains PROVISIONAL, and `OQ-015` remains open. Synthesis
   and formal evidence are unchanged because no RTL changed.
+- **New simultaneous-AR measurement evidence:** the strict
+  `tools.trace.simultaneous_ar_capture` workflow validates the exact 23-word
+  raw-instruction image, ordered armed/forced/result/terminal fetch anchors,
+  exclusive port-7 writes, four trailing boundaries, 32-run agreement, and
+  raw/photo hashes. It distinguishes no-net-update, increment-priority, and
+  decrement-priority complete candidates while retaining arbitrary complete
+  words. Because unsupported word `0x68b8` might stop normal retirement, it
+  also preserves armed-only, pre-second-fetch, and post-second-fetch partial
+  noncompletion as three explicit categories. Stable partial or other results
+  can never set `candidate_resolved` or `review_ready`. Six regressions cover
+  every category and failure boundary. No physical capture exists, all 372
+  words remain fail-closed unsupported, and `OQ-010` remains open. Synthesis
+  and formal evidence are unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1436,9 +1449,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with the stable simultaneous AR increment/
-  decrement physical experiment under `OQ-010`/`SC-040`; preserve all observed
-  values and fail closed rather than importing later-family illegality or an
-  emulator's execution order.
+- **Next task:** continue `ARCH-001` with strict original-NMOS RAM-boundary
+  capture normalization for the DMOV/LTD source-`0x8f` destination experiment
+  under `OQ-014`/`SC-038`; preserve every valid-RAM scan and diagnostic word
+  without assigning the disputed destination behavior.
 - **Latest committed baseline before this cycle:**
-  `e9120ca`
+  `10a1eff`

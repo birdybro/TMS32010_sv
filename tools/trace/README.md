@@ -266,6 +266,43 @@ python3 -m tools.trace.lst_arp_capture normalized.csv \
 `OQ-015`, select MAME or IKA as an original-part oracle, prove mask-revision
 invariance, or establish `VERIFIED_HARDWARE`.
 
+## Simultaneous auxiliary-register update physical-capture classifier
+
+`simultaneous_ar_capture.py` checks the raw-word `OQ-010` fixture without
+assuming that unsupported word `0x68b8` retires normally. It recognizes the
+three complete priority hypotheses:
+
+- `0033,0000,01ff`: no net update;
+- `0033,0001,0000`: increment priority;
+- `0033,01ff,01fe`: decrement priority.
+
+An armed-marker-only run, a first result without the second forced-word fetch,
+and a first result followed by that fetch but no second result are retained as
+three distinct `NONCOMPLETION_...` classifications. Stable partial captures
+remain `candidate_resolved=false` and can never become `review_ready`. Any
+other complete sequence is retained verbatim as `OTHER_SEQUENCE_...`.
+
+The tool consumes the common falling-`CLKOUT` CSV and evidence metadata. It
+checks the exact armed/result/forced-word fetch anchors and ordering, exclusive
+port-7 writes, four retained boundaries after the last forced-word or output
+event, complete-flow terminal branch, at least 32 stable runs, exact big-endian
+program bytes, and program/raw/photo hashes beneath the artifact root.
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/simultaneous_ar_update_probe.asm \
+  --binary simultaneous_ar_update_probe.bin --byteorder big
+python3 -m tools.trace.simultaneous_ar_capture normalized.csv \
+  --metadata metadata.json \
+  --program-image simultaneous_ar_update_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+`review_ready` remains evidence-package status only. It does not change
+`OQ-010`, make `0x68b8` supported, choose MAME or IKA as an original-part
+oracle, prove mask-revision invariance, or establish `VERIFIED_HARDWARE`.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

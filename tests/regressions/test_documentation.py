@@ -663,6 +663,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         questions = (DOCS / "research" / "open_questions.md").read_text(
             encoding="utf-8"
         )
+        trace_readme = (ROOT / "tools" / "trace" / "README.md").read_text(
+            encoding="utf-8"
+        )
         self.assertIn("INC and DEC cannot both be one", family_pages)
         self.assertIn("UPDATE_AR() simultaneous-bit execution order", mame_core)
         self.assertIn("?? for simultaneous INC/DEC", mame_dasm)
@@ -681,6 +684,15 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("## SC-040", conflicts)
         self.assertIn("candidate hypothesis", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-040`)", questions)
+        for required in (
+            "simultaneous_ar_capture.py",
+            "NONCOMPLETION_...",
+            "candidate_resolved=false",
+            "does not change\n`OQ-010`",
+        ):
+            self.assertIn(required, trace_readme)
+        self.assertIn("three partial noncompletion stages", conflicts)
+        self.assertIn("strict capture classifier", questions)
 
     def test_open_question_ids_are_unique_and_resolve(self) -> None:
         register = (
