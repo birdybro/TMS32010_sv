@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `REL-001` machine-readable release-evidence inventory
+- **Current milestone:** `REL-001` clean-revision command-evidence receipts
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 237 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 245 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1549,6 +1549,19 @@
   `release_ready=false`. `make audit-release` now passes over 532 candidate
   files and both audits. This is an evidence index, not a release claim; no RTL
   changed, so synthesis and formal results remain unchanged.
+- **New command-receipt boundary:** `make evidence-current` refuses a dirty
+  Git candidate tree, runs a fixed six-command audit/test/lint/formal/Yosys/
+  Quartus vector without shell interpretation, continues after a failing gate,
+  and records exact commit/tree IDs, controlled environment values, basic tool
+  versions, return codes, and SHA-256-bound logs beneath ignored
+  `build/release-evidence/`. Verification rejects changed revisions, dirty
+  trees, command/schema/summary rewriting, altered or missing logs, outputs
+  outside the ignored evidence subtree, pre-existing receipt/log symlinks, and
+  Python Boolean/integer substitutions in typed fields. Eight regressions cover
+  these boundaries. The receipt remains mutable local evidence rather than
+  attestation, cannot promote any of the 21 criteria, and cannot make
+  `release_ready` true. No RTL changed in this implementation increment; a
+  full clean-revision gate receipt is the next validation step.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1597,8 +1610,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `REL-001` by recording deterministic command-evidence
-  receipts for current-scope test, lint, formal, and synthesis results without
-  treating a listed but unexecuted command as passing evidence.
+- **Next task:** commit the command-receipt implementation, then run and verify
+  all six gates on that exact clean revision before selecting the next P0
+  architecture or timing blocker.
 - **Latest committed baseline before this cycle:**
-  `c1d4154`
+  `b6bde09`

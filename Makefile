@@ -8,7 +8,7 @@ MAME_SYNTHETIC_OUTPUT ?= build/mame_synthetic_stack_control
 
 .PHONY: help test lint unit instruction-tests bus-tests differential formal
 .PHONY: synth-yosys synth-quartus docs clean release-check
-.PHONY: audit-release mame-synthetic
+.PHONY: audit-release evidence-current mame-synthetic
 
 help:
 	@echo "tms32010-sv development targets"
@@ -24,6 +24,7 @@ help:
 	@echo "  synth-quartus      Cyclone V fitter and timing qualification"
 	@echo "  docs               documentation/provenance consistency"
 	@echo "  audit-release      tracked-file license/provenance boundary"
+	@echo "  evidence-current   clean-revision logs for current-scope gates"
 	@echo "  clean              remove generated products below build/"
 	@echo "  release-check      all release evidence (intentionally strict)"
 
@@ -131,6 +132,10 @@ synth-quartus:
 audit-release:
 	$(PYTHON) scripts/audit_release.py
 	$(PYTHON) scripts/check_release_evidence.py
+
+evidence-current:
+	VERILATOR="$(VERILATOR)" YOSYS="$(YOSYS)" QUARTUS_SH="$(QUARTUS_SH)" \
+	  SBY="$(SBY)" $(PYTHON) scripts/run_release_checks.py
 
 docs: audit-release
 	$(PYTHON) scripts/check_documentation.py

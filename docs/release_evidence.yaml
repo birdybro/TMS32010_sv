@@ -143,8 +143,8 @@
       "id": "reproducible_toolchain",
       "criterion": "The complete release toolchain is reproducible",
       "status": "PARTIAL",
-      "evidence_paths": ["CONTRIBUTING.md", "README.md", ".github/workflows/ci.yml"],
-      "verification_commands": ["make docs", "make test", "make lint"],
+      "evidence_paths": ["CONTRIBUTING.md", "README.md", ".github/workflows/ci.yml", "scripts/run_release_checks.py"],
+      "verification_commands": ["make docs", "make test", "make lint", "make evidence-current"],
       "blockers": ["REPO-002", "SYNTH-001"]
     },
     {

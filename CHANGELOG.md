@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A clean-tree `make evidence-current` runner for local current-scope command
+  receipts. It binds a fixed six-gate vector and SHA-256 log set to exact Git
+  commit/tree IDs, records controlled environment and tool-version metadata,
+  preserves later results after one failure, confines mutable outputs below
+  ignored `build/release-evidence/`, and verifies revision/log/summary integrity
+  without promoting release status.
 - A machine-readable 21-criterion release-evidence inventory and fail-closed
   checker. Every criterion links repository evidence, runnable `make` targets,
   and live task or open-question blockers; the checked human-readable table
@@ -1302,6 +1308,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Eight command-receipt regressions cover a successful clean revision, dirty-
+  tree preflight, retained formal failure with later commands still executed,
+  revision and log tampering, command/summary rewriting, output confinement,
+  pre-existing log-symlink refusal without modifying its target, and Python
+  Boolean/integer substitution in typed receipt fields.
 - Six release-evidence regressions cover the complete non-release inventory,
   a removed criterion, missing evidence, unknown command and blocker IDs,
   premature `release_ready`, checklist drift, and deterministic CLI output.

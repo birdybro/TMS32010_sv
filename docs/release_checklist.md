@@ -33,6 +33,30 @@ Passing this audit proves only the checked tracked-file boundary. It cannot
 detect unattributed ideas, determine legal compatibility by itself, or replace
 human source and license review.
 
+## Current-scope command receipts
+
+After committing a clean candidate revision, run:
+
+```sh
+make evidence-current
+python3 scripts/run_release_checks.py \
+  --verify build/release-evidence/current/receipt.json
+```
+
+The first command executes the fixed audit, regression, lint, bounded-formal,
+Yosys, and Quartus gate set. It records the exact Git commit and tree, a
+controlled locale/hash/time-zone environment, command return codes, tool
+version lines, and one SHA-256-bound log per command below the ignored
+`build/release-evidence/` directory. It refuses a dirty candidate tree and
+does not invoke command strings through a shell. The second command rejects a
+different revision, dirty tree, missing or changed command, failed return
+code, altered log, or rewritten summary.
+
+This is local, mutable execution evidence, not independent attestation. A
+passing receipt proves only the fixed current-scope gates on one revision; it
+does not change any status below, fill unimplemented scope, or make the project
+release-ready.
+
 ## Release criteria
 
 The canonical status and evidence links are in

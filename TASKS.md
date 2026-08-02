@@ -2369,7 +2369,8 @@ objective passing evidence.
 - **Documentation:** `docs/release_evidence.yaml`,
   `docs/release_checklist.md`, `CHANGELOG.md`
 - **Tests:** `make audit-release`, `make release-check`,
-  `tests/regressions/test_release_evidence.py`
+  `make evidence-current`, `tests/regressions/test_release_evidence.py`,
+  `tests/regressions/test_release_command_evidence.py`
 - **Notes:** A partial implementation must remain honestly versioned and must
   not be advertised as cycle-accurate. The first release-audit slice now
   checks tracked plus nonignored pre-commit candidates against an explicit
@@ -2383,6 +2384,12 @@ objective passing evidence.
   and premature release readiness. The current checked distribution is two
   `NOT_MET`, six `PARTIAL`, thirteen `PASS_CURRENT_SCOPE`, and zero
   `RELEASE_QUALIFIED`; `release_ready` is false. `make audit-release` passes,
-  while `make release-check` remains intentionally failing because
+  and the clean-tree `make evidence-current` runner binds the six current-
+  scope audit/test/lint/formal/Yosys/Quartus commands and hashed logs to exact
+  commit/tree IDs below ignored `build/`. Eight regressions enforce dirty-tree,
+  failure-preservation, tamper, exact types, path confinement, and symlink
+  boundaries. A
+  local receipt is mutable execution evidence, not attestation or release
+  qualification. `make release-check` remains intentionally failing because
   architectural, timing, formal, integration, and release evidence is
   incomplete.

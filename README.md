@@ -357,6 +357,9 @@ against the machine-readable license/provenance policy in
 `docs/release_audit.yaml`. It also checks all 21 machine-readable criteria in
 `docs/release_evidence.yaml`, including their evidence paths, runnable
 commands, live blockers, and exact agreement with the human checklist. The
+clean-tree `make evidence-current` target can additionally write revision-
+bound, SHA-256-linked command logs under ignored `build/release-evidence/`;
+these local receipts do not promote a criterion or constitute attestation. The
 broader `make release-check` intentionally remains failing while the release
 inventory is incomplete; see
 [docs/release_checklist.md](docs/release_checklist.md).

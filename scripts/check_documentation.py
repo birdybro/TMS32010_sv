@@ -51,6 +51,7 @@ REQUIRED_FILES = {
     "artifacts/progress.md",
     "scripts/audit_release.py",
     "scripts/check_release_evidence.py",
+    "scripts/run_release_checks.py",
 }
 REQUIRED_DIRECTORIES = {
     "docs/architecture",
