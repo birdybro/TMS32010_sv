@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A machine-readable tracked-file license/provenance policy, deterministic
+  `make audit-release` checker, and explicit release checklist. The checker
+  covers pre-commit candidates, prohibited output/cache paths, generated and
+  canonical data, third-party/binary allowlists, and all manifest hashes whose
+  sources may not be committed.
 - A reusable `tools.trace.specimen_evidence` validator for one original-NMOS
   specimen. It checks normalized-trace, exact source/listing, package/date/lot,
   custody/test-condition/tool-version, and distinct top/bottom/board-photo
@@ -1291,6 +1296,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Six release-audit regressions pass for the live tree and fail closed on an
+  incomplete generated inventory, undeclared third-party content, and stale or
+  inapplicable binary allowlists, including a synthetic exact match to a
+  noncommittable source. The current audit finds zero external or binary
+  candidates and 59 distinct prohibited reference hashes.
 - Five direct shared-validator regressions cover a complete five-artifact
   package and malformed identity, timing, tool versions, source, listing,
   normalized trace, and specimen photographs without interpreting any result.

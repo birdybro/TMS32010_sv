@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` shared specimen-validator direct coverage
+- **Current milestone:** `REL-001` tracked-file license/provenance audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 225 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 231 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1526,6 +1526,16 @@
   specimen IDs report `null`; invalid scope reports `UNQUALIFIED`. These
   reporting changes do not alter any physical classifier result or confidence
   level, and synthesis/formal evidence is unchanged because no RTL changed.
+- **New release-audit evidence:** `make audit-release` examines tracked plus
+  nonignored pre-commit candidates against `docs/release_audit.yaml`. The
+  current tree has 529 candidates, one generated view, one hand-maintained
+  canonical database, zero vendored external payloads, zero binary candidates,
+  and 59 distinct noncommittable reference hashes. Six regressions cover the
+  passing inventory and fail-closed generated, third-party, binary, and claim
+  boundaries, including a synthetic exact prohibited-reference match.
+  `docs/release_checklist.md` remains explicitly NOT RELEASE READY;
+  `make release-check` still fails intentionally after its required evidence
+  commands. No RTL changed, so synthesis/formal evidence is unchanged.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1574,8 +1584,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** begin `REL-001` with an automated tracked-file license and
-  provenance audit that distinguishes project-authored MIT material from
-  external references, generated outputs, and prohibited binaries.
+- **Next task:** continue `REL-001` by adding a deterministic release-evidence
+  inventory that machine-checks checklist links and records which required
+  commands are passing, partial, unavailable, or deliberately failing.
 - **Latest committed baseline before this cycle:**
-  `d54e18c`
+  `26c5cb6`

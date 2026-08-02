@@ -39,6 +39,8 @@ REQUIRED_FILES = {
     "docs/integration/hard_drivin_host_control.md",
     "docs/decisions/ADR-0001-reference-precedence.md",
     "docs/generated/tms32010_isa.yaml",
+    "docs/release_audit.yaml",
+    "docs/release_checklist.md",
     "sim/reference_models/README.md",
     "tools/assembler/README.md",
     "tools/disassembler/README.md",
@@ -46,6 +48,7 @@ REQUIRED_FILES = {
     "synthesis/README.md",
     "synthesis/qualification.md",
     "artifacts/progress.md",
+    "scripts/audit_release.py",
 }
 REQUIRED_DIRECTORIES = {
     "docs/architecture",

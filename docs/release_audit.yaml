@@ -1,0 +1,44 @@
+{
+  "schema_version": 1,
+  "claim_boundary": "Tracked-candidate license and provenance policy only; this audit does not establish architectural completeness, timing closure, third-party license compatibility beyond declared records, or release readiness.",
+  "project_license": {
+    "spdx_identifier": "MIT",
+    "license_file": "LICENSE",
+    "copyright_line": "Copyright (c) 2026 Kevin Coleman"
+  },
+  "prohibited_path_prefixes": [
+    "reference-cache/",
+    "synthesis/quartus/db/",
+    "synthesis/quartus/incremental_db/",
+    "synthesis/quartus/output_files/"
+  ],
+  "allowed_placeholder_paths": [
+    "build/.gitkeep",
+    "third_party/.gitkeep"
+  ],
+  "tracked_artifact_allowlist": [
+    "artifacts/mame_oracle.md",
+    "artifacts/progress.md"
+  ],
+  "forbidden_binary_suffixes": [
+    ".7z", ".a", ".bin", ".dll", ".exe", ".jic", ".jar", ".o",
+    ".pdf", ".pof", ".rar", ".rbf", ".rom", ".so", ".sof", ".zip"
+  ],
+  "binary_allowlist": [],
+  "external_materials": [],
+  "generated_files": [
+    {
+      "path": "docs/generated/tms32010_opcode_audit.md",
+      "generator": "tools/generators/opcode_audit.py",
+      "inputs": ["docs/generated/tms32010_isa.yaml"],
+      "verification_command": "python3 -m tools.generators.opcode_audit --check"
+    }
+  ],
+  "canonical_data_files": [
+    {
+      "path": "docs/generated/tms32010_isa.yaml",
+      "status": "project-authored hand-maintained canonical data",
+      "provenance": "Primary-cited original-TMS32010 instruction research; independent fixtures remain under tests/expected/"
+    }
+  ]
+}

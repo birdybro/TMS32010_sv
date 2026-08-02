@@ -2358,7 +2358,7 @@ objective passing evidence.
 
 ### REL-001 — Evidence and license audit
 
-- **Status:** NOT STARTED
+- **Status:** IMPLEMENTING
 - **Priority:** P0
 - **Dependencies:** all preceding milestones
 - **Description:** Audit instruction/timing completeness, regressions, formal,
@@ -2369,4 +2369,11 @@ objective passing evidence.
 - **Documentation:** `docs/release_checklist.md`, `CHANGELOG.md`
 - **Tests:** `make release-check`
 - **Notes:** A partial implementation must remain honestly versioned and must
-  not be advertised as cycle-accurate.
+  not be advertised as cycle-accurate. The first release-audit slice now
+  checks tracked plus nonignored pre-commit candidates against an explicit
+  policy: MIT license identity, prohibited output/cache paths, third-party and
+  binary allowlists, generated/canonical-data inventory, and exact hashes of
+  every manifest source marked `may_commit: false`. Six regressions cover the
+  clean tree and fail-closed policy mutations. `make audit-release` passes;
+  `make release-check` remains intentionally failing because architectural,
+  timing, formal, integration, and release evidence is incomplete.

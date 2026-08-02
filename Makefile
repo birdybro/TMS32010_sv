@@ -8,7 +8,7 @@ MAME_SYNTHETIC_OUTPUT ?= build/mame_synthetic_stack_control
 
 .PHONY: help test lint unit instruction-tests bus-tests differential formal
 .PHONY: synth-yosys synth-quartus docs clean release-check
-.PHONY: mame-synthetic
+.PHONY: audit-release mame-synthetic
 
 help:
 	@echo "tms32010-sv development targets"
@@ -23,6 +23,7 @@ help:
 	@echo "  synth-yosys        portable synthesis smoke test"
 	@echo "  synth-quartus      Cyclone V fitter and timing qualification"
 	@echo "  docs               documentation/provenance consistency"
+	@echo "  audit-release      tracked-file license/provenance boundary"
 	@echo "  clean              remove generated products below build/"
 	@echo "  release-check      all release evidence (intentionally strict)"
 
@@ -127,13 +128,16 @@ synth-quartus:
 	  echo "SKIP-EVIDENCE: no Quartus project exists yet"; \
 	fi
 
-docs:
+audit-release:
+	$(PYTHON) scripts/audit_release.py
+
+docs: audit-release
 	$(PYTHON) scripts/check_documentation.py
 	$(PYTHON) -m tools.generators.opcode_audit --check
 
 clean:
 	$(PYTHON) scripts/clean.py
 
-release-check: docs lint test formal synth-yosys synth-quartus
+release-check: audit-release docs lint test formal synth-yosys synth-quartus
 	@echo "ERROR: release qualification is not implemented and cannot pass yet"
 	@exit 1
