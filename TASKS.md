@@ -183,8 +183,11 @@ objective passing evidence.
   and eight cold-power run identities. It retains both raw readings per
   address, labels only predecessor-tracking/history-independent/history-
   dependent relationships, and permits complete variable results to reach
-  review. Six regressions cover every relationship and malformed/package
-  boundary. `acceptance_complete` remains false until both destructive
+  review. Shared specimen validation now pins the exact source/35-word
+  listing/decoded trace and complete raw marking/date/lot/package record to one
+  part without constraining any read value. Six regressions cover every
+  relationship, substitute listing, and malformed/package boundary.
+  `acceptance_complete` remains false until both destructive
   directions, any targeted follow-up, raw review, and a second specimen. A
   paired stage-2 normalizer now checks both exact 258-output directions,
   preserves every valid disturbance and address/sentinel/readback tuple, and

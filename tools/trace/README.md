@@ -448,6 +448,12 @@ The ordinary evidence metadata must add a `run_conditions` object mapping
 every capture run to exactly `reset` or `cold_power`. Defaults require at
 least 32 reset-and-execute trials and eight cold-power trials.
 
+The same sidecar passes through `specimen_evidence.py`, which rehashes the
+normalized trace, exact project source and 35-word listing, raw multiline
+package/date/lot record, numeric memory access time, fixture tool versions,
+and distinct top/bottom/board-context specimen photographs. These checks bind
+the variable observations to one named part; they do not assign any read data.
+
 ```sh
 python3 -m tools.assembler.tms32010_as \
   tests/asm/ram_invalid_read_sweep_probe.asm \
@@ -463,6 +469,8 @@ python3 -m tools.trace.ram_invalid_read_capture read-sweep.csv \
 provenance complete. The report always leaves `acceptance_complete=false`:
 both destructive write directions, any indicated single-target follow-up,
 raw engineering review, and another original specimen remain outstanding.
+The report exposes `this_specimen_only` and cannot imply cross-specimen
+invariance.
 
 ## Absent-RAM paired sentinel-write normalizer
 

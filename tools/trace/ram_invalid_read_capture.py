@@ -18,6 +18,7 @@ from tools.trace.push_pop_capture import (
     read_normalized_capture,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import validate_specimen_evidence
 
 
 FIXTURE_WORDS = (
@@ -26,6 +27,9 @@ FIXTURE_WORDS = (
     0x5004, 0x4F02, 0x7090, 0x716F, 0x6880, 0x4F00, 0x4FA1,
     0xF400, 0x0012, 0x4F03, 0x7090, 0x716F, 0x6880, 0x4F01,
     0x4FA1, 0xF400, 0x001A, 0x4F04, 0x7F80, 0xF900, 0x0021,
+)
+FIXTURE_SOURCE_SHA256 = (
+    "2363d96f218d63a8266d8daef852a4bddb31b45ea537e30b3ef16c37a19d647a"
 )
 START_OUT = (0x00F, 0x4F02)
 ZERO_PREDECESSOR_OUT = (0x013, 0x4F00)
@@ -76,6 +80,8 @@ class CaptureReport:
     repeatable: bool
     review_ready: bool
     acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
     classifications: tuple[str, ...]
     observations: tuple[Observation, ...]
     evidence_package: EvidencePackage
@@ -88,7 +94,8 @@ class CaptureReport:
                 "validation only; review_ready does not change OQ-002, prove an "
                 "open bus, hidden storage, or an alias, qualify destructive writes, "
                 "establish mask invariance, or establish VERIFIED_HARDWARE without "
-                "engineering review of raw captures and the physical setup."
+                "engineering review of raw captures and the physical setup. It "
+                "does not generalize beyond the identified specimen."
             ),
             "capture_sha256": self.capture_sha256,
             "run_count": self.run_count,
@@ -102,6 +109,8 @@ class CaptureReport:
             "repeatable": self.repeatable,
             "review_ready": self.review_ready,
             "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
             "classifications": list(self.classifications),
             "observations": [
                 {
@@ -450,6 +459,26 @@ def build_report(
         program_image,
         artifact_root,
     )
+    specimen = validate_specimen_evidence(
+        metadata_path,
+        capture_path,
+        artifact_root,
+        fixture_source_sha256=FIXTURE_SOURCE_SHA256,
+        fixture_words={
+            address: word for address, word in enumerate(FIXTURE_WORDS)
+        },
+    )
+    base_package = EvidencePackage(
+        complete=not (base_package.errors or specimen.errors),
+        errors=base_package.errors + specimen.errors,
+        program_image_sha256=base_package.program_image_sha256,
+        verified_artifacts=tuple(
+            sorted(
+                set(base_package.verified_artifacts)
+                | set(specimen.verified_artifacts)
+            )
+        ),
+    )
     package = _validate_exact_image(program_image, base_package)
     if condition_errors:
         package = EvidencePackage(
@@ -480,6 +509,8 @@ def build_report(
         repeatable=repeatable,
         review_ready=minimum_met and complete and fixture_valid and package.complete,
         acceptance_complete=False,
+        specimen_id=specimen.specimen_id,
+        specimen_scope=specimen.specimen_scope,
         classifications=tuple(item.classification for item in observations),
         observations=observations,
         evidence_package=package,

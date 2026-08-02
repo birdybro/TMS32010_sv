@@ -106,6 +106,12 @@ review. Exact markers, legal predecessor words, all 451 OUT fetch/write pairs,
 the terminal window, 32 reset trials, eight cold-power trials, and raw/photo/
 image hashes are mandatory.
 
+The shared `OQ-008` validator additionally pins the normalized trace, exact
+project source and 35-word listing, numeric program-memory access time, tool
+versions, raw multiline marking/date/lot record, and distinct specimen top/
+bottom/board-context photographs to one named part. It does not constrain any
+absent-read word or require complete runs to agree.
+
 Stage-1 `review_ready` does not authorize either write sweep and does not
 complete `OQ-002`; reports therefore keep `acceptance_complete=false`.
 
@@ -179,9 +185,11 @@ follow-up, raw review, and a second specimen.
 
 Use an original NMOS TMS32010, not a TMS320C10/C15 or another family member:
 
-1. Record complete package marking and date/mask code, board/EVM and monitor
-   revisions, oscillator, supply, program-memory timing, and hashes of the
-   exact hex/listing files.
+1. Assign one stable specimen ID and record the exact multiline package
+   marking plus raw tracking/date and lot strings without decoding them.
+   Record package/custody/socket/temperature/reset context, board/EVM and
+   monitor revisions, oscillator, supply, numeric program-memory access time,
+   and fixture tool versions.
 2. Run the read-only fixture first after cold power-up. Capture `CLKOUT`,
    active-low `MEN`, `DEN`, `WE`, `RS`, `A11:A0`, and `D15:D0` from reset to
    the terminal loop. Use the program address to retain exact output framing.
@@ -192,9 +200,10 @@ Use an original NMOS TMS32010, not a TMS320C10/C15 or another family member:
    appears. A targeted follow-up must isolate each candidate select.
 5. Repeat the complete sequence on another original-part date/mask code before
    generalizing across `OQ-008`.
-6. Save raw analyzer data, decoded CSV, pin map, photographs, monitor
-   transcript, exact program images/listings, and tool versions. Hash every
-   artifact before conversion.
+6. Save raw analyzer data, decoded CSV, pin map, probe-placement photographs,
+   distinct specimen top/bottom/board-context photographs, monitor transcript,
+   and exact source/image/listing. Hash the normalized trace and every retained
+   artifact.
 
 ## Acceptance
 

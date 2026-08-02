@@ -22,6 +22,9 @@ from tools.trace.ram_invalid_read_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -123,6 +126,7 @@ def _binary() -> bytes:
 
 def _metadata(
     root: Path,
+    capture: Path,
     image: Path,
     run_conditions: dict[str, object],
 ) -> Path:
@@ -130,21 +134,74 @@ def _metadata(
     photograph = root / "read-probe.jpg"
     raw.write_bytes(b"raw absent-RAM read sweep")
     photograph.write_bytes(b"absent-RAM read probe photograph")
+    fixture_source = root / "ram_invalid_read_sweep_probe.asm"
+    fixture_source.write_bytes(
+        (
+            ROOT / "tests" / "asm" / "ram_invalid_read_sweep_probe.asm"
+        ).read_bytes()
+    )
+    fixture_listing = root / "ram_invalid_read_sweep_probe.lst"
+    fixture_listing.write_text(
+        "".join(
+            f"{address:03x} {word:04x} synthetic:test\n"
+            for address, word in enumerate(FIXTURE_WORDS)
+        ),
+        encoding="utf-8",
+    )
+    specimen_photos: dict[str, dict[str, str]] = {}
+    for view in ("top", "bottom", "board_context"):
+        specimen_photo = root / f"specimen-{view}.jpg"
+        specimen_photo.write_bytes(
+            f"synthetic {view} specimen view".encode("ascii")
+        )
+        specimen_photos[view] = {
+            "path": specimen_photo.name,
+            "sha256": sha256(specimen_photo.read_bytes()).hexdigest(),
+        }
     metadata = root / "metadata.json"
     metadata.write_text(
         json.dumps(
             {
                 "schema_version": 1,
-                "device_marking": "TMS32010NL TEST FIXTURE",
+                "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                "specimen_id": "synthetic-specimen-01",
+                "tracking_date_string": "TRACKING RAW",
+                "lot_string": "LOT RAW",
+                "package_type": "40-pin plastic DIP test fixture",
+                "acquisition_provenance": "synthetic regression fixture",
+                "socketed": True,
+                "temperature_c": 25.0,
+                "reset_duration_cycles": 8,
+                "monitor_revision": "none; standalone fixture",
+                "specimen_scope": "this_specimen_only",
                 "board_revision": "synthetic test fixture",
                 "oscillator_hz": 20_000_000,
                 "supply_voltage_v": "5.00 measured",
                 "program_memory": "synthetic memory",
+                "program_memory_access_time_ns": 35.0,
                 "probe_model": "synthetic probe",
                 "analyzer_model": "synthetic analyzer",
                 "analyzer_firmware": "test",
                 "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                "normalized_capture_sha256": sha256(
+                    capture.read_bytes()
+                ).hexdigest(),
                 "run_conditions": run_conditions,
+                "fixture_tool_versions": {
+                    "assembler": "project test assembler",
+                    "capture_normalizer": "synthetic test normalizer",
+                    "analyzer_decoder": "synthetic test decoder",
+                },
+                "fixture_artifacts": {
+                    "source": {
+                        "path": fixture_source.name,
+                        "sha256": sha256(fixture_source.read_bytes()).hexdigest(),
+                    },
+                    "listing": {
+                        "path": fixture_listing.name,
+                        "sha256": sha256(fixture_listing.read_bytes()).hexdigest(),
+                    },
+                },
                 "signal_pin_map": {
                     "CLKOUT": "pin 6",
                     "MEN_N": "pin 7",
@@ -160,6 +217,7 @@ def _metadata(
                 "probe_photographs": {
                     photograph.name: sha256(photograph.read_bytes()).hexdigest(),
                 },
+                "specimen_photographs": specimen_photos,
             },
             indent=2,
         ),
@@ -280,6 +338,7 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             image.write_bytes(_binary())
             metadata = _metadata(
                 root,
+                capture,
                 image,
                 {
                     "run-00": "reset",
@@ -301,6 +360,9 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             self.assertFalse(report.repeatable)
             self.assertTrue(report.review_ready)
             self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
+            self.assertEqual(len(report.evidence_package.verified_artifacts), 7)
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-002", encoded)
             self.assertIn("qualify destructive writes", encoded)
@@ -334,7 +396,7 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             image = root / "probe.bin"
             capture.write_text(_capture_text([sequence]), encoding="utf-8")
             image.write_bytes(_binary())
-            metadata = _metadata(root, image, {"run-00": "reset"})
+            metadata = _metadata(root, capture, image, {"run-00": "reset"})
             report = build_report(
                 capture,
                 minimum_reset_runs=1,
@@ -346,7 +408,7 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             self.assertFalse(report.minimum_conditions_met)
             self.assertFalse(report.review_ready)
 
-            metadata = _metadata(root, image, {"run-00": ["reset"]})
+            metadata = _metadata(root, capture, image, {"run-00": ["reset"]})
             report = build_report(
                 capture,
                 minimum_reset_runs=1,
@@ -371,8 +433,27 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             image.write_bytes(b"\x00" + _binary()[1:])
             metadata = _metadata(
                 root,
+                capture,
                 image,
                 {"run-00": "reset", "run-01": "cold_power"},
+            )
+            metadata_value = json.loads(metadata.read_text(encoding="utf-8"))
+            listing = (
+                root
+                / metadata_value["fixture_artifacts"]["listing"]["path"]
+            )
+            listing.write_text(
+                listing.read_text(encoding="utf-8").replace(
+                    "010 7090", "010 7091"
+                ),
+                encoding="utf-8",
+            )
+            metadata_value["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                listing.read_bytes()
+            ).hexdigest()
+            metadata.write_text(
+                json.dumps(metadata_value, indent=2),
+                encoding="utf-8",
             )
             report = build_report(
                 capture,
@@ -385,7 +466,16 @@ class RamInvalidReadCaptureTests(unittest.TestCase):
             self.assertFalse(report.evidence_package.complete)
             self.assertFalse(report.review_ready)
             self.assertTrue(
-                any("exact big-endian" in item for item in report.evidence_package.errors)
+                any(
+                    "exact big-endian" in item
+                    for item in report.evidence_package.errors
+                )
+            )
+            self.assertTrue(
+                any(
+                    "exact address/word map" in item
+                    for item in report.evidence_package.errors
+                )
             )
             self.assertEqual(
                 report.observations[0].address_observations[0].after_zero,

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` RAM-boundary specimen-bound evidence
+- **Current milestone:** `ARCH-001` absent-RAM read specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1437,15 +1437,20 @@
   `tools.trace.ram_invalid_read_capture` workflow validates the exact 35-word
   nondestructive image, all 451 ordered marker/predecessor/absent-read OUT
   fetch-write pairs, terminal window, 32 reset trials, eight cold-power trials,
-  and raw/photo hashes. Each `0x90`-`0xff` address retains both measured words
-  and receives only a descriptive predecessor-tracking, history-independent,
-  or history-dependent label. Complete run-to-run variation is reviewable
-  evidence, not failure. Six regressions cover every relationship, partial/
-  extra flow, malformed framing, run-condition provenance, complete variable
-  packages, and exact-image rejection. No physical data exists and stage 1
-  always reports `acceptance_complete=false`; both write directions, targeted
-  follow-up, raw review, and another specimen remain under `OQ-002`/`SC-041`.
-  Synthesis and formal evidence are unchanged because no RTL changed.
+  and raw/photo hashes. Shared specimen validation now also binds the exact
+  source, 35-word listing, normalized trace, numeric memory access time, tool
+  versions, raw multiline marking/date/lot record, and top/bottom/board
+  photographs to one identity. Each `0x90`-`0xff` address retains both measured
+  words and receives only a descriptive predecessor-tracking, history-
+  independent, or history-dependent label. Complete run-to-run variation is
+  reviewable evidence, not failure. Six regressions cover every relationship,
+  partial/extra flow, malformed framing, run-condition provenance, complete
+  variable packages, digest-valid substitute listing, and exact-image
+  rejection. A complete package verifies seven artifacts. No physical data
+  exists; stage 1 reports `this_specimen_only` and
+  `acceptance_complete=false`. Both write directions, targeted follow-up, raw
+  review, and another specimen remain under `OQ-002`/`SC-041`. Synthesis and
+  formal evidence are unchanged because no RTL changed.
 - **New absent-RAM write evidence:** the paired
   `tools.trace.ram_invalid_write_capture` workflow validates both exact
   43-word images and both 258-output direction streams, lists every nonzero
@@ -1547,8 +1552,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` by applying the audited specimen boundary
-  to the nondestructive absent-RAM read workflow without constraining any
-  history-conditioned value or run-to-run variation.
+- **Next task:** continue `ARCH-001` by applying paired specimen and chronology
+  boundaries to both destructive absent-RAM write directions without
+  constraining any sentinel, readback, or valid-array disturbance.
 - **Latest committed baseline before this cycle:**
-  `8927912`
+  `ba6c096`

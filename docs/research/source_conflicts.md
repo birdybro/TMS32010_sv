@@ -1218,10 +1218,13 @@ electrical result of an out-of-range access.
   expected absent-region result. A strict stage-1 classifier now preserves
   both raw values and a descriptive relationship for every absent address,
   requires the complete reset/cold-power package, and permits variable results
-  to reach review. It always leaves overall acceptance incomplete until the
-  ordered destructive stages, any targeted follow-up, raw review, and another
-  specimen are complete. The paired stage-2 normalizer now preserves every
-  valid disturbance and direction-specific address/sentinel/readback tuple.
+  to reach review. Its exact source/listing/trace and complete `OQ-008` record
+  bind those observations to one named specimen without assigning a value or
+  cross-specimen invariance. It always leaves overall acceptance incomplete
+  until the ordered destructive stages, any targeted follow-up, raw review,
+  and another specimen are complete. The paired stage-2 normalizer preserves
+  every valid disturbance and direction-specific address/sentinel/readback
+  tuple.
   It requires a pinned stage-1 report plus an explicit order declaration while
   disclosing that those records do not independently prove physical chronology.
 - **Confidence:** VERIFIED_PRIMARY for `0x00`-`0x8f` implemented storage;

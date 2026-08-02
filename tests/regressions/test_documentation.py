@@ -331,6 +331,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "at least 8 cold-power trials",
             "follow with a single-target probe",
             "cannot establish mask invariance",
+            "exact project source and 35-word listing",
+            "raw tracking/date and lot strings",
         ):
             self.assertIn(required, research)
         self.assertIn("RESEARCHING/CONFLICT (`SC-041`)", questions)
@@ -342,6 +344,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "run_conditions",
             "at\nleast 32 reset-and-execute trials and eight cold-power trials",
             "acceptance_complete=false",
+            "specimen_evidence.py",
+            "this_specimen_only",
             "ram_invalid_write_capture.py",
             "prior_read_report_sha256",
             "do\nnot independently prove",
@@ -350,6 +354,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             self.assertIn(required, trace_readme)
         self.assertIn("not overall acceptance or proof of physical chronology", questions)
         self.assertIn("strict stage-1 classifier", conflicts)
+        self.assertIn("one named specimen", conflicts)
         self.assertIn("paired stage-2 normalizer", conflicts)
 
     def test_reset_retention_keeps_evm_evidence_below_silicon_proof(self) -> None:
@@ -505,6 +510,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "Both `OQ-017`/`OQ-018` SUBC workflows",
             "`OQ-019` DINT workflow",
             "paired `OQ-014` DMOV/LTD RAM-boundary workflow",
+            "nondestructive `OQ-002` stage-1 absent-RAM read workflow",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)

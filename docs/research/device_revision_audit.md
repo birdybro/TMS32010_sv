@@ -209,6 +209,11 @@ specimen. Variable scans, diagnostic words, and parallel-register results
 remain reviewable observations for `this_specimen_only`; the pair always
 leaves `acceptance_complete=false`.
 
+The nondestructive `OQ-002` stage-1 absent-RAM read workflow now applies the
+same boundary to its exact 35-word fixture and normalized trace. Every
+history-conditioned word and run-to-run variation remains reviewable for
+`this_specimen_only`; the report always leaves `acceptance_complete=false`.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

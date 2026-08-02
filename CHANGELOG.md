@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- The nondestructive absent-RAM read workflow now binds its exact source,
+  35-word listing, image, normalized trace, and complete `OQ-008` record to one
+  specimen while preserving every history-conditioned and variable read.
+  `acceptance_complete` remains false.
 - The paired RAM-boundary workflow now validates both exact source/listing/
   image/trace packages through the shared `OQ-008` boundary and requires DMOV
   and LTD metadata to identify the same specimen. Variable scan, diagnostic,
@@ -1273,6 +1277,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six absent-RAM read regressions pass with a seven-artifact specimen-bound
+  package. A digest-valid substitute listing fails closed while the arbitrary
+  measured absent-read words remain unchanged in the report.
 - All six RAM-boundary regressions pass with two eight-artifact specimen-bound
   packages. Digest-valid substitute listings and mismatched paired specimen
   identities fail closed without assigning expected scan or diagnostic data.
