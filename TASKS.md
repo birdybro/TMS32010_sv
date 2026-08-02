@@ -1595,7 +1595,7 @@ objective passing evidence.
   cover statements demonstrate non-vacuity.
 - **Documentation:** `formal/README.md`
 - **Tests:** `make formal`
-- **Notes:** Eight actual-core configurations pass bounded checks over
+- **Notes:** Nine actual-core configurations pass bounded checks over
   arbitrary clock-enable sequences. The 12-step
   EINT/protected-LACK/dummy/vector fixture
   reaches vector execution at step 6. The 14-step
@@ -1639,6 +1639,15 @@ objective passing evidence.
   completed entry at step 8. This is one direct-table logical scenario, not
   proof of TBLW, indirect addressing, nontrivial prior stacks, or physical pin
   timing.
+  A separate 20-step actual-core direct-TBLW configuration uses two fixed
+  debug-preload cycles for RAM 0, constrains a symbolic arrival selector to all
+  three represented instruction cycles, and models program word 0 as committing
+  only at an enabled logical write boundary. It proves exact RAM/program
+  address, data, and direction; one `0x7f82`-to-`0x7e44` program mutation; no
+  midinstruction entry; table-final stack state; protected LACK; dummy fetch;
+  return-PC push; and vector selection. All three covers reach completed entry
+  at step 9. This is one fixture-memory contract, not indirect-table,
+  explicit-pipeline subphase, or electrical proof.
   A separate standalone 12-step BMC leaves all fetch/execute register inputs
   arbitrary while assuming only no valid fetch on flush and no overwrite of
   an incomplete slot. It proves initialization, exact arbitrary-word capture,
@@ -1741,7 +1750,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 68 BMC/cover tasks from 34 checked-in
+  The current runner passes all 70 BMC/cover tasks from 35 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

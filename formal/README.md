@@ -349,6 +349,29 @@ program addresses, nontrivial preexisting stack contents, an explicit
 fetch/execute wrapper, original-package pin ownership, electrical interrupt
 timing, or an unbounded liveness property.
 
+## Three-cycle table-write-arrival harness
+
+`tms32010_interrupt_table_write.sby` checks the actual portable core with a
+20-step BMC and cover while leaving `clock_enable_i` arbitrary. Two fixed
+initialization cycles preload internal RAM 0 with `LACK 0x44` through the
+explicit verification-only debug port. A constrained symbolic constant then
+selects request arrival during the opcode, discarded-following-word, or
+RAM-to-program transfer cycle of fixed direct `TBLW 0`. A one-word fixture
+memory starts program address 0 at EINT `0x7f82` and commits only on an enabled
+logical `program_write_o` boundary. Assertions prove exact RAM address/data,
+program address/data/direction, one mutation to `0x7e44`, no early retirement
+or entry, table-final stack state, protected `LACK 0x55`, dummy fetch, stacked
+return PC, mask, and pending state. Separate covers for all three choices reach
+completed entry at solver step 9.
+
+The debug preload and mutable program word are formal-fixture conveniences,
+not reset or physical-memory behavior. This qualifies one direct TBLW logical
+core sequence under the stated enabled-write contract only. It does not prove
+indirect table addressing, nonzero data/program addresses, nontrivial
+preexisting stacks, the explicit fetch/execute wrapper, native four-subphase
+write placement, external-memory access timing, or an unbounded liveness
+property.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -579,7 +602,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 34 configurations produce 68 passing BMC/cover tasks. They still
+The current 35 configurations produce 70 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

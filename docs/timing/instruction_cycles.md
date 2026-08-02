@@ -206,7 +206,14 @@ proves discarded PC+1 ownership, exact program-address-0 word transfer to RAM
 dummy fetch, stack entry, and vector selection through depth 20; all three
 covers reach step 8. This is direct-TBLR logical implementation evidence, not
 TBLW, indirect-table, explicit-pipeline, or original-package proof
-[`formal/tms32010_interrupt_table.sby`]. A separate native test drives
+[`formal/tms32010_interrupt_table.sby`]. A symmetric actual-core harness
+selects any cycle of fixed direct TBLW, preloads RAM 0 through the explicit
+verification port, and proves exact RAM-to-program data/address ownership plus
+one enabled logical external-memory mutation before protected/dummy/vector
+sequencing. All three covers reach step 9 through depth 20. The fixture commit
+is not native four-subphase placement, electrical write timing, indirect-table,
+or explicit-pipeline proof
+[`formal/tms32010_interrupt_table_write.sby`]. A separate native test drives
 a held-low INT beginning in each of the four modeled subphases and proves the
 digital phase engine changes pending state only at the enabled falling
 boundary, including across a phase-2 stall. It does not model the 50 ns pin

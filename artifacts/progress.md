@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded three-cycle TBLR arrivals
+- **Current milestone:** `FORMAL-001` bounded three-cycle TBLW arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,9 +148,9 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 68 tasks from 34 SymbiYosys configurations pass with
+- **Formal status:** all 70 tasks from 35 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
-  12-, 14-, two 18-, and three 20-step actual-core interrupt BMCs across
+  12-, 14-, two 18-, and four 20-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
@@ -181,6 +181,13 @@
   LAC 0, table-final stack state, dummy/vector sequencing, and entry state;
   all three covers reach step 8. This is one direct-table logical scenario,
   not TBLW, indirect-table, explicit-pipeline, or physical-pin proof. A
+  separate 20-step actual-core BMC constrains a symbolic request to all three
+  cycles of fixed direct TBLW 0 after two verification-only RAM preload cycles.
+  It proves exact RAM-to-program transfer, one enabled fixture-memory commit,
+  no early retirement/entry, table-final stack state, protected/dummy/vector
+  sequencing, and entry state; all three covers reach step 9. This is one
+  logical write contract, not indirect-table, explicit native subphase, or
+  electrical proof. A
   separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -1626,9 +1633,18 @@
   RAM-0 write, committed `0x7f82` readback through protected LAC 0, no early
   retirement/entry, table stack state, dummy fetch, stack push, and vector
   selection under arbitrary bounded clock-enable stalls. All choices reach
-  cover step 8; the complete suite now has 68 passing tasks from 34
+  cover step 8; the complete suite then had 68 passing tasks from 34
   configurations. No synthesizable RTL changed, so prior synthesis evidence
   remains applicable.
+- **New TBLW-arrival formal evidence:** a 20-step actual-core BMC uses two
+  fixed debug-preload cycles, constrains a symbolic selector to all three
+  represented cycles of direct TBLW 0, and models program word 0 as committing
+  only on an enabled logical write. It proves exact RAM/program address, data,
+  and direction, one `0x7f82`-to-`0x7e44` mutation, no early retirement/entry,
+  table stack state, protected LACK, dummy fetch, stack push, and vector
+  selection. All choices reach cover step 9; the complete suite now has 70
+  passing tasks from 35 configurations. No synthesizable RTL changed, so prior
+  synthesis evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1678,9 +1694,9 @@
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
 - **Next task:** extend bounded formal interrupt-arrival coverage to fixed
-  direct TBLW or another represented family without generalizing beyond
+  IN/OUT or another represented family without generalizing beyond
   documented core behavior, or advance another unblocked P0 evidence slice;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `1835b7a`
+  `4182f33`
