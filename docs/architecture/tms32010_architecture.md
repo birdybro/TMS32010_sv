@@ -111,8 +111,22 @@ endpoints.**
 The PC is 12 bits. A four-level, 12-bit hardware stack supports branches,
 calls, returns, interrupts, `PUSH`, and `POP`. Stack overflow discards the
 deepest value; popping beyond the bottom propagates the bottom value upward
-[ti-tms32010-users-guide-spru001b, §§2.2.1–2.2.2, printed pp. 2-13–2-14
+[ti-tms32010-users-guide-spru001b, §§2.6.1–2.6.2, printed pp. 2-13–2-14
 (PDF pp. 37–38)]. **Confidence: VERIFIED_PRIMARY.**
+
+The portable `tms32010_stack` block expresses that four-word state change as
+a combinational relation: push inserts a new top and discards the old bottom;
+pop promotes the three lower entries and duplicates the old bottom. Its table
+mode expresses only the documented *final* TBLR/TBLW relation, in which the
+old level-2 entry replaces the old bottom after the temporary PC push/pop; it
+does not expose or assign visibility to the temporary internal state
+[ti-tms32010-users-guide-spru001b, §2.6.2 and `POP`/`PUSH`/`TBLR`/`TBLW`,
+printed pp. 2-14, 3-50–3-52, and 3-65–3-68 (PDF pp. 38, 99–101, and
+114–117)]. **Confidence: VERIFIED_PRIMARY for the architectural relations;
+implementation policy for rejecting simultaneous operation controls and
+holding state.** The caller continues to own every commit boundary and
+external cycle. In particular, the primitive does not resolve `PUSH`/`POP`
+program-bus ownership under `OQ-016`.
 
 The processor fetches an instruction while executing the preceding
 instruction. Multiword and multicycle operations disturb this overlap in

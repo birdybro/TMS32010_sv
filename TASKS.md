@@ -492,6 +492,7 @@ objective passing evidence.
 - **Tests:** `sim/unit/tb_*`, `formal/tms32010_multiplier.sby`,
   `formal/tms32010_input_shifter.sby`,
   `formal/tms32010_output_shifter.sby`,
+  `formal/tms32010_stack.sby`,
   `formal/tms32010_accumulator.sby`,
   `formal/tms32010_internal_ram.sby`,
   `formal/tms32010_internal_ram_registered.sby`
@@ -578,10 +579,16 @@ objective passing evidence.
   CPU/debug writes. It proves both write paths, preservation under non-target
   writes, all eight-bit validity results, and zero output for invalid reads;
   that invalid-read value remains implementation policy under `OQ-002`.
-  Remaining specialized ALU behavior,
-  remaining stack operations and remaining status behavior remain. The CALL
-  path implements and exposes all four 12-bit stack levels, including
-  nested pushes and old-bottom discard.
+  Remaining specialized ALU behavior, native PUSH/POP sequencing, and
+  remaining status behavior remain. The portable combinational stack block
+  now supplies the exact hold, push/drop-bottom, pop/duplicate-bottom, and
+  table-final relations used by CALL, CALA, RET, interrupt entry, and table
+  retirement. Its one-step proof quantifies all 60 stack/push-data bits and
+  all eight control combinations, asserts every output word, and reaches six
+  distinct behavioral covers. The core retains each owner's established
+  retirement boundary and asserts mutually exclusive stack-operation classes.
+  Invalid overlapping controls are local fail-closed policy, and the primitive
+  does not resolve native PUSH/POP bus ownership under `OQ-016`.
   ADR-0004 keeps the standalone asynchronous RAM boundary but enables a
   phase-staged registered read in the explicit pipeline. Directed and
   inductive tests prove registered capture, stable untouched data, invalid
@@ -1490,8 +1497,12 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 56 BMC/cover tasks from 28 checked-in
-  configurations, including the standalone SACH output-shifter relation.
+  The current runner passes all 58 BMC/cover tasks from 29 checked-in
+  configurations, including the standalone SACH output-shifter and stack
+  relations. The stack proof leaves every existing entry, push word, and
+  control arbitrary, proves hold/push/pop/table-final/invalid-control results,
+  and reaches six step-0 covers; it assigns no instruction or external-cycle
+  ownership.
   SymbiYosys v0.67-4-gfea6e46 with Bitwuzla 0.9.1 was used. DINT,
   the other indirect MPY control/update cases, arbitrary chain
   placement/length, formal multicycle-arrival coverage, general
@@ -1524,10 +1535,10 @@ objective passing evidence.
   structural/generic synthesis. Generic technology mapping still lowers the
   registered array to flip-flops/muxes, while Quartus recognizes one M10K.
   `make synth-yosys` now reproducibly checks both the
-  synthesis harness (16,225 generic cells/126 checks) and the directly
+  synthesis harness (16,213 generic cells/127 checks) and the directly
   targeted
   exact-B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW/interrupt
-  pipeline slice (16,193 generic cells/126 checks),
+  pipeline slice (16,240 generic cells/127 checks),
   each with zero structural problems. The Quartus harness now elaborates that
   explicit pipeline rather than the legacy fail-closed wrapper. Retained
   table direction and state-driven sampled-operand selection first
@@ -1548,12 +1559,13 @@ objective passing evidence.
   paths reduced the fit to 1,332 ALMs with the same register, M10K, and DSP
   counts. Extracting the independently proved input shifter left those
   resources unchanged; extracting the separately proved SACH output shifter
-  and retaining its decode-legality invariant brings the current fit to 1,372
-  ALMs with 400 registers, one M10K, and one DSP. The current fit closes a
-  25 MHz constraint with +18.860 ns worst setup and +0.165 ns worst hold slack
-  across all analyzed corners and reports 47.3 MHz worst slow-corner Fmax.
-  The reproducible 100 °C full path measures 20.866 ns/14 levels from retained
-  program data to sticky-overflow state; neither standalone shifter is the
+  and retaining its decode-legality invariant produced the preceding 1,372-
+  ALM fit. Sharing the proved stack relation across five current owners brings
+  the current fit to 1,352 ALMs with 400 registers, one M10K, and one DSP. It
+  closes a 25 MHz constraint with +18.530 ns worst setup and +0.164 ns worst
+  hold slack across all analyzed corners and reports 46.58 MHz worst slow-
+  corner Fmax. The reproducible 100 °C full path measures 20.720 ns/13 levels
+  from retained program data to ACC; the standalone stack block is not the
   endpoint relation.
   An unforwarded M10K experiment failed the back-to-back IN/OUT data contract;
   an in-process bypass experiment lost RAM inference. Both were rejected.
@@ -1603,6 +1615,10 @@ objective passing evidence.
   A thirty-third standalone script maps the SACH output shifter to 86 generic
   combinational cells with no storage, latch, retained check, or structural
   problem; its full-ACC/field relation is qualified separately by formal.
+  A thirty-fourth standalone script maps the four-level stack transition
+  relation to 92 generic combinational cells with no storage, latch, retained
+  check, or structural problem; its exhaustive stack/control relation is
+  qualified separately by formal.
   This is not a Quartus mapping or completed sound-board fit.
   Instruction-complete resources, pin-level wrapper constraints, and final
   board timing remain.
@@ -1630,8 +1646,8 @@ objective passing evidence.
   deterministic state/RAM debug ports. A directed callback test uses
   registered responders, late-response phase-3 holds, a separate global
   pause, IN/OUT, an exact-once TBLW program write, documented cycle totals,
-  unsupported-word parking, and reset recovery. Yosys reports 16,242 generic
-  cells/133 checks with no structural problems. This is an IMPLEMENTING
+  unsupported-word parking, and reset recovery. Yosys reports 16,289 generic
+  cells/134 checks with no structural problems. This is an IMPLEMENTING
   milestone: asynchronous SDRAM CDC/adaptation, a full
   instruction pipeline, Quartus wrapper timing, and board integration remain.
 
@@ -1980,7 +1996,7 @@ objective passing evidence.
   and suppresses that callback while selected. Standalone tests cover every
   address, independent byte validity, complete writes/reads, and re-scrub;
   board cycles prove external-sentinel isolation and independent byte writes.
-  Integrated Yosys retains six memories and reports 3,759 abstract cells/411
+  Integrated Yosys retains six memories and reports 3,789 abstract cells/412
   checks with no structural problem. At that checkpoint, partial lower-Y5 and
   Y6 writes were reported and rejected pending inactive-lane evidence under
   `OQ-022`/`OQ-024`; the later original-MC68000 audits below supersede both
@@ -2001,8 +2017,8 @@ objective passing evidence.
   incomplete selected
   scrub, exhausts all 32 Boolean cases, symbolically proves the policy, and
   demonstrates release after the real 8,192-clock board scrub. Standalone
-  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,759 cells/
-  411 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
+  Yosys reports 13 cells/seven checks; integrated Yosys reports 3,789 cells/
+  412 checks. A044427 sheet 2 plus TI SDLS043 now resolve the populated raw
   source's stable logic: `/MRES` and decoded `/SRES` retrigger LS123 `100N`,
   the 47 kΩ/10 µF network calculates to about 155.1 ms nominal typical, and
   separate 7406/pull-up branches drive equal logical RESET/HALT requests after
@@ -2099,7 +2115,7 @@ objective passing evidence.
   reports 39 mapped cells/three checks. Timed local writes now accept both
   byte orientations, set `SOUNDFLAG`, and retain a one-event byte-transfer
   diagnostic. The board routing BMC proves both symbolic orientations, and
-  integrated Yosys reports 3,759 cells/411 checks/six memories. LS74 preset
+  integrated Yosys reports 3,789 cells/412 checks/six memories. LS74 preset
   dominance is primary-verified while asserted, but exact preset-release/
   opposite-read-clock coincidence and authorized-firmware byte-write use
   remain open. The external main callback still expects an already captured
@@ -2114,7 +2130,7 @@ objective passing evidence.
   while authorized-firmware access widths, raw CDC, HM6116 electrical timing,
   and substitute-68k inactive lanes remain open. The timing-disabled callback
   stays an already captured complete-word contract. Integrated Yosys remains
-  3,759 cells/411 checks/six memories with zero structural problems.
+  3,789 cells/412 checks/six memories with zero structural problems.
   OQ-022 is now `PARTIALLY_RESOLVED_PRIMARY`: original-MC68000 Table 3-1 and
   A044427's common `/RAMWR` prove that a lower-Y5 program-RAM byte write clocks
   `{byte, byte}` into all four SRAM slices. The timing-derived lower-Y5 path

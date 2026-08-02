@@ -24,6 +24,7 @@ class InterruptEntryRtlTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_multiplier.sv",
             ROOT / "rtl" / "core" / "tms32010_input_shifter.sv",
             ROOT / "rtl" / "core" / "tms32010_output_shifter.sv",
+            ROOT / "rtl" / "core" / "tms32010_stack.sv",
             ROOT / "rtl" / "core" / "tms32010_accumulator.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",
             ROOT / "sim" / "interrupt" / f"{name}.sv",

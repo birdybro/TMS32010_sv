@@ -77,6 +77,16 @@ both operations, and both OVM states against an independently widened 33-bit
 signed calculation. ADDS, ADDH, SUBS, and SUBC retain separate datapaths
 because their documented operand, status, or recurrence rules differ.
 
+`tms32010_stack` is the shared combinational four-level, 12-bit transition
+block. It implements hold, push/drop-bottom, pop/duplicate-bottom, and the
+documented final TBLR/TBLW bottom replacement. The core uses it for CALL,
+CALA, RET, interrupt entry, and table retirement; each owner still commits
+only at its existing qualified boundary. Simultaneous distinct controls are
+an invalid implementation state, fail closed to hold, and are guarded by a
+core assertion. A one-step symbolic proof quantifies every existing stack bit,
+push value, and control combination. This block is not a sequencer and does
+not resolve the external `PUSH`/`POP` cycle question under `OQ-016`.
+
 This temporary core interface does not itself reproduce `MEN`, `CLKOUT`,
 fetch/execute overlap, or pin subphases. It exists to qualify decode, state
 effects, clock enables, and reset preservation. It must not be used alone as
@@ -207,7 +217,7 @@ sampled word to RAM; TBLW asserts the distinct `program_write_o` and drives
 `program_write_data_o` from RAM. The third sample retires, applies indirect
 updates, and duplicates old stack level 2 into the bottom before the wrapper
 repeats PC+1. The remaining branches, other multi-cycle instructions, and
-unresolved CALA/RET/PUSH/POP sequences remain absent. The current interrupt
+unresolved PUSH/POP sequences remain absent. The current interrupt
 path is retirement-mapped and has directed external-order/entry tests, but it
 does not yet use the standalone fetch/execute register.
 

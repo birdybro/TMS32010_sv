@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A portable combinational `tms32010_stack` relation and one-step symbolic
+  harness. The proof quantifies all four existing entries, the push word, and
+  every control combination; proves hold, push/drop-bottom,
+  pop/duplicate-bottom, table-final, and invalid-control behavior; and reaches
+  six distinct covers.
+- A standalone Yosys smoke target for the four-level stack relation.
 - A portable combinational `tms32010_output_shifter` and one-step symbolic
   harness. The proof leaves the complete ACC and SACH field arbitrary, derives
   each stored bit independently for shifts zero, one, and four, proves
@@ -789,6 +795,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- CALL, CALA, RET, interrupt entry, and TBLR/TBLW retirement now consume the
+  shared proved stack relation without changing their qualified commit
+  boundaries. Native PUSH/POP sequencing remains deferred under `OQ-016`.
 - SACH now consumes the proved shared output-shifter result; its decode,
   effective address, write ownership, one-cycle timing, and ACC preservation
   remain unchanged. Invalid fields remain decoder-rejected, while the local
@@ -1088,6 +1097,16 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Strict lint checks 44 RTL modules; all 58 formal tasks from 29 configurations
+  pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
+  regressions pass. All 34 Yosys targets pass with zero structural problems.
+  The direct pipeline reports 16,240 cells/127 checks, the synthesis harness
+  16,213/127, the MiSTer wrapper 16,289/134, and the six-memory Driver Sound
+  hierarchy 3,789/412. Quartus fits the current hierarchy in 1,352 ALMs, 400
+  registers, one M10K, and one DSP; closes 25 MHz at +18.530 ns worst setup
+  and +0.164 ns worst hold slack; and reports 46.58 MHz worst slow-corner
+  Fmax. The reproducible critical path is 20.720 ns over 13 logic levels from
+  retained program data to ACC.
 - The SACH output-shifter proof passes for every full-ACC/three-bit-field
   combination and reaches all six primary-example, cross-half, and invalid
   covers at step 0. Directed SACH tests retain all three legal shifts,

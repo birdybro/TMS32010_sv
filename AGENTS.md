@@ -661,6 +661,12 @@ MAME's shorter untaken path.
 normal program cycle, pushes opcode-PC+2 onto the four-level 12-bit stack at
 retirement, and then selects the target. Stack overflow discards the old
 bottom without an exception.
+The portable combinational stack relation is shared by CALL, CALA, RET,
+interrupt entry, and TBLR/TBLW retirement. It exhaustively covers hold,
+push/drop-bottom, pop/duplicate-bottom, and the final table bottom replacement;
+each owner retains its existing qualified commit boundary. Simultaneous
+distinct controls fail closed and assert as an implementation invariant. This
+primitive does not qualify native PUSH/POP sequencing or resolve `OQ-016`.
 `CALA=0x7f8c` has model/tool evidence for a wrapped opcode-PC+1 stack push,
 `ACC[11:0]` target selection, and a two-cycle total. Its second external
 program cycle remains unknown, so RTL/native and differential support are
@@ -692,9 +698,9 @@ its complete self-modifying path is reachable at step 35.
 The standalone Driver Sound host-timing adapter also has a 16-step bounded
 proof under documented legal same-clock event assumptions. Whole-word read
 and write covers reach step 8, and the settled VPA path reaches step 9.
-The complete current matrix contains 56 passing BMC/cover tasks from 28
+The complete current matrix contains 58 passing BMC/cover tasks from 29
 checked-in SymbiYosys configurations, including the exhaustive combinational
-accumulator, input-shifter, and SACH output-shifter relations. These counts are qualification
+accumulator, input-shifter, SACH output-shifter, and stack relations. These counts are qualification
 inventory, not a claim
 of complete-core proof.
 This is not a complete formal proof; no general pipeline, formally exhaustive

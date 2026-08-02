@@ -18,6 +18,7 @@ read -formal -sv tms32010_internal_ram.sv
 read -formal -sv tms32010_multiplier.sv
 read -formal -sv tms32010_input_shifter.sv
 read -formal -sv tms32010_output_shifter.sv
+read -formal -sv tms32010_stack.sv
 read -formal -sv tms32010_accumulator.sv
 read -formal -sv tms32010_core.sv
 read -formal -sv tms32010_interrupt_multiply_indirect_formal.sv
@@ -30,6 +31,7 @@ rtl/core/tms32010_internal_ram.sv
 rtl/core/tms32010_multiplier.sv
 rtl/core/tms32010_input_shifter.sv
 rtl/core/tms32010_output_shifter.sv
+rtl/core/tms32010_stack.sv
 rtl/core/tms32010_accumulator.sv
 rtl/core/tms32010_core.sv
 formal/tms32010_interrupt_multiply_indirect_formal.sv

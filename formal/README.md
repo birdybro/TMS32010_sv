@@ -113,6 +113,23 @@ those SACH encodings, and no silicon behavior is claimed. Address resolution,
 RAM writes, the one-cycle instruction boundary, and external bus timing remain
 outside this combinational proof.
 
+## Exhaustive stack-transition harness
+
+`tms32010_stack.sby` checks the standalone combinational four-level stack
+relation in one solver step. All 48 existing stack bits, all 12 push-data
+bits, and all eight push/pop/table control combinations remain arbitrary. The
+reference uses an independently indexed four-entry array to derive hold,
+push/drop-bottom, pop/duplicate-bottom, and the final TBLR/TBLW bottom
+replacement.
+
+Assertions prove the control-valid result and all four output words. Six
+independent step-0 covers reach distinct-entry push, distinct-entry pop,
+bottom propagation after over-pop, table-final replacement, hold, and the
+all-three-controls-invalid case. Invalid simultaneous controls holding state
+is implementation policy. The proof assigns no external cycle, does not expose
+the temporary internal table state, and does not resolve `PUSH`/`POP` bus
+ownership under `OQ-016`.
+
 ## Exhaustive accumulator-arithmetic harness
 
 `tms32010_accumulator.sby` checks the standalone combinational signed
@@ -485,7 +502,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 28 configurations produce 56 passing BMC/cover tasks. They still
+The current 29 configurations produce 58 passing BMC/cover tasks. They still
 leave DINT ordering, formal coverage of the
 represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and

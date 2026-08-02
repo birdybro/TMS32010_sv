@@ -201,6 +201,15 @@ module tms32010_core #(
   logic [31:0] shifted_data_operand;
   logic        output_shift_valid;
   logic [15:0] shifted_accumulator_word;
+  logic        stack_push;
+  logic        stack_pop;
+  logic        stack_table_final;
+  logic        stack_control_valid;
+  logic [11:0] stack_push_data;
+  logic [11:0] stack_next_top;
+  logic [11:0] stack_next_level_1;
+  logic [11:0] stack_next_level_2;
+  logic [11:0] stack_next_bottom;
   logic [31:0] accumulator_arithmetic_operand;
   logic        accumulator_arithmetic_subtract;
   logic [31:0] accumulator_arithmetic_wrapped_result;
@@ -335,6 +344,45 @@ module tms32010_core #(
     .shift_i            (decoded_shift[2:0]),
     .shift_valid_o      (output_shift_valid),
     .result_o           (shifted_accumulator_word)
+  );
+
+  assign stack_push =
+    interrupt_entry_pending ||
+    (
+      computed_control_pending &&
+      (pending_computed_operation == OP_CALA)
+    ) ||
+    (
+      control_operand_pending &&
+      (pending_control_operation == OP_CALL)
+    );
+  assign stack_pop =
+    computed_control_pending &&
+    (pending_computed_operation == OP_RET);
+  assign stack_table_final = table_pending;
+  assign stack_push_data = interrupt_entry_pending
+    ? pc_o
+    : (
+        computed_control_pending &&
+        (pending_computed_operation == OP_CALA)
+      )
+      ? pending_computed_return_address
+      : pc_o + 12'h001;
+
+  tms32010_stack stack_transition (
+    .top_i           (stack_top_o),
+    .level_1_i       (stack_level_1_o),
+    .level_2_i       (stack_level_2_o),
+    .bottom_i        (stack_bottom_o),
+    .push_data_i     (stack_push_data),
+    .push_i          (stack_push),
+    .pop_i           (stack_pop),
+    .table_i         (stack_table_final),
+    .control_valid_o (stack_control_valid),
+    .top_o           (stack_next_top),
+    .level_1_o       (stack_next_level_1),
+    .level_2_o       (stack_next_level_2),
+    .bottom_o        (stack_next_bottom)
   );
 
   assign multiplier_operand =
@@ -809,10 +857,10 @@ module tms32010_core #(
       // the other unlisted state is an implementation policy under OQ-012.
     end else if (clock_enable_i) begin
       if (interrupt_entry_pending) begin
-        stack_top_o              <= pc_o;
-        stack_level_1_o          <= stack_top_o;
-        stack_level_2_o          <= stack_level_1_o;
-        stack_bottom_o           <= stack_level_2_o;
+        stack_top_o              <= stack_next_top;
+        stack_level_1_o          <= stack_next_level_1;
+        stack_level_2_o          <= stack_next_level_2;
+        stack_bottom_o           <= stack_next_bottom;
         pc_o                     <= 12'h002;
         interrupt_mask_o         <= 1'b1;
         interrupt_pending_o      <= 1'b0;
@@ -823,16 +871,14 @@ module tms32010_core #(
       end else if (computed_control_pending) begin
         if (instruction_valid_o) begin
           pc_o <= pending_computed_target;
-          if (pending_computed_operation == OP_CALA) begin
-            stack_top_o     <= pending_computed_return_address;
-            stack_level_1_o <= stack_top_o;
-            stack_level_2_o <= stack_level_1_o;
-            stack_bottom_o  <= stack_level_2_o;
-          end else if (pending_computed_operation == OP_RET) begin
-            stack_top_o     <= stack_level_1_o;
-            stack_level_1_o <= stack_level_2_o;
-            stack_level_2_o <= stack_bottom_o;
-            stack_bottom_o  <= stack_bottom_o;
+          if (
+            (pending_computed_operation == OP_CALA) ||
+            (pending_computed_operation == OP_RET)
+          ) begin
+            stack_top_o     <= stack_next_top;
+            stack_level_1_o <= stack_next_level_1;
+            stack_level_2_o <= stack_next_level_2;
+            stack_bottom_o  <= stack_next_bottom;
           end
           computed_control_pending <= 1'b0;
           retired_o                <= 1'b1;
@@ -881,10 +927,10 @@ module tms32010_core #(
             end
             OP_CALL: begin
               pc_o            <= program_data_i[11:0];
-              stack_top_o     <= pc_o + 12'h001;
-              stack_level_1_o <= stack_top_o;
-              stack_level_2_o <= stack_level_1_o;
-              stack_bottom_o  <= stack_level_2_o;
+              stack_top_o     <= stack_next_top;
+              stack_level_1_o <= stack_next_level_1;
+              stack_level_2_o <= stack_next_level_2;
+              stack_bottom_o  <= stack_next_bottom;
             end
             OP_BGEZ,
             OP_BGZ,
@@ -949,7 +995,10 @@ module tms32010_core #(
             end
             // TI's documented temporary push/pop discards the old bottom
             // entry and duplicates the old level-2 entry into that position.
-            stack_bottom_o       <= stack_level_2_o;
+            stack_top_o          <= stack_next_top;
+            stack_level_1_o      <= stack_next_level_1;
+            stack_level_2_o      <= stack_next_level_2;
+            stack_bottom_o       <= stack_next_bottom;
             table_pending        <= 1'b0;
             table_transfer_phase <= 1'b0;
             retired_o            <= 1'b1;
@@ -1344,6 +1393,7 @@ module tms32010_core #(
     if (!reset_i && !initialize_i) begin
       assert (!(retired_o && illegal_o));
       assert (!(debug_data_write_i && clock_enable_i));
+      assert (stack_control_valid);
       assert (
         (accumulator_arithmetic_result !=
          accumulator_arithmetic_wrapped_result) ==
