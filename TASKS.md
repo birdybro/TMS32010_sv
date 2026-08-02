@@ -121,7 +121,8 @@ objective passing evidence.
 - **Tests:** `tests/regressions/test_documentation.py`,
   `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`,
   `tests/regressions/test_simultaneous_ar_capture.py`,
-  `tests/regressions/test_ram_boundary_capture.py`
+  `tests/regressions/test_ram_boundary_capture.py`,
+  `tests/regressions/test_ram_invalid_read_capture.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. The status register
   is now qualified as exactly five architectural bits plus a 16-bit LST/SST
   representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
@@ -166,7 +167,14 @@ objective passing evidence.
   immediately before every observation, and ascending/descending SAR sweeps
   write unique full-AR sentinels before scanning all 144 valid words and all
   112 absent selects. The read-only image must run first. No absent value,
-  alias, zero-fill, or trap result is assigned without physical capture.
+  alias, zero-fill, or trap result is assigned without physical capture. Its
+  strict stage-1 classifier now validates all 451 framed outputs plus 32 reset
+  and eight cold-power run identities. It retains both raw readings per
+  address, labels only predecessor-tracking/history-independent/history-
+  dependent relationships, and permits complete variable results to reach
+  review. Six regressions cover every relationship and malformed/package
+  boundary. `acceptance_complete` remains false until both destructive
+  directions, any targeted follow-up, raw review, and a second specimen.
   `OQ-012` now has a similarly reproducible boundary. `SC-042` separates the
   production guide's unlisted register values from SPRU005A's statement that
   warm EVM RESET saves every register except PC, its separate
@@ -860,7 +868,8 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/memory_model.md`
 - **Tests:** `sim/bus/tb_data_bus.sv`,
   `tests/asm/ram_invalid_*_probe.asm`,
-  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_ram_invalid_decode_probe_images_are_stable`
+  `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_ram_invalid_decode_probe_images_are_stable`,
+  `tests/regressions/test_ram_invalid_read_capture.py`
 - **Notes:** Primary documentation establishes that ordinary operands are
   wholly internal; external storage moves through table or I/O instructions.
   `ADD`/`ADDS`/`AND`/`DMOV`/`LAC`/`LAR`/`LDP`/`LST`/`LT`/`LTA`/`LTD`/`MPY`/`OR`/`SACL`/`SACH`/`SAR`/`SUB`/`SUBC`/`SUBS`/
@@ -878,7 +887,11 @@ objective passing evidence.
   images make alias, disturbance, history, and absent-read hypotheses
   physically testable without weakening the fail-closed implementation;
   `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_ram_invalid_decode_probe_images_are_stable`
-  locks their exact machine words and symbols. Remaining instruction
+  locks their exact machine words and symbols. The read-only stage now also
+  has strict 451-output framing, address-by-address two-history classification,
+  reset/cold-power provenance checks, and six regressions; variable absent
+  words are preserved and no read value is expected. Directional write-capture
+  normalization remains incomplete. Remaining instruction
   interactions remain.
   MPYK separately verifies that its immediate multiply performs no logical
   data-memory transaction. PAC separately verifies that its internal P-to-ACC

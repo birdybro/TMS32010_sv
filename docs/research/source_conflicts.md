@@ -1198,7 +1198,12 @@ electrical result of an out-of-range access.
   invalid-read zero is diagnostic policy only. The read-only controlled-
   history sweep must run before either directional unique-sentinel write
   sweep in `docs/research/ram_invalid_decode_experiment.md`. None has an
-  expected absent-region result.
+  expected absent-region result. A strict stage-1 classifier now preserves
+  both raw values and a descriptive relationship for every absent address,
+  requires the complete reset/cold-power package, and permits variable results
+  to reach review. It always leaves overall acceptance incomplete until the
+  ordered destructive stages, any targeted follow-up, raw review, and another
+  specimen are complete.
 - **Confidence:** VERIFIED_PRIMARY for `0x00`-`0x8f` implemented storage;
   UNKNOWN for original NMOS reads, writes, retirement, aliasing, disturbance,
   electrical stability, and mask invariance across `0x90`-`0xff`.

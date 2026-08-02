@@ -83,6 +83,32 @@ This fixture is minimally destructive with respect to the unknown region: it
 writes only five documented RAM words during setup. Run it before either
 write probe and before using an EVM monitor command that might touch data RAM.
 
+### Stage-1 normalization
+
+Normalize one row per falling `CLKOUT` boundary and add a `run_conditions`
+metadata mapping for every `reset` or `cold_power` trial as documented in
+[the trace-tool README](../../tools/trace/README.md). Then check the exact
+big-endian image and classify:
+
+```sh
+python3 -m tools.trace.ram_invalid_read_capture read-sweep.csv \
+  --metadata read-sweep-metadata.json \
+  --program-image ram_invalid_read_sweep_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The classifier retains both measured values for every address and labels only
+their relationship: predecessor-tracking, history-independent, or history-
+dependent. These are descriptive categories, not electrical explanations.
+Variation between complete runs is preserved and does not block package
+review. Exact markers, legal predecessor words, all 451 OUT fetch/write pairs,
+the terminal window, 32 reset trials, eight cold-power trials, and raw/photo/
+image hashes are mandatory.
+
+Stage-1 `review_ready` does not authorize either write sweep and does not
+complete `OQ-002`; reports therefore keep `acceptance_complete=false`.
+
 ## Stage 2: directional unique-sentinel write sweeps
 
 The write probes first construct `0xa06f` in AR1, then clear all 144 valid

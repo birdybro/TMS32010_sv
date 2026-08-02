@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` DMOV/LTD RAM-boundary physical-capture evidence
+- **Current milestone:** `ARCH-001` absent-RAM controlled-history read evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 202 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 208 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1414,6 +1414,19 @@
   and another specimen remain outstanding. No physical data exists,
   trap-before-effects stays PROVISIONAL, and `OQ-014` remains open. Synthesis
   and formal evidence are unchanged because no RTL changed.
+- **New absent-RAM read evidence:** the strict
+  `tools.trace.ram_invalid_read_capture` workflow validates the exact 35-word
+  nondestructive image, all 451 ordered marker/predecessor/absent-read OUT
+  fetch-write pairs, terminal window, 32 reset trials, eight cold-power trials,
+  and raw/photo hashes. Each `0x90`-`0xff` address retains both measured words
+  and receives only a descriptive predecessor-tracking, history-independent,
+  or history-dependent label. Complete run-to-run variation is reviewable
+  evidence, not failure. Six regressions cover every relationship, partial/
+  extra flow, malformed framing, run-condition provenance, complete variable
+  packages, and exact-image rejection. No physical data exists and stage 1
+  always reports `acceptance_complete=false`; both write directions, targeted
+  follow-up, raw review, and another specimen remain under `OQ-002`/`SC-041`.
+  Synthesis and formal evidence are unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1462,9 +1475,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with strict original-NMOS absent-RAM
-  capture normalization under `OQ-002`/`SC-041`, preserving the ordered
-  controlled-history read-only sweep before analyzing either destructive
-  sentinel-write direction.
+- **Next task:** continue `ARCH-001` with the ordered stage-2 absent-RAM write
+  capture normalizer under `OQ-002`/`SC-041`, comparing both unique-sentinel
+  directions while preserving every valid-array disturbance and absent-region
+  readback without inferring an alias map.
 - **Latest committed baseline before this cycle:**
-  `af752a4`
+  `6a521f1`

@@ -352,6 +352,45 @@ provenance packages. The report therefore always leaves
 `acceptance_complete=false`; the varied-history/sentinel work, engineering
 review, a second specimen, and `OQ-008` mask scope remain outstanding.
 
+## Absent-RAM controlled-history read classifier
+
+`ram_invalid_read_capture.py` qualifies only nondestructive stage 1 of the
+`OQ-002` experiment. It checks the exact 35-word image and all 451 ordered
+port-7 outputs: marker `0031`, 112 zero-predecessor/absent-read pairs, marker
+`0032`, 112 one-predecessor/absent-read pairs, and marker `003f`. Every OUT
+fetch/write pair and the terminal branch are framed explicitly.
+
+For each address `0x90`-`0xff`, the report retains both raw words and assigns
+one descriptive relationship:
+
+- `PREDECESSOR_TRACKING` when the readings are `0000` then `ffff`;
+- `HISTORY_INDEPENDENT_xxxx` when both readings match one another;
+- `HISTORY_DEPENDENT_xxxx_yyyy` for every other pair.
+
+These labels describe measurements; none proves open bus, hidden storage, or
+an alias. Complete runs may vary and still qualify for review. Partial and
+extra output streams remain explicit but cannot become review-ready.
+
+The ordinary evidence metadata must add a `run_conditions` object mapping
+every capture run to exactly `reset` or `cold_power`. Defaults require at
+least 32 reset-and-execute trials and eight cold-power trials.
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/ram_invalid_read_sweep_probe.asm \
+  --binary ram_invalid_read_sweep_probe.bin --byteorder big
+python3 -m tools.trace.ram_invalid_read_capture read-sweep.csv \
+  --metadata read-sweep-metadata.json \
+  --program-image ram_invalid_read_sweep_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+`review_ready` means only that the fixed stage-1 package is structurally and
+provenance complete. The report always leaves `acceptance_complete=false`:
+both destructive write directions, any indicated single-target follow-up,
+raw engineering review, and another original specimen remain outstanding.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

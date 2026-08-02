@@ -278,6 +278,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
                 encoding="utf-8"
             ),
         )
+        trace_readme = (ROOT / "tools" / "trace" / "README.md").read_text(
+            encoding="utf-8"
+        )
         family_pages = " ".join(
             by_id["ti-first-generation-users-guide-1987"]["sections_or_pages_used"]
         )
@@ -307,6 +310,16 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("RESEARCHING/CONFLICT (`SC-041`)", questions)
         self.assertIn("## SC-041", conflicts)
         self.assertIn("read-only controlled-history sweep", memory)
+        for required in (
+            "ram_invalid_read_capture.py",
+            "PREDECESSOR_TRACKING",
+            "run_conditions",
+            "at\nleast 32 reset-and-execute trials and eight cold-power trials",
+            "acceptance_complete=false",
+        ):
+            self.assertIn(required, trace_readme)
+        self.assertIn("stage-1 `review_ready` is not overall acceptance", questions)
+        self.assertIn("strict stage-1 classifier", conflicts)
 
     def test_reset_retention_keeps_evm_evidence_below_silicon_proof(self) -> None:
         manifest = json.loads(
