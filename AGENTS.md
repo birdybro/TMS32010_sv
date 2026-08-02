@@ -320,14 +320,16 @@ including stalls and deferred vector execution. MPY and MPYK in the protected
 slot now have explicit extension through one additional instruction, including
 signed products, bus shape, stalls, and post-following return-PC ownership.
 The 32 previously represented arrival intervals plus four CALA/RET intervals
-cover all 36 intervals of 17 supported multicycle families. For the first 32,
-the explicit test now crosses all four represented native request phases,
-forming 128 cases; every case inserts one clock-enable pause at the arrival
+cover all 36 intervals of 17 supported multicycle families. The explicit tests
+cross every interval with all four represented native request phases, forming
+144 cases: 128 for the first 15 families and 16 for CALA/RET. Every case
+inserts one clock-enable pause at the arrival
 phase and checks family-specific native strobes, no recognition or retirement
 before the enabled falling boundary, multicycle completion, one protected
 retirement, dummy ownership, stack entry, acknowledge state, and vector
-capture. The separate logical-core matrix remains 32 machine-interval cases,
-and the CALA/RET matrix remains four interval cases. PUSH/POP multicycle
+capture. The separate logical-core matrix remains 32 machine-interval cases.
+CALA/RET address ownership retains ADR-0003's CORROBORATED-RET/INFERRED-CALA
+confidence. PUSH/POP multicycle
 pipeline integration remains absent; do not generalize this narrow evidence
 into a complete fetch/execute claim or physical interrupt-aperture proof.
 A 12-step standalone BMC checks its transition relation for arbitrary
@@ -396,11 +398,11 @@ retains masked requests, implements the qualified EINT and MPY/MPYK
 deferrals, performs a non-retiring return-PC dummy fetch and stack push, sets
 INTM, clears the request, and selects vector 2. Directed native-phase evidence
 matches TI Figure 2-12's external address order. A 32-case logical-core matrix
-and a 128-case explicit-pipeline interval/native-phase matrix cover the same
-32 machine intervals; four additional CALA/RET cases complete all 36
-represented execution intervals of 17 supported multicycle families. Every
-explicit 128-case arrival also includes one clock-enable pause at its selected
-phase. A separate four-case native test proves the legacy digital wrapper
+and a 144-case explicit-pipeline interval/native-phase matrix cover all 36
+represented execution intervals of 17 supported multicycle families. The
+explicit split is 128 branch/I/O/table cases plus 16 CALA/RET cases, and every
+arrival includes one clock-enable pause at its selected phase. A separate
+four-case native test proves the legacy digital wrapper
 samples a held-low request only at the enabled falling boundary from each
 modeled subphase, including a phase stall. The explicit pipeline
 additionally qualifies the basic EINT/protected-word/discarded-N+2/vector

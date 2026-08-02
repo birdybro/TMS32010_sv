@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 16-case CALA/RET explicit-pipeline interrupt matrix. It crosses both
+  execution intervals of both instructions with all four represented native
+  request phases and inserts one clock-enable pause at every selected arrival
+  while retaining ADR-0003's CORROBORATED-RET/INFERRED-CALA confidence.
 - A 128-case directed explicit-pipeline multicycle-interrupt matrix. It
   crosses every one of the four represented native request phases with all 32
   supported B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW
@@ -1387,6 +1391,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Every CALA/RET interval/phase case retains the discarded-PC+1 or selected-
+  target program read and complete architectural/bus state through its pause,
+  recognizes no request and retires no computed control before the enabled
+  falling boundary, completes target capture and the instruction-owned stack
+  transform before service, retires one protected word, discards the resolved
+  return-PC fetch, and captures vector 2 with exact stack/mask/pending state.
+  This simulation result does not promote ADR-0003, qualify physical setup or
+  synchronization, resolve protected-DINT priority, or supply PUSH/POP cycles.
 - Every case in the 32-interval by four-phase explicit multicycle interrupt
   matrix retains the execute owner and complete architectural/bus bundle
   through its selected clock-enable pause, recognizes no request and retires
@@ -1395,11 +1407,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   service, retires exactly one protected word, discards the resolved return-PC
   fetch, and captures vector 2 with the expected stack/mask/pending state.
   This is digital wrapper evidence only; it does not qualify the 50 ns physical
-  setup aperture, synchronizer/edge-latch implementation, CALA/RET subphases,
-  PUSH/POP cycles, or protected-DINT priority.
-- The focused 128-case Verilator run, all 59 bus/integration tests, all 6
-  interrupt tests, strict 46-module lint, documentation/provenance/release
-  checks, and the complete 246/232/39/59/6/25 regression split pass. No
+  setup aperture, synchronizer/edge-latch implementation, PUSH/POP cycles, or
+  protected-DINT priority.
+- The focused 128-case and 16-case Verilator runs, all 59 bus/integration
+  tests, all 6 interrupt tests, strict 46-module lint, documentation/
+  provenance/release checks, and the complete 246/232/39/59/6/25 regression
+  split pass. No
   synthesizable or formal source changed, so the existing 25 MHz Quartus,
   Yosys, and 86-task bounded-formal evidence remains applicable.
 - BMC through depth 57 proves one exact RAM-0-to-program-`0x017` phase-3

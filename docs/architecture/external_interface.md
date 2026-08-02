@@ -174,9 +174,10 @@ interrupt-acknowledge output; TI's acknowledge is internal
 pp. 2-18–2-19 (PDF pp. 42–43)]. **Confidence: VERIFIED_PRIMARY for the
 external fetch order and entry effects; VERIFIED_SIMULATION for the basic
 explicit ownership path, MPY/MPYK protected-slot extension, a 32-case
-logical-core interval matrix, a 128-case explicit interval/native-phase
-matrix, and four CALA/RET explicit arrival cases. Every 128-case explicit
-arrival also pauses clock enable once at the selected phase and proves that
+logical-core interval matrix, and a 144-case explicit interval/native-phase
+matrix spanning all 36 represented intervals. The explicit split is 128
+branch/I/O/table cases plus 16 CALA/RET cases. Every explicit arrival pauses
+clock enable once at the selected phase and proves that
 the bus/state bundle holds until the enabled falling boundary.
 Physical sampling, PUSH/POP cycles, and physical confirmation of ADR-0003
 remain `OQ-004`/`OQ-007`/`OQ-016`.** Later mixed-family Figure 3-20 omits the

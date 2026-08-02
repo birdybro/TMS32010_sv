@@ -304,7 +304,7 @@
         {"source_id": "ti-first-generation-users-guide-1987", "section": "EINT instruction description", "printed_page": "4-34", "pdf_page": 115}
       ],
       "confidence_level": "VERIFIED_PRIMARY",
-      "unresolved_questions": ["OQ-004: complete overlapped execute ownership and physical setup/synchronizer behavior; 32 supported multicycle intervals are crossed with all four modeled digital subphases in the explicit wrapper, while CALA/RET subphase expansion and PUSH/POP remain unqualified"]
+      "unresolved_questions": ["OQ-004: complete overlapped execute ownership and physical setup/synchronizer behavior; all 36 represented supported-multicycle intervals are crossed with all four modeled digital subphases in the explicit wrapper, while PUSH/POP remain unqualified"]
     },
     {
       "mnemonic": "LST",

@@ -186,10 +186,10 @@ pp. 2-18–2-19 and 3-27/3-29 (PDF pp. 42–43, 77, and 79)].
 **Confidence: VERIFIED_PRIMARY for those architectural effects and the tested
 fetch order; VERIFIED_SIMULATION for the basic protected/discard/vector
 ownership path and MPY/MPYK protected-slot extension. The supported 32
-machine intervals are crossed with four digital request phases in the explicit
-wrapper, but unsupported PUSH/POP, CALA/RET subphase expansion, physical
-sampling, and complete multicycle arrival qualification remain `OQ-004`/
-`OQ-007`/`OQ-016`.**
+machine intervals plus all four CALA/RET intervals are crossed with four
+digital request phases in the explicit wrapper, but unsupported PUSH/POP,
+physical sampling, and complete instruction-set arrival qualification remain
+`OQ-004`/`OQ-007`/`OQ-016`.**
 
 “Immediately” establishes the architectural INTM state after DINT retires; it
 does not settle a same-boundary interrupt grant already forming through the

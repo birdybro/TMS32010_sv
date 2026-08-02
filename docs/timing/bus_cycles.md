@@ -398,6 +398,6 @@ identify:
   prefetch address order;
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
   discarded-N+2/vector path, MPY/MPYK extension, the 32-case logical-core and
-  128-case explicit interval/native-phase matrices, and four CALA/RET explicit
-  arrival cases;
+  144-case explicit interval/native-phase matrices across all 36 represented
+  intervals;
 - any internal conflict that changes an otherwise normal read.

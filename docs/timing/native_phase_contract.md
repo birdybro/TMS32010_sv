@@ -475,5 +475,6 @@ machine interval, while the explicit-pipeline matrix crosses those 32
 intervals with all four represented native request phases for 128 cases. Each
 explicit case includes one clock-enable pause at arrival and proves stable
 bus/state plus no recognition or retirement before the enabled falling
-boundary. Four additional explicit cases cover both intervals of CALA and
-RET. Physical confirmation of ADR-0003 remains open.
+boundary. A further 16 explicit cases cross both intervals and all four phases
+for CALA and RET with the same selected-phase pause and boundary assertions.
+Physical confirmation of ADR-0003 remains open.

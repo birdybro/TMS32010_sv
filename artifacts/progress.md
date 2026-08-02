@@ -23,11 +23,13 @@
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
   EINT/protected-instruction/dummy-entry/vector model/RTL differential; 36
   directed request-arrival machine-interval cases across all 17 currently
-  supported multicycle core families, including a 128-case explicit-pipeline
-  cross-product of four native phases with the 32 B/BANZ/BV/BIOZ/CALL/
-  accumulator-branch/IN/OUT/TBLR/TBLW intervals; every 128-case arrival has a
-  selected-phase clock-enable pause, stable bus/state, and enabled-falling-
-  boundary recognition; four legacy native subphase arrivals independently
+  supported multicycle core families, including a 144-case explicit-pipeline
+  cross-product of four native phases with all 36 represented intervals: 128
+  cases spanning 32 B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW
+  intervals, plus 16 CALA/RET cases. Every explicit arrival has a selected-
+  phase clock-enable pause, stable bus/state, and enabled-falling-boundary
+  recognition while retaining ADR-0003 confidence; four legacy native
+  subphase arrivals independently
   include a stalled phase-2 case and falling-boundary ownership;
   plus fourteen ROM-free MAME-adapter/orchestration tests covering strict
   parsing, original-part widths, state normalization, strict model-state
@@ -1782,10 +1784,25 @@
   family-specific MEN/DEN/WE ownership, multicycle completion, one protected
   retirement, dummy return-PC discard, stack/mask/pending acknowledge effects,
   and vector capture. The separate logical-core matrix remains 32 interval
-  cases, and CALA/RET remain four interval-only cases. This is digital
-  simulation evidence, not physical setup/synchronizer, package-delay,
-  electrical, CALA/RET-subphase, PUSH/POP, or DINT-priority proof. No
+  cases. At that increment CALA/RET remained four interval-only cases; the
+  later 16-case matrix below closes their digital phase cross-product. This is
+  digital simulation evidence, not physical setup/synchronizer, package-delay,
+  electrical, PUSH/POP, or DINT-priority proof. No
   synthesizable RTL changed, so prior synthesis evidence remains applicable.
+- **New computed-control native-phase interrupt evidence:** the CALA/RET
+  directed matrix now crosses both execution intervals of both instructions
+  with all four represented native request phases for 16 cases. Every case
+  inserts one arrival-phase clock-enable pause and checks stable discarded-
+  PC+1/selected-target bus ownership and architectural state, no pre-boundary
+  recognition or retirement, computed-control completion and its stack effect
+  before service, one protected retirement, dummy return-PC discard, entry
+  stack/mask/pending effects, and vector capture. Together with the 128-case
+  branch/I/O/table matrix, all 36 represented multicycle intervals now have
+  four-phase explicit-pipeline coverage. ADR-0003 remains CORROBORATED for RET
+  and INFERRED for CALA; this is not original-package address, setup/
+  synchronizer, package-delay, electrical, PUSH/POP, or DINT-priority proof.
+  No synthesizable RTL changed, so prior synthesis evidence remains
+  applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1834,9 +1851,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend the explicit CALA/RET interrupt-arrival matrix across
-  all four represented native phases, retaining ADR-0003's CORROBORATED-RET/
-  INFERRED-CALA confidence and leaving PUSH/POP ownership blocked under
-  `OQ-016` rather than inventing bus phases.
+- **Next task:** cross the 39 supported ordinary one-cycle interrupt-arrival
+  families with all four represented native request phases, leaving mask-
+  control priority and PUSH/POP ownership under their existing explicit
+  uncertainty boundaries.
 - **Latest committed baseline before this cycle:**
-  `c73b1b1`
+  `6cd4425`

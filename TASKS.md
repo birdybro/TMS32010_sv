@@ -912,8 +912,8 @@ objective passing evidence.
   logical-core matrix tests each represented multicycle arrival boundary; the
   explicit-pipeline matrix crosses those 32 boundaries with all four native
   request phases for 128 cases and inserts one clock-enable pause at every
-  selected arrival. Four more explicit cases cover both intervals of CALA and
-  RET;
+  selected arrival. A further 16 explicit cases cross both intervals and all
+  four phases for CALA and RET with the same pause/boundary discipline;
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
@@ -1093,10 +1093,11 @@ objective passing evidence.
   specific native bus shape, instruction completion, exactly one protected
   retirement, resolved-return-PC dummy fetch, stack state, acknowledge
   effects, and vector-2 selection.
-  Four additional explicit cases pulse INT in both CALA and RET intervals and
-  prove no early stack effect or service, selected-target completion, one
-  protected retirement, and subsequent dummy/vector ownership under the
-  `INFERRED` ADR-0003 address sequence.
+  A further 16 explicit cases cross both CALA and RET intervals with all four
+  represented native phases and one selected-phase pause. They prove no early
+  recognition, retirement, stack effect, or service, selected-target
+  completion, one protected retirement, and subsequent dummy/vector ownership
+  under ADR-0003's CORROBORATED-RET/INFERRED-CALA address sequence.
   Paired 39-case core and explicit-pipeline matrices now sample a request while
   every supported ordinary one-cycle operation retires, excluding only the
   separately tested DINT/EINT mask controls. Each case proves current
@@ -1434,10 +1435,11 @@ objective passing evidence.
   common-address data instructions plus SST's forced-page status store is
   asserted through the partial native-phase
   integration. Figure 2-12 interrupt program reads, entry effects, EINT
-  deferral, multiply deferral, a 32-case logical-core interval matrix, a
-  128-case explicit interval/native-phase matrix, and four CALA/RET arrival
-  cases over all represented intervals of 17 supported multicycle families
-  are directed-tested. Every 128-case explicit arrival includes one
+  deferral, multiply deferral, a 32-case logical-core interval matrix, and a
+  144-case explicit interval/native-phase matrix over all 36 represented
+  intervals of 17 supported multicycle families are directed-tested. The
+  explicit split is 128 branch/I/O/table cases plus 16 CALA/RET cases. Every
+  explicit arrival includes one
   clock-enable pause at the asserted phase and checks that sampling and
   retirement wait for the enabled falling boundary. A
   four-case native test additionally proves digital falling-boundary ownership

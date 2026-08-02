@@ -13,6 +13,8 @@ module tb_sequential_pipeline_interrupt_computed;
   logic        men_n;
   logic        den_n;
   logic        we_n;
+  logic        program_write;
+  logic [15:0] program_write_data;
   logic        sample;
   logic        bus_active;
   logic        execute_valid;
@@ -54,8 +56,8 @@ module tb_sequential_pipeline_interrupt_computed;
     .men_n_o                       (men_n),
     .den_n_o                       (den_n),
     .we_n_o                        (we_n),
-    .program_write_o               (),
-    .program_write_data_o          (),
+    .program_write_o               (program_write),
+    .program_write_data_o          (program_write_data),
     .sample_o                      (sample),
     .bus_active_o                  (bus_active),
     .execute_valid_o               (execute_valid),
@@ -147,25 +149,167 @@ module tb_sequential_pipeline_interrupt_computed;
     rs = 1'b0;
   endtask
 
+  task automatic pause_at_arrival(
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase,
+    input string       name
+  );
+    logic [1:0]  saved_phase;
+    logic [11:0] saved_program_address;
+    logic        saved_men_n;
+    logic        saved_den_n;
+    logic        saved_we_n;
+    logic        saved_program_write;
+    logic [15:0] saved_program_write_data;
+    logic        saved_bus_active;
+    logic        saved_execute_valid;
+    logic [11:0] saved_execute_address;
+    logic [15:0] saved_execute_word;
+    logic        saved_pipeline_blocked;
+    logic        saved_data_read;
+    logic        saved_data_write;
+    logic        saved_io_read;
+    logic        saved_io_write;
+    logic [11:0] saved_pc;
+    logic [31:0] saved_accumulator;
+    logic [11:0] saved_stack_top;
+    logic [11:0] saved_stack_level_1;
+    logic [11:0] saved_stack_level_2;
+    logic [11:0] saved_stack_bottom;
+    logic        saved_interrupt_mask;
+    logic        saved_interrupt_pending;
+    logic [31:0] saved_cycle_count;
+
+    saved_phase              = phase;
+    saved_program_address    = program_address;
+    saved_men_n              = men_n;
+    saved_den_n              = den_n;
+    saved_we_n               = we_n;
+    saved_program_write      = program_write;
+    saved_program_write_data = program_write_data;
+    saved_bus_active         = bus_active;
+    saved_execute_valid      = execute_valid;
+    saved_execute_address    = execute_address;
+    saved_execute_word       = execute_word;
+    saved_pipeline_blocked   = pipeline_blocked;
+    saved_data_read          = data_read;
+    saved_data_write         = data_write;
+    saved_io_read            = io_read;
+    saved_io_write           = io_write;
+    saved_pc                 = pc;
+    saved_accumulator        = accumulator;
+    saved_stack_top          = stack_top;
+    saved_stack_level_1      = stack_level_1;
+    saved_stack_level_2      = stack_level_2;
+    saved_stack_bottom       = stack_bottom;
+    saved_interrupt_mask     = interrupt_mask;
+    saved_interrupt_pending  = interrupt_pending;
+    saved_cycle_count        = cycle_count;
+
+    clock_enable = 1'b0;
+    tick();
+    require(
+      phase == saved_phase &&
+      program_address == saved_program_address &&
+      men_n == saved_men_n && den_n == saved_den_n &&
+      we_n == saved_we_n && program_write == saved_program_write &&
+      program_write_data == saved_program_write_data &&
+      bus_active == saved_bus_active &&
+      execute_valid == saved_execute_valid &&
+      execute_address == saved_execute_address &&
+      execute_word == saved_execute_word &&
+      pipeline_blocked == saved_pipeline_blocked &&
+      data_read == saved_data_read && data_write == saved_data_write &&
+      io_read == saved_io_read && io_write == saved_io_write &&
+      pc == saved_pc && accumulator == saved_accumulator &&
+      stack_top == saved_stack_top &&
+      stack_level_1 == saved_stack_level_1 &&
+      stack_level_2 == saved_stack_level_2 &&
+      stack_bottom == saved_stack_bottom &&
+      interrupt_mask == saved_interrupt_mask &&
+      interrupt_pending == saved_interrupt_pending &&
+      cycle_count == saved_cycle_count,
+      $sformatf(
+        "%s arrival interval %0d phase %0d pause holds state and bus",
+        name,
+        arrival_interval,
+        arrival_phase
+      )
+    );
+    clock_enable = 1'b1;
+  endtask
+
   task automatic computed_interval(
     input int unsigned interval,
     input int unsigned arrival_interval,
+    input int unsigned arrival_phase,
     input logic [11:0] expected_address,
     input logic [11:0] expected_pc,
     input logic [11:0] expected_stack,
     input string       name
   );
-    int_n = (interval == arrival_interval) ? 1'b0 : 1'b1;
+    logic [11:0] saved_execute_address;
+    logic [15:0] saved_execute_word;
+    logic [31:0] before_cycles;
+
+    saved_execute_address = execute_address;
+    saved_execute_word    = execute_word;
+    before_cycles         = cycle_count;
+
+    require(
+      phase == 2'd0 &&
+      interrupt_pending == (interval > arrival_interval) &&
+      !interrupt_mask,
+      {name, " begins without early request recognition"}
+    );
+
+    if ((interval == arrival_interval) && (arrival_phase == 0)) begin
+      int_n = 1'b0;
+      pause_at_arrival(arrival_interval, arrival_phase, name);
+    end
+
+    for (int unsigned active_phase = 1; active_phase < 4; active_phase++) begin
+      tick();
+      require(
+        phase == active_phase[1:0] &&
+        !sample && !retired && !illegal &&
+        !men_n && den_n && we_n && !program_write &&
+        program_address == expected_address &&
+        !data_read && !data_write && !io_read && !io_write &&
+        execute_valid && execute_address == saved_execute_address &&
+        execute_word == saved_execute_word &&
+        interrupt_pending == (interval > arrival_interval) &&
+        !interrupt_mask && cycle_count == before_cycles,
+        $sformatf(
+          "%s arrival interval %0d phase %0d has no pre-boundary recognition or retirement",
+          name,
+          arrival_interval,
+          arrival_phase
+        )
+      );
+
+      if (
+        (interval == arrival_interval) &&
+        (arrival_phase == active_phase)
+      ) begin
+        int_n = 1'b0;
+        pause_at_arrival(arrival_interval, arrival_phase, name);
+        require(
+          interrupt_pending == (interval > arrival_interval) &&
+          cycle_count == before_cycles,
+          {name, " paused arrival cannot sample INT"}
+        );
+      end
+    end
+
     tick();
-    require(phase == 2'd1 && !men_n && den_n && we_n &&
-            program_address == expected_address &&
-            !data_read && !data_write && !io_read && !io_write,
-            {name, " interval has expected program-only read"});
-    advance_to_sample(name);
     int_n = 1'b1;
-    require(!illegal && !pipeline_blocked &&
-            interrupt_pending == (interval >= arrival_interval),
-            {name, " interval latches request without blocking"});
+    require(
+      phase == 2'd0 && sample && !illegal && !pipeline_blocked &&
+      interrupt_pending == (interval >= arrival_interval) &&
+      cycle_count == before_cycles + 32'd1,
+      {name, " interval latches request only at its enabled boundary"}
+    );
     if (interval == 0) begin
       require(!retired && pc == expected_pc && stack_top == expected_stack,
               {name, " cannot retire or mutate stack midinstruction"});
@@ -210,7 +354,10 @@ module tb_sequential_pipeline_interrupt_computed;
             {name, " entry stacks resolved PC only after protection"});
   endtask
 
-  task automatic run_cala(input int unsigned arrival_interval);
+  task automatic run_cala(
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase
+  );
     clear_program();
     program_memory[12'h000] = 16'h7e10; // LACK 0x10
     program_memory[12'h001] = 16'h7f82; // EINT
@@ -229,10 +376,12 @@ module tb_sequential_pipeline_interrupt_computed;
             cycle_count == 32'd2,
             "CALA begins after request-free EINT");
 
-    computed_interval(0, arrival_interval, 12'h003, 12'h003, 12'h000,
+    computed_interval(0, arrival_interval, arrival_phase,
+                      12'h003, 12'h003, 12'h000,
                       "CALA discarded prefetch");
     require(cycle_count == 32'd3, "CALA first interval counts once");
-    computed_interval(1, arrival_interval, 12'h010, 12'h003, 12'h000,
+    computed_interval(1, arrival_interval, arrival_phase,
+                      12'h010, 12'h003, 12'h000,
                       "CALA target fetch");
     require(pc == 12'h010 && stack_top == 12'h003 &&
             cycle_count == 32'd4,
@@ -240,7 +389,10 @@ module tb_sequential_pipeline_interrupt_computed;
     finish_interrupt(12'h010, 12'h011, 12'h003, 32'd4, "CALA");
   endtask
 
-  task automatic run_ret(input int unsigned arrival_interval);
+  task automatic run_ret(
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase
+  );
     clear_program();
     program_memory[12'h000] = 16'hf800; // CALL setup
     program_memory[12'h001] = 16'h000a;
@@ -261,10 +413,12 @@ module tb_sequential_pipeline_interrupt_computed;
             cycle_count == 32'd3,
             "RET begins with a seeded stack after request-free EINT");
 
-    computed_interval(0, arrival_interval, 12'h00c, 12'h00c, 12'h002,
+    computed_interval(0, arrival_interval, arrival_phase,
+                      12'h00c, 12'h00c, 12'h002,
                       "RET discarded prefetch");
     require(cycle_count == 32'd4, "RET first interval counts once");
-    computed_interval(1, arrival_interval, 12'h002, 12'h00c, 12'h002,
+    computed_interval(1, arrival_interval, arrival_phase,
+                      12'h002, 12'h00c, 12'h002,
                       "RET target fetch");
     require(pc == 12'h002 && stack_top == 12'h000 &&
             cycle_count == 32'd5,
@@ -278,13 +432,19 @@ module tb_sequential_pipeline_interrupt_computed;
     clock_enable = 1'b1;
     int_n        = 1'b1;
 
-    for (int unsigned arrival = 0; arrival < 2; arrival++) begin
-      run_cala(arrival);
-      run_ret(arrival);
+    for (int unsigned arrival_interval = 0;
+         arrival_interval < 2;
+         arrival_interval++) begin
+      for (int unsigned arrival_phase = 0;
+           arrival_phase < 4;
+           arrival_phase++) begin
+        run_cala(arrival_interval, arrival_phase);
+        run_ret(arrival_interval, arrival_phase);
+      end
     end
 
     $display(
-      "PASS tb_sequential_pipeline_interrupt_computed (4 arrival cases)"
+      "PASS tb_sequential_pipeline_interrupt_computed (16 native-phase arrival cases)"
     );
     $finish;
   end

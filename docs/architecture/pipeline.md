@@ -185,8 +185,8 @@ accumulator branches, ADR-0003 CALA/RET, plus `IN`/`OUT` and `TBLR`/`TBLW`:
   reproducible pin-capture plan are recorded under `SC-018`/`OQ-016`;
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
   vector path, MPY/MPYK protected-slot extension, a 32-case logical-core
-  arrival matrix, a 128-case explicit interval/native-phase matrix, and four
-  CALA/RET explicit arrival cases
+  arrival matrix, and a 144-case explicit interval/native-phase matrix across
+  all 36 supported intervals
   (`OQ-004`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
@@ -236,11 +236,12 @@ protected retirement, dummy discard, stack and acknowledge effects, and
 vector capture. Neither matrix models a physical input synchronizer or setup
 aperture.
 
-A separate four-case explicit-pipeline test covers INT arrival in both CALA
-and RET intervals. It proves no midinstruction stack effect, selected-target
-completion before protection, one protected retirement, and the same
-dummy/vector sequence. RET's address order is CORROBORATED by a related TI
-patent; CALA remains
+A separate 16-case explicit-pipeline matrix crosses both CALA and RET
+intervals with all four represented native phases and one arrival-phase pause.
+It proves no pre-boundary recognition, retirement, or stack effect,
+selected-target completion before protection, one protected retirement, and
+the same dummy/vector sequence. RET's address order is CORROBORATED by a
+related TI patent; CALA remains
 INFERRED, and neither is original-part pin proof.
 
 Exact `BANZ` now has the same explicit two-interval ownership structure as B.

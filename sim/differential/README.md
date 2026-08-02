@@ -142,6 +142,9 @@ logical per-cycle evidence; their separate native-phase tests supply the
 modeled digital subphase relationship. The 15-family multicycle interrupt
 matrix additionally crosses 32 execution intervals with four request phases,
 including one selected-phase clock-enable pause in each of its 128 cases.
+The CALA/RET matrix adds 16 cases across its four represented intervals and
+all four phases with the same pause discipline while retaining ADR-0003's
+confidence boundary.
 Neither result nor the MAME architectural-boundary
 adapter qualifies the remaining pipeline or pin timing.
 

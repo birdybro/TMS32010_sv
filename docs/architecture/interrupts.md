@@ -195,10 +195,12 @@ histories, original-package interrupt setup/hold, a synchronizer or edge
 latch, package delay, electrical timing, other table controls, or arbitrary
 programs/memory.
 
-A separate four-case explicit-pipeline test pulses INT in each of CALA's and
-RET's two execution intervals. It proves that the request may latch during the
-discarded sequential or selected-target read but cannot retire, mutate the
-stack, or enter service midinstruction. Selected-target capture completes the
+A separate 16-case explicit-pipeline matrix crosses each of CALA's and RET's
+two execution intervals with all four represented native request phases. Every
+case inserts one clock-enable pause at arrival and proves that the request may
+latch during the discarded sequential or selected-target read but cannot be
+recognized, retire the computed control, mutate the stack, or enter service
+before the enabled falling boundary. Selected-target capture completes the
 computed control flow, exactly one protected instruction retires, and only
 then do dummy/vector ownership and interrupt stack entry proceed
 [`sim/interrupt/tb_sequential_pipeline_interrupt_computed.sv`]. The external

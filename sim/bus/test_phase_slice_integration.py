@@ -120,7 +120,10 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         self._run_testbench("tb_sequential_pipeline_interrupt_mask_controls")
 
     def test_computed_control_arrivals_defer_until_target_capture(self) -> None:
-        self._run_testbench("tb_sequential_pipeline_interrupt_computed")
+        output = self._run_testbench(
+            "tb_sequential_pipeline_interrupt_computed"
+        )
+        self.assertIn("(16 native-phase arrival cases)", output)
 
     def test_table_transfer_repeats_following_prefetch(self) -> None:
         self._run_testbench("tb_sequential_pipeline_table")

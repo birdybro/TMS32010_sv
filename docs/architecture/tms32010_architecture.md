@@ -285,11 +285,11 @@ dummy-fetch the return PC, push it, mask and clear the request, and select
 vector 2. Directed native testing verifies the Figure 2-12 external address
 order, and the explicit pipeline qualifies its basic protected-word/
 discarded-N+2/vector ownership plus MPY/MPYK extension through one additional
-instruction. A 32-case logical-core interval matrix and a 128-case explicit
-interval/native-phase matrix cover the same 32 supported machine intervals;
-four CALA/RET explicit cases complete all 36 represented request-arrival
-intervals across 17 supported multicycle families. Every 128-case explicit
-arrival includes one selected-phase clock-enable pause and asserts that
+instruction. A 32-case logical-core interval matrix and a 144-case explicit
+interval/native-phase matrix cover all 36 represented request-arrival
+intervals across 17 supported multicycle families. The explicit split is 128
+branch/I/O/table cases plus 16 CALA/RET cases. Every explicit arrival includes
+one selected-phase clock-enable pause and asserts that
 recognition and retirement wait for the enabled falling boundary. PUSH/POP
 second-cycle sequencing, physical confirmation
 of ADR-0003, and provisional DINT-at-final-boundary ordering
