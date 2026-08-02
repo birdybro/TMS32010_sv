@@ -196,6 +196,12 @@ unanticipated dependency word and any of the four status pairs remain valid
 one-specimen observations; provenance validation does not choose among them.
 Both reports are `this_specimen_only` with `acceptance_complete=false`.
 
+The `OQ-019` DINT workflow now layers the same specimen record over its
+independent pulse-measurement and three-calibration requirements. It binds the
+exact sparse listing and decoded trace to one device without weakening the
+electrical checks or selecting cancellation versus entry. Its report remains
+`this_specimen_only` with `acceptance_complete=false`.
+
 ## Implementation and release policy
 
 - No RTL or model behavior changes solely because a later publication changed

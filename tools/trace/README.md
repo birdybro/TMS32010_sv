@@ -269,11 +269,17 @@ The full `signal_pin_map` still needs every common bus signal. Calibration,
 raw-capture, and photograph paths are confined beneath the artifact root and
 rehashed. The classifier checks exact `ARM_WINDOW`/`RACING_DINT` fetches,
 exclusive port-7 outputs bracketing the race, terminal flow, 32 stable runs,
-the exact project-authored image, and the complete evidence package.
+the exact project-authored image, and the complete evidence package. The
+shared specimen validator additionally binds the normalized trace, exact
+source and sparse listing, numeric program-memory access time, raw package/
+date/lot record, fixture tool versions, and distinct top/bottom/board-context
+photographs to one named specimen without replacing the calibration checks.
 
 `review_ready` remains package status only. It does not change `OQ-019`, prove
 which internal edge has priority, qualify an omitted or malformed pulse,
-establish mask invariance, or establish `VERIFIED_HARDWARE`.
+establish `OQ-008` mask invariance, generalize beyond the named specimen, or
+establish `VERIFIED_HARDWARE`. The report always leaves
+`acceptance_complete=false`.
 
 ## Indirect-LST ARP-precedence physical-capture classifier
 

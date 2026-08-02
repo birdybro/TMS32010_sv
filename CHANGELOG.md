@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- DINT/interrupt-boundary evidence now layers shared single-specimen
+  provenance over the exact sparse fixture, pulse-measurement, sampled-level,
+  and three-calibration checks, always leaving `acceptance_complete=false`
+  without changing candidate resolution.
 - Both SUBC physical workflows now use the shared `OQ-008` validator for their
   independently exact source/listing/image packages and expose
   single-specimen scope with `acceptance_complete=false`; dependency outputs
@@ -1264,6 +1268,9 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All six DINT regressions pass with the expanded ten-artifact complete
+  package while retaining the 50 ns setup, local-CLKOUT low width, 15 ns fall
+  limit, sampled-level, calibration, and path-traversal failure boundaries.
 - All six SUBC regressions pass with complete specimen-bound dependency and
   overflow packages. A stable arbitrary dependency low word remains
   review-ready evidence, while all four overflow pairs retain equal status.

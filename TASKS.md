@@ -234,6 +234,11 @@ objective passing evidence.
   and source/listing/image to one specimen, but the dependency's first word
   remains unconstrained, all four overflow pairs remain retainable, and
   `acceptance_complete` is always false. No physical capture exists.
+  `OQ-019` now layers the shared specimen boundary over its existing pulse,
+  sampled-level, exact sparse-image, and three-calibration checks. Complete
+  packages bind source/listing/decoded trace and raw package/date/lot data to
+  one specimen while leaving all three candidates unchanged and
+  `acceptance_complete=false`. No physical capture exists.
   `OQ-008` now has a dated, reproducible publication/device-revision audit.
   `SC-043` separates the October-1985, February-1986, January-1987, and
   May-1989 data-sheet revisions and changing 14/20/25-MHz NMOS product lists

@@ -1127,8 +1127,11 @@ electrical result of an out-of-range access.
   and further constrain `OQ-004`. The strict
   `tools.trace.dint_interrupt_capture` classifier retains all three candidate
   sequences and any unanticipated port words, recomputes the published pulse
-  constraints, and validates provenance; synthetic classifier fixtures do not
-  resolve this conflict.
+  constraints, and validates provenance. It now binds exact source/listing/
+  image, decoded trace, calibrations, and a complete `OQ-008` record to one
+  named specimen while leaving `acceptance_complete=false`; synthetic
+  classifier fixtures and complete bookkeeping do not resolve this conflict
+  or prove cross-specimen invariance.
 - **Confidence:** VERIFIED_PRIMARY that the two TI publications differ;
   CORROBORATED_PRIMARY for external asynchronous conditioning; UNKNOWN for
   original-silicon DINT priority beyond published setup/pulse requirements.

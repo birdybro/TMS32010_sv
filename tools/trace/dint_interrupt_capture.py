@@ -22,6 +22,10 @@ from tools.trace.push_pop_capture import (
     EvidencePackage,
     validate_evidence_package,
 )
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
 
 
 CAPTURE_COLUMNS = (
@@ -73,6 +77,9 @@ FIXTURE_WORDS = {
     0x035: 0x7F82,
     0x036: 0x7F8D,
 }
+FIXTURE_SOURCE_SHA256 = (
+    "55828c4cef0679d58dd8e5400bc88ad4bffaf476fb8d0e8c34acc9ba4fbeb3d4"
+)
 
 CANCELS_ENTRY = "DINT_CANCELS_ENTRY"
 ENTRY_STACKS_N_PLUS_2 = "ENTRY_STACKS_N_PLUS_2"
@@ -148,6 +155,9 @@ class CaptureReport:
     candidate_resolved: bool
     fixture_valid: bool
     review_ready: bool
+    acceptance_complete: bool
+    specimen_id: str | None
+    specimen_scope: str
     classifications: tuple[str, ...]
     observations: tuple[Observation, ...]
     evidence_package: EvidencePackage
@@ -159,7 +169,8 @@ class CaptureReport:
                 "Classification and package validation only; this output does not "
                 "change OQ-019, establish original-silicon DINT priority, prove "
                 "mask-revision invariance, or establish VERIFIED_HARDWARE without "
-                "engineering review of raw captures and the physical setup."
+                "engineering review of raw captures and the physical setup. It "
+                "does not generalize beyond the identified specimen."
             ),
             "capture_sha256": self.capture_sha256,
             "pulse_measurements_sha256": self.pulse_measurements_sha256,
@@ -170,6 +181,9 @@ class CaptureReport:
             "candidate_resolved": self.candidate_resolved,
             "fixture_valid": self.fixture_valid,
             "review_ready": self.review_ready,
+            "acceptance_complete": self.acceptance_complete,
+            "specimen_id": self.specimen_id,
+            "specimen_scope": self.specimen_scope,
             "classifications": list(self.classifications),
             "observations": [
                 {
@@ -500,10 +514,11 @@ def validate_dint_evidence(
     program_image: Path | None,
     pulse_path: Path,
     artifact_root: Path | None,
+    specimen: SpecimenEvidence,
 ) -> EvidencePackage:
     base = validate_evidence_package(metadata_path, program_image, artifact_root)
-    errors = list(base.errors)
-    verified = list(base.verified_artifacts)
+    errors = list(base.errors) + list(specimen.errors)
+    verified = list(base.verified_artifacts) + list(specimen.verified_artifacts)
     if program_image is not None and program_image.is_file():
         try:
             if program_image.read_bytes() != _expected_image():
@@ -592,8 +607,15 @@ def build_report(
     repeatable = len(set(classifications)) == 1
     candidate_resolved = repeatable and classifications[0] in KNOWN_RESULTS
     fixture_valid = all(item.fixture_valid for item in observations)
+    specimen = validate_specimen_evidence(
+        metadata_path,
+        capture_path,
+        artifact_root,
+        fixture_source_sha256=FIXTURE_SOURCE_SHA256,
+        fixture_words=FIXTURE_WORDS,
+    )
     package = validate_dint_evidence(
-        metadata_path, program_image, pulse_path, artifact_root
+        metadata_path, program_image, pulse_path, artifact_root, specimen
     )
     minimum_runs_met = len(runs) >= minimum_runs
     return CaptureReport(
@@ -612,6 +634,9 @@ def build_report(
             and fixture_valid
             and package.complete
         ),
+        acceptance_complete=False,
+        specimen_id=specimen.specimen_id,
+        specimen_scope=specimen.specimen_scope,
         classifications=classifications,
         observations=observations,
         evidence_package=package,

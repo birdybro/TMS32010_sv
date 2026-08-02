@@ -25,6 +25,9 @@ from tools.trace.dint_interrupt_capture import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[2]
+
+
 def _edge(
     run: str,
     sample: int,
@@ -200,6 +203,28 @@ class DintInterruptCaptureTests(unittest.TestCase):
             image.write_bytes(_expected_image())
             raw.write_bytes(b"raw DINT capture")
             photograph.write_bytes(b"DINT probe photograph")
+            fixture_source = root / "dint_interrupt_race_probe.asm"
+            fixture_source.write_bytes(
+                (
+                    ROOT / "tests" / "asm" / "dint_interrupt_race_probe.asm"
+                ).read_bytes()
+            )
+            fixture_listing = root / "dint_interrupt_race_probe.lst"
+            fixture_listing.write_text(
+                "".join(
+                    f"{address:03x} {word:04x} synthetic:test\n"
+                    for address, word in sorted(FIXTURE_WORDS.items())
+                ),
+                encoding="utf-8",
+            )
+            specimen_photos = {}
+            for view in ("top", "bottom", "board_context"):
+                path = root / f"specimen-{view}.jpg"
+                path.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+                specimen_photos[view] = {
+                    "path": path.name,
+                    "sha256": sha256(path.read_bytes()).hexdigest(),
+                }
             calibrations: dict[str, dict[str, str]] = {}
             for name in ("no_pulse", "one_fetch_earlier", "one_fetch_later"):
                 path = root / f"{name}.sal"
@@ -213,11 +238,22 @@ class DintInterruptCaptureTests(unittest.TestCase):
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "device_marking": "TMS32010NL TEST FIXTURE",
+                        "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                        "specimen_id": "synthetic-specimen-01",
+                        "tracking_date_string": "TRACKING RAW",
+                        "lot_string": "LOT RAW",
+                        "package_type": "40-pin plastic DIP test fixture",
+                        "acquisition_provenance": "synthetic regression fixture",
+                        "socketed": True,
+                        "temperature_c": 25.0,
+                        "reset_duration_cycles": 8,
+                        "monitor_revision": "none; standalone fixture",
+                        "specimen_scope": "this_specimen_only",
                         "board_revision": "synthetic test fixture",
                         "oscillator_hz": 20_000_000,
                         "supply_voltage_v": "5.00 measured",
                         "program_memory": "synthetic memory",
+                        "program_memory_access_time_ns": 35.0,
                         "probe_model": "synthetic probe",
                         "analyzer_model": "synthetic analyzer",
                         "analyzer_firmware": "test",
@@ -225,7 +261,29 @@ class DintInterruptCaptureTests(unittest.TestCase):
                         "interrupt_driver_voltage_v": "5.00 measured",
                         "pulse_generator_model": "synthetic pulse generator",
                         "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                        "normalized_capture_sha256": sha256(
+                            capture.read_bytes()
+                        ).hexdigest(),
                         "pulse_measurements_sha256": sha256(pulse.read_bytes()).hexdigest(),
+                        "fixture_tool_versions": {
+                            "assembler": "project test assembler",
+                            "capture_normalizer": "synthetic test normalizer",
+                            "analyzer_decoder": "synthetic test decoder",
+                        },
+                        "fixture_artifacts": {
+                            "source": {
+                                "path": fixture_source.name,
+                                "sha256": sha256(
+                                    fixture_source.read_bytes()
+                                ).hexdigest(),
+                            },
+                            "listing": {
+                                "path": fixture_listing.name,
+                                "sha256": sha256(
+                                    fixture_listing.read_bytes()
+                                ).hexdigest(),
+                            },
+                        },
                         "signal_pin_map": {
                             "CLKOUT": "pin 6",
                             "INT_N": "pin 7",
@@ -244,6 +302,7 @@ class DintInterruptCaptureTests(unittest.TestCase):
                                 photograph.read_bytes()
                             ).hexdigest(),
                         },
+                        "specimen_photographs": specimen_photos,
                         "calibrations": calibrations,
                     },
                     indent=2,
@@ -263,10 +322,14 @@ class DintInterruptCaptureTests(unittest.TestCase):
             self.assertTrue(report.fixture_valid)
             self.assertTrue(report.evidence_package.complete)
             self.assertTrue(report.review_ready)
+            self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
             self.assertEqual(set(report.classifications), {CANCELS_ENTRY})
-            self.assertEqual(len(report.evidence_package.verified_artifacts), 5)
+            self.assertEqual(len(report.evidence_package.verified_artifacts), 10)
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-019", encoded)
+            self.assertIn("identified specimen", encoded)
 
             output = io.StringIO()
             with redirect_stdout(output):

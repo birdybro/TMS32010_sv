@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` SUBC specimen-bound evidence
+- **Current milestone:** `ARCH-001` DINT specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1373,13 +1373,17 @@
   checked word map, requires exact ARM/DINT fetch anchors and exclusive
   bracketing outputs, recomputes 50 ns setup/one-local-CLKOUT low width/15 ns
   fall-time limits, and checks every sampled INT level against the per-run
-  transition interval. Review-readiness additionally requires 32 stable runs,
-  raw/photo hashes, open-collector driver metadata, and no-pulse/one-fetch-
-  early/one-fetch-late calibration hashes beneath a traversal-safe root. Six
+  transition interval. Shared specimen validation now additionally binds the
+  exact source/sparse listing, decoded trace, numeric memory access time, tool
+  versions, raw multiline marking/date/lot record, and distinct
+  top/bottom/board photographs to one identity. Review-readiness still
+  requires 32 stable runs, raw/photo hashes, open-collector driver metadata,
+  and no-pulse/one-fetch-early/one-fetch-late calibration hashes beneath a
+  traversal-safe root. The complete package verifies ten artifacts. Six
   regressions cover every candidate and fail-closed boundary. No physical
-  capture exists, current cancellation remains PROVISIONAL, and `OQ-019`
-  remains open. Synthesis and formal evidence are unchanged because no RTL
-  changed.
+  capture exists, `acceptance_complete=false`, current cancellation remains
+  PROVISIONAL, and `OQ-019` remains open. Synthesis and formal evidence are
+  unchanged because no RTL changed.
 - **New LST-ARP measurement evidence:** the existing 30-word fixture
   independently initializes both ARs, ARP, DP, and every consumed RAM word in
   both disagreement directions; it has no reset-retention dependency. The new
@@ -1537,8 +1541,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` by reusing the audited specimen validator
-  in the DINT/interrupt-boundary workflow without changing its pulse
-  qualification, calibration, or candidate-resolution criteria.
+- **Next task:** continue `ARCH-001` by applying the audited specimen boundary
+  to the paired RAM-boundary workflow while preserving variable diagnostic,
+  scan, and register observations as reviewable evidence.
 - **Latest committed baseline before this cycle:**
-  `0781cdf`
+  `d1d61c4`

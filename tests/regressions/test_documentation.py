@@ -498,6 +498,7 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "`OQ-010` simultaneous-AR workflow",
             "`OQ-015` LST-ARP workflow",
             "Both `OQ-017`/`OQ-018` SUBC workflows",
+            "`OQ-019` DINT workflow",
             "acceptance_complete=false",
         ):
             self.assertIn(required, audit)
@@ -624,6 +625,8 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "normalizer must reject a run containing additional INT transitions",
             "unanticipated sequence is retained verbatim",
             "`review_ready` is evidence-package status only",
+            "raw tracking/date and lot",
+            "`acceptance_complete` remains false",
         ):
             self.assertIn(required, research)
         for required in (
@@ -634,10 +637,14 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "no_pulse",
             "one_fetch_earlier",
             "one_fetch_later",
+            "exact source and sparse listing",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
         self.assertIn("## SC-039", conflicts)
+        self.assertIn("complete `OQ-008` record", conflicts)
         self.assertIn("RESEARCHING/CONFLICT (`SC-039`)", questions)
+        self.assertIn("one named `OQ-008` specimen", questions)
         self.assertIn("PARTIALLY RESOLVED_PRIMARY/CONFLICT (`SC-039`)", questions)
         self.assertNotIn("is synchronized internally", interrupts)
         self.assertIn("does not claim an analog synchronizer", interrupts)

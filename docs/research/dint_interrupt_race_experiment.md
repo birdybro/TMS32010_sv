@@ -137,9 +137,11 @@ hardware is captured.
 
 Use an original NMOS TMS32010, not a TMS320C10/C15 or later compatible part:
 
-1. Record package marking, mask/date code, EVM/board and monitor revisions,
+1. Record the exact multiline package marking, raw tracking/date and lot
+   strings without decoding them, stable local specimen ID, package/custody/
+   socket/temperature/reset context, EVM/board and monitor revisions,
    oscillator, voltage, program-memory access time, interrupt-driver circuit,
-   analyzer/probe models, and hashes of the exact hex/listing used.
+   analyzer/probe models, and fixture tool versions.
 2. Drive `INT` from a clocked, open-collector-compatible fixture. Do not drive
    it directly from an analyzer pod or FPGA pin without verified voltage and
    current compatibility.
@@ -154,9 +156,10 @@ Use an original NMOS TMS32010, not a TMS320C10/C15 or later compatible part:
    and fast clock limits if the memory/driver fixture meets timing. A held-low
    run is a separate level-sensitive experiment and must not be mixed with
    the one-pulse result.
-6. Save analyzer setup, raw capture, decoded CSV, pin map, photographs,
-   monitor transcript, and tool versions. Hash every artifact before format
-   conversion.
+6. Save analyzer setup, raw capture, decoded CSV, pin map, probe-placement
+   photographs, distinct specimen top/bottom/board-context photographs,
+   monitor transcript, and exact project source/image/listing. Hash the
+   normalized trace and every retained artifact.
 
 Normalize a derived copy to one row per falling `CLKOUT` with the exact DINT
 schema in `tools/trace/README.md`. Separately derive one assertion time,
@@ -184,10 +187,14 @@ The classifier recomputes setup, low width, local `CLKOUT` period, and the
 interval; validates the exact ARM/DINT fetch anchors and port-7 flow; requires
 32 consistent runs and no-pulse/one-fetch-early/one-fetch-late calibration
 hashes; and independently compares the program binary with its checked sparse
-word map. An unanticipated sequence is retained verbatim but cannot become a
-known resolved candidate. `review_ready` is evidence-package status only and
-does not change `OQ-019` without review of raw waveforms, thresholds, loading,
-and board/device provenance.
+word map. The shared `OQ-008` validator additionally rejects substitute
+rehashed source/listing content and binds the decoded capture to a complete
+record for one named specimen; it does not replace pulse or calibration
+qualification. An unanticipated sequence is retained verbatim but cannot
+become a known resolved candidate. `review_ready` is evidence-package status
+only, `acceptance_complete` remains false, and neither changes `OQ-019`
+without review of raw waveforms, thresholds, loading, and board/device
+provenance.
 
 ## Acceptance
 
@@ -199,4 +206,5 @@ phase movement despite meeting published setup, record a metastability or
 undocumented recognition window rather than choosing the majority outcome.
 
 Until then, current DINT cancellation remains **PROVISIONAL** and MAME must
-not be cited as a same-boundary oracle.
+not be cited as a same-boundary oracle. Another identified original-NMOS
+specimen remains necessary before any cross-specimen claim.
