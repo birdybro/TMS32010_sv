@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` reset-retention specimen-bound evidence
+- **Current milestone:** `ARCH-001` cross-workflow specimen-contract audit
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 221 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1496,10 +1496,15 @@
   pins the normalized trace and preserves the `OQ-008` physical specimen
   record: stable ID, exact multiline marking, raw tracking/date and lot text,
   package/custody/socket/temperature/reset and board/monitor context, fixture
-  tool versions, and distinct hashed top/bottom/board photographs. The report
-  is explicitly `this_specimen_only` with `acceptance_complete=false`. Expanded
-  regression coverage proves exact-image rejection and complete-package
-  review readiness without changing any H1/H2/H3 result. No physical capture
+  tool versions, and distinct hashed top/bottom/board photographs. The audit
+  now replaces its private duplicate with the shared specimen validator and
+  requires numeric program-memory access time. A complete package verifies
+  seven artifacts. The report is explicitly `this_specimen_only` with
+  `acceptance_complete=false`. Expanded regression coverage proves exact-image
+  rejection, nonpositive-access-time rejection, and complete-package review
+  readiness without changing any H1/H2/H3 result. A structural regression
+  proves that all nine physical classifiers use the shared helper, keep
+  acceptance open, and carry no private listing validator. No physical capture
   exists, cross-specimen behavior remains unknown, and synthesis/formal
   evidence is unchanged because no RTL changed.
 - **New simultaneous-AR provenance boundary:** reusable
@@ -1562,9 +1567,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with a cross-workflow audit of all
-  specimen-bound physical classifiers, checking that artifact, identity,
-  scope, and acceptance semantics remain consistent without changing any
-  architectural result.
+- **Next task:** continue `ARCH-001` with direct shared-validator unit coverage
+  for malformed identity, tool-version, listing, and photograph records,
+  preserving every experiment's independent result semantics.
 - **Latest committed baseline before this cycle:**
-  `872c8a5`
+  `1b24c62`

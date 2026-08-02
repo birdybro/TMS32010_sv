@@ -1400,11 +1400,15 @@ objective passing evidence.
   `OQ-016`/`SC-018`; `docs/research/push_pop_bus_experiment.md` defines the
   resolving original-device trace. `tools.trace.push_pop_capture` now provides
   the deterministic H1/H2/H3 classifier, exact-image/decoded-trace checks, and
-  traversal-safe single-specimen `OQ-008` provenance validation; six
-  regressions exercise every hypothesis, conflicting strobes/data, truncation,
-  inconsistent repetitions, exact-image rejection, and complete/malformed
-  packages. No original-NMOS capture is present, so this advances evidence
-  readiness only.
+  shared traversal-safe single-specimen `OQ-008` provenance validation,
+  including numeric program-memory access time; six regressions exercise every
+  hypothesis, conflicting strobes/data, truncation, inconsistent repetitions,
+  exact-image rejection, seven-artifact completion, and complete/malformed
+  packages. A structural cross-workflow regression now proves that all nine
+  physical classifiers invoke the shared validator, keep
+  `acceptance_complete=false`, and do not retain private listing validators.
+  No original-NMOS capture is present, so this advances evidence readiness
+  only.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
   behavior remains `OQ-017`. TI's 1982 simulator stop code 9950 corroborates

@@ -75,6 +75,7 @@ The metadata JSON schema is:
   "oscillator_hz": 20000000,
   "supply_voltage_v": "measured value and instrument",
   "program_memory": "device type and access time",
+  "program_memory_access_time_ns": 35.0,
   "probe_model": "probe model",
   "analyzer_model": "analyzer model",
   "analyzer_firmware": "firmware version",
@@ -115,7 +116,9 @@ The metadata JSON schema is:
 The image must also match the independently checked exact 16-byte fixture and
 the retained listing must contain its exact eight address/word pairs;
 rehashing different bytes or unrelated text in the metadata cannot qualify
-them. Every artifact
+them. PUSH/POP now uses the same `specimen_evidence.py` validator as every
+other specimen-bound physical classifier, and a complete package verifies
+seven source/listing/trace/image/photo artifacts. Every artifact
 path is resolved beneath `--artifact-root`, and every hash is recomputed. Path
 traversal, missing files, malformed hashes, inconsistent runs, truncated
 windows, duplicate triggers, and malformed CSV fail closed.
@@ -128,10 +131,10 @@ specimen, or establish `VERIFIED_HARDWARE`. The report always leaves
 transitions, probe loading, board identity, and the relationship between bus
 reads and subsequent execution.
 
-`specimen_evidence.py` provides the reusable subset of these checks for other
-original-device experiments. In addition to the fields shown above, migrated
-workflows require numeric `program_memory_access_time_ns`. The helper binds
-the normalized trace, exact project source and address/word listing, raw
+`specimen_evidence.py` provides the reusable subset of these checks for all
+original-device experiments. Every specimen-bound workflow requires numeric
+`program_memory_access_time_ns`. The helper binds the normalized trace, exact
+project source and address/word listing, raw
 tracking/lot strings, test conditions and tool versions, and distinct
 top/bottom/board photographs to `specimen_scope=this_specimen_only`. It does
 not identify a mask or interpret a tracking string. Each experiment must still

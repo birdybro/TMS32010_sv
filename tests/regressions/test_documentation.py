@@ -141,6 +141,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "evidence-package status only",
             "exact 16-byte image",
             "OQ-008` specimen record",
+            "through the shared validator",
+            "numeric program-memory access time",
+            "complete package verifies seven",
             "acceptance_complete=false",
         ):
             self.assertIn(required, experiment)
@@ -149,14 +152,18 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "original raw transition file must be retained",
             "Path traversal",
             "normalized_capture_sha256",
+            "program_memory_access_time_ns",
             "specimen_scope",
             "specimen_photographs",
+            "same `specimen_evidence.py` validator",
             "exact 16-byte fixture",
             "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
         for required in (
             "single-specimen subset",
+            "uses the reusable validator",
+            "verifies seven artifacts",
             "this_specimen_only",
             "does not decode a TI mask",
         ):

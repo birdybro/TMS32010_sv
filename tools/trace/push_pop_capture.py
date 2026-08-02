@@ -21,6 +21,11 @@ import re
 import sys
 from typing import Mapping, Sequence, TextIO
 
+from tools.trace.specimen_evidence import (
+    SpecimenEvidence,
+    validate_specimen_evidence,
+)
+
 
 FIXTURE_WORDS = {
     0x000: 0x7E55,
@@ -533,16 +538,6 @@ def validate_evidence_package(
     )
 
 
-def _metadata_object(path: Path | None) -> dict[str, object]:
-    if path is None:
-        return {}
-    try:
-        value = json.loads(path.read_text(encoding="utf-8"))
-    except (OSError, UnicodeError, json.JSONDecodeError):
-        return {}
-    return value if isinstance(value, dict) else {}
-
-
 def _expected_fixture_image() -> bytes:
     return b"".join(
         FIXTURE_WORDS[address].to_bytes(2, byteorder="big")
@@ -550,187 +545,33 @@ def _expected_fixture_image() -> bytes:
     )
 
 
-def _validate_fixture_listing(
-    artifact_root: Path | None,
-    listing_path: object,
-    errors: list[str],
-) -> None:
-    if artifact_root is None or not isinstance(listing_path, str) or not listing_path:
-        return
-    root = artifact_root.resolve()
-    candidate = (root / listing_path).resolve()
-    if candidate != root and root not in candidate.parents:
-        return
-    if not candidate.is_file():
-        return
-    try:
-        lines = candidate.read_text(encoding="utf-8").splitlines()
-    except (OSError, UnicodeError) as error:
-        errors.append(f"cannot read fixture listing: {error}")
-        return
-    listed: dict[int, int] = {}
-    for line_number, line in enumerate(lines, start=1):
-        if not line.strip():
-            continue
-        match = re.match(r"^([0-9a-fA-F]{3})\s+([0-9a-fA-F]{4})(?:\s|$)", line)
-        if match is None:
-            errors.append(f"fixture listing line {line_number} is malformed")
-            return
-        address = int(match.group(1), 16)
-        if address in listed:
-            errors.append(f"fixture listing repeats address 0x{address:03x}")
-            return
-        listed[address] = int(match.group(2), 16)
-    if listed != FIXTURE_WORDS:
-        errors.append("fixture listing does not contain the exact address/word map")
-
-
 def validate_push_pop_evidence(
     metadata_path: Path | None,
     program_image: Path | None,
     capture_path: Path,
     artifact_root: Path | None,
+    *,
+    specimen: SpecimenEvidence | None = None,
 ) -> EvidencePackage:
     """Add exact-fixture, decoded-trace, and OQ-008 specimen checks."""
 
     base = validate_evidence_package(metadata_path, program_image, artifact_root)
-    if metadata_path is None:
-        return base
-    errors = list(base.errors)
-    verified = list(base.verified_artifacts)
-    metadata = _metadata_object(metadata_path)
+    if specimen is None:
+        specimen = validate_specimen_evidence(
+            metadata_path,
+            capture_path,
+            artifact_root,
+            fixture_source_sha256=FIXTURE_SOURCE_SHA256,
+            fixture_words=FIXTURE_WORDS,
+        )
+    errors = list(base.errors) + list(specimen.errors)
+    verified = list(base.verified_artifacts) + list(specimen.verified_artifacts)
     if program_image is not None and program_image.is_file():
         try:
             if program_image.read_bytes() != _expected_fixture_image():
                 errors.append("program image is not the exact 16-byte PUSH/POP fixture")
         except OSError as error:
             errors.append(f"cannot read checked PUSH/POP image: {error}")
-
-    expected_capture_hash = metadata.get("normalized_capture_sha256")
-    if not isinstance(expected_capture_hash, str) or not SHA256_PATTERN.fullmatch(
-        expected_capture_hash
-    ):
-        errors.append("metadata normalized_capture_sha256 must be a lowercase SHA-256")
-    elif _hash_file(capture_path) != expected_capture_hash:
-        errors.append("normalized capture SHA-256 mismatch")
-
-    for field in (
-        "specimen_id",
-        "tracking_date_string",
-        "lot_string",
-        "package_type",
-        "acquisition_provenance",
-        "monitor_revision",
-    ):
-        value = metadata.get(field)
-        if not isinstance(value, str) or not value.strip():
-            errors.append(f"metadata {field} must be a nonempty string")
-    device_marking = metadata.get("device_marking")
-    marking_lines = (
-        [line for line in device_marking.splitlines() if line.strip()]
-        if isinstance(device_marking, str)
-        else []
-    )
-    if len(marking_lines) < 2:
-        errors.append("metadata device_marking must preserve multiple package lines")
-    for field in ("tracking_date_string", "lot_string"):
-        value = metadata.get(field)
-        if (
-            isinstance(device_marking, str)
-            and isinstance(value, str)
-            and value.strip()
-            and value not in device_marking
-        ):
-            errors.append(f"metadata {field} is absent from device_marking")
-    if metadata.get("specimen_scope") != "this_specimen_only":
-        errors.append("metadata specimen_scope must be this_specimen_only")
-    if not isinstance(metadata.get("socketed"), bool):
-        errors.append("metadata socketed must be a boolean")
-    temperature_c = metadata.get("temperature_c")
-    if (
-        isinstance(temperature_c, bool)
-        or not isinstance(temperature_c, (int, float))
-        or not isfinite(temperature_c)
-    ):
-        errors.append("metadata temperature_c must be a finite number")
-    reset_duration_cycles = metadata.get("reset_duration_cycles")
-    if (
-        isinstance(reset_duration_cycles, bool)
-        or not isinstance(reset_duration_cycles, int)
-        or reset_duration_cycles < 5
-    ):
-        errors.append("metadata reset_duration_cycles must be an integer at least 5")
-
-    tool_versions = metadata.get("fixture_tool_versions")
-    if not isinstance(tool_versions, dict):
-        errors.append("metadata fixture_tool_versions must be an object")
-    else:
-        for name in ("assembler", "capture_normalizer", "analyzer_decoder"):
-            value = tool_versions.get(name)
-            if not isinstance(value, str) or not value.strip():
-                errors.append(f"metadata fixture_tool_versions lacks {name}")
-
-    fixture_artifacts = metadata.get("fixture_artifacts")
-    fixture_files: dict[str, object] = {}
-    fixture_listing_path: object = None
-    if not isinstance(fixture_artifacts, dict):
-        errors.append("metadata fixture_artifacts must be an object")
-    else:
-        for kind in ("source", "listing"):
-            item = fixture_artifacts.get(kind)
-            if not isinstance(item, dict):
-                errors.append(f"metadata fixture_artifacts lacks {kind}")
-                continue
-            path = item.get("path")
-            digest = item.get("sha256")
-            if not isinstance(path, str) or not path:
-                errors.append(f"metadata fixture_artifacts.{kind} path is invalid")
-                continue
-            if path in fixture_files:
-                errors.append("metadata fixture artifact paths must be distinct")
-                continue
-            fixture_files[path] = digest
-            if kind == "source" and digest != FIXTURE_SOURCE_SHA256:
-                errors.append("fixture source is not the exact project-authored source")
-            if kind == "listing":
-                fixture_listing_path = path
-    if fixture_files:
-        _validate_artifact_map(
-            fixture_files,
-            "fixture_artifacts",
-            artifact_root,
-            errors,
-            verified,
-        )
-        _validate_fixture_listing(artifact_root, fixture_listing_path, errors)
-
-    photographs = metadata.get("specimen_photographs")
-    specimen_artifacts: dict[str, object] = {}
-    if not isinstance(photographs, dict):
-        errors.append("metadata specimen_photographs must be an object")
-    else:
-        for view in ("top", "bottom", "board_context"):
-            item = photographs.get(view)
-            if not isinstance(item, dict):
-                errors.append(f"metadata specimen_photographs lacks {view}")
-                continue
-            path = item.get("path")
-            digest = item.get("sha256")
-            if not isinstance(path, str) or not path:
-                errors.append(f"metadata specimen_photographs.{view} path is invalid")
-                continue
-            if path in specimen_artifacts:
-                errors.append("metadata specimen photograph paths must be distinct")
-                continue
-            specimen_artifacts[path] = digest
-    if specimen_artifacts:
-        _validate_artifact_map(
-            specimen_artifacts,
-            "specimen_photographs",
-            artifact_root,
-            errors,
-            verified,
-        )
     return EvidencePackage(
         complete=not errors,
         errors=tuple(errors),
@@ -774,13 +615,20 @@ def build_report(
         or any("source conflict" in warning for warning in observation.warnings)
         for observation in observations
     )
+    specimen = validate_specimen_evidence(
+        metadata_path,
+        capture_path,
+        artifact_root,
+        fixture_source_sha256=FIXTURE_SOURCE_SHA256,
+        fixture_words=FIXTURE_WORDS,
+    )
     package = validate_push_pop_evidence(
         metadata_path,
         program_image,
         capture_path,
         artifact_root,
+        specimen=specimen,
     )
-    metadata = _metadata_object(metadata_path)
     minimum_runs_met = len(runs) >= minimum_runs
     return CaptureReport(
         capture_sha256=_hash_file(capture_path),
@@ -797,16 +645,8 @@ def build_report(
             and package.complete
         ),
         acceptance_complete=False,
-        specimen_id=(
-            metadata.get("specimen_id")
-            if isinstance(metadata.get("specimen_id"), str)
-            else None
-        ),
-        specimen_scope=(
-            metadata.get("specimen_scope")
-            if isinstance(metadata.get("specimen_scope"), str)
-            else "UNQUALIFIED"
-        ),
+        specimen_id=specimen.specimen_id,
+        specimen_scope=specimen.specimen_scope,
         classifications=classifications,
         observations=observations,
         evidence_package=package,

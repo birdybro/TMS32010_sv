@@ -167,12 +167,14 @@ photography, and another independent specimen before attributing the result
 to silicon. Do not decap or otherwise destroy a specimen without explicit
 owner authorization.
 
-The `OQ-016` PUSH/POP capture workflow now machine-checks this record's
-single-specimen subset: stable specimen ID, exact multiline marking, raw
-tracking/date and lot strings, package/custody/socket/temperature/reset and
-board/monitor details, exact fixture source/listing/image evidence, fixture
-tool versions, normalized-trace hash, and distinct top/bottom/board-context
-photographs. Its report is explicitly
+The `OQ-016` PUSH/POP capture workflow now uses the reusable validator to
+machine-check this record's single-specimen subset: stable specimen ID, exact
+multiline marking, raw tracking/date and lot strings, package and custody,
+socket/temperature/reset and board/monitor details, numeric program-memory
+access time, exact fixture
+source/listing/image evidence, fixture tool versions, normalized-trace hash,
+and distinct top/bottom/board-context photographs. Its complete package
+verifies seven artifacts, and its report is explicitly
 `this_specimen_only` and `acceptance_complete=false`. This validates evidence
 bookkeeping; it does not decode a TI mask or replace the required second
 specimen for cross-device corroboration.

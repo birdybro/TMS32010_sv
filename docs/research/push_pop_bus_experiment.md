@@ -171,8 +171,10 @@ The classifier independently evaluates PUSH and POP in every run, requires a
 unique opcode trigger and four retained following boundaries, verifies active
 fixture reads, checks the independently fixed exact 16-byte image, binds the
 exact project source, retained listing, normalized trace, and complete
-`OQ-008` specimen record by hash, recomputes every supplied artifact, and
-refuses to merge an unknown sequence into H1-H3.
+`OQ-008` specimen record by hash through the shared validator, requires a
+numeric program-memory access time, recomputes every supplied artifact, and
+refuses to merge an unknown sequence into H1-H3. A complete package verifies
+seven source/listing/trace/image/photo artifacts.
 Its `review_ready` result is evidence-package status only and always leaves
 `acceptance_complete=false`; it cannot promote confidence or replace
 inspection of raw transitions and probe loading.

@@ -224,6 +224,7 @@ class PushPopCaptureTests(unittest.TestCase):
                         "oscillator_hz": 20_000_000,
                         "supply_voltage_v": "5.00 measured",
                         "program_memory": "synthetic test memory",
+                        "program_memory_access_time_ns": 35.0,
                         "probe_model": "synthetic probe",
                         "analyzer_model": "synthetic analyzer",
                         "analyzer_firmware": "test",
@@ -289,6 +290,7 @@ class PushPopCaptureTests(unittest.TestCase):
             self.assertFalse(report.acceptance_complete)
             self.assertEqual(report.specimen_id, "synthetic-specimen-01")
             self.assertEqual(report.specimen_scope, "this_specimen_only")
+            self.assertEqual(len(report.evidence_package.verified_artifacts), 7)
             self.assertEqual(set(report.classifications["PUSH"]), {H2_REPEAT})
             self.assertEqual(set(report.classifications["POP"]), {H2_REPEAT})
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
@@ -376,6 +378,7 @@ class PushPopCaptureTests(unittest.TestCase):
 
             escaped = dict(valid_metadata)
             escaped["oscillator_hz"] = float("inf")
+            escaped["program_memory_access_time_ns"] = 0
             escaped["raw_artifacts"] = {
                 "../capture.sal": sha256(raw.read_bytes()).hexdigest(),
             }
@@ -388,6 +391,10 @@ class PushPopCaptureTests(unittest.TestCase):
             )
             self.assertFalse(escaped_report.evidence_package.complete)
             self.assertFalse(escaped_report.review_ready)
+            self.assertIn(
+                "metadata program_memory_access_time_ns must be a positive finite number",
+                escaped_report.evidence_package.errors,
+            )
             self.assertTrue(
                 any(
                     "escapes artifact_root" in error
@@ -411,9 +418,13 @@ class PushPopCaptureTests(unittest.TestCase):
             self.assertFalse(report.hypotheses_resolved)
             self.assertFalse(report.evidence_package.complete)
             self.assertFalse(report.review_ready)
-            self.assertEqual(
+            self.assertIn(
+                "metadata sidecar was not supplied",
                 report.evidence_package.errors,
-                ("metadata sidecar was not supplied",),
+            )
+            self.assertIn(
+                "metadata sidecar was not supplied for specimen validation",
+                report.evidence_package.errors,
             )
 
 

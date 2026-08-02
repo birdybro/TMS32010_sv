@@ -913,6 +913,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- PUSH/POP evidence now uses the shared specimen validator rather than a
+  private duplicate and requires numeric program-memory access time. Its exact
+  image, H1/H2/H3 classification, single-specimen scope, and always-open
+  acceptance semantics are unchanged.
 - Reset-retention evidence now requires independently exact SET/CLEAR source,
   dense 297-word listing, image, and normalized-trace records for the same raw
   marking/date/lot/package specimen. All measured fields remain unconstrained,
@@ -1285,6 +1289,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- A structural cross-workflow regression proves that all nine physical
+  classifiers invoke the shared specimen validator, retain
+  `acceptance_complete=false`, and carry no private listing validator. All six
+  PUSH/POP regressions pass with seven-artifact complete-package accounting and
+  fail closed on a nonpositive access time.
 - All six reset-retention regressions pass with two seven-artifact packages.
   A digest-valid substitute listing or mismatched SET/CLEAR specimen fails
   closed while every captured post-reset field and relationship remains
