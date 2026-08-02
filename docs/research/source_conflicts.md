@@ -445,8 +445,10 @@ electrical result of an out-of-range access.
   fixture and original-device capture criteria are in
   `docs/research/push_pop_bus_experiment.md`; see `OQ-016`. The strict
   `tools.trace.push_pop_capture` classifier now makes those observations
-  reproducible and preserves conflicting/unknown sequences, but synthetic
-  classifier tests are not evidence for any native sequence.
+  reproducible, preserves conflicting/unknown sequences, rejects any image
+  other than the exact 16-byte fixture, and binds the decoded trace to an
+  `OQ-008` single-specimen provenance record. Synthetic classifier tests are
+  not evidence for any native sequence, and `acceptance_complete` stays false.
 - **MAME functional check:** the ROM-free `make mame-synthetic` workflow runs
   a separate combined stack/computed-control fixture in MAME's Hard Drivin'
   TMS320C10 device. Ten model steps match eleven debugger boundary states,

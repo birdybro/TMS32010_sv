@@ -909,6 +909,13 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- PUSH/POP physical evidence now fails closed unless the program is the exact
+  independent 16-byte fixture, the listing contains its exact eight-word map,
+  and metadata pins the normalized trace plus a
+  single-specimen `OQ-008` record: raw tracking/lot/package identity, custody,
+  socket/temperature/reset context, tool versions, and distinct top, bottom,
+  and board-context photographs. Reports explicitly retain
+  `acceptance_complete=false` and cannot imply mask invariance.
 - The PUSH/POP physical experiment now cites TI SPRU011's contemporary
   every-traceable-machine-cycle XDS/22 capture and clock-qualified Kontron
   external-fetch workflow, defines the normalized CSV handoff, and links the
@@ -1241,6 +1248,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The expanded PUSH/POP package regression proves that merely updating a
+  sidecar hash cannot qualify different program bytes, while a complete exact
+  single-specimen package can still reach review readiness without resolving
+  `OQ-016`, generalizing under `OQ-008`, or supplying physical data.
 - The paired reset normalizer accepts non-retention and variable post-state as
   reviewable evidence while keeping OVM as the sole primary-defined retention
   control. Even a fully retained pair is only an observed candidate; no

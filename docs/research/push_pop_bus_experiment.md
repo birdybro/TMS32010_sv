@@ -131,9 +131,11 @@ Use only an original NMOS device whose complete package marking and board
 revision are recorded. A TMS320C10, TMS320C15, or compatible FPGA core is not
 a substitute for this experiment.
 
-1. Record device markings, oscillator frequency, supply voltage, program
-   memory type/access time, probe model, analyzer model, firmware, and the
-   SHA-256 of the exact program image.
+1. Record the complete multiline package marking, raw tracking/date and lot
+   strings, package type, acquisition provenance, socket status, temperature,
+   board/monitor revision, oscillator frequency, supply voltage, reset hold,
+   program-memory type/access time, probe/analyzer identity, fixture tool
+   versions, and the SHA-256 of the exact program image.
 2. Probe `CLKOUT`, active-low `MEN`, `WE`, `DEN`, `RS`, `A11:A0`, and
    `D15:D0`. Use high-impedance probes and board-safe grounding; a trained
    operator must assess loading before attaching equipment.
@@ -148,8 +150,10 @@ a substitute for this experiment.
 6. Confirm `WE` and `DEN` remain inactive throughout both PUSH/POP intervals.
    A violation is a source conflict, not permission to reinterpret `MEN`.
 7. Save raw analyzer data, a signal-name/pin map, photographs of probe
-   placement, and a short decoding script. Hash every artifact before any
-   conversion.
+   placement, sharp specimen top/bottom/board-context photographs, and the
+   decoding script identity. Hash the normalized trace and every artifact.
+   Scope the result to a stable local specimen ID without decoding TI's raw
+   tracking/date or lot strings.
 
 Normalize a derived copy of each capture to one CSV row per falling `CLKOUT`
 boundary with the exact schema documented in `tools/trace/README.md`. Retain
@@ -165,10 +169,13 @@ python3 -m tools.trace.push_pop_capture normalized.csv \
 
 The classifier independently evaluates PUSH and POP in every run, requires a
 unique opcode trigger and four retained following boundaries, verifies active
-fixture reads, recomputes every supplied hash, and refuses to merge an unknown
-sequence into H1-H3. Its `review_ready` result is evidence-package status only;
-it cannot promote confidence or replace inspection of raw transitions and
-probe loading.
+fixture reads, checks the independently fixed exact 16-byte image, binds the
+exact project source, retained listing, normalized trace, and complete
+`OQ-008` specimen record by hash, recomputes every supplied artifact, and
+refuses to merge an unknown sequence into H1-H3.
+Its `review_ready` result is evidence-package status only and always leaves
+`acceptance_complete=false`; it cannot promote confidence or replace
+inspection of raw transitions and probe loading.
 
 ## Acceptance and interpretation
 

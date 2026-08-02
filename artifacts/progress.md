@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` physical-reset retention evidence
+- **Current milestone:** `ARCH-001` PUSH/POP specimen-bound evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -1456,6 +1456,18 @@
   `acceptance_complete=false` leaves raw review and a second specimen open
   under `OQ-012`/`SC-042`. Synthesis and formal evidence are unchanged because
   no RTL changed.
+- **New PUSH/POP provenance boundary:** `tools.trace.push_pop_capture` now
+  rejects any program other than the independently fixed 16-byte fixture even
+  if metadata correctly hashes the substituted bytes. Its sidecar additionally
+  pins the normalized trace and preserves the `OQ-008` physical specimen
+  record: stable ID, exact multiline marking, raw tracking/date and lot text,
+  package/custody/socket/temperature/reset and board/monitor context, fixture
+  tool versions, and distinct hashed top/bottom/board photographs. The report
+  is explicitly `this_specimen_only` with `acceptance_complete=false`. Expanded
+  regression coverage proves exact-image rejection and complete-package
+  review readiness without changing any H1/H2/H3 result. No physical capture
+  exists, cross-specimen behavior remains unknown, and synthesis/formal
+  evidence is unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1504,9 +1516,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with the highest-priority unblocked
-  physical-evidence gap after reset retention, auditing whether `OQ-016`
-  PUSH/POP capture packages need an explicit clock-condition matrix and
-  device-revision linkage consistent with `OQ-008`.
+- **Next task:** continue `ARCH-001` by applying the audited `OQ-008`
+  specimen-record boundary to the remaining original-device capture workflows
+  without changing their per-experiment result criteria or inventing clock
+  matrices not required by their documented measurement plans.
 - **Latest committed baseline before this cycle:**
-  `2fe92d9`
+  `11aa13f`

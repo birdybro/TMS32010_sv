@@ -60,7 +60,17 @@ The metadata JSON schema is:
 ```json
 {
   "schema_version": 1,
-  "device_marking": "complete package marking",
+  "device_marking": "complete package text with line breaks",
+  "specimen_id": "local stable identifier",
+  "tracking_date_string": "raw undecoded string",
+  "lot_string": "raw undecoded string",
+  "package_type": "observed package",
+  "acquisition_provenance": "custody/source record",
+  "socketed": true,
+  "temperature_c": 25.0,
+  "reset_duration_cycles": 8,
+  "monitor_revision": "monitor identity or none",
+  "specimen_scope": "this_specimen_only",
   "board_revision": "board and revision",
   "oscillator_hz": 20000000,
   "supply_voltage_v": "measured value and instrument",
@@ -69,6 +79,16 @@ The metadata JSON schema is:
   "analyzer_model": "analyzer model",
   "analyzer_firmware": "firmware version",
   "program_image_sha256": "lowercase SHA-256 of the supplied image file",
+  "normalized_capture_sha256": "lowercase SHA-256 of normalized.csv",
+  "fixture_tool_versions": {
+    "assembler": "version/commit",
+    "capture_normalizer": "version/commit",
+    "analyzer_decoder": "version/commit"
+  },
+  "fixture_artifacts": {
+    "source": {"path": "fixture/push_pop_bus_probe.asm", "sha256": "..."},
+    "listing": {"path": "fixture/push_pop_bus_probe.lst", "sha256": "..."}
+  },
   "signal_pin_map": {
     "CLKOUT": "physical pin/channel",
     "MEN_N": "physical pin/channel",
@@ -83,19 +103,30 @@ The metadata JSON schema is:
   },
   "probe_photographs": {
     "photos/probe-placement.jpg": "lowercase SHA-256"
+  },
+  "specimen_photographs": {
+    "top": {"path": "photos/specimen-top.jpg", "sha256": "..."},
+    "bottom": {"path": "photos/specimen-bottom.jpg", "sha256": "..."},
+    "board_context": {"path": "photos/specimen-board.jpg", "sha256": "..."}
   }
 }
 ```
 
-Every artifact path is resolved beneath `--artifact-root`, and every hash is
-recomputed. Path traversal, missing files, malformed hashes, inconsistent
-runs, truncated windows, duplicate triggers, and malformed CSV fail closed.
+The image must also match the independently checked exact 16-byte fixture and
+the retained listing must contain its exact eight address/word pairs;
+rehashing different bytes or unrelated text in the metadata cannot qualify
+them. Every artifact
+path is resolved beneath `--artifact-root`, and every hash is recomputed. Path
+traversal, missing files, malformed hashes, inconsistent runs, truncated
+windows, duplicate triggers, and malformed CSV fail closed.
 
 `review_ready` means only that the package is complete, repeatable, and matches
 one retained hypothesis for each instruction. It does not resolve `OQ-016`,
-prove mask-revision invariance, or establish `VERIFIED_HARDWARE`. Engineering
-review must still inspect the raw transitions, probe loading, board identity,
-and the relationship between bus reads and subsequent execution.
+prove `OQ-008` mask-revision invariance, generalize beyond the identified
+specimen, or establish `VERIFIED_HARDWARE`. The report always leaves
+`acceptance_complete=false`. Engineering review must still inspect the raw
+transitions, probe loading, board identity, and the relationship between bus
+reads and subsequent execution.
 
 ## SUBC physical-capture classifier
 

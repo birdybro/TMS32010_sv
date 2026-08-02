@@ -10,6 +10,7 @@ import unittest
 
 from tools.trace.push_pop_capture import (
     CAPTURE_COLUMNS,
+    FIXTURE_WORDS,
     H1_IDLE,
     H2_REPEAT,
     H3_ADVANCE,
@@ -20,6 +21,9 @@ from tools.trace.push_pop_capture import (
     main,
     read_normalized_capture,
 )
+
+
+ROOT = Path(__file__).resolve().parents[2]
 
 
 def _edge(
@@ -173,17 +177,49 @@ class PushPopCaptureTests(unittest.TestCase):
                 encoding="utf-8",
             )
             image = root / "probe.bin"
-            image.write_bytes(b"project-authored probe image")
+            exact_image = b"".join(
+                FIXTURE_WORDS[address].to_bytes(2, byteorder="big")
+                for address in range(max(FIXTURE_WORDS) + 1)
+            )
+            image.write_bytes(exact_image)
             raw = root / "capture.sal"
             raw.write_bytes(b"raw transition artifact")
             photograph = root / "probe.jpg"
             photograph.write_bytes(b"probe photograph fixture")
+            fixture_source = root / "push_pop_bus_probe.asm"
+            fixture_source.write_bytes(
+                (ROOT / "tests" / "asm" / "push_pop_bus_probe.asm").read_bytes()
+            )
+            fixture_listing = root / "push_pop_bus_probe.lst"
+            exact_listing = "".join(
+                f"{address:03x} {FIXTURE_WORDS[address]:04x} synthetic:test\n"
+                for address in range(max(FIXTURE_WORDS) + 1)
+            )
+            fixture_listing.write_text(exact_listing, encoding="utf-8")
+            specimen_photos = {}
+            for view in ("top", "bottom", "board_context"):
+                path = root / f"specimen-{view}.jpg"
+                path.write_bytes(f"synthetic {view} specimen view".encode("ascii"))
+                specimen_photos[view] = {
+                    "path": path.name,
+                    "sha256": sha256(path.read_bytes()).hexdigest(),
+                }
             metadata = root / "metadata.json"
             metadata.write_text(
                 json.dumps(
                     {
                         "schema_version": 1,
-                        "device_marking": "TMS32010NL TEST FIXTURE",
+                        "device_marking": "TMS32010NL TEST\nTRACKING RAW\nLOT RAW",
+                        "specimen_id": "synthetic-specimen-01",
+                        "tracking_date_string": "TRACKING RAW",
+                        "lot_string": "LOT RAW",
+                        "package_type": "40-pin plastic DIP test fixture",
+                        "acquisition_provenance": "synthetic regression fixture",
+                        "socketed": True,
+                        "temperature_c": 25.0,
+                        "reset_duration_cycles": 8,
+                        "monitor_revision": "none; standalone fixture",
+                        "specimen_scope": "this_specimen_only",
                         "board_revision": "synthetic test fixture",
                         "oscillator_hz": 20_000_000,
                         "supply_voltage_v": "5.00 measured",
@@ -192,6 +228,28 @@ class PushPopCaptureTests(unittest.TestCase):
                         "analyzer_model": "synthetic analyzer",
                         "analyzer_firmware": "test",
                         "program_image_sha256": sha256(image.read_bytes()).hexdigest(),
+                        "normalized_capture_sha256": sha256(
+                            capture.read_bytes()
+                        ).hexdigest(),
+                        "fixture_tool_versions": {
+                            "assembler": "project test assembler",
+                            "capture_normalizer": "synthetic test normalizer",
+                            "analyzer_decoder": "synthetic test decoder",
+                        },
+                        "fixture_artifacts": {
+                            "source": {
+                                "path": fixture_source.name,
+                                "sha256": sha256(
+                                    fixture_source.read_bytes()
+                                ).hexdigest(),
+                            },
+                            "listing": {
+                                "path": fixture_listing.name,
+                                "sha256": sha256(
+                                    fixture_listing.read_bytes()
+                                ).hexdigest(),
+                            },
+                        },
                         "signal_pin_map": {
                             "CLKOUT": "pin 6",
                             "MEN_N": "pin 7",
@@ -209,6 +267,7 @@ class PushPopCaptureTests(unittest.TestCase):
                                 photograph.read_bytes()
                             ).hexdigest(),
                         },
+                        "specimen_photographs": specimen_photos,
                     },
                     indent=2,
                 ),
@@ -227,10 +286,14 @@ class PushPopCaptureTests(unittest.TestCase):
             self.assertFalse(report.primary_source_conflict_observed)
             self.assertTrue(report.evidence_package.complete)
             self.assertTrue(report.review_ready)
+            self.assertFalse(report.acceptance_complete)
+            self.assertEqual(report.specimen_id, "synthetic-specimen-01")
+            self.assertEqual(report.specimen_scope, "this_specimen_only")
             self.assertEqual(set(report.classifications["PUSH"]), {H2_REPEAT})
             self.assertEqual(set(report.classifications["POP"]), {H2_REPEAT})
             encoded = json.dumps(report.to_json_object(), sort_keys=True)
             self.assertIn("does not change OQ-016", encoded)
+            self.assertIn("OQ-008 mask-revision invariance", encoded)
 
             output = io.StringIO()
             with redirect_stdout(output):
@@ -249,7 +312,69 @@ class PushPopCaptureTests(unittest.TestCase):
             self.assertEqual(return_code, 0)
             self.assertTrue(json.loads(output.getvalue())["review_ready"])
 
-            escaped = json.loads(metadata.read_text(encoding="utf-8"))
+            valid_metadata = json.loads(metadata.read_text(encoding="utf-8"))
+            image.write_bytes(b"\x00" + exact_image[1:])
+            wrong_image_metadata = dict(valid_metadata)
+            wrong_image_metadata["program_image_sha256"] = sha256(
+                image.read_bytes()
+            ).hexdigest()
+            metadata.write_text(json.dumps(wrong_image_metadata), encoding="utf-8")
+            wrong_image_report = build_report(
+                capture,
+                metadata_path=metadata,
+                program_image=image,
+                artifact_root=root,
+            )
+            self.assertFalse(wrong_image_report.review_ready)
+            self.assertTrue(
+                any(
+                    "exact 16-byte" in error
+                    for error in wrong_image_report.evidence_package.errors
+                )
+            )
+
+            image.write_bytes(exact_image)
+            fixture_listing.write_text("000 0000 unrelated\n", encoding="utf-8")
+            wrong_listing_metadata = json.loads(json.dumps(valid_metadata))
+            wrong_listing_metadata["fixture_artifacts"]["listing"]["sha256"] = sha256(
+                fixture_listing.read_bytes()
+            ).hexdigest()
+            metadata.write_text(json.dumps(wrong_listing_metadata), encoding="utf-8")
+            wrong_listing_report = build_report(
+                capture,
+                metadata_path=metadata,
+                program_image=image,
+                artifact_root=root,
+            )
+            self.assertFalse(wrong_listing_report.review_ready)
+            self.assertIn(
+                "fixture listing does not contain the exact address/word map",
+                wrong_listing_report.evidence_package.errors,
+            )
+
+            fixture_listing.write_text(exact_listing, encoding="utf-8")
+            incomplete_marking_metadata = dict(valid_metadata)
+            incomplete_marking_metadata["device_marking"] = "TMS32010NL TEST"
+            metadata.write_text(
+                json.dumps(incomplete_marking_metadata), encoding="utf-8"
+            )
+            incomplete_marking_report = build_report(
+                capture,
+                metadata_path=metadata,
+                program_image=image,
+                artifact_root=root,
+            )
+            self.assertFalse(incomplete_marking_report.review_ready)
+            self.assertIn(
+                "metadata device_marking must preserve multiple package lines",
+                incomplete_marking_report.evidence_package.errors,
+            )
+            self.assertIn(
+                "metadata tracking_date_string is absent from device_marking",
+                incomplete_marking_report.evidence_package.errors,
+            )
+
+            escaped = dict(valid_metadata)
             escaped["oscillator_hz"] = float("inf")
             escaped["raw_artifacts"] = {
                 "../capture.sal": sha256(raw.read_bytes()).hexdigest(),

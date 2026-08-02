@@ -122,6 +122,13 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             " ",
             (ROOT / "tools" / "trace" / "README.md").read_text(encoding="utf-8"),
         )
+        revision_audit = re.sub(
+            r"\s+",
+            " ",
+            (DOCS / "research" / "device_revision_audit.md").read_text(
+                encoding="utf-8"
+            ),
+        )
         used_pages = " ".join(support["sections_or_pages_used"])
         for required in (
             "every-traceable-machine-cycle BTT sampling",
@@ -132,14 +139,28 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "one CSV row per falling `CLKOUT` boundary",
             "refuses to merge an unknown sequence into H1-H3",
             "evidence-package status only",
+            "exact 16-byte image",
+            "OQ-008` specimen record",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, experiment)
         for required in (
             "does not resolve `OQ-016`",
             "original raw transition file must be retained",
             "Path traversal",
+            "normalized_capture_sha256",
+            "specimen_scope",
+            "specimen_photographs",
+            "exact 16-byte fixture",
+            "acceptance_complete=false",
         ):
             self.assertIn(required, trace_readme)
+        for required in (
+            "single-specimen subset",
+            "this_specimen_only",
+            "does not decode a TI mask",
+        ):
+            self.assertIn(required, revision_audit)
 
     def test_ti_simulator_evidence_stays_tool_scoped(self) -> None:
         manifest = json.loads(

@@ -119,6 +119,7 @@ objective passing evidence.
   behavior is silently assigned to the TMS32010.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
 - **Tests:** `tests/regressions/test_documentation.py`,
+  `tests/regressions/test_push_pop_capture.py`,
   `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`,
   `tests/regressions/test_simultaneous_ar_capture.py`,
   `tests/regressions/test_ram_boundary_capture.py`,
@@ -143,8 +144,13 @@ objective passing evidence.
   address and therefore does not choose a hypothesis. The physical experiment
   now has a strict normalized falling-edge classifier and evidence-package
   validator. It can report a repeatable H1/H2/H3 result only after 32 runs and
-  verified program/raw/photo hashes, but calls that state `review_ready` and
-  cannot change architectural confidence without raw-capture review.
+  verified exact-image/decoded-trace/raw/photo hashes. Its expanded `OQ-008`
+  sidecar preserves raw tracking/lot/package identity, custody, test
+  conditions/tool versions, and distinct top/bottom/board photographs while
+  scoping the result to one specimen. A rehashed arbitrary image cannot become
+  review-ready, and `acceptance_complete` stays false. This cannot change
+  architectural confidence without raw-capture review or establish
+  cross-specimen invariance.
   The contemporary TI software simulator additionally separates instruction
   acquisition from program-ROM-read breakpoints but traces only PC/ACC/AR0/
   AR1; it supplies neither a PUSH/POP bus phase nor a path to resolve
@@ -1355,10 +1361,12 @@ objective passing evidence.
   pin rule, but the address and fetched-word ownership remain open under
   `OQ-016`/`SC-018`; `docs/research/push_pop_bus_experiment.md` defines the
   resolving original-device trace. `tools.trace.push_pop_capture` now provides
-  the deterministic H1/H2/H3 classifier and traversal-safe provenance check;
-  seven regressions exercise every hypothesis, conflicting strobes/data,
-  truncation, inconsistent repetitions, and complete/malformed packages. No
-  original-NMOS capture is present, so this advances evidence readiness only.
+  the deterministic H1/H2/H3 classifier, exact-image/decoded-trace checks, and
+  traversal-safe single-specimen `OQ-008` provenance validation; six
+  regressions exercise every hypothesis, conflicting strobes/data, truncation,
+  inconsistent repetitions, exact-image rejection, and complete/malformed
+  packages. No original-NMOS capture is present, so this advances evidence
+  readiness only.
   SUBC's one-cycle total is asserted
   only with the documented ACC-free following instruction; dependency
   behavior remains `OQ-017`. TI's 1982 simulator stop code 9950 corroborates
