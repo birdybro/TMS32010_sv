@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- An 18-step actual-core I/O interrupt-arrival formal harness with independent
+  symbolic IN/OUT and first/second-interval choices. It proves exact ports,
+  callback/RAM direction and data, one enabled transfer, protected signed RAM
+  readback, dummy fetch, stack push, and vector selection under arbitrary
+  bounded clock-enable stalls.
 - A 20-step actual-core direct-TBLW interrupt-arrival formal harness with a
   constrained symbolic choice across all three represented instruction
   cycles. It preloads RAM only through the verification port and proves exact
@@ -1347,9 +1352,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All four fixed IN/OUT and arrival-interval combinations pass BMC through
+  depth 18 and independently reach completed entry at cover step 8. The proof
+  exposed and now checks `LAC` sign extension of IN callback word `0xcafe` to
+  ACC `0xffffcafe`. The full formal inventory now has 72 passing tasks from 36
+  configurations; peripheral side effects and electrical timing remain out of
+  scope.
 - All three symbolic interrupt-arrival choices for fixed direct `TBLW 0` pass
   BMC through depth 20 and independently reach completed entry at cover step
-  9. The full formal inventory now has 70 passing tasks from 35 configurations;
+  9. The formal inventory then had 70 passing tasks from 35 configurations;
   this remains one logical write scenario with a fixture memory contract, not
   indirect-table, explicit-pipeline, native-subphase, or electrical proof.
 - All three symbolic interrupt-arrival choices for fixed direct `TBLR 0` pass
@@ -2539,11 +2550,12 @@ Changelog, and the project follows semantic versioning once releases begin.
   express the exact overlap, while pinned IKA predicts entry-wins. That
   ordering is targeted-tested but PROVISIONAL under `OQ-019`/`SC-039`, with a
   stable physical experiment now defined.
-- Formal evidence currently covers eight fixed interrupt-entry programs,
+- Formal evidence currently covers nine fixed interrupt-entry configurations,
   including protected-DINT policy and both arrival intervals of one fixed B,
-  all three arrival intervals of fixed direct TBLR and TBLW, plus one fixed
-  CALA/RET call/return program, at 12-, 14-, two 18-, and four 20-step bounds,
-  one standalone ownership register, and
+  all three arrival intervals of fixed direct TBLR and TBLW, and both intervals
+  of fixed IN and OUT, plus one fixed CALA/RET call/return program, at 12-,
+  14-, three 18-, and four 20-step bounds, one standalone ownership register,
+  and
   fixed direct-TBLR and direct-TBLW integrated-pipeline programs at 40 steps.
   It excludes arbitrary DINT placement and original-silicon priority, the
   other indirect MPY control/update cases, arbitrary multiply-chain

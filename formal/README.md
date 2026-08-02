@@ -372,6 +372,27 @@ preexisting stacks, the explicit fetch/execute wrapper, native four-subphase
 write placement, external-memory access timing, or an unbounded liveness
 property.
 
+## Two-cycle I/O-arrival harness
+
+`tms32010_interrupt_io.sby` checks the actual portable core with an 18-step
+BMC and cover while leaving `clock_enable_i` arbitrary. Two fixed
+initialization cycles preload internal RAM 3 with `0x1234` through the explicit
+verification-only debug port. Independent symbolic constants select direct
+`IN 2,3` versus `OUT 3,7` and request arrival at either represented instruction
+interval. IN receives fixed callback word `0xcafe`, writes it to RAM 3, and the
+protected `LAC 3` proves committed signed readback as ACC `0xffffcafe`. OUT
+reads preloaded RAM 3, emits `0x1234` on port 7, and the same protected LAC
+produces ACC `0x00001234`. Assertions also prove exactly one enabled callback,
+program/I/O/RAM directions and addresses, no midinstruction entry, dummy
+fetch, return-PC stack push, mask, and pending state. Separate covers for all
+four operation/arrival combinations reach completed entry at solver step 8.
+
+The preload and callback word are formal fixtures, not reset or peripheral
+models. This qualifies two fixed direct logical transactions only. It does not
+prove other ports/addresses, indirect I/O updates, real peripheral side
+effects, explicit fetch/execute ownership, native subphase placement,
+electrical timing, or an unbounded liveness property.
+
 ## Multiply-extension and held-low harness
 
 `tms32010_interrupt_multiply.sby` checks a second fixed actual-core program.
@@ -602,7 +623,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 35 configurations produce 70 passing BMC/cover tasks. They still
+The current 36 configurations produce 72 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

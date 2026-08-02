@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded three-cycle TBLW arrivals
+- **Current milestone:** `FORMAL-001` bounded two-cycle IN/OUT arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,9 +148,9 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 70 tasks from 35 SymbiYosys configurations pass with
+- **Formal status:** all 72 tasks from 36 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
-  12-, 14-, two 18-, and four 20-step actual-core interrupt BMCs across
+  12-, 14-, three 18-, and four 20-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
@@ -187,7 +187,13 @@
   no early retirement/entry, table-final stack state, protected/dummy/vector
   sequencing, and entry state; all three covers reach step 9. This is one
   logical write contract, not indirect-table, explicit native subphase, or
-  electrical proof. A
+  electrical proof. A separate 18-step actual-core BMC independently selects
+  direct IN versus OUT and either arrival interval. It proves exact ports,
+  callback/RAM direction and data, one enabled transfer, protected signed
+  readback (`0xcafe` to ACC `0xffffcafe` for IN), no midinstruction entry,
+  dummy/vector sequencing, and entry state; all four covers reach step 8. This
+  is fixed logical I/O evidence, not indirect updates, peripheral side effects,
+  explicit native subphases, or electrical proof. A
   separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -1642,9 +1648,19 @@
   only on an enabled logical write. It proves exact RAM/program address, data,
   and direction, one `0x7f82`-to-`0x7e44` mutation, no early retirement/entry,
   table stack state, protected LACK, dummy fetch, stack push, and vector
-  selection. All choices reach cover step 9; the complete suite now has 70
+  selection. All choices reach cover step 9; the complete suite then had 70
   passing tasks from 35 configurations. No synthesizable RTL changed, so prior
   synthesis evidence remains applicable.
+- **New IN/OUT-arrival formal evidence:** an 18-step actual-core BMC uses two
+  verification-only RAM-preload cycles and symbolic choices for fixed direct
+  IN/OUT plus both arrival positions. It proves one enabled transfer, exact
+  port/RAM/callback direction and data, IN commit, OUT source, protected signed
+  readback, no early retirement/entry, dummy fetch, stack push, and vector
+  selection. The initial incorrect zero-extension expectation for `0xcafe`
+  failed; the primary-backed signed `LAC` result `0xffffcafe` is now asserted.
+  All four covers reach step 8; the complete suite now has 72 passing tasks
+  from 36 configurations. No synthesizable RTL changed, so prior synthesis
+  evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1693,10 +1709,10 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend bounded formal interrupt-arrival coverage to fixed
-  IN/OUT or another represented family without generalizing beyond
+- **Next task:** extend bounded formal interrupt-arrival coverage to another
+  represented control family without generalizing beyond
   documented core behavior, or advance another unblocked P0 evidence slice;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `4182f33`
+  `6f78e52`
