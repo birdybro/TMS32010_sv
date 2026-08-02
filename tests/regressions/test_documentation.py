@@ -347,6 +347,13 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         architecture = (
             DOCS / "architecture" / "tms32010_architecture.md"
         ).read_text(encoding="utf-8")
+        trace_readme = re.sub(
+            r"\s+",
+            " ",
+            (ROOT / "tools" / "trace" / "README.md").read_text(
+                encoding="utf-8"
+            ),
+        )
         evm_pages = " ".join(
             by_id["ti-tms32010-evm-users-guide-spru005a"][
                 "sections_or_pages_used"
@@ -369,18 +376,37 @@ class ArchitectureDocumentationTests(unittest.TestCase):
             "post-reset vector therefore does not depend on internal-RAM retention",
             "Both directions are required",
             "at least 32 warm-reset trials per fixture",
+            "coverage of all nine combinations",
+            "post-reset vector is never compared with the project model",
+            "acceptance_complete=false",
             "EVM evidence is **CORROBORATED** workflow evidence",
             "portable core's unlisted-state retention remains **PROVISIONAL**",
         ):
             self.assertIn(required, research)
         self.assertIn("## SC-042", conflicts)
+        self.assertIn("strict paired normalizer", conflicts)
         self.assertIn("RESEARCHING/CORROBORATED EVM (`SC-042`)", questions)
+        self.assertIn("without requiring retention", questions)
         self.assertIn("§2.11", architecture)
+        for required in (
+            "run,sample,time_ns,rs_n,bio_n,men_n,we_n,den_n,address,data",
+            "run,rs_assert_ns,rs_release_ns,bio_assert_ns",
+            "32 nominal runs per fixture",
+            "Variation and non-retention do not block review",
+            "only OVM is an expected retention control",
+        ):
+            self.assertIn(required, trace_readme)
         for source_name in (
             "reset_retention_set_probe.asm",
             "reset_retention_clear_probe.asm",
         ):
             self.assertTrue((ROOT / "tests" / "asm" / source_name).is_file())
+        self.assertTrue(
+            (ROOT / "tools" / "trace" / "reset_retention_capture.py").is_file()
+        )
+        self.assertTrue(
+            (ROOT / "tests" / "regressions" / "test_reset_retention_capture.py").is_file()
+        )
 
     def test_device_revision_audit_separates_documents_from_silicon(self) -> None:
         manifest = json.loads(

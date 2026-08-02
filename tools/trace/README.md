@@ -434,6 +434,77 @@ blocking review. `acceptance_complete=false` remains mandatory until raw
 review, any alias-directed single-target/alternate-sentinel follow-up, and a
 second identified original specimen are complete.
 
+## Physical-reset retention normalizer
+
+`reset_retention_capture.py` qualifies the complementary `OQ-012` set/clear
+fixtures without requiring the post-reset vector to match the current
+PROVISIONAL model/RTL retention policy. It checks all 28 port-7 writes and
+their exact fetch anchors, both BIOZ path selections, the armed/terminal
+markers, the reset hold loop, and the post-reset target. The falling-boundary
+CSV has this exact header:
+
+```text
+run,sample,time_ns,rs_n,bio_n,men_n,we_n,den_n,address,data
+```
+
+An independently derived transition file accompanies each fixture:
+
+```text
+run,rs_assert_ns,rs_release_ns,bio_assert_ns
+```
+
+The normalizer requires BIO to change only after the armed marker and before
+RS assertion, checks every sampled level against those transition times, and
+counts complete low-reset intervals between adjacent falling `CLKOUT`
+boundaries. Beginning with the first completed interval it checks the primary
+reset bus contract: inactive `MEN`, `DEN`, and `WE`, plus address zero. The
+first sampled-low boundary remains recorded but is not silently treated as a
+complete reset interval.
+
+In addition to the common provenance fields, each metadata sidecar requires:
+
+```json
+{
+  "reset_driver_circuit": "driver and electrical arrangement",
+  "bio_driver_circuit": "driver and electrical arrangement",
+  "reset_measurements_sha256": "lowercase SHA-256",
+  "signal_pin_map": {"BIO_N": "physical pin/channel"},
+  "run_conditions": {
+    "run-00": {
+      "clock_condition": "nominal",
+      "reset_hold_target_cycles": 5
+    }
+  }
+}
+```
+
+`clock_condition` is exactly `slow_limit`, `nominal`, or `fast_limit`; the raw
+falling-boundary times remain the measured clock evidence. The ordinary
+`oscillator_hz` field records the nominal setup. Review qualification requires
+32 nominal runs per fixture and at least one run for every combination of the
+three clock conditions and 5-, 8-, and 32-cycle reset targets. The observed
+clock-period ranges must order slow greater than nominal greater than fast.
+
+```sh
+python3 -m tools.trace.reset_retention_capture set.csv clear.csv \
+  --set-reset-measurements set-reset.csv \
+  --clear-reset-measurements clear-reset.csv \
+  --set-metadata set-metadata.json \
+  --clear-metadata clear-metadata.json \
+  --set-image reset_retention_set_probe.bin \
+  --clear-image reset_retention_clear_probe.bin \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+Every complete post-reset vector is retained raw and decomposed into ACC, P,
+T, AR0/AR1, OV, OVM, ARP, DP, and all four stack levels. Reserved SST bit 1 is
+reported independently. Variation and non-retention do not block review;
+only OVM is an expected retention control because SPRU001B explicitly says it
+is unchanged. `observed_full_retention_candidate` is descriptive package
+output, and `acceptance_complete=false` remains mandatory until raw review and
+a second identified original specimen are complete.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

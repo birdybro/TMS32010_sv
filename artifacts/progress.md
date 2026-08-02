@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` absent-RAM paired write evidence
+- **Current milestone:** `ARCH-001` physical-reset retention evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 214 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 220 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1441,6 +1441,21 @@
   `acceptance_complete=false`; raw/order review, targeted/alternate-sentinel
   follow-up, and another specimen remain under `OQ-002`/`SC-041`. Synthesis
   and formal evidence are unchanged because no RTL changed.
+- **New physical-reset evidence:** the paired
+  `tools.trace.reset_retention_capture` workflow validates both exact 594-byte
+  set/clear images, all 28 ordered output fetch/write pairs, initial-high and
+  post-reset-low BIO routing, derived BIO/RS transitions, complete reset
+  intervals, primary reset bus behavior, 32 nominal runs per fixture, every
+  slow/nominal/fast by 5/8/32-cycle combination, and raw/photo hashes. It
+  decomposes ACC, T, P, AR0/AR1, OV/OVM/ARP/DP, and all four stack levels,
+  while preserving raw vectors and reserved SST bit 1. Variable or
+  non-retained fields remain reviewable; only documented unchanged OVM is a
+  validity control. Six regressions cover the field, waveform, framing,
+  condition, provenance, and exact-image boundaries. No physical data exists,
+  `observed_full_retention_candidate` cannot promote confidence, and
+  `acceptance_complete=false` leaves raw review and a second specimen open
+  under `OQ-012`/`SC-042`. Synthesis and formal evidence are unchanged because
+  no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1489,9 +1504,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with strict complementary original-NMOS
-  reset-retention capture normalization under `OQ-012`/`SC-042`, preserving
-  every unlisted register/stack field and the external BIO path selector
-  without treating EVM warm-save behavior as production-silicon proof.
+- **Next task:** continue `ARCH-001` with the highest-priority unblocked
+  physical-evidence gap after reset retention, auditing whether `OQ-016`
+  PUSH/POP capture packages need an explicit clock-condition matrix and
+  device-revision linkage consistent with `OQ-008`.
 - **Latest committed baseline before this cycle:**
-  `552e95e`
+  `2fe92d9`

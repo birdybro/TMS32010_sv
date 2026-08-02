@@ -1241,7 +1241,11 @@ electrical result of an out-of-range access.
   labels that choice PROVISIONAL. The two complementary BIO-selected
   before/restore/reset/after images and exact capture protocol in
   `docs/research/reset_retention_experiment.md` are required before upgrading
-  original-silicon confidence. The EVM manual is CORROBORATED workflow
+  original-silicon confidence. A strict paired normalizer now checks the exact
+  images, BIO/RS timing, the nine clock/hold combinations, reset bus contract,
+  every field relationship, and provenance without expecting retention.
+  `review_ready` remains package status and never closes the question without
+  raw review and a second specimen. The EVM manual is CORROBORATED workflow
   evidence only.
 - **Confidence:** VERIFIED_PRIMARY for the named reset effects and unchanged
   OVM; CORROBORATED for EVM register recoverability; UNKNOWN for the exact

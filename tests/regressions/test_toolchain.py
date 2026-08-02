@@ -231,6 +231,7 @@ class ToolchainSliceTests(unittest.TestCase):
             (
                 "reset_retention_set_probe.asm",
                 "1105539afa5233ca36ed76afa008771ead3f4f245061d2e88b40f251e680b890",
+                "26926dd7469ec723c0abde9e541ef24d2af10e92c2cffb84a873a845a5b7065c",
                 133,
                 {
                     "INIT": 0x010,
@@ -258,6 +259,7 @@ class ToolchainSliceTests(unittest.TestCase):
             (
                 "reset_retention_clear_probe.asm",
                 "e91509dda23265824587a2b31aead71f7a6dcc17c932dec1f928164ff01ebefe",
+                "f8313381163fe3238b786b755372ca8404a72dba64a04e6f7b4e87458eb6ee25",
                 122,
                 {
                     "INIT": 0x010,
@@ -287,6 +289,7 @@ class ToolchainSliceTests(unittest.TestCase):
         for (
             source_name,
             expected_digest,
+            expected_binary_digest,
             expected_word_count,
             expected_symbols,
             expected_vector,
@@ -305,6 +308,15 @@ class ToolchainSliceTests(unittest.TestCase):
                 self.assertEqual(
                     sha256(address_word_bytes).hexdigest(),
                     expected_digest,
+                )
+                dense_image = b"".join(
+                    result.words.get(address, 0).to_bytes(2, byteorder="big")
+                    for address in range(max(result.words) + 1)
+                )
+                self.assertEqual(len(dense_image), 594)
+                self.assertEqual(
+                    sha256(dense_image).hexdigest(),
+                    expected_binary_digest,
                 )
                 self.assertEqual(result.symbols, expected_symbols)
 

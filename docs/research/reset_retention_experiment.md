@@ -132,6 +132,34 @@ address/word pair with a fixed digest, and the instruction-boundary model
 replays the pre/restore/reset/post path as fixture validation. That replay
 checks the current provisional policy only; it is not hardware evidence.
 
+## Capture normalization and evidence boundary
+
+Use `tools.trace.reset_retention_capture` with one falling-boundary CSV and one
+derived reset-transition CSV per fixture. The exact schemas, additional
+metadata fields, and complete command are specified in
+[the trace-tool README](../../tools/trace/README.md). The tool validates both
+exact 594-byte sparse images, every OUT fetch/write pair, initial-high and
+post-reset-low BIO decisions, measured RS/BIO transitions, complete reset
+intervals, reset bus controls/address, terminal flow, and raw/photo hashes.
+
+Review qualification requires 32 nominal runs per fixture and coverage of all
+nine combinations of slow/nominal/fast clock condition with 5-, 8-, and
+32-cycle reset targets. Raw `CLKOUT` timestamps, not a condition label, are
+the measured clock evidence; their ranges must preserve the declared slow to
+nominal to fast ordering.
+
+The post-reset vector is never compared with the project model as an expected
+passing value. Instead, the normalizer retains every raw word, separates SST
+reserved bit 1, and reports retained, forced-zero, forced-one, or other
+relationships for each complete architectural field. Variation and
+non-retention remain reviewable evidence. Only `OVM` must retain its fixture
+value, because unchanged OVM is part of the production reset contract and is
+the experiment's validity control. `observed_full_retention_candidate` remains
+a descriptive capture result, not an architectural confidence promotion.
+Even a structurally review-ready package always reports
+`acceptance_complete=false` pending engineering review and a second identified
+original specimen.
+
 ## Physical capture procedure
 
 Use an original NMOS TMS32010, not a TMS320C10/C15, TMS32020/C25, or later

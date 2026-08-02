@@ -123,7 +123,8 @@ objective passing evidence.
   `tests/regressions/test_simultaneous_ar_capture.py`,
   `tests/regressions/test_ram_boundary_capture.py`,
   `tests/regressions/test_ram_invalid_read_capture.py`,
-  `tests/regressions/test_ram_invalid_write_capture.py`
+  `tests/regressions/test_ram_invalid_write_capture.py`,
+  `tests/regressions/test_reset_retention_capture.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. The status register
   is now qualified as exactly five architectural bits plus a 16-bit LST/SST
   representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
@@ -191,8 +192,16 @@ objective passing evidence.
   complete state before reset, reconstruct every destructively observed
   register, use external BIO alone to choose the post-reset path, and consume
   no retained RAM while capturing the after vector. The EVM evidence is
-  CORROBORATED; original-silicon retention remains PROVISIONAL until both
-  physical captures match.
+  CORROBORATED. A strict paired normalizer now checks both exact dense images,
+  every OUT/fetch and BIO path, derived RS/BIO transitions, all nine declared
+  clock/hold combinations, the reset bus contract, every architectural field,
+  and raw/photo provenance. Variable and non-retained post-state remains
+  reviewable; only the primary-defined unchanged OVM control can invalidate a
+  complete capture. Six regressions cover field decomposition, reserved bit 1,
+  variable review-ready packages, reset/BIO/bus timing, exact anchors and
+  pre-state, partial/extra flow, condition coverage, hashes, and exact images.
+  Original-silicon retention remains PROVISIONAL pending physical captures,
+  raw review, and a second identified specimen.
   `OQ-001` is resolved from the original TMS32010-20 AC table: physical
   master-clock periods are limited to 48.78–150 ns with 47.5–52.5% pulse
   duration, so arbitrary clock stops remain outside specified conditions.
@@ -957,7 +966,8 @@ objective passing evidence.
   documented unknowns; assertions show no unintended unknown control state.
 - **Documentation:** `docs/architecture/tms32010_architecture.md`
 - **Tests:** `sim/bus/tb_program_bus_phase.sv`, `sim/unit/tb_reset.sv`,
-  `formal/tms32010_reset.sby`, `formal/tms32010_program_bus_reset.sby`
+  `formal/tms32010_reset.sby`, `formal/tms32010_program_bus_reset.sby`,
+  `tests/regressions/test_reset_retention_capture.py`
 - **Notes:** Appendix A verifies five-machine-cycle minimum assertion,
   synchronized response, inactive strobes/high-Z data, PC/address clear after
   the next full cycle, and first address-0 read one full cycle after release.
@@ -975,8 +985,10 @@ objective passing evidence.
   it proves boundary-only assertion, inactive address zero, the full release
   wait, first-read activation, `MEN`/phase relationships, and stall behavior.
   Its five-cycle reset/address-0/address-1 cover reaches step 34. Physical
-  electrical timing and values for TI-unlisted state remain; no complete reset
-  claim is made.
+  electrical timing and values for TI-unlisted state remain. The paired
+  physical normalizer now makes those values reproducibly reviewable without
+  using provisional RTL retention as an expected result, but no capture exists
+  and no complete reset claim is made.
   FPGA-deterministic behavior, if any, must be separately labeled.
 
 ## Milestone 13 — Interrupt behavior
