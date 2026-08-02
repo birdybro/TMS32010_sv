@@ -175,6 +175,15 @@ endpoint relation. Slow-corner Fmax is 45.12 MHz at 100 °C and 45.55 MHz at
 and +0.164 ns. The standalone symbolic proof, not this fit, qualifies every
 value/exclusive-control combination.
 
+The status-word increment adds a storage-free combinational boundary for SST
+packing and the four documented LST load fields. Quartus retains the same
+1,362 ALMs, 400 registers, one M10K, one DSP, +17.838 ns worst setup,
++0.164 ns worst hold, and 45.12/45.55 MHz slow-corner Fmax. The reproducible
+worst path also remains 21.476 ns over 14 logic levels from
+`core_program_data[8]` to `accumulator_o[0]`; it does not traverse the
+status-word relation. This fit is not evidence for the reserved-bit-1 or
+indirect-LST next-ARP ambiguities.
+
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
@@ -263,7 +272,7 @@ synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
 passes report zero problems; no latches are inferred, 128 RTL checks
 remain represented, and the synthesis harness and directly targeted pipeline
-contain 15,941 and 15,929 cells respectively. The
+contain 15,844 and 15,850 cells respectively. The
 registered array and forwarding logic lower to flip-flops and muxes under
 generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -277,7 +286,11 @@ following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
 zero reported problems, retains 128 RTL checks, and contains 15,929 generic
-cells. Extracting the input shifter removed 11 cells from the preceding
+cells at the preceding auxiliary-counter checkpoint. The status-word boundary
+brings the current result to 15,850 cells with the same 128 checks; its
+standalone relation maps to zero cells, so the hierarchy delta reflects
+generic whole-design optimization and is not functional evidence. Extracting
+the input shifter removed 11 cells from the preceding
 16,183-cell shared-accumulator checkpoint without changing the retained-check
 count; the independently proved standalone input shifter maps to 89 cells.
 Extracting the output shifter then added 21 mapped cells and one retained
@@ -306,12 +319,12 @@ direct recognized-boundary derivation had added 47 cells to the earlier
 15,686-cell checkpoint without changing its retained-check count.
 The ADDH increment added 75
 cells without adding or removing retained checks; SST added 76 cells and ABS
-added 170 cells in the preceding checkpoints. The current result is 800 cells
-and 50 checks above the pre-table 15,129-cell/78-check checkpoint, 894 cells
-and 61 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,151 cells/79
-checks above the exact-CALL 14,778-cell/49-check checkpoint, 1,214 cells/81
-checks above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,653 cells/86
-checks above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,989 cells/96
+added 170 cells in the preceding checkpoints. The current result is 721 cells
+and 50 checks above the pre-table 15,129-cell/78-check checkpoint, 815 cells
+and 61 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,072 cells/79
+checks above the exact-CALL 14,778-cell/49-check checkpoint, 1,135 cells/81
+checks above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,574 cells/86
+checks above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,910 cells/96
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
@@ -319,8 +332,8 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 135 checks, and reports 15,978 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 15,929-cell,
+with zero problems, retains 135 checks, and reports 15,899 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 15,850-cell,
 128-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
@@ -358,7 +371,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,787 abstract cells, 413
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,786 abstract cells, 413
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,
@@ -526,6 +539,14 @@ symbolic proof supplies exhaustive hold/exclusive-update evidence. Neither
 result assigns selected-AR ownership, instruction timing, or original-silicon
 behavior for simultaneous controls.
 
+The thirty-sixth checked-in script targets the storage-free
+`tms32010_status_word` relation. Yosys 0.67+111 reduces it to pure connections
+and constants—zero mapped cells—with no retained assertion, memory, latch,
+register, or structural problem. The separate symbolic proof supplies the
+exhaustive pack/extract evidence. Neither result assigns LST/SST addressing,
+INTM preservation, update precedence, timing, or higher confidence to the
+reserved-bit-1 policy.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -540,6 +561,7 @@ The ignored outputs are `build/yosys/tms32010_input_shifter.json`,
 `build/yosys/tms32010_output_shifter.json`,
 `build/yosys/tms32010_stack.json`,
 `build/yosys/tms32010_auxiliary_counter.json`,
+`build/yosys/tms32010_status_word.json`,
 `build/yosys/tms32010_accumulator.json`,
 `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and

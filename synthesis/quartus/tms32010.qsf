@@ -9,6 +9,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_multiplie
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_input_shifter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_output_shifter.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_auxiliary_counter.sv
+set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_status_word.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_stack.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_accumulator.sv
 set_global_assignment -name SYSTEMVERILOG_FILE ../../rtl/core/tms32010_fetch_execute.sv

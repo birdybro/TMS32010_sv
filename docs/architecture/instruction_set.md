@@ -139,6 +139,15 @@ forced page 1, bit 1, and indirect update ordering; native phase and seeded
 512-instruction model/RTL traces check logical write data, address, final RAM,
 one-cycle retirement, and the program-only physical transaction.
 
+RTL shares only the status-word packing and defined-field extraction in the
+portable combinational `tms32010_status_word` relation. Its symbolic harness
+quantifies every five-field SST state and every possible 16-bit LST source,
+derives the stored representation independently bit by bit, and proves that
+only source bits 15, 14, 8, and 0 reach the four load outputs. Direct/indirect
+address selection, `INTM` preservation, old/new ordering, the provisional
+LST next-ARP rule, and instruction timing remain in the instruction owner and
+retain the directed and differential evidence above.
+
 ## Qualified `SUBC` legal-scheduling slice
 
 `SUBC` is a one-word, one-cycle common-address instruction with opcode family

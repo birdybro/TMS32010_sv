@@ -288,6 +288,11 @@ same-instruction precedence readings. Later TI/MAME implement memory-wins,
 while pinned IKA implements encoded-field-wins; the current memory-word policy
 remains PROVISIONAL under `OQ-015`/`SC-009` pending the stable original-NMOS
 probe.
+The portable `tms32010_status_word` block now centralizes only the
+primary-defined SST packing and LST field extraction. Address ownership,
+`INTM` preservation, update precedence, and commit timing stay outside that
+relation, so its exhaustive one-step proof does not resolve the provisional
+next-ARP behavior.
 ZALH and ZALS verify high-half placement and low-half zero extension,
 respectively. ADDS verifies unsigned operands, sticky overflow, wrapped
 `OVM=0` results, and positive `OVM=1` saturation. AND, OR, and XOR verify the

@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `RTL-001` low-nine-bit auxiliary-counter relation
+- **Current milestone:** `RTL-001` architectural status-word relation
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -42,7 +42,7 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 15,941 generic cells with 128 retained checks and lowering the
+  producing 15,844 generic cells with 128 retained checks and lowering the
   registered RAM and forwarding to generic registers/muxes; its
   technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
@@ -50,11 +50,11 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 15,929 generic cells with 128 retained checks and
+  independently passes at 15,850 generic cells with 128 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 15,978 generic cells
+  Yosys at 15,899 generic cells
   with 135 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
@@ -68,7 +68,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,787 abstract cells/413 checks
+  board top retains six memories and passes at 3,786 abstract cells/413 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -145,7 +145,10 @@
   A thirty-fifth target checks the shared combinational low-nine-bit auxiliary
   counter at 54 mapped cells with no storage, latch, retained check, or
   structural problem.
-- **Formal status:** all 60 tasks from 30 SymbiYosys configurations pass with
+  A thirty-sixth target checks the shared combinational status pack/extract
+  relation as pure connections/constants with zero cells and no storage,
+  latch, retained check, or structural problem.
+- **Formal status:** all 62 tasks from 31 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -1295,6 +1298,22 @@
   +0.164 ns worst hold, and reports 45.12 MHz worst slow-corner Fmax. The
   detailed 100 °C path is 21.476 ns/14 levels from retained program data to
   ACC and does not traverse the counter result.
+- **New status-word evidence:** the portable core now routes SST packing and
+  the four documented LST load fields through one storage-free relation. The
+  independent one-step harness leaves every five-field store state and all
+  65,536 load words arbitrary, constructs the SST result bit by bit, proves
+  exact extraction of word bits 15, 14, 8, and 0, and reaches five
+  representative covers. Addressing, INTM preservation, retirement, and the
+  PROVISIONAL LST next-ARP precedence remain instruction-owned; reserved SST
+  bit 1 remains CORROBORATED under `SC-008`/`OQ-003`. Strict lint covers 46
+  RTL modules; all 62 formal tasks and the 164/232/39/57/5/25 regression
+  groups pass; all 59 reference hashes verify. All 36 Yosys targets pass:
+  status maps to zero cells, the synthesis harness is 15,844/128, the direct
+  pipeline 15,850/128, the generic MiSTer wrapper 15,899/135, and the
+  six-memory Driver Sound hierarchy 3,786/413. Quartus retains 1,362 ALMs,
+  400 registers, one M10K, and one DSP, closes 25 MHz with +17.838 ns worst
+  setup and +0.164 ns worst hold, reports 45.12 MHz worst slow-corner Fmax,
+  and retains the 21.476 ns/14-level retained-program-data-to-ACC path.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1343,9 +1362,8 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `RTL-001` by isolating the primary-defined status
-  packing/restoration relation used by SST/LST while preserving the unresolved
-  indirect-LST next-ARP precedence under `OQ-015`/`SC-009` in the instruction
-  owner rather than the portable bitfield primitive.
+- **Next task:** resume `RTL-002`/`ISA-002` research for the two native
+  PUSH/POP program-bus cycles under `OQ-016`; implement only if primary or
+  stronger physical evidence establishes fetched-word/address ownership.
 - **Latest committed baseline before this cycle:**
-  `9d79f7d`
+  `85319b1`

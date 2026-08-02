@@ -7,6 +7,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A portable combinational `tms32010_status_word` pack/extract relation and
+  one-step symbolic harness. The proof leaves every stored field and complete
+  LST source word arbitrary, constructs SST independently by bit index,
+  proves selection of source bits 15, 14, 8, and 0, and reaches five
+  fixed-field and ignored-bit covers without assigning address, INTM, update,
+  or timing behavior.
+- A standalone zero-cell Yosys smoke target for the pure-wiring status-word
+  relation.
 - A portable combinational `tms32010_auxiliary_counter` relation and one-step
   symbolic harness. The proof leaves all 16 value bits and both controls
   arbitrary, derives low-nine-bit carry/borrow independently, proves upper-bit
@@ -801,6 +809,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- LST and SST now share the proved status-word bitfield relation while the
+  instruction owner retains INTM preservation, address selection, old/new
+  ordering, retirement, and the PROVISIONAL indirect-LST next-ARP policy.
+  Reserved SST bit 1 remains CORROBORATED rather than promoted to silicon
+  proof.
 - Supported indirect data instructions, MAR, BANZ, IN/OUT, and TBLR/TBLW now
   share one qualified AR counter relation while retaining their established
   selected-register, pre-address, ARP, special LAR/SAR, and retirement rules.
@@ -1117,12 +1130,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- Strict lint checks 45 RTL modules; all 60 formal tasks from 30 configurations
+- Strict lint checks 46 RTL modules; all 62 formal tasks from 31 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass. All 35 Yosys targets pass with zero structural problems.
-  The direct pipeline reports 15,929 cells/128 checks, the synthesis harness
-  15,941/128, the MiSTer wrapper 15,978/135, and the six-memory Driver Sound
-  hierarchy 3,787/413. Quartus fits the current hierarchy in 1,362 ALMs, 400
+  regressions pass, alongside 164 repository and 232 model/unit tests. All 36
+  Yosys targets pass with zero structural problems. The status relation maps
+  to zero cells; the direct pipeline reports 15,850 cells/128 checks, the
+  synthesis harness 15,844/128, the MiSTer wrapper 15,899/135, and the
+  six-memory Driver Sound hierarchy 3,786/413. Quartus fits the current
+  hierarchy in 1,362 ALMs, 400
   registers, one M10K, and one DSP; closes 25 MHz at +17.838 ns worst setup
   and +0.164 ns worst hold slack; and reports 45.12 MHz worst slow-corner
   Fmax. The reproducible critical path is 21.476 ns over 14 logic levels from

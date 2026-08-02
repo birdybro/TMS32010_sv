@@ -26,6 +26,7 @@ class ResetRtlTests(unittest.TestCase):
             ROOT / "rtl" / "core" / "tms32010_input_shifter.sv",
             ROOT / "rtl" / "core" / "tms32010_output_shifter.sv",
             ROOT / "rtl" / "core" / "tms32010_auxiliary_counter.sv",
+            ROOT / "rtl" / "core" / "tms32010_status_word.sv",
             ROOT / "rtl" / "core" / "tms32010_stack.sv",
             ROOT / "rtl" / "core" / "tms32010_accumulator.sv",
             ROOT / "rtl" / "core" / "tms32010_core.sv",

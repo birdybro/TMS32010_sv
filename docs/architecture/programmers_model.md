@@ -107,6 +107,17 @@ rules, one-cycle behavior, bits 12:9 and 7:2 being one, and all ignored LST
 positions; CORROBORATED for reserved bit 1 and
 pre-update-status ordering.**
 
+The portable RTL expresses only this bitfield relation in
+`tms32010_status_word`: it packs all five architectural fields for SST and
+passes the four documented LST fields selected from word bits 15, 14, 8, and
+0. The instruction owner still preserves `INTM`, resolves addresses, applies
+the provisional indirect-LST next-ARP precedence, and chooses the retirement
+edge. A one-step symbolic harness leaves every status field and every source
+word arbitrary, constructs the expected SST word independently by bit index,
+proves all four LST selections, and reaches five representative fixed-field
+and ignored-bit covers. This proof raises no `SC-008`/`OQ-003` or
+`OQ-015`/`SC-009` confidence level.
+
 `ABS` interprets the complete accumulator as signed two's-complement. It
 leaves nonnegative values unchanged and negates ordinary negative values.
 For `0x80000000`, OVM clear retains that wrapped value and OVM set selects

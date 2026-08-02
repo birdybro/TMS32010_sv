@@ -216,6 +216,11 @@ module tms32010_core #(
   logic        auxiliary_counter_control_valid;
   logic [15:0] auxiliary_counter_input;
   logic [15:0] auxiliary_counter_result;
+  logic [15:0] status_store_word;
+  logic        status_loaded_overflow;
+  logic        status_loaded_overflow_mode;
+  logic        status_loaded_auxiliary_register_pointer;
+  logic        status_loaded_data_page_pointer;
   logic [31:0] accumulator_arithmetic_operand;
   logic        accumulator_arithmetic_subtract;
   logic [31:0] accumulator_arithmetic_wrapped_result;
@@ -433,6 +438,25 @@ module tms32010_core #(
     .decrement_i     (auxiliary_counter_decrement),
     .control_valid_o (auxiliary_counter_control_valid),
     .value_o         (auxiliary_counter_result)
+  );
+
+  tms32010_status_word status_word (
+    .overflow_i                          (overflow_flag_o),
+    .overflow_mode_i                     (overflow_mode_o),
+    .interrupt_mask_i                    (interrupt_mask_o),
+    .auxiliary_register_pointer_i        (auxiliary_register_pointer_o),
+    .data_page_pointer_i                 (data_page_pointer_o),
+    .load_overflow_i                     (ram_read_data[15]),
+    .load_overflow_mode_i                (ram_read_data[14]),
+    .load_auxiliary_register_pointer_i   (ram_read_data[8]),
+    .load_data_page_pointer_i            (ram_read_data[0]),
+    .store_word_o                        (status_store_word),
+    .loaded_overflow_o                   (status_loaded_overflow),
+    .loaded_overflow_mode_o              (status_loaded_overflow_mode),
+    .loaded_auxiliary_register_pointer_o (
+      status_loaded_auxiliary_register_pointer
+    ),
+    .loaded_data_page_pointer_o          (status_loaded_data_page_pointer)
   );
 
   assign multiplier_operand =
@@ -661,15 +685,7 @@ module tms32010_core #(
       // SST captures status before the nonblocking indirect AR/ARP update.
       // Both TI worked examples and the pinned independent oracle corroborate
       // that the reserved bit at position 1 is written as one.
-      data_write_data_o = {
-        overflow_flag_o,
-        overflow_mode_o,
-        interrupt_mask_o,
-        4'hf,
-        auxiliary_register_pointer_o,
-        7'h7f,
-        data_page_pointer_o
-      };
+      data_write_data_o = status_store_word;
     end else if (decoded_operation == OP_SACH) begin
       data_write_data_o = shifted_accumulator_word;
     end
@@ -1237,10 +1253,11 @@ module tms32010_core #(
           OP_DINT: interrupt_mask_o <= 1'b1;
           OP_EINT: interrupt_mask_o <= 1'b0;
           OP_LST: begin
-            overflow_flag_o              <= ram_read_data[15];
-            overflow_mode_o              <= ram_read_data[14];
-            auxiliary_register_pointer_o <= ram_read_data[8];
-            data_page_pointer_o          <= ram_read_data[0];
+            overflow_flag_o <= status_loaded_overflow;
+            overflow_mode_o <= status_loaded_overflow_mode;
+            auxiliary_register_pointer_o <=
+              status_loaded_auxiliary_register_pointer;
+            data_page_pointer_o <= status_loaded_data_page_pointer;
           end
           OP_ZAC:  accumulator_o   <= 32'h0000_0000;
           OP_ROVM: overflow_mode_o <= 1'b0;

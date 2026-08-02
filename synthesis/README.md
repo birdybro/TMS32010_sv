@@ -52,7 +52,7 @@ figures and the scope of the retained core-program and shared-arithmetic
 optimizations are in
 `synthesis/qualification.md`.
 
-The command runs thirty-five checked-in scripts. A standalone
+The command runs thirty-six checked-in scripts. A standalone
 `tms32010_input_shifter.ys` target maps the portable signed input barrel
 shifter to 89 generic cells with no storage, latch, retained check, or
 structural problem. The exhaustive data/count relation is supplied by
@@ -77,6 +77,13 @@ value/control relation is supplied by
 `formal/tms32010_auxiliary_counter.sby`; this cell count supplies no selected-
 AR, address-ordering, instruction-timing, or original dual-control evidence.
 
+A standalone `tms32010_status_word.ys` target maps the portable SST pack/LST
+defined-field relation to pure connections and constants: zero generic cells,
+with no storage, latch, retained check, or structural problem. Exhaustive
+bitfield evidence is supplied by `formal/tms32010_status_word.sby`; neither
+the zero cell count nor that proof assigns address, INTM-preservation,
+next-ARP-precedence, or instruction-timing behavior.
+
 A standalone `tms32010_accumulator.ys` target maps the portable signed 32-bit add/subtract
 and OVM-result block to 367 generic cells with no storage, latch, retained
 check, or structural problem. This is a pre-technology combinational smoke
@@ -84,7 +91,7 @@ result; exhaustive functional evidence is supplied by
 `formal/tms32010_accumulator.sby`, not by the cell count.
 
 The main synthesis harness targets the explicit fetch/execute pipeline and writes
-`build/yosys/tms32010.json`; it reports 15,941 generic cells and 128 retained
+`build/yosys/tms32010.json`; it reports 15,844 generic cells and 128 retained
 checks. The second directly targets `tms32010_sequential_pipeline_slice` and writes
 `build/yosys/tms32010_sequential_pipeline.json`. Its result includes the core,
 a second decoder, program bus, and fetch/execute register. It is not a
@@ -121,20 +128,25 @@ the preceding direct checkpoint to 16,193 cells and 126 checks. Sharing the
 stack relation across CALL, CALA, RET, interrupt entry, and table retirement
 brought the next direct checkpoint to 16,240 cells and 127 checks. Sharing the
 low-nine-bit counter relation across current indirect owners, MAR, BANZ, I/O,
-and table retirement brings the current direct checkpoint to 15,929 cells and
+and table retirement brought the previous direct checkpoint to 15,929 cells and
 128 checks with zero structural problems. This generic change coexists
 with the lower Cyclone V ALM count recorded by the fitter;
 the two representations are not interchangeable resource estimates.
+Extracting the status-word bitfield relation then brings the current direct
+pipeline to 15,850 cells/128 checks. Its standalone module is zero-cell
+wiring, but the preserved module boundary changes generic whole-hierarchy
+optimization; no cell-count delta is treated as functional proof.
 
 The third script directly targets the generic `tms32010_mister` adapter and
 writes `build/yosys/tms32010_mister.json`. It covers the synchronous-reset
 stretcher, registered program/I/O response wait, callback mapping, and debug
 fanout around the same partial explicit pipeline. It does not synthesize an
 SDRAM controller, CDC bridge, board-specific memory map, or MiSTer top level.
-Yosys 0.67+111 reports 15,978 generic cells and 135 retained checks, with zero
+After status-word extraction, Yosys 0.67+111 reports 15,899 generic cells and
+135 retained checks, with zero
 structural problems; 49 cells and seven checks are local to the adapter after
 separating deterministic initialization from processor reset; the remainder
-of the delta is the core counter checkpoint above.
+of the hierarchy is the current direct-pipeline checkpoint above.
 
 The fourth script targets the storage-free A044427 Rev-A
 `hard_drivin_sound_bus_decode`. It reports 15 generic combinational cells,
@@ -168,7 +180,7 @@ logic, not an effective analog mute or 68000 bus decoder.
 The ninth script stops before technology mapping for the partial
 `hard_drivin_sound_mister` hierarchy. It retains the 4K program RAM, 512-word
 communication RAM, 144-word internal RAM, and the optional local SRAM's two
-byte memories plus validity metadata as six memory objects. It reports 3,787
+byte memories plus validity metadata as six memory objects. It reports 3,786
 abstract cells, 413 checks, and zero structural problems after upper-Y5
 direct-I/O, lane-valid local-SRAM, and local-reset interlock integration.
 This is not comparable to the
