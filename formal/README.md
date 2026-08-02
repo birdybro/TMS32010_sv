@@ -130,6 +130,22 @@ is implementation policy. The proof assigns no external cycle, does not expose
 the temporary internal table state, and does not resolve `PUSH`/`POP` bus
 ownership under `OQ-016`.
 
+## Exhaustive auxiliary-counter harness
+
+`tms32010_auxiliary_counter.sby` checks the standalone combinational 16-bit
+AR update relation in one solver step. Every value bit and both update
+controls remain arbitrary. The reference constructs increment carries and
+decrement borrows bit by bit across only the low nine bits, independently of
+the RTL arithmetic expression.
+
+Assertions prove hold, exclusive increment, exclusive decrement, low-nine-bit
+wrap, upper-seven-bit preservation, and the control-valid result. Six
+independent step-0 covers reach increment wrap with a distinctive upper field,
+decrement wrap, ordinary increment, ordinary decrement, hold, and invalid
+simultaneous controls. Invalid controls holding is local fail-closed policy;
+the proof assigns no original-silicon behavior and does not cover selected-AR
+choice, effective addressing, ARP updates, instruction sequencing, or timing.
+
 ## Exhaustive accumulator-arithmetic harness
 
 `tms32010_accumulator.sby` checks the standalone combinational signed
@@ -502,7 +518,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 29 configurations produce 58 passing BMC/cover tasks. They still
+The current 30 configurations produce 60 passing BMC/cover tasks. They still
 leave DINT ordering, formal coverage of the
 represented multicycle interrupt-arrival matrix, arbitrary multiply-chain
 placement/length, the complete integrated fetch/execute pipeline, and

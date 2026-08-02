@@ -210,6 +210,12 @@ module tms32010_core #(
   logic [11:0] stack_next_level_1;
   logic [11:0] stack_next_level_2;
   logic [11:0] stack_next_bottom;
+  logic        auxiliary_counter_select;
+  logic        auxiliary_counter_increment;
+  logic        auxiliary_counter_decrement;
+  logic        auxiliary_counter_control_valid;
+  logic [15:0] auxiliary_counter_input;
+  logic [15:0] auxiliary_counter_result;
   logic [31:0] accumulator_arithmetic_operand;
   logic        accumulator_arithmetic_subtract;
   logic [31:0] accumulator_arithmetic_wrapped_result;
@@ -383,6 +389,50 @@ module tms32010_core #(
     .level_1_o       (stack_next_level_1),
     .level_2_o       (stack_next_level_2),
     .bottom_o        (stack_next_bottom)
+  );
+
+  always_comb begin
+    auxiliary_counter_select    = auxiliary_register_pointer_o;
+    auxiliary_counter_increment = 1'b0;
+    auxiliary_counter_decrement = 1'b0;
+
+    if (
+      control_operand_pending &&
+      (pending_control_operation == OP_BANZ)
+    ) begin
+      auxiliary_counter_decrement = 1'b1;
+    end else if (table_pending) begin
+      auxiliary_counter_select    = pending_table_selected_arp;
+      auxiliary_counter_increment =
+        pending_table_indirect && pending_table_increment;
+      auxiliary_counter_decrement =
+        pending_table_indirect && pending_table_decrement;
+    end else if (io_pending) begin
+      auxiliary_counter_select    = pending_io_selected_arp;
+      auxiliary_counter_increment =
+        pending_io_indirect && pending_io_increment;
+      auxiliary_counter_decrement =
+        pending_io_indirect && pending_io_decrement;
+    end else if (
+      decoded_valid &&
+      (decoded_data_addressed || (decoded_operation == OP_MAR)) &&
+      decoded_indirect
+    ) begin
+      auxiliary_counter_increment = decoded_addressing_field[5];
+      auxiliary_counter_decrement = decoded_addressing_field[4];
+    end
+  end
+
+  assign auxiliary_counter_input = auxiliary_counter_select
+    ? auxiliary_register_1_o
+    : auxiliary_register_0_o;
+
+  tms32010_auxiliary_counter auxiliary_counter (
+    .value_i         (auxiliary_counter_input),
+    .increment_i     (auxiliary_counter_increment),
+    .decrement_i     (auxiliary_counter_decrement),
+    .control_valid_o (auxiliary_counter_control_valid),
+    .value_o         (auxiliary_counter_result)
   );
 
   assign multiplier_operand =
@@ -605,17 +655,7 @@ module tms32010_core #(
         decoded_indirect &&
         (decoded_auxiliary_register == auxiliary_register_pointer_o)
       ) begin
-        if (decoded_addressing_field[5]) begin
-          data_write_data_o = {
-            data_write_data_o[15:9],
-            data_write_data_o[8:0] + 9'd1
-          };
-        end else if (decoded_addressing_field[4]) begin
-          data_write_data_o = {
-            data_write_data_o[15:9],
-            data_write_data_o[8:0] - 9'd1
-          };
-        end
+        data_write_data_o = auxiliary_counter_result;
       end
     end else if (decoded_operation == OP_SST) begin
       // SST captures status before the nonblocking indirect AR/ARP update.
@@ -893,19 +933,13 @@ module tms32010_core #(
             OP_B: pc_o <= program_data_i[11:0];
             OP_BANZ: begin
               if (auxiliary_register_pointer_o) begin
-                auxiliary_register_1_o <= {
-                  auxiliary_register_1_o[15:9],
-                  auxiliary_register_1_o[8:0] - 9'd1
-                };
+                auxiliary_register_1_o <= auxiliary_counter_result;
                 pc_o <=
                   (auxiliary_register_1_o[8:0] != 9'h000)
                     ? program_data_i[11:0]
                     : pc_o + 12'h001;
               end else begin
-                auxiliary_register_0_o <= {
-                  auxiliary_register_0_o[15:9],
-                  auxiliary_register_0_o[8:0] - 9'd1
-                };
+                auxiliary_register_0_o <= auxiliary_counter_result;
                 pc_o <=
                   (auxiliary_register_0_o[8:0] != 9'h000)
                     ? program_data_i[11:0]
@@ -964,29 +998,14 @@ module tms32010_core #(
             cycle_count_o        <= cycle_count_o + 32'h0000_0001;
           end else begin
             if (pending_table_indirect) begin
-              if (pending_table_increment) begin
+              if (
+                pending_table_increment ||
+                pending_table_decrement
+              ) begin
                 if (pending_table_selected_arp) begin
-                  auxiliary_register_1_o <= {
-                    auxiliary_register_1_o[15:9],
-                    auxiliary_register_1_o[8:0] + 9'd1
-                  };
+                  auxiliary_register_1_o <= auxiliary_counter_result;
                 end else begin
-                  auxiliary_register_0_o <= {
-                    auxiliary_register_0_o[15:9],
-                    auxiliary_register_0_o[8:0] + 9'd1
-                  };
-                end
-              end else if (pending_table_decrement) begin
-                if (pending_table_selected_arp) begin
-                  auxiliary_register_1_o <= {
-                    auxiliary_register_1_o[15:9],
-                    auxiliary_register_1_o[8:0] - 9'd1
-                  };
-                end else begin
-                  auxiliary_register_0_o <= {
-                    auxiliary_register_0_o[15:9],
-                    auxiliary_register_0_o[8:0] - 9'd1
-                  };
+                  auxiliary_register_0_o <= auxiliary_counter_result;
                 end
               end
               if (!pending_table_preserve_arp) begin
@@ -1011,29 +1030,11 @@ module tms32010_core #(
       end else if (io_pending) begin
         if (instruction_valid_o) begin
           if (pending_io_indirect) begin
-            if (pending_io_increment) begin
+            if (pending_io_increment || pending_io_decrement) begin
               if (pending_io_selected_arp) begin
-                auxiliary_register_1_o <= {
-                  auxiliary_register_1_o[15:9],
-                  auxiliary_register_1_o[8:0] + 9'd1
-                };
+                auxiliary_register_1_o <= auxiliary_counter_result;
               end else begin
-                auxiliary_register_0_o <= {
-                  auxiliary_register_0_o[15:9],
-                  auxiliary_register_0_o[8:0] + 9'd1
-                };
-              end
-            end else if (pending_io_decrement) begin
-              if (pending_io_selected_arp) begin
-                auxiliary_register_1_o <= {
-                  auxiliary_register_1_o[15:9],
-                  auxiliary_register_1_o[8:0] - 9'd1
-                };
-              end else begin
-                auxiliary_register_0_o <= {
-                  auxiliary_register_0_o[15:9],
-                  auxiliary_register_0_o[8:0] - 9'd1
-                };
+                auxiliary_register_0_o <= auxiliary_counter_result;
               end
             end
             if (!pending_io_preserve_arp) begin
@@ -1313,40 +1314,16 @@ module tms32010_core #(
           decoded_indirect
         ) begin
           if (
-            decoded_addressing_field[5] &&
+            (decoded_addressing_field[5] || decoded_addressing_field[4]) &&
             !(
               (decoded_operation == OP_LAR) &&
               (decoded_auxiliary_register == auxiliary_register_pointer_o)
             )
           ) begin
             if (auxiliary_register_pointer_o) begin
-              auxiliary_register_1_o <= {
-                auxiliary_register_1_o[15:9],
-                auxiliary_register_1_o[8:0] + 9'd1
-              };
+              auxiliary_register_1_o <= auxiliary_counter_result;
             end else begin
-              auxiliary_register_0_o <= {
-                auxiliary_register_0_o[15:9],
-                auxiliary_register_0_o[8:0] + 9'd1
-              };
-            end
-          end else if (
-            decoded_addressing_field[4] &&
-            !(
-              (decoded_operation == OP_LAR) &&
-              (decoded_auxiliary_register == auxiliary_register_pointer_o)
-            )
-          ) begin
-            if (auxiliary_register_pointer_o) begin
-              auxiliary_register_1_o <= {
-                auxiliary_register_1_o[15:9],
-                auxiliary_register_1_o[8:0] - 9'd1
-              };
-            end else begin
-              auxiliary_register_0_o <= {
-                auxiliary_register_0_o[15:9],
-                auxiliary_register_0_o[8:0] - 9'd1
-              };
+              auxiliary_register_0_o <= auxiliary_counter_result;
             end
           end
           if (
@@ -1394,6 +1371,7 @@ module tms32010_core #(
       assert (!(retired_o && illegal_o));
       assert (!(debug_data_write_i && clock_enable_i));
       assert (stack_control_valid);
+      assert (auxiliary_counter_control_valid);
       assert (
         (accumulator_arithmetic_result !=
          accumulator_arithmetic_wrapped_result) ==

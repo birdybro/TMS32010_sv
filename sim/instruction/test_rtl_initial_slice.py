@@ -14,6 +14,7 @@ MULTIPLIER = ROOT / "rtl" / "core" / "tms32010_multiplier.sv"
 INPUT_SHIFTER = ROOT / "rtl" / "core" / "tms32010_input_shifter.sv"
 OUTPUT_SHIFTER = ROOT / "rtl" / "core" / "tms32010_output_shifter.sv"
 STACK = ROOT / "rtl" / "core" / "tms32010_stack.sv"
+AUXILIARY_COUNTER = ROOT / "rtl" / "core" / "tms32010_auxiliary_counter.sv"
 ACCUMULATOR = ROOT / "rtl" / "core" / "tms32010_accumulator.sv"
 
 
@@ -36,6 +37,8 @@ class RtlInitialSliceTests(unittest.TestCase):
             sources.insert(sources.index(CORE), OUTPUT_SHIFTER)
         if CORE in sources and STACK not in sources:
             sources.insert(sources.index(CORE), STACK)
+        if CORE in sources and AUXILIARY_COUNTER not in sources:
+            sources.insert(sources.index(CORE), AUXILIARY_COUNTER)
         if CORE in sources and ACCUMULATOR not in sources:
             sources.insert(sources.index(CORE), ACCUMULATOR)
         command = [

@@ -110,7 +110,8 @@ synth-yosys:
 			synthesis/yosys/tms32010_accumulator.ys \
 			synthesis/yosys/tms32010_input_shifter.ys \
 			synthesis/yosys/tms32010_output_shifter.ys \
-			synthesis/yosys/tms32010_stack.ys; do \
+			synthesis/yosys/tms32010_stack.ys \
+			synthesis/yosys/tms32010_auxiliary_counter.ys; do \
 			"$(YOSYS)" -s "$$script" || exit 1; \
 		done; \
 	else \

@@ -77,6 +77,17 @@ both operations, and both OVM states against an independently widened 33-bit
 signed calculation. ADDS, ADDH, SUBS, and SUBC retain separate datapaths
 because their documented operand, status, or recurrence rules differ.
 
+`tms32010_auxiliary_counter` is the shared combinational 16-bit AR update
+relation. Hold and exclusive increment/decrement preserve AR[15:9] and wrap
+AR[8:0] modulo 512. The core selects it for current data-addressed indirect
+instructions plus MAR, and for latched BANZ, I/O, and table owners. Callers
+retain old-address use, ARP changes, LAR suppression, SAR store ordering, and
+commit timing. Both controls asserted is locally invalid and holds state; a
+core assertion prevents an active owner from consuming that fail-closed
+result. A one-step symbolic proof quantifies every value/control combination
+against an independently bit-indexed carry/borrow reference. No original-chip
+behavior is assigned to the unsupported dual-control case.
+
 `tms32010_stack` is the shared combinational four-level, 12-bit transition
 block. It implements hold, push/drop-bottom, pop/duplicate-bottom, and the
 documented final TBLR/TBLW bottom replacement. The core uses it for CALL,

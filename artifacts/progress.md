@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `RTL-001` four-level stack transition relation
+- **Current milestone:** `RTL-001` low-nine-bit auxiliary-counter relation
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 164 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -33,8 +33,8 @@
 - **Synthesis status:** Quartus 17.0.2 full flow passes internal timing for
   the fifty-eight-instruction explicit-pipeline core, multiplier, 144-word
   RAM, and program/I/O/table/interrupt-entry phase engine on `5CSEBA6U23I7`:
-  1,352 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 46.58 MHz worst
-  slow-corner internal Fmax, +18.530 ns setup slack, and +0.164 ns worst hold
+  1,362 ALMs, 400 registers, one 144-by-16 M10K, 1 DSP block, 45.12 MHz worst
+  slow-corner internal Fmax, +17.838 ns setup slack, and +0.164 ns worst hold
   slack at the qualified 25 MHz target. A rejected explicit-pipeline 50 MHz
   fit missed slow-corner setup by as much as -9.098 ns; 50 MHz closure is not
   claimed. TimeQuest
@@ -42,7 +42,7 @@
   unconstrained categories after enumerated
   harness-only exclusions; no wrapper I/O is closed. Yosys 0.67+111 passes
   structural checks and generic synthesis from the 2026-07-29 OSS CAD Suite,
-  producing 16,213 generic cells with 127 retained checks and lowering the
+  producing 15,941 generic cells with 128 retained checks and lowering the
   registered RAM and forwarding to generic registers/muxes; its
   technology-neutral multiplier
   contributes 1,753 generic cells; Yosys
@@ -50,12 +50,12 @@
   passes Yosys 0.67+111 with 29 flip-flops, 68 generic
   cells including two retained checks, and no structural problems. The
   `make synth-yosys` also runs the sequential pipeline script, which
-  independently passes at 16,240 generic cells with 127 retained checks and
+  independently passes at 15,929 generic cells with 128 retained checks and
   no structural problems after exact B/BANZ/BV/BIOZ/CALL/accumulator-branch/
   IN/OUT/TBLR/TBLW/interrupt integration; this is not a Quartus fit or
   complete-pipeline result. The generic MiSTer wrapper separately passes
-  Yosys at 16,289 generic cells
-  with 134 retained checks and zero structural problems, including 49 cells
+  Yosys at 15,978 generic cells
+  with 135 retained checks and zero structural problems, including 49 cells
   and seven checks local to reset/callback adaptation. The standalone
   storage-free A044427 bus decoder separately passes at 15 combinational cells
   with zero structural problems. A fifth target retains the board's 4K-by-16
@@ -68,7 +68,7 @@
   MUTE complement and IRQ latch/clear control at 33 cells/four checks with no
   memory, latch, or structural problem. The ninth, partial processor/program/
   communication/sample-ROM/DAC/output-control/BIO/host-control/port-3-latch
-  board top retains six memories and passes at 3,789 abstract cells/412 checks
+  board top retains six memories and passes at 3,787 abstract cells/413 checks
   with zero structural problems before technology mapping. A tenth target
   retains the standalone 512-by-16 communication memory as one `$mem_v2` in an
   82-cell hierarchy with seven checks and zero structural problems. An
@@ -142,7 +142,10 @@
   A thirty-fourth target checks the shared combinational four-level stack
   relation at 92 mapped cells with no storage, latch, retained check, or
   structural problem.
-- **Formal status:** all 58 tasks from 29 SymbiYosys configurations pass with
+  A thirty-fifth target checks the shared combinational low-nine-bit auxiliary
+  counter at 54 mapped cells with no storage, latch, retained check, or
+  structural problem.
+- **Formal status:** all 60 tasks from 30 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
   12-, 14-, and two 20-step actual-core BMCs across arbitrary clock-enable
   choices. The
@@ -1273,6 +1276,25 @@
   reports 46.58 MHz worst slow-corner Fmax. The detailed 100 °C path is
   20.720 ns/13 levels from retained program data to ACC and does not traverse
   the stack relation.
+- **New auxiliary-counter evidence:** the portable core now routes supported
+  data-addressed indirect instructions, MAR, BANZ, IN/OUT, and TBLR/TBLW
+  through one combinational AR relation without moving old-address use, ARP
+  changes, LAR/SAR ordering, or retirement boundaries. A one-step independent
+  bitwise carry/borrow proof exhausts all value/control combinations and
+  reaches six wrap, ordinary, hold, and invalid-control covers. Dual controls
+  remain unsupported fail-closed policy under `OQ-010`/`SC-040`. The new core
+  invariant first caught immediate operand bits leaking into update controls;
+  the seeded differential rerun then caught MAR's intentional no-memory
+  update exception. Both were corrected at the owner qualification, without
+  weakening tests. The full 60-task/30-configuration formal matrix and all
+  164/232/39/57/5/25 regression groups pass. All 35 Yosys targets pass; the
+  standalone primitive is 54 cells, the synthesis harness is 15,941/128, the
+  direct pipeline 15,929/128, the generic MiSTer wrapper 15,978/135, and the
+  six-memory Driver Sound hierarchy 3,787/413. Quartus fits 1,362 ALMs, 400
+  registers, one M10K, and one DSP, closes 25 MHz at +17.838 ns setup and
+  +0.164 ns worst hold, and reports 45.12 MHz worst slow-corner Fmax. The
+  detailed 100 °C path is 21.476 ns/14 levels from retained program data to
+  ACC and does not traverse the counter result.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1321,9 +1343,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `RTL-001` by extracting the primary-defined
-  low-nine-bit auxiliary-register update relation for the supported exclusive
-  increment/decrement cases, while retaining the unresolved simultaneous-
-  control policy under `OQ-010`/`SC-040` outside any verified-silicon claim.
+- **Next task:** continue `RTL-001` by isolating the primary-defined status
+  packing/restoration relation used by SST/LST while preserving the unresolved
+  indirect-LST next-ARP precedence under `OQ-015`/`SC-009` in the instruction
+  owner rather than the portable bitfield primitive.
 - **Latest committed baseline before this cycle:**
-  `93b2e49`
+  `9d79f7d`

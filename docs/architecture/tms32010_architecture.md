@@ -128,6 +128,18 @@ holding state.** The caller continues to own every commit boundary and
 external cycle. In particular, the primitive does not resolve `PUSH`/`POP`
 program-bus ownership under `OQ-016`.
 
+The portable `tms32010_auxiliary_counter` block expresses the documented AR
+post-modification arithmetic as a combinational relation. Hold preserves all
+16 bits. Exclusive increment or decrement wraps only `AR[8:0]` modulo 512 and
+preserves `AR[15:9]` [ti-tms32010-users-guide-spru001b, §2.4.1 and Figure
+2-3, printed pp. 2-9–2-10 (PDF pp. 33–34)]. **Confidence:
+VERIFIED_PRIMARY for hold and each exclusive update.** The caller still owns
+old-ARP selection, pre-update address use, ARP replacement, LAR suppression,
+SAR stored-result ordering, and every retirement boundary. Both controls set
+is invalid, holds locally, and raises a validity result as fail-closed
+implementation policy; it is not a claim about original silicon and remains
+UNKNOWN under `OQ-010`/`SC-040`.
+
 The processor fetches an instruction while executing the preceding
 instruction. Multiword and multicycle operations disturb this overlap in
 documented ways; those phase sequences are not yet fully transcribed

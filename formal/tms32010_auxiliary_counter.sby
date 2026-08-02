@@ -1,0 +1,21 @@
+[tasks]
+bmc
+cover
+
+[options]
+bmc: mode bmc
+bmc: depth 1
+cover: mode cover
+cover: depth 1
+
+[engines]
+smtbmc bitwuzla
+
+[script]
+read -formal -sv tms32010_auxiliary_counter.sv
+read -formal -sv tms32010_auxiliary_counter_formal.sv
+prep -top tms32010_auxiliary_counter_formal
+
+[files]
+rtl/core/tms32010_auxiliary_counter.sv
+formal/tms32010_auxiliary_counter_formal.sv

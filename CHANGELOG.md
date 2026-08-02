@@ -7,6 +7,12 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A portable combinational `tms32010_auxiliary_counter` relation and one-step
+  symbolic harness. The proof leaves all 16 value bits and both controls
+  arbitrary, derives low-nine-bit carry/borrow independently, proves upper-bit
+  preservation and control validity, and reaches six wrap, ordinary, hold,
+  and invalid-control covers.
+- A standalone Yosys smoke target for the low-nine-bit auxiliary counter.
 - A portable combinational `tms32010_stack` relation and one-step symbolic
   harness. The proof quantifies all four existing entries, the push word, and
   every control combination; proves hold, push/drop-bottom,
@@ -795,6 +801,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Changed
 
+- Supported indirect data instructions, MAR, BANZ, IN/OUT, and TBLR/TBLW now
+  share one qualified AR counter relation while retaining their established
+  selected-register, pre-address, ARP, special LAR/SAR, and retirement rules.
+  Simultaneous controls remain unsupported and fail closed without assigning
+  original-silicon behavior.
 - CALL, CALA, RET, interrupt entry, and TBLR/TBLW retirement now consume the
   shared proved stack relation without changing their qualified commit
   boundaries. Native PUSH/POP sequencing remains deferred under `OQ-016`.
@@ -1022,6 +1033,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Fixed
 
+- Qualified current-instruction auxiliary-counter controls with decoder
+  validity and the internal-data-addressed family, plus the documented MAR
+  exception. The new core invariant and the seeded differential/formal runs
+  first exposed immediate operand bits being mistaken for update controls;
+  the follow-up seeded trace then exposed MAR's intentional no-memory update.
+  Both root causes were fixed without changing expected results.
+- Made the auxiliary-counter proof's reference carry/borrow loop unconditional
+  after the first bounded build correctly rejected a harness-only inferred
+  loop-index latch. The DUT and asserted result relation were not weakened.
 - Connected the shared accumulator's modulo result into a core invariant that
   proves the selected result differs only for an overflowing OVM operation,
   eliminating the strict-lint empty-pin warning without suppressing it.
@@ -1097,15 +1117,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
-- Strict lint checks 44 RTL modules; all 58 formal tasks from 29 configurations
+- Strict lint checks 45 RTL modules; all 60 formal tasks from 30 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass. All 34 Yosys targets pass with zero structural problems.
-  The direct pipeline reports 16,240 cells/127 checks, the synthesis harness
-  16,213/127, the MiSTer wrapper 16,289/134, and the six-memory Driver Sound
-  hierarchy 3,789/412. Quartus fits the current hierarchy in 1,352 ALMs, 400
-  registers, one M10K, and one DSP; closes 25 MHz at +18.530 ns worst setup
-  and +0.164 ns worst hold slack; and reports 46.58 MHz worst slow-corner
-  Fmax. The reproducible critical path is 20.720 ns over 13 logic levels from
+  regressions pass. All 35 Yosys targets pass with zero structural problems.
+  The direct pipeline reports 15,929 cells/128 checks, the synthesis harness
+  15,941/128, the MiSTer wrapper 15,978/135, and the six-memory Driver Sound
+  hierarchy 3,787/413. Quartus fits the current hierarchy in 1,362 ALMs, 400
+  registers, one M10K, and one DSP; closes 25 MHz at +17.838 ns worst setup
+  and +0.164 ns worst hold slack; and reports 45.12 MHz worst slow-corner
+  Fmax. The reproducible critical path is 21.476 ns over 14 logic levels from
   retained program data to ACC.
 - The SACH output-shifter proof passes for every full-ACC/three-bit-field
   combination and reaches all six primary-example, cross-half, and invalid

@@ -206,6 +206,16 @@ zero and decrementing zero produces `0x1ff`, while `AR[15:9]` is unchanged
 [ti-tms32010-users-guide-spru001b, §2.4.1 and Figure 2-3, printed
 pp. 2-9–2-10 (PDF pp. 33–34)]. **Confidence: VERIFIED_PRIMARY.**
 
+RTL centralizes only that arithmetic in `tms32010_auxiliary_counter`. The
+primitive is selected from the old ARP or a latched multicycle owner and is
+consumed by supported data-addressed instructions, `MAR`, `BANZ`, IN/OUT, and
+TBLR/TBLW. It does not choose the effective address or commit state. A
+one-step symbolic proof leaves all 16 value bits and both controls arbitrary,
+checks an independent bitwise carry/borrow reference, proves upper-bit
+preservation, and reaches wrap, ordinary, hold, and invalid-control covers.
+This is exhaustive evidence for the portable relation, not for instruction
+decode, timing, or simultaneous-control silicon behavior.
+
 The original-part pages define the increment and decrement controls
 separately but do not define both set together. A later TMS320C1x reference
 card says they cannot both be one; pinned MAME and IKA nevertheless both

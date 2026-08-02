@@ -18,14 +18,14 @@ They are not complete-core resource or interface-timing results.
 - Analysis/synthesis: successful, 0 errors.
 - Fitter: successful, 0 errors.
 - TimeQuest: successful, 0 errors.
-- Logic: 1,352 ALMs (3%).
+- Logic: 1,362 ALMs (3%).
 - Registers: 400.
 - Memory: 2,304 used bits in one M10K block.
 - DSP blocks: 1.
 - PLLs: 0.
-- Worst internal setup slack across analyzed corners: +18.530 ns at 25 MHz.
+- Worst internal setup slack across analyzed corners: +17.838 ns at 25 MHz.
 - Worst internal hold slack across analyzed corners: +0.164 ns.
-- Slow-corner internal Fmax: 46.58 MHz at 100 °C, 47.09 MHz at -40 °C.
+- Slow-corner internal Fmax: 45.12 MHz at 100 °C, 45.55 MHz at -40 °C.
 - Unconstrained clocks, inputs, input paths, outputs, and output paths: 0.
 
 The I/O categories report zero because each of the 415 harness-only interface
@@ -147,7 +147,7 @@ and hold slack across all analyzed corners are +18.860 ns and +0.165 ns.
 The standalone symbolic proof, not this fit, qualifies every ACC/field
 combination and the lower-ACC-bit independence relation.
 
-The current source centralizes the primary-defined four-level stack
+The preceding source centralized the primary-defined four-level stack
 transition relation in one portable combinational block. CALL, CALA, RET,
 interrupt entry, and TBLR/TBLW retirement retain their established commit
 boundaries; a core invariant rejects overlapping distinct stack operations.
@@ -160,17 +160,32 @@ analyzed corners are +18.530 ns and +0.164 ns. The standalone symbolic proof,
 not this fit, qualifies every stack/control combination. The primitive assigns
 no `PUSH`/`POP` external cycle under `OQ-016`.
 
+The current source centralizes the primary-defined low-nine-bit AR circular
+counter in one portable combinational block. Supported data-addressed
+instructions, MAR, BANZ, I/O, and table retirement retain their old-ARP
+selection, old-address use, ARP changes, special LAR/SAR ordering, and
+established commit edges around that shared relation. A core invariant rejects
+simultaneous controls; local hold in that invalid case is fail-closed policy,
+not an original-silicon claim under `OQ-010`/`SC-040`. The fit uses 1,362 ALMs
+with the same 400 registers, one M10K, and one DSP. The worst 100 °C setup path
+runs from retained `core_program_data[8]` to `accumulator_o[0]`: 21.476 ns,
+14 logic levels, and 67% interconnect delay. The auxiliary counter is not the
+endpoint relation. Slow-corner Fmax is 45.12 MHz at 100 °C and 45.55 MHz at
+-40 °C; worst setup and hold slack across all analyzed corners are +17.838 ns
+and +0.164 ns. The standalone symbolic proof, not this fit, qualifies every
+value/exclusive-control combination.
+
 The first explicit-pipeline fit retained the old 50 MHz exploratory objective.
 It failed slow-corner setup by -8.999 ns at 100 °C and -9.098 ns at -40 °C;
 the fitted slow-corner Fmax was 34.48/34.37 MHz. That checkpoint is rejected,
 not timing closure. The qualified 25 MHz constraint still exceeds the A044427
-Rev-A board's primary-documented 20 MHz input by 25%; the current 46.58 MHz
-worst slow-corner result is a 132.9% margin over the board frequency. The
+Rev-A board's primary-documented 20 MHz input by 25%; the current 45.12 MHz
+worst slow-corner result is a 125.6% margin over the board frequency. The
 explicit pipeline's 50 MHz critical path remains an optimization opportunity,
 not a release requirement or a concealed pass. The retained-direction,
 RAM-staging, decoder-qualification, retained-carrier, shared-arithmetic, and
-input/output-shifter and stack changes raise the qualified worst slow-corner
-result to 46.58 MHz, but do not turn
+input/output-shifter, stack, and auxiliary-counter changes raise the qualified
+worst slow-corner result to 45.12 MHz, but do not turn
 that historical 50 MHz run into a pass.
 
 The first LT fit exposed the newly added 16-bit T diagnostic port without
@@ -246,9 +261,9 @@ The generated `build/quartus/setup_paths.rpt` is intentionally untracked.
 Yosys 0.67+111 from the 2026-07-29 OSS CAD Suite successfully elaborates and
 synthesizes the same integrated partial hierarchy. Both pre- and
 post-synthesis `check -assert`
-passes report zero problems; no latches are inferred, 127 RTL checks
-remain represented, and both the synthesis harness and directly targeted
-pipeline contain 16,213 and 16,240 cells respectively. The
+passes report zero problems; no latches are inferred, 128 RTL checks
+remain represented, and the synthesis harness and directly targeted pipeline
+contain 15,941 and 15,929 cells respectively. The
 registered array and forwarding logic lower to flip-flops and muxes under
 generic synthesis, leaving no inferred memories after technology mapping. This
 is a portability smoke test, not an FPGA resource estimate. The standalone
@@ -261,7 +276,7 @@ the six accumulator branches, plus exact IN/OUT transfer and
 following-prefetch ownership, exact TBLR/TBLW discarded-prefetch/table-
 transfer/repeated-prefetch ownership, and the basic Figure 2-12 interrupt
 path, plus ADR-0003 CALA/RET ownership, it passes both structural checks with
-zero reported problems, retains 127 RTL checks, and contains 16,240 generic
+zero reported problems, retains 128 RTL checks, and contains 15,929 generic
 cells. Extracting the input shifter removed 11 cells from the preceding
 16,183-cell shared-accumulator checkpoint without changing the retained-check
 count; the independently proved standalone input shifter maps to 89 cells.
@@ -270,7 +285,9 @@ decoded-SACH legality invariant; its independently proved standalone block
 maps to 86 combinational cells. Sharing stack transitions across five current
 owners then added 47 mapped cells and one control-valid invariant; the
 independently proved standalone stack relation maps to 92 combinational cells.
-The
+Sharing the auxiliary-counter relation across the current qualified owners
+then removed 311 mapped cells and added one control-valid invariant; the
+independently proved standalone counter maps to 54 combinational cells. The
 shared accumulator primitive had removed 343 cells and added one
 retained saturation-selection invariant relative to the retained-carrier
 checkpoint. The single retained carrier had removed 423 cells from the preceding
@@ -289,13 +306,12 @@ direct recognized-boundary derivation had added 47 cells to the earlier
 15,686-cell checkpoint without changing its retained-check count.
 The ADDH increment added 75
 cells without adding or removing retained checks; SST added 76 cells and ABS
-added 170 cells in the preceding checkpoints. The current result is 1,111
-cells and 49 checks above the pre-table 15,129-cell/78-check checkpoint, 1,205
-cells and 60 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,462
-cells/78 checks above the exact-CALL 14,778-cell/49-check checkpoint, 1,525
-cells/80 checks above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,964
-cells/85 checks above the exact-B/BANZ 14,276-cell/42-check checkpoint, and
-2,300 cells/95
+added 170 cells in the preceding checkpoints. The current result is 800 cells
+and 50 checks above the pre-table 15,129-cell/78-check checkpoint, 894 cells
+and 61 checks above the IN/OUT 15,035-cell/67-check checkpoint, 1,151 cells/79
+checks above the exact-CALL 14,778-cell/49-check checkpoint, 1,214 cells/81
+checks above the exact-BIOZ 14,715-cell/47-check checkpoint, 1,653 cells/86
+checks above the exact-B/BANZ 14,276-cell/42-check checkpoint, and 1,989 cells/96
 checks above the
 one-cycle-only 13,940-cell/32-check checkpoint. The result is a portability
 smoke test for the narrow explicit-pipeline subset, not a Quartus fit or an
@@ -303,9 +319,9 @@ instruction-complete resource estimate.
 
 The third checked-in script directly synthesizes `tms32010_mister` around the
 same explicit-pipeline hierarchy. Yosys 0.67+111 passes both structural checks
-with zero problems, retains 134 checks, and reports 16,289 generic cells. The
-adapter itself contributes 49 cells and seven checks beyond the 16,240-cell,
-127-check pipeline checkpoint. This result covers the five-cycle synchronous
+with zero problems, retains 135 checks, and reports 15,978 generic cells. The
+adapter itself contributes 49 cells and seven checks beyond the 15,929-cell,
+128-check pipeline checkpoint. This result covers the five-cycle synchronous
 reset stretcher, registered same-clock callback wait, request mapping, and
 debug fanout only. It is not an SDRAM/CDC qualification, Quartus fit, board
 pinout, I/O timing result, or evidence for unresolved PUSH/POP bus ownership.
@@ -342,7 +358,7 @@ zero structural problems. This proves only the exhaustive-tested raw MUTE-net
 and IRQ latch/clear behavior, not a loaded analog mute or 68000 bus decoder.
 
 The ninth script applies the same pre-technology boundary to
-`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,789 abstract cells, 412
+`hard_drivin_sound_mister`. Yosys 0.67+111 reports 3,787 abstract cells, 413
 retained checks, and six `$mem_v2` objects: the synchronous 4K-by-16 shared
 program RAM, synchronous 512-by-16 communication RAM, the core's phase-staged
 144-by-16 internal RAM, and the optional local SRAM's upper,
@@ -502,6 +518,14 @@ structural problems. This qualifies portable elaboration only; the separate
 symbolic proof supplies exhaustive stack/control evidence, and neither result
 assigns instruction sequencing or an external bus cycle.
 
+The thirty-fifth checked-in script targets the storage-free
+`tms32010_auxiliary_counter` combinational relation. Yosys 0.67+111 reports 54
+mapped cells, no retained assertion, memory, latch, or register, and zero
+structural problems. This qualifies portable elaboration only; the separate
+symbolic proof supplies exhaustive hold/exclusive-update evidence. Neither
+result assigns selected-AR ownership, instruction timing, or original-silicon
+behavior for simultaneous controls.
+
 The host executable path does not contain Yosys, so a direct
 `make synth-yosys` still fails explicitly with `ERROR: Yosys is required`.
 The successful run used the official 2026-07-29 Linux-x64 OSS CAD Suite
@@ -515,6 +539,7 @@ make YOSYS=/path/to/oss-cad-suite/bin/yosys synth-yosys
 The ignored outputs are `build/yosys/tms32010_input_shifter.json`,
 `build/yosys/tms32010_output_shifter.json`,
 `build/yosys/tms32010_stack.json`,
+`build/yosys/tms32010_auxiliary_counter.json`,
 `build/yosys/tms32010_accumulator.json`,
 `build/yosys/tms32010.json`,
 `build/yosys/tms32010_sequential_pipeline.json`, and
