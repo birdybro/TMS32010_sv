@@ -1,6 +1,6 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` bounded accumulator-branch arrivals
+- **Current milestone:** `FORMAL-001` bounded remaining two-word control arrivals
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -148,9 +148,9 @@
   A thirty-sixth target checks the shared combinational status pack/extract
   relation as pure connections/constants with zero cells and no storage,
   latch, retained check, or structural problem.
-- **Formal status:** all 74 tasks from 37 SymbiYosys configurations pass with
+- **Formal status:** all 76 tasks from 38 SymbiYosys configurations pass with
   SymbiYosys v0.67-4-gfea6e46 and Bitwuzla 0.9.1. These include
-  12-, 14-, three 18-, and five 20-step actual-core interrupt BMCs across
+  12-, 14-, three 18-, and six 20-step actual-core interrupt BMCs across
   arbitrary clock-enable choices. The
   first fixed EINT/protected-LACK/dummy/vector cover reaches vector execution
   at step 6; the second EINT/NOP/MPYK/following/dummy/vector cover reaches
@@ -202,6 +202,14 @@
   All 36 tuple-specific covers reach step 9. This is finite logical actual-core
   evidence, not original-package branch-pin, explicit-pipeline subphase, or
   electrical proof; ADR-0002's combined interval mapping remains `INFERRED`. A
+  separate 20-step actual-core BMC crosses zero/nonzero BANZ, clear/set BV,
+  stable high/low BIOZ, and CALL with both represented intervals. It proves
+  target/fallthrough selection, BANZ decrement/wrap, BV clear, CALL's return
+  push below the later interrupt push, protected/dummy ownership, and
+  mask/pending state under arbitrary clock-enable stalls. All 14 complete
+  scenario/arrival covers reach step 9. Dynamic BIO transitions remain
+  directed-simulation evidence, and original-package ownership remains
+  `INFERRED`. A
   separate 12-step standalone fetch/execute BMC covers arbitrary input values under
   two legal sequencer assumptions and proves initialization, exact capture,
   stall/retention, replacement/bubble, and reset/flush transitions; its
@@ -1680,6 +1688,16 @@
   passing tasks from 37 configurations. This does not promote ADR-0002's
   inferred original-package branch ownership. No synthesizable RTL changed,
   so prior synthesis evidence remains applicable.
+- **New BANZ/BV/BIOZ/CALL-arrival formal evidence:** a 20-step actual-core BMC
+  crosses seven family/state scenarios with both represented execution
+  intervals. It proves both conditional outcomes, BANZ test-before-decrement
+  and wrap, BV taken clear, stable active-low BIO selection, CALL's return
+  push below the interrupt return push, protected/dummy sequencing, and
+  interrupt state under arbitrary bounded stalls. All 14 tuple-specific covers
+  reach step 9; the complete suite now has 76 passing tasks from 38
+  configurations. The proof does not cover dynamic BIO transitions or promote
+  inferred package-level ownership. No synthesizable RTL changed, so prior
+  synthesis evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1728,10 +1746,11 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** extend bounded formal interrupt-arrival coverage to BANZ, BV,
-  BIOZ, or CALL without generalizing beyond documented core behavior, or
+- **Next task:** extend bounded formal interrupt-arrival coverage to another
+  represented control or multicycle family without generalizing beyond
+  documented core behavior, or
   advance another unblocked P0 evidence slice;
   keep PUSH/POP
   ownership blocked under `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `1dec20c`
+  `2876c35`

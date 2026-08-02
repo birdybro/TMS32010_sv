@@ -7,6 +7,10 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 20-step actual-core BANZ/BV/BIOZ/CALL interrupt-arrival formal
+  harness. Seven control scenarios cover both conditional outcomes plus CALL,
+  cross both represented execution intervals, and expose 14 independent
+  completed-entry covers.
 - A 20-step actual-core accumulator-conditional-branch interrupt-arrival
   formal harness. Symbolic selectors cross all six predicates, negative/zero/
   positive accumulator classes, and both represented execution intervals; 36
@@ -1356,6 +1360,14 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- All 14 BANZ/BV/BIOZ/CALL scenario/arrival tuples pass BMC through depth 20
+  and independently reach completed entry at cover step 9. The proof checks
+  target/fallthrough selection, BANZ test-before-decrement and low-nine-bit
+  wrap, BV taken-path OV clear, stable active-low BIO selection, CALL's return
+  push beneath the later interrupt push, protected/dummy sequencing, and
+  arbitrary clock-enable stalls. The full formal inventory now has 76 passing
+  tasks from 38 configurations; dynamic BIO transitions and inferred
+  original-package interval ownership remain outside this proof.
 - All 36 accumulator-branch family/ACC-class/arrival tuples pass BMC through
   depth 20 and independently reach completed entry at cover step 9. The proof
   checks taken and untaken target selection, ACC preservation, no

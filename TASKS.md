@@ -1060,6 +1060,7 @@ objective passing evidence.
   `sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`,
   `formal/tms32010_interrupt_dint.sby`,
   `formal/tms32010_interrupt_accumulator_branches.sby`,
+  `formal/tms32010_interrupt_banz_bv_bioz_call.sby`,
   `sim/differential/test_interrupt_model_rtl.py`,
   `sim/instruction/tb_bioz_rtl.sv`,
   `tests/asm/dint_interrupt_race_probe.asm`,
@@ -1114,6 +1115,15 @@ objective passing evidence.
   cover step 9. This is exhaustive for that finite logical fixture matrix,
   not original-package branch-pin or explicit-pipeline proof; ADR-0002's
   combined branch interval mapping remains `INFERRED`.
+  A second 20-step actual-core control-flow BMC crosses seven BANZ/BV/BIOZ/
+  CALL scenarios with both represented intervals. It proves zero/nonzero
+  BANZ selection and decrement, clear/set BV selection and clear, stable
+  high/low BIOZ selection, CALL's return-address push below the subsequent
+  interrupt push, protected/dummy ownership, stack/mask/pending effects, and
+  arbitrary bounded stalls. All 14 scenario/arrival tuples independently
+  reach completed entry at cover step 9. This does not prove dynamic BIO
+  transition timing, explicit-pipeline subphases, original-package ownership,
+  or electrical timing; ADR-0002 remains `INFERRED` for the combined mapping.
   The model also verifies that EINT protects a following RET long enough to
   pop/select the saved PC before an already-pending request schedules reentry.
   Figure 2-12's basic explicit path now discards N+2, performs entry with an
@@ -1651,6 +1661,17 @@ objective passing evidence.
   not prove the inferred original-package interval mapping, arbitrary ACC
   magnitudes beyond the predicate-equivalent sign classes, explicit-pipeline
   subphases, or electrical timing.
+  A separate 20-step actual-core BANZ/BV/BIOZ/CALL configuration uses
+  verification-only RAM preload and seven explicit control scenarios. It
+  proves both BANZ counter classes including test-before-decrement and
+  low-nine-bit wrap, both BV OV classes including taken clear, stable high/low
+  BIOZ outcomes, CALL's opcode-PC+2 push, the subsequent interrupt push and
+  stack ordering, selected PCs, protected/dummy fetches, mask/pending state,
+  and arbitrary bounded stalls. Fourteen independent covers—one per complete
+  scenario/arrival tuple—reach step 9. It does not cover dynamic BIO pin
+  transitions, arbitrary BANZ upper/counter values, explicit-pipeline
+  subphases, original-package ownership, electrical timing, or unbounded
+  liveness.
   A separate 20-step actual-core direct-TBLR configuration constrains a
   symbolic arrival selector to all three represented instruction cycles. It
   proves discarded-fetch ownership, exact program-address-0 word transfer to
@@ -1780,7 +1801,7 @@ objective passing evidence.
   The canonical runner sorts only top-level `formal/*.sby` sources; a repository
   regression prevents recursively generated SymbiYosys outputs from becoming
   accidental configurations.
-  The current runner passes all 74 BMC/cover tasks from 37 checked-in
+  The current runner passes all 76 BMC/cover tasks from 38 checked-in
   configurations, including the standalone SACH output-shifter, stack, and
   auxiliary-counter relations. The stack proof leaves every existing entry, push word, and
   control arbitrary, proves hold/push/pop/table-final/invalid-control results,

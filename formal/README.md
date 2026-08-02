@@ -355,6 +355,32 @@ evidence, not explicit-pipeline subphase, original-package branch-pin,
 electrical interrupt timing, or unbounded liveness proof. ADR-0002's combined
 branch interval mapping remains `INFERRED`.
 
+## BANZ/BV/BIOZ/CALL-arrival harness
+
+`tms32010_interrupt_banz_bv_bioz_call.sby` checks the actual portable core
+with a 20-step BMC and cover while leaving `clock_enable_i` arbitrary. A
+symbolic constant selects seven scenarios: zero/nonzero BANZ, clear/set BV,
+high/low BIOZ, and CALL. A second symbolic constant selects request arrival in
+either represented control interval. Verification-only RAM preload plus a
+scenario-specific LAR, LST, or LACK instruction establishes each initial
+state before EINT and the selected two-word control operation.
+
+Assertions independently check target versus fallthrough selection, BANZ
+test-before-decrement and low-nine-bit wrap with upper-bit preservation, BV's
+taken-path OV clear, stable active-low BIO selection, CALL's opcode-PC+2 push
+below the subsequent interrupt return push, protected/dummy ownership,
+program-only bus activity, mask/pending state, and stability across arbitrary
+bounded stalls. Fourteen independent covers—one for every complete scenario/
+arrival tuple—reach completed entry at solver step 9.
+
+The debug preload is a formal-fixture convenience, not reset behavior. The
+BIO scenarios hold the pin stable and do not replace the directed transition
+tests that qualify the documented live sampling boundary. The two BANZ values
+cover the predicate classes and one wrap case, not every 16-bit auxiliary
+value. This remains bounded logical actual-core evidence, not explicit-
+pipeline subphase, original-package pin, electrical timing, or unbounded
+liveness proof. ADR-0002's combined interval mapping remains `INFERRED`.
+
 ## Three-cycle table-read-arrival harness
 
 `tms32010_interrupt_table.sby` checks the actual portable core with a 20-step
@@ -648,7 +674,7 @@ pass-through, active scrub blocking, ready internal release, and asserted raw
 RESET/HALT. This is exhaustive Boolean policy evidence, not MC68000 reset
 duration, a physical HALT-source implementation, or clock-domain proof.
 
-The current 37 configurations produce 74 passing BMC/cover tasks. They still
+The current 38 configurations produce 76 passing BMC/cover tasks. They still
 leave original-silicon DINT ordering, arbitrary DINT placement, formal
 coverage of the remaining represented multicycle interrupt-arrival families,
 arbitrary multiply-chain placement/length, the complete integrated

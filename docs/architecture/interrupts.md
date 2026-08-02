@@ -146,6 +146,17 @@ implementation evidence only. It does not promote ADR-0002's combined branch
 interval mapping beyond `INFERRED`, qualify original-package pins, or replace
 the explicit-pipeline bus matrix.
 
+A companion actual-core harness crosses both represented intervals with
+zero/nonzero BANZ, clear/set BV, high/low BIOZ, and CALL. It checks the
+family-specific state effects as well as selected PC, protected/dummy
+ownership, interrupt state, and CALL/interrupt stack ordering. All 14 complete
+scenario/arrival tuples reach vector entry at cover step 9 through depth 20
+[`formal/tms32010_interrupt_banz_bv_bioz_call.sby`]. The BIO cases use stable
+pin levels; directed simulation remains the evidence for a pin transition at
+the live target-word sample. This finite proof does not promote ADR-0002's
+combined interval mapping beyond `INFERRED` or qualify package/electrical
+timing.
+
 A separate four-case explicit-pipeline test pulses INT in each of CALA's and
 RET's two execution intervals. It proves that the request may latch during the
 discarded sequential or selected-target read but cannot retire, mutate the

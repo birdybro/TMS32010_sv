@@ -210,6 +210,14 @@ arbitrary clock-enable stalls
 exhaust the predicates' sign/zero classes, not all accumulator magnitudes; the
 proof remains logical actual-core evidence and does not qualify the
 `INFERRED` original-package interval mapping. A third actual-core formal harness
+crosses zero/nonzero BANZ, clear/set BV, stable high/low BIOZ, and CALL with
+both request-arrival intervals. It checks the selected PC and family-specific
+counter, overflow, and stack effects through protected execution, dummy fetch,
+and vector entry. All 14 complete tuples reach cover step 9 through a 20-step
+bound under arbitrary clock-enable stalls
+[`formal/tms32010_interrupt_banz_bv_bioz_call.sby`]. Dynamic BIO transitions
+remain covered by directed simulation, and the proof does not qualify the
+`INFERRED` original-package interval mapping. A fourth actual-core formal harness
 constrains a symbolic request to any of fixed direct TBLR's three cycles. It
 proves discarded PC+1 ownership, exact program-address-0 word transfer to RAM
 0, committed readback through the protected LAC 0, no midinstruction entry,
