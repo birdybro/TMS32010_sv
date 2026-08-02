@@ -184,8 +184,9 @@ accumulator branches, ADR-0003 CALA/RET, plus `IN`/`OUT` and `TBLR`/`TBLW`:
   conflict with an independent implementation's idle first microcycle and a
   reproducible pin-capture plan are recorded under `SC-018`/`OQ-016`;
 - interrupt ownership beyond the explicit EINT/protected-word/discarded-N+2/
-  vector path, MPY/MPYK protected-slot extension, matching 32-case
-  core/explicit arrival matrices, and four CALA/RET explicit arrival cases
+  vector path, MPY/MPYK protected-slot extension, a 32-case logical-core
+  arrival matrix, a 128-case explicit interval/native-phase matrix, and four
+  CALA/RET explicit arrival cases
   (`OQ-004`).
 
 Until these rows have cited diagrams and explicit-pipeline automated traces,
@@ -225,12 +226,15 @@ including across a five-FPGA-clock stall in phase 2, then follows the
 protected-instruction/dummy/vector sequence. This qualifies digital phase
 ownership only; it does not model the data sheet's 50 ns setup aperture or
 prove how an asynchronous transition maps into a physical synchronizer.
-Matching 32-case core and explicit-pipeline matrices exhaust arrival at every
-represented execution interval of the 11 supported two-word control-flow
-families, IN, OUT, TBLR, and TBLW. The explicit matrix checks native strobes,
-no midinstruction entry, one protected retirement, dummy discard, stack and
-acknowledge effects, and vector capture. Neither matrix models a physical
-input synchronizer or setup aperture.
+A 32-case logical-core matrix exhausts arrival at every represented execution
+interval of the 11 supported two-word control-flow families, IN, OUT, TBLR,
+and TBLW. The explicit-pipeline matrix crosses those 32 intervals with all
+four represented native request phases for 128 cases. Every case inserts one
+clock-enable pause at the selected phase and checks stable bus/state, no
+pre-boundary recognition or retirement, native strobes, completion, one
+protected retirement, dummy discard, stack and acknowledge effects, and
+vector capture. Neither matrix models a physical input synchronizer or setup
+aperture.
 
 A separate four-case explicit-pipeline test covers INT arrival in both CALA
 and RET intervals. It proves no midinstruction stack effect, selected-target

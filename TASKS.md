@@ -795,10 +795,13 @@ objective passing evidence.
   test now
   asserts falling-boundary request ownership from each modeled subphase,
   including a stalled pre-sample phase, while leaving physical setup/CDC
-  behavior unclaimed. Matching 32-case core and explicit matrices exhaust
-  arrival at every
-  represented machine cycle of the 11 supported two-word control-flow
-  families, IN, OUT, TBLR, and TBLW. SUBC tests use a
+  behavior unclaimed. The 32-case logical-core matrix covers every represented
+  machine cycle of the 11 supported two-word control-flow families, IN, OUT,
+  TBLR, and TBLW. The matching explicit matrix crosses those 32 intervals with
+  all four native request phases for 128 cases. Each case pauses clock enable
+  once at arrival and proves no request recognition or retirement before the
+  enabled falling boundary while retaining the exact interval bus shape.
+  SUBC tests use a
   following NOP; the exact prohibited same-ACC dependency remains `OQ-017`.
   PUSH/POP stack state is
   primary-specified, but a two-cycle RTL state is intentionally deferred
@@ -905,10 +908,12 @@ objective passing evidence.
   independent stalls, RAM/program-write data, deferred AR/ARP/stack/retirement
   commit, and a self-modifying TBLW whose rewritten word is the only one
   captured. Interrupt testing adds Figure 2-12's
-  protected instruction, return-PC dummy read, and vector-2 read. Matching
-  32-case logical-core and explicit-pipeline matrices test each represented
-  multicycle arrival boundary; four more explicit cases cover both intervals
-  of CALA and RET;
+  protected instruction, return-PC dummy read, and vector-2 read. A 32-case
+  logical-core matrix tests each represented multicycle arrival boundary; the
+  explicit-pipeline matrix crosses those 32 boundaries with all four native
+  request phases for 128 cases and inserts one clock-enable pause at every
+  selected arrival. Four more explicit cases cover both intervals of CALA and
+  RET;
   a separate four-case native test checks digital falling-boundary ownership
   from every modeled subphase. Physical setup/synchronizer behavior remains
   unresolved. Remaining
@@ -1078,13 +1083,16 @@ objective passing evidence.
   model/RTL/native/differential evidence for masked pulse retention, held-low
   relatching, EINT and MPY/MPYK deferral, multicycle completion, dummy return
   fetch, stack push, internal acknowledge effects, and vector-2 selection.
-  Matching 32-case directed core and explicit-pipeline matrices now cover
-  active-low arrival at both
+  A 32-case directed logical-core matrix covers active-low arrival at both
   machine-cycle boundaries of all eleven supported two-word control-flow
-  families and IN/OUT, plus all three boundaries of TBLR/TBLW. Each case
-  asserts the family-specific logical/native bus shape, no midinstruction entry,
-  exactly one protected retirement, the resolved-return-PC dummy fetch, stack
-  state, acknowledge effects, and vector-2 selection.
+  families and IN/OUT, plus all three boundaries of TBLR/TBLW. The matching
+  explicit-pipeline matrix crosses those intervals with all four represented
+  native request phases for 128 cases. Each explicit case inserts one
+  clock-enable pause at the arrival phase, asserts no request recognition or
+  retirement before the enabled falling boundary, and checks the family-
+  specific native bus shape, instruction completion, exactly one protected
+  retirement, resolved-return-PC dummy fetch, stack state, acknowledge
+  effects, and vector-2 selection.
   Four additional explicit cases pulse INT in both CALA and RET intervals and
   prove no early stack effect or service, selected-target completion, one
   protected retirement, and subsequent dummy/vector ownership under the
@@ -1426,9 +1434,12 @@ objective passing evidence.
   common-address data instructions plus SST's forced-page status store is
   asserted through the partial native-phase
   integration. Figure 2-12 interrupt program reads, entry effects, EINT
-  deferral, multiply deferral, a 32-case matrix, and four CALA/RET arrival
+  deferral, multiply deferral, a 32-case logical-core interval matrix, a
+  128-case explicit interval/native-phase matrix, and four CALA/RET arrival
   cases over all represented intervals of 17 supported multicycle families
-  are directed-tested. A
+  are directed-tested. Every 128-case explicit arrival includes one
+  clock-enable pause at the asserted phase and checks that sampling and
+  retirement wait for the enabled falling boundary. A
   four-case native test additionally proves digital falling-boundary ownership
   from each modeled subphase, including a stalled phase 2, while physical
   setup/CDC, PUSH/POP arrivals, and physical confirmation of ADR-0003 remain.

@@ -470,7 +470,10 @@ directed native-phase tests, including INT ownership at the enabled falling
 boundary for all four modeled arrival phases. The basic EINT/protected-word/
 discarded-N+2/vector sequence also has explicit fetch/execute ownership;
 MPY/MPYK in the protected slot explicitly extend ownership through one
-additional instruction. Matching core and explicit-pipeline matrices cover
-all 32 represented matrix intervals; four additional explicit cases cover
-both intervals of CALA and RET. Physical confirmation of ADR-0003 remains
-open.
+additional instruction. A 32-case logical-core matrix covers every represented
+machine interval, while the explicit-pipeline matrix crosses those 32
+intervals with all four represented native request phases for 128 cases. Each
+explicit case includes one clock-enable pause at arrival and proves stable
+bus/state plus no recognition or retirement before the enabled falling
+boundary. Four additional explicit cases cover both intervals of CALA and
+RET. Physical confirmation of ADR-0003 remains open.

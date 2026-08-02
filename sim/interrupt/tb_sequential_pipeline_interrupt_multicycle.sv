@@ -211,14 +211,16 @@ module tb_sequential_pipeline_interrupt_multicycle;
   task automatic require_exclusive_strobes(
     input int unsigned family,
     input int unsigned arrival_interval,
+    input int unsigned arrival_phase,
     input string interval_name
   );
     require(
       clkout == phase[1],
       $sformatf(
-        "family %0d arrival %0d %s CLKOUT follows phase",
+        "family %0d arrival interval %0d phase %0d %s CLKOUT follows phase",
         family,
         arrival_interval,
+        arrival_phase,
         interval_name
       )
     );
@@ -229,9 +231,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
         (!den_n && !we_n)
       ),
       $sformatf(
-        "family %0d arrival %0d %s strobes are exclusive",
+        "family %0d arrival interval %0d phase %0d %s strobes are exclusive",
         family,
         arrival_interval,
+        arrival_phase,
         interval_name
       )
     );
@@ -240,22 +243,146 @@ module tb_sequential_pipeline_interrupt_multicycle;
   task automatic advance_to_sample(
     input int unsigned family,
     input int unsigned arrival_interval,
+    input int unsigned arrival_phase,
     input string interval_name
   );
     for (int unsigned elapsed = 0; elapsed < 16; elapsed++) begin
       tick();
-      require_exclusive_strobes(family, arrival_interval, interval_name);
+      require_exclusive_strobes(
+        family,
+        arrival_interval,
+        arrival_phase,
+        interval_name
+      );
       if (sample) begin
         return;
       end
     end
     $fatal(
       1,
-      "family %0d arrival %0d %s sample did not arrive",
+      "family %0d arrival interval %0d phase %0d %s sample did not arrive",
       family,
       arrival_interval,
+      arrival_phase,
       interval_name
     );
+  endtask
+
+  task automatic pause_at_arrival(
+    input int unsigned family,
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase
+  );
+    logic [1:0]  saved_phase;
+    logic [11:0] saved_program_address;
+    logic        saved_men_n;
+    logic        saved_den_n;
+    logic        saved_we_n;
+    logic        saved_program_write;
+    logic [15:0] saved_program_write_data;
+    logic        saved_bus_active;
+    logic        saved_execute_valid;
+    logic [11:0] saved_execute_address;
+    logic [15:0] saved_execute_word;
+    logic        saved_pipeline_blocked;
+    logic [7:0]  saved_data_address;
+    logic        saved_data_read;
+    logic        saved_data_write;
+    logic        saved_data_address_valid;
+    logic [7:0]  saved_data_write_address;
+    logic        saved_data_write_address_valid;
+    logic [15:0] saved_data_read_data;
+    logic [15:0] saved_data_write_data;
+    logic [2:0]  saved_io_port;
+    logic        saved_io_read;
+    logic        saved_io_write;
+    logic [15:0] saved_io_write_data;
+    logic [11:0] saved_pc;
+    logic [31:0] saved_accumulator;
+    logic [15:0] saved_auxiliary_register_0;
+    logic [11:0] saved_stack_top;
+    logic [11:0] saved_stack_level_1;
+    logic [11:0] saved_stack_level_2;
+    logic [11:0] saved_stack_bottom;
+    logic        saved_interrupt_mask;
+    logic        saved_interrupt_pending;
+    logic [31:0] saved_cycle_count;
+
+    saved_phase                    = phase;
+    saved_program_address          = program_address;
+    saved_men_n                    = men_n;
+    saved_den_n                    = den_n;
+    saved_we_n                     = we_n;
+    saved_program_write            = program_write;
+    saved_program_write_data       = program_write_data;
+    saved_bus_active               = bus_active;
+    saved_execute_valid            = execute_valid;
+    saved_execute_address          = execute_address;
+    saved_execute_word             = execute_word;
+    saved_pipeline_blocked         = pipeline_blocked;
+    saved_data_address             = data_address;
+    saved_data_read                = data_read;
+    saved_data_write               = data_write;
+    saved_data_address_valid       = data_address_valid;
+    saved_data_write_address       = data_write_address;
+    saved_data_write_address_valid = data_write_address_valid;
+    saved_data_read_data           = data_read_data;
+    saved_data_write_data          = data_write_data;
+    saved_io_port                  = io_port;
+    saved_io_read                  = io_read;
+    saved_io_write                 = io_write;
+    saved_io_write_data            = io_write_data;
+    saved_pc                       = pc;
+    saved_accumulator              = accumulator;
+    saved_auxiliary_register_0     = auxiliary_register_0;
+    saved_stack_top                = stack_top;
+    saved_stack_level_1            = stack_level_1;
+    saved_stack_level_2            = stack_level_2;
+    saved_stack_bottom             = stack_bottom;
+    saved_interrupt_mask           = interrupt_mask;
+    saved_interrupt_pending        = interrupt_pending;
+    saved_cycle_count              = cycle_count;
+
+    clock_enable = 1'b0;
+    tick();
+    require(
+      phase == saved_phase &&
+      program_address == saved_program_address &&
+      men_n == saved_men_n && den_n == saved_den_n &&
+      we_n == saved_we_n && program_write == saved_program_write &&
+      program_write_data == saved_program_write_data &&
+      bus_active == saved_bus_active &&
+      execute_valid == saved_execute_valid &&
+      execute_address == saved_execute_address &&
+      execute_word == saved_execute_word &&
+      pipeline_blocked == saved_pipeline_blocked &&
+      data_address == saved_data_address &&
+      data_read == saved_data_read && data_write == saved_data_write &&
+      data_address_valid == saved_data_address_valid &&
+      data_write_address == saved_data_write_address &&
+      data_write_address_valid == saved_data_write_address_valid &&
+      data_read_data == saved_data_read_data &&
+      data_write_data == saved_data_write_data &&
+      io_port == saved_io_port && io_read == saved_io_read &&
+      io_write == saved_io_write &&
+      io_write_data == saved_io_write_data &&
+      pc == saved_pc && accumulator == saved_accumulator &&
+      auxiliary_register_0 == saved_auxiliary_register_0 &&
+      stack_top == saved_stack_top &&
+      stack_level_1 == saved_stack_level_1 &&
+      stack_level_2 == saved_stack_level_2 &&
+      stack_bottom == saved_stack_bottom &&
+      interrupt_mask == saved_interrupt_mask &&
+      interrupt_pending == saved_interrupt_pending &&
+      cycle_count == saved_cycle_count,
+      $sformatf(
+        "family %0d arrival interval %0d phase %0d pause holds state and bus",
+        family,
+        arrival_interval,
+        arrival_phase
+      )
+    );
+    clock_enable = 1'b1;
   endtask
 
   task automatic clear_program;
@@ -282,7 +409,8 @@ module tb_sequential_pipeline_interrupt_multicycle;
 
   task automatic initialize_pipeline(
     input int unsigned family,
-    input int unsigned arrival_interval
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase
   );
     initialize         = 1'b1;
     rs                 = 1'b1;
@@ -308,9 +436,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
       require(
         !bus_active && men_n && den_n && we_n && !program_write,
         $sformatf(
-          "family %0d arrival %0d reset keeps native bus inactive",
+          "family %0d arrival interval %0d phase %0d reset keeps native bus inactive",
           family,
-          arrival_interval
+          arrival_interval,
+          arrival_phase
         )
       );
     end
@@ -417,7 +546,8 @@ module tb_sequential_pipeline_interrupt_multicycle;
 
   task automatic run_case(
     input int unsigned family,
-    input int unsigned arrival_interval
+    input int unsigned arrival_interval,
+    input int unsigned arrival_phase
   );
     int unsigned execution_cycles;
     logic [11:0] protected_pc;
@@ -431,9 +561,14 @@ module tb_sequential_pipeline_interrupt_multicycle;
     return_pc = protected_pc + 12'h001;
 
     prepare_case(family);
-    initialize_pipeline(family, arrival_interval);
+    initialize_pipeline(family, arrival_interval, arrival_phase);
 
-    advance_to_sample(family, arrival_interval, "EINT prefetch");
+    advance_to_sample(
+      family,
+      arrival_interval,
+      arrival_phase,
+      "EINT prefetch"
+    );
     require(
       execute_valid &&
       execute_address == 12'h000 &&
@@ -441,13 +576,19 @@ module tb_sequential_pipeline_interrupt_multicycle;
       !retired && cycle_count == 32'd0 &&
       program_address == 12'h001,
       $sformatf(
-        "family %0d arrival %0d first fetch primes EINT",
+        "family %0d arrival interval %0d phase %0d first fetch primes EINT",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
 
-    advance_to_sample(family, arrival_interval, "EINT execution");
+    advance_to_sample(
+      family,
+      arrival_interval,
+      arrival_phase,
+      "EINT execution"
+    );
     require(
       retired && !illegal &&
       execute_valid &&
@@ -457,9 +598,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
       !interrupt_mask && !interrupt_pending &&
       cycle_count == 32'd1,
       $sformatf(
-        "family %0d arrival %0d EINT captures the family opcode",
+        "family %0d arrival interval %0d phase %0d EINT captures the family opcode",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
 
@@ -468,41 +610,81 @@ module tb_sequential_pipeline_interrupt_multicycle;
       interval < execution_cycles;
       interval++
     ) begin
-      int_n = (interval == arrival_interval) ? 1'b0 : 1'b1;
-      tick();
       require(
-        phase == 2'd1,
+        phase == 2'd0 &&
+        interrupt_pending == (interval > arrival_interval) &&
+        !interrupt_mask &&
+        cycle_count == (32'd1 + interval),
         $sformatf(
-          "family %0d arrival %0d interval %0d reaches active phase",
+          "family %0d arrival interval %0d phase %0d starts interval %0d without early recognition",
           family,
           arrival_interval,
+          arrival_phase,
           interval
         )
       );
-      require_exclusive_strobes(
-        family,
-        arrival_interval,
-        $sformatf("family interval %0d", interval)
-      );
-      check_family_interval(family, interval);
 
-      for (int unsigned remaining = 0; remaining < 8; remaining++) begin
-        if (sample) begin
-          break;
-        end
+      if (
+        (interval == arrival_interval) &&
+        (arrival_phase == 0)
+      ) begin
+        int_n = 1'b0;
+        pause_at_arrival(family, arrival_interval, arrival_phase);
+      end
+
+      for (int unsigned active_phase = 1; active_phase < 4; active_phase++) begin
         tick();
+        require(
+          phase == active_phase[1:0] &&
+          !sample && !retired && !illegal &&
+          execute_valid && execute_address == 12'h001 &&
+          execute_word == family_opcode(family) &&
+          interrupt_pending == (interval > arrival_interval) &&
+          !interrupt_mask &&
+          cycle_count == (32'd1 + interval),
+          $sformatf(
+            "family %0d arrival interval %0d phase %0d has no pre-boundary recognition or retirement in interval %0d",
+            family,
+            arrival_interval,
+            arrival_phase,
+            interval
+          )
+        );
         require_exclusive_strobes(
           family,
           arrival_interval,
+          arrival_phase,
           $sformatf("family interval %0d", interval)
         );
+        check_family_interval(family, interval);
+
+        if (
+          (interval == arrival_interval) &&
+          (arrival_phase == active_phase)
+        ) begin
+          int_n = 1'b0;
+          pause_at_arrival(family, arrival_interval, arrival_phase);
+          require(
+            interrupt_pending == (interval > arrival_interval) &&
+            cycle_count == (32'd1 + interval),
+            $sformatf(
+              "family %0d arrival interval %0d phase %0d pause cannot sample INT",
+              family,
+              arrival_interval,
+              arrival_phase
+            )
+          );
+        end
       end
+
+      tick();
       require(
-        sample,
+        phase == 2'd0 && sample,
         $sformatf(
-          "family %0d arrival %0d interval %0d reaches sample",
+          "family %0d arrival interval %0d phase %0d interval %0d reaches sample",
           family,
           arrival_interval,
+          arrival_phase,
           interval
         )
       );
@@ -514,9 +696,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
         !interrupt_mask &&
         cycle_count == (32'd2 + interval),
         $sformatf(
-          "family %0d arrival %0d interval %0d latches at its boundary",
+          "family %0d arrival interval %0d phase %0d interval %0d latches only at its boundary",
           family,
           arrival_interval,
+          arrival_phase,
           interval
         )
       );
@@ -528,9 +711,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
           execute_word == family_opcode(family) &&
           stack_top == 12'h000,
           $sformatf(
-            "family %0d arrival %0d cannot retire or enter midinstruction",
+            "family %0d arrival interval %0d phase %0d cannot retire or enter midinstruction",
             family,
-            arrival_interval
+            arrival_interval,
+            arrival_phase
           )
         );
       end else begin
@@ -543,9 +727,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
           program_address == return_pc &&
           !pipeline_blocked,
           $sformatf(
-            "family %0d arrival %0d completes before service",
+            "family %0d arrival interval %0d phase %0d completes before service",
             family,
-            arrival_interval
+            arrival_interval,
+            arrival_phase
           )
         );
       end
@@ -579,12 +764,18 @@ module tb_sequential_pipeline_interrupt_multicycle;
       program_address == return_pc &&
       execute_address == protected_pc,
       $sformatf(
-        "family %0d arrival %0d protected word overlaps dummy read",
+        "family %0d arrival interval %0d phase %0d protected word overlaps dummy read",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
-    advance_to_sample(family, arrival_interval, "protected instruction");
+    advance_to_sample(
+      family,
+      arrival_interval,
+      arrival_phase,
+      "protected instruction"
+    );
     require(
       retired && !illegal &&
       !execute_valid &&
@@ -594,9 +785,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
       cycle_count == (32'd2 + execution_cycles) &&
       program_address == 12'h002,
       $sformatf(
-        "family %0d arrival %0d retires exactly one protected word",
+        "family %0d arrival interval %0d phase %0d retires exactly one protected word",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
 
@@ -607,12 +799,18 @@ module tb_sequential_pipeline_interrupt_multicycle;
       program_address == 12'h002 &&
       !execute_valid,
       $sformatf(
-        "family %0d arrival %0d entry fetches vector in an empty slot",
+        "family %0d arrival interval %0d phase %0d entry fetches vector in an empty slot",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
-    advance_to_sample(family, arrival_interval, "vector fetch");
+    advance_to_sample(
+      family,
+      arrival_interval,
+      arrival_phase,
+      "vector fetch"
+    );
     require(
       !retired && !illegal &&
       execute_valid &&
@@ -623,9 +821,10 @@ module tb_sequential_pipeline_interrupt_multicycle;
       !interrupt_pending && interrupt_mask &&
       cycle_count == (32'd3 + execution_cycles),
       $sformatf(
-        "family %0d arrival %0d acknowledges only at vector capture",
+        "family %0d arrival interval %0d phase %0d acknowledges only at vector capture",
         family,
-        arrival_interval
+        arrival_interval,
+        arrival_phase
       )
     );
     if (family == FAMILY_CALL) begin
@@ -659,12 +858,18 @@ module tb_sequential_pipeline_interrupt_multicycle;
         arrival_interval < family_cycles(family);
         arrival_interval++
       ) begin
-        run_case(family, arrival_interval);
+        for (
+          int unsigned arrival_phase = 0;
+          arrival_phase < 4;
+          arrival_phase++
+        ) begin
+          run_case(family, arrival_interval, arrival_phase);
+        end
       end
     end
 
     $display(
-      "PASS tb_sequential_pipeline_interrupt_multicycle (32 arrival cases)"
+      "PASS tb_sequential_pipeline_interrupt_multicycle (128 native-phase arrival cases)"
     );
     $finish;
   end

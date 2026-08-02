@@ -144,12 +144,14 @@ program-only cycle. The partial core now also exposes active-low `int_i`,
 latches a request while masked, implements the tested EINT and MPY/MPYK
 deferrals, dummy-fetches and stacks the return PC, masks and clears the
 request, and selects vector 2. A native-phase test matches TI Figure 2-12's
-external read order. The existing 32-case core/explicit matrices plus a
-four-case CALA/RET explicit-pipeline test exhaust request arrival at all
-represented intervals of 17 currently supported multicycle families. The
-explicit tests check native
-MEN/DEN/WE ownership, no midinstruction entry, one protected retirement,
-dummy discard, stack entry, acknowledge state, and vector capture.
+external read order. A 32-case logical-core interval matrix and a 128-case
+explicit interval/native-phase matrix cover the same 15 multicycle families;
+a four-case CALA/RET explicit-pipeline test completes request arrival at all
+represented machine intervals of 17 currently supported multicycle families.
+Every 128-case explicit arrival inserts one clock-enable pause and checks no
+pre-boundary recognition or retirement, native MEN/DEN/WE ownership, one
+protected retirement, dummy discard, stack entry, acknowledge state, and
+vector capture.
 A four-case native test also checks the enabled falling-boundary sample from
 each modeled subphase, including a stalled phase. Complete fetch/execute
 overlap, the later-family Figure 3-20 conflict, physical pin setup/synchronizer

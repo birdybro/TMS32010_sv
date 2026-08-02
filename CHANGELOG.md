@@ -7,6 +7,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A 128-case directed explicit-pipeline multicycle-interrupt matrix. It
+  crosses every one of the four represented native request phases with all 32
+  supported B/BANZ/BV/BIOZ/CALL/accumulator-branch/IN/OUT/TBLR/TBLW
+  execution intervals and inserts one clock-enable pause at each selected
+  arrival phase.
 - A depth-57 explicit-pipeline direct-TBLW/interrupt-composition formal
   harness. Independent symbolic selectors cross the three TBLW intervals and
   four represented native request phases, while another selector places one
@@ -1382,6 +1387,21 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- Every case in the 32-interval by four-phase explicit multicycle interrupt
+  matrix retains the execute owner and complete architectural/bus bundle
+  through its selected clock-enable pause, recognizes no request and retires
+  no instruction before the enabled falling boundary, preserves the family-
+  specific MEN/DEN/WE transaction, completes the multicycle instruction before
+  service, retires exactly one protected word, discards the resolved return-PC
+  fetch, and captures vector 2 with the expected stack/mask/pending state.
+  This is digital wrapper evidence only; it does not qualify the 50 ns physical
+  setup aperture, synchronizer/edge-latch implementation, CALA/RET subphases,
+  PUSH/POP cycles, or protected-DINT priority.
+- The focused 128-case Verilator run, all 59 bus/integration tests, all 6
+  interrupt tests, strict 46-module lint, documentation/provenance/release
+  checks, and the complete 246/232/39/59/6/25 regression split pass. No
+  synthesizable or formal source changed, so the existing 25 MHz Quartus,
+  Yosys, and 86-task bounded-formal evidence remains applicable.
 - BMC through depth 57 proves one exact RAM-0-to-program-`0x017` phase-3
   TBLW commit, no midinstruction interrupt entry, protected `LACK 0x66`,
   discarded dummy address `0x014`, pushed return PC `0x014`, and vector

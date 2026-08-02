@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[2]
 
 
 class PhaseSliceIntegrationTests(unittest.TestCase):
-    def _run_testbench(self, name: str) -> None:
+    def _run_testbench(self, name: str) -> str:
         verilator = shutil.which("verilator")
         if verilator is None:
             raise RuntimeError("Verilator is required once architectural RTL exists")
@@ -65,6 +65,7 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
         )
         self.assertEqual(run.returncode, 0, run.stdout + run.stderr)
         self.assertIn(f"PASS {name}", run.stdout)
+        return run.stdout
 
     def test_native_samples_drive_sequential_execution_slice(self) -> None:
         self._run_testbench("tb_phase_slice_integration")
@@ -105,7 +106,10 @@ class PhaseSliceIntegrationTests(unittest.TestCase):
     def test_multicycle_arrivals_preserve_explicit_interrupt_ownership(
         self,
     ) -> None:
-        self._run_testbench("tb_sequential_pipeline_interrupt_multicycle")
+        output = self._run_testbench(
+            "tb_sequential_pipeline_interrupt_multicycle"
+        )
+        self.assertIn("(128 native-phase arrival cases)", output)
 
     def test_one_cycle_arrivals_preserve_explicit_interrupt_ownership(
         self,

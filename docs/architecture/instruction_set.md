@@ -67,10 +67,13 @@ while EINT or DINT retires and either mask control in the already-protected
 slot. Request-during-DINT masks service but retains the request; protected
 redundant EINT adds no second deferral. Protected DINT reproduces the current
 cancellation policy and is labeled PROVISIONAL rather than silicon evidence
-under `OQ-019`/`SC-039`. The existing core/explicit matrices plus four
-CALA/RET explicit cases cover all 36 represented arrival intervals across 17
-supported multicycle families; physical sampling, PUSH/POP cycles, and
-physical confirmation of ADR-0003 remain `OQ-004`/`OQ-007`/`OQ-016`.
+under `OQ-019`/`SC-039`. The 32-case logical-core matrix and 128-case explicit
+interval/native-phase matrix cover the same machine intervals; four CALA/RET
+explicit cases complete all 36 represented arrival intervals across 17
+supported multicycle families. The 128 explicit cases include one selected-
+phase pause and assert enabled-falling-boundary ownership. Physical sampling,
+PUSH/POP cycles, and physical confirmation of ADR-0003 remain
+`OQ-004`/`OQ-007`/`OQ-016`.
 
 ## Qualified `LST` functional slice
 

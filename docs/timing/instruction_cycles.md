@@ -188,10 +188,12 @@ accumulator-condition branches, IN, OUT, TBLR, and TBLW. It asserts that each
 instruction reaches its documented two- or three-cycle retirement before
 deferral, then permits one protected instruction and performs the dummy/vector
 sequence. This exhausts the currently modeled multicycle machine-cycle
-boundaries. A matching explicit-pipeline matrix checks those 32 execution
-intervals with family-specific MEN/DEN/WE ownership, no midinstruction entry,
-one protected retirement, dummy discard, stack entry, acknowledge state, and
-vector capture. A bounded actual-core formal harness independently selects
+boundaries. The explicit-pipeline matrix crosses those 32 execution intervals
+with all four represented native request phases for 128 cases. Each case
+inserts one clock-enable pause at arrival and checks stable bus/state, no
+pre-boundary recognition or retirement, family-specific MEN/DEN/WE ownership,
+completion, one protected retirement, dummy discard, stack entry,
+acknowledge state, and vector capture. A bounded actual-core formal harness independently selects
 either execution interval of one fixed unconditional `B`. It proves canonical
 operand presentation, no midinstruction entry, resolved target `0x010`, one
 protected LACK, return-PC dummy fetch, stack push, and vector selection through
@@ -523,8 +525,9 @@ VERIFIED_SIMULATION for explicit and legacy implementations.**
   setup/synchronizer behavior, and the provisional DINT-at-final-boundary
   ordering (`OQ-004`, `OQ-007`, `OQ-016`, `OQ-019`); the basic Figure 2-12
   protected/dummy/vector path, MPY/MPYK protected-slot extension, table
-  repeated-prefetch ownership, all 32 represented matrix intervals, and all
-  four CALA/RET explicit intervals are qualified;
+  repeated-prefetch ownership, all 32 represented matrix intervals across all
+  four native phases in the explicit wrapper, and all four CALA/RET explicit
+  intervals are qualified;
 - electrical wrapper constraints for the primary-resolved 48.78–150 ns
   TMS32010-20 master-clock and 47.5–52.5% pulse envelope.
 

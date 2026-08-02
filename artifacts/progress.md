@@ -1,6 +1,7 @@
 # Progress summary
 
-- **Current milestone:** `FORMAL-001` explicit-pipeline table/interrupt composition
+- **Current milestone:** `CTRL-002`/`TIMING-001` multicycle native-phase
+  interrupt recognition
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
 - **Tests passing:** 246 repository/provenance/document/ISA/toolchain/program
   tests; 232
@@ -21,9 +22,13 @@
   IN/OUT cycle/state/RAM/transaction differential; focused three-cycle
   TBLR/TBLW bus/state/stack/RAM/program-memory differential; focused
   EINT/protected-instruction/dummy-entry/vector model/RTL differential; 36
-  directed request-arrival cases across every represented machine cycle
-  of all 17 currently supported multicycle core families; four native
-  subphase arrivals with a stalled phase-2 case and falling-boundary ownership;
+  directed request-arrival machine-interval cases across all 17 currently
+  supported multicycle core families, including a 128-case explicit-pipeline
+  cross-product of four native phases with the 32 B/BANZ/BV/BIOZ/CALL/
+  accumulator-branch/IN/OUT/TBLR/TBLW intervals; every 128-case arrival has a
+  selected-phase clock-enable pause, stable bus/state, and enabled-falling-
+  boundary recognition; four legacy native subphase arrivals independently
+  include a stalled phase-2 case and falling-boundary ownership;
   plus fourteen ROM-free MAME-adapter/orchestration tests covering strict
   parsing, original-part widths, state normalization, strict model-state
   validation, pre/post boundary alignment, safe debugger command generation,
@@ -1769,6 +1774,18 @@
   physical interrupt capture, package delay, setup/hold, or electrical
   timing. No synthesizable RTL changed, so prior synthesis evidence remains
   applicable.
+- **New multicycle native-phase interrupt evidence:** the explicit-pipeline
+  directed matrix now crosses all four represented request phases with all 32
+  supported multicycle execution intervals for 128 cases. Every case inserts
+  one clock-enable pause at the arrival phase and checks the complete retained
+  architectural/bus bundle, no pre-boundary pending capture or retirement,
+  family-specific MEN/DEN/WE ownership, multicycle completion, one protected
+  retirement, dummy return-PC discard, stack/mask/pending acknowledge effects,
+  and vector capture. The separate logical-core matrix remains 32 interval
+  cases, and CALA/RET remain four interval-only cases. This is digital
+  simulation evidence, not physical setup/synchronizer, package-delay,
+  electrical, CALA/RET-subphase, PUSH/POP, or DINT-priority proof. No
+  synthesizable RTL changed, so prior synthesis evidence remains applicable.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1817,10 +1834,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** select the next highest-priority unblocked evidence slice,
-  with explicit-pipeline table-read/interrupt or indirect-table/interrupt
-  composition candidates, without generalizing beyond documented core behavior;
-  keep PUSH/POP
-  ownership blocked under `OQ-016` rather than inventing bus phases.
+- **Next task:** extend the explicit CALA/RET interrupt-arrival matrix across
+  all four represented native phases, retaining ADR-0003's CORROBORATED-RET/
+  INFERRED-CALA confidence and leaving PUSH/POP ownership blocked under
+  `OQ-016` rather than inventing bus phases.
 - **Latest committed baseline before this cycle:**
-  `0e62fc7`
+  `c73b1b1`

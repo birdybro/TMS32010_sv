@@ -54,15 +54,17 @@ Directed tests cover a one-cycle pulse, a held-low level that relatches after
 acknowledge, a pulse retained while masked, entry after EINT plus its required
 following instruction, completion of a two-cycle branch before deferral,
 MPY/MPYK protection through one additional instruction, reset clearing, and
-model/RTL state comparison. Matching 32-case core and explicit-pipeline
-matrices drive a one-machine-cycle active-low pulse at each modeled execution
-interval of all 15 currently supported
-multicycle families: the 11 two-word control-flow operations, `IN`, `OUT`,
-`TBLR`, and `TBLW`. Every case asserts the family-specific logical bus shape,
-no midinstruction entry, final retirement before deferral, exactly one
-protected instruction, a nonretiring dummy fetch at the resolved return PC
-with next address `0x002`, and the resulting stack/vector state. The explicit
-matrix also checks family-specific MEN/DEN/WE ownership. The native
+model/RTL state comparison. A 32-case logical-core matrix drives a one-
+machine-cycle active-low pulse at each modeled execution interval of all 15
+currently supported multicycle families: the 11 two-word control-flow
+operations, `IN`, `OUT`, `TBLR`, and `TBLW`. The matching explicit-pipeline
+matrix crosses those 32 intervals with all four represented native request
+phases for 128 cases. Every explicit case inserts one clock-enable pause at
+the selected phase and asserts no recognition or retirement before the
+enabled falling boundary, the family-specific logical/native bus shape, final
+retirement before deferral, exactly one protected instruction, a nonretiring
+dummy fetch at the resolved return PC with next address `0x002`, and the
+resulting stack/vector state. The native
 test independently observes the external address sequence `N`, `N+1`, dummy
 return PC, `0x002` with ordinary `MEN` phases
 [`sim/interrupt/tb_interrupt_entry.sv`,
@@ -123,13 +125,15 @@ discard, the post-following stacked PC, vector capture, and deferred vector
 execution
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multiply.sv`].
 
-The 32-case explicit-pipeline matrix pulses active-low INT in every
-represented execution interval of B, BANZ, BV, BIOZ, CALL, all six
-accumulator branches, IN, OUT, TBLR, and TBLW. It checks the family-specific
-MEN/DEN/WE shape, no midinstruction entry, completion before service, one
-protected retirement, dummy discard, resolved return PC, stack entry,
-acknowledge state, and vector capture. A separate core matrix provides the
-same interval coverage at the architectural interface
+The 128-case explicit-pipeline matrix pulses active-low INT at every one of
+the four represented native phases in every execution interval of B, BANZ,
+BV, BIOZ, CALL, all six accumulator branches, IN, OUT, TBLR, and TBLW. Each
+case pauses clock enable once at the arrival phase and checks stable bus and
+retained state, no pre-boundary request recognition or retirement, the
+family-specific MEN/DEN/WE shape, completion before service, one protected
+retirement, dummy discard, resolved return PC, stack entry, acknowledge
+state, and vector capture. A separate 32-case core matrix provides the same
+machine-interval coverage at the architectural interface
 [`sim/interrupt/tb_sequential_pipeline_interrupt_multicycle.sv`,
 `sim/interrupt/tb_interrupt_multicycle_arrivals.sv`].
 

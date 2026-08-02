@@ -397,6 +397,7 @@ identify:
 - physical confirmation of the implemented `INFERRED` branch/call/return
   prefetch address order;
 - explicit interrupt ownership beyond the qualified EINT/protected-word/
-  discarded-N+2/vector path, MPY/MPYK extension, the matching 32-case
-  core/explicit matrices, and four CALA/RET explicit arrival cases;
+  discarded-N+2/vector path, MPY/MPYK extension, the 32-case logical-core and
+  128-case explicit interval/native-phase matrices, and four CALA/RET explicit
+  arrival cases;
 - any internal conflict that changes an otherwise normal read.

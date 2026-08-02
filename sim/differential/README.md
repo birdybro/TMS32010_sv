@@ -137,9 +137,12 @@ MAME exports neither the `/MEN` waveform nor per-cycle program addresses, so
 it does not resolve the original TMS32010 `OQ-007` or `OQ-016` bus questions.
 
 The 512-instruction stream is model/RTL functional evidence only. The focused
-B/BANZ/BIOZ/BV/CALL/CALA/RET/family/IN/OUT/TBLR/TBLW differentials supply logical
-per-cycle evidence; their separate native phase tests supply the physical
-subphase relationship. Neither result nor the MAME architectural-boundary
+B/BANZ/BIOZ/BV/CALL/CALA/RET/family/IN/OUT/TBLR/TBLW differentials supply
+logical per-cycle evidence; their separate native-phase tests supply the
+modeled digital subphase relationship. The 15-family multicycle interrupt
+matrix additionally crosses 32 execution intervals with four request phases,
+including one selected-phase clock-enable pause in each of its 128 cases.
+Neither result nor the MAME architectural-boundary
 adapter qualifies the remaining pipeline or pin timing.
 
 Failing seeds must be preserved as regression fixtures when randomized
