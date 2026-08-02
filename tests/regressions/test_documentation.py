@@ -222,6 +222,9 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         memory = (
             DOCS / "architecture" / "memory_model.md"
         ).read_text(encoding="utf-8")
+        trace_readme = (ROOT / "tools" / "trace" / "README.md").read_text(
+            encoding="utf-8"
+        )
         for required in (
             "patent columns 17-18 and 25-26",
             "PDF pages 35 and 39",
@@ -240,6 +243,15 @@ class ArchitectureDocumentationTests(unittest.TestCase):
         self.assertIn("## SC-038", conflicts)
         self.assertIn("PROVISIONAL safety policy", conflicts)
         self.assertIn("UNKNOWN outside that range", memory)
+        for required in (
+            "ram_boundary_capture.py",
+            "register_observations_sha256",
+            "acceptance_complete=false",
+            "does not require\nrepeatable data",
+        ):
+            self.assertIn(required, trace_readme)
+        self.assertIn("review_ready` is not acceptance completion", questions)
+        self.assertIn("preserves all 144 valid words", conflicts)
 
     def test_absent_ram_decode_stays_unknown_and_probe_order_is_safe(self) -> None:
         manifest = json.loads(

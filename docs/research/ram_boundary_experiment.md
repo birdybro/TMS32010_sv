@@ -159,6 +159,37 @@ resolve this question.
 7. Save raw analyzer files, decoded CSV, command transcript, photographs, pin
    map, and tool versions. Hash every artifact before conversion.
 
+## Fixed-baseline normalization
+
+Normalize both analyzer captures to one row per falling `CLKOUT` boundary and
+record the EVM state using the exact schemas in
+[the trace-tool README](../../tools/trace/README.md). Assemble the checked
+big-endian images and run the paired normalizer:
+
+```sh
+python3 -m tools.trace.ram_boundary_capture dmov.csv ltd.csv \
+  --dmov-metadata dmov-metadata.json \
+  --ltd-metadata ltd-metadata.json \
+  --dmov-image ram_boundary_dmov_probe.bin \
+  --ltd-image ram_boundary_ltd_probe.bin \
+  --register-observations registers.csv \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+The normalizer preserves every valid-RAM word and the diagnostic word; it does
+not require the scan to remain unchanged, the diagnostic to repeat, or the
+documented DMOV/LTD parallel register effects to match. Any of those outcomes
+may be the physical evidence sought. Fixture validity instead covers exact
+program images, fetch/write framing, complete output length, EVM run identity,
+and hashed raw-capture/transcript/photo provenance.
+
+`review_ready` describes only a complete paired fixed-baseline package. The
+report keeps `acceptance_complete=false` because these two exact images do not
+vary the immediately preceding legal read or sentinel and one device cannot
+establish mask invariance. Partial noncompletion and extra-output streams are
+retained in reports but cannot become review-ready.
+
 ## Acceptance and interpretation
 
 `OQ-014` can advance to `VERIFIED_HARDWARE` for the tested device only when

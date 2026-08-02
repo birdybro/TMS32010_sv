@@ -7,6 +7,15 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Added
 
+- A paired `tools.trace.ram_boundary_capture` workflow for `OQ-014`. It checks
+  both exact DMOV/LTD images, all scan/diagnostic fetch-write framing, 32-run
+  packages, EVM register-observation identity, and hashed raw/transcript/photo
+  provenance while preserving every measured word and field.
+- Six RAM-boundary capture regressions covering unchanged and corrupted valid
+  scans, varying diagnostic words, partial/extra flows, malformed framing and
+  register schemas, documented parallel-state differences, exact images,
+  transcript linkage, complete packages, and the fixed-baseline acceptance
+  boundary.
 - A strict `tools.trace.simultaneous_ar_capture` workflow for `OQ-010`. It
   validates the exact 23-word raw-instruction image, forced-word/result fetch
   ordering, terminal/trailing capture window, 32-run agreement, and raw/photo
@@ -1204,6 +1213,11 @@ Changelog, and the project follows semantic versioning once releases begin.
 
 ### Verified
 
+- The paired RAM-boundary normalizer can mark a structurally complete fixed-
+  baseline package review-ready without requiring repeated data or agreement
+  with the conservative model. It always reports `acceptance_complete=false`:
+  varied history/sentinels, raw engineering review, and another specimen are
+  still required, no physical capture exists, and `OQ-014` stays open.
 - The simultaneous-AR classifier permits `review_ready` only for a stable,
   terminal-reaching complete priority candidate with a complete evidence
   package. Stable partial noncompletion and unanticipated complete sequences
@@ -1236,7 +1250,7 @@ Changelog, and the project follows semantic versioning once releases begin.
   capture exists and no RTL timing sequence has been added.
 - Strict lint checks 46 RTL modules; all 62 formal tasks from 31 configurations
   pass; all 39 instruction, 57 bus/wrapper, five interrupt, and 25 differential
-  regressions pass, alongside 196 repository and 232 model/unit tests. All 36
+  regressions pass, alongside 202 repository and 232 model/unit tests. All 36
   Yosys targets pass with zero structural problems. The status relation maps
   to zero cells; the direct pipeline reports 15,850 cells/128 checks, the
   synthesis harness 15,844/128, the MiSTer wrapper 15,899/135, and the

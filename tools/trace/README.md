@@ -303,6 +303,55 @@ python3 -m tools.trace.simultaneous_ar_capture normalized.csv \
 `OQ-010`, make `0x68b8` supported, choose MAME or IKA as an original-part
 oracle, prove mask-revision invariance, or establish `VERIFIED_HARDWARE`.
 
+## DMOV/LTD RAM-boundary physical-capture normalizer
+
+`ram_boundary_capture.py` consumes the paired fixed-image `OQ-014` DMOV and
+LTD captures. For every run it retains the complete port-7 output sequence,
+hashes the 144-word valid-RAM scan, lists each changed valid address, records
+the unconstrained diagnostic `0x90` word, and checks the exact boundary,
+scan-OUT, diagnostic-OUT, and terminal fetch order. Partial scan,
+scan-complete/no-diagnostic, and extra-output flows remain explicit rather
+than being coerced to one of the experiment's hypotheses.
+
+The separate EVM register-observation CSV has this exact header:
+
+```text
+experiment,run,acc,t,p,ov,ovm,dp,arp,ar0,ar1,transcript_sha256
+```
+
+Values use `0x`-prefixed fixed-width-compatible hexadecimal, except the four
+one-bit fields. Each row must match one capture run, and its transcript hash
+must occur in that experiment's validated `raw_artifacts`. Both metadata
+sidecars must additionally set `register_observations_sha256` to the CSV's
+lowercase SHA-256. The normalizer checks only fixture-determined register
+state: ACC/T/P, DP, ARP, and AR0. It records OV, OVM, and AR1 verbatim because
+their retained/reset input state is not established by these programs.
+
+```sh
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/ram_boundary_dmov_probe.asm \
+  --binary ram_boundary_dmov_probe.bin --byteorder big
+python3 -m tools.assembler.tms32010_as \
+  tests/asm/ram_boundary_ltd_probe.asm \
+  --binary ram_boundary_ltd_probe.bin --byteorder big
+python3 -m tools.trace.ram_boundary_capture dmov.csv ltd.csv \
+  --dmov-metadata dmov-metadata.json \
+  --ltd-metadata ltd-metadata.json \
+  --dmov-image ram_boundary_dmov_probe.bin \
+  --ltd-image ram_boundary_ltd_probe.bin \
+  --register-observations registers.csv \
+  --artifact-root capture-artifacts \
+  --require-review-ready
+```
+
+Unlike the priority classifiers, `review_ready` deliberately does not require
+repeatable data or agreement with documented parallel effects: variation,
+aliasing, corruption, or coupled state is the evidence being measured. It
+means only that both fixed baselines have complete 32-run capture/register/
+provenance packages. The report therefore always leaves
+`acceptance_complete=false`; the varied-history/sentinel work, engineering
+review, a second specimen, and `OQ-008` mask scope remain outstanding.
+
 ## Driver Sound DAC code helper
 
 `hard_drivin_dac_codes.py` keeps A044427's raw twelve-bit Am6012 input separate

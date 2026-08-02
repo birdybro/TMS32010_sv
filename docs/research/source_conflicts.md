@@ -1063,7 +1063,11 @@ electrical result of an out-of-range access.
   effects as a PROVISIONAL safety policy. The clear/scan/register experiment
   in `docs/research/ram_boundary_experiment.md` is required before assigning
   physical suppression, hidden storage, aliasing, corruption, or parallel LTD
-  effects.
+  effects. Its paired normalizer preserves all 144 valid words, the diagnostic
+  word, and every captured register field even when they vary or contradict
+  the conservative implementation. `review_ready` qualifies only the fixed
+  baseline package; varied history/sentinels and raw engineering review remain
+  mandatory before this conflict can advance.
 - **Confidence:** VERIFIED_PRIMARY for the 144-word implemented range;
   UNKNOWN for every access beyond it and for the boundary move outcome.
 

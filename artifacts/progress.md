@@ -1,8 +1,8 @@
 # Progress summary
 
-- **Current milestone:** `ARCH-001` simultaneous AR-update physical-capture evidence
+- **Current milestone:** `ARCH-001` DMOV/LTD RAM-boundary physical-capture evidence
 - **Completed task IDs:** REPO-001, REF-001, TOOLS-001, BUS-003, TIMING-002
-- **Tests passing:** 196 repository/provenance/document/ISA/toolchain/program
+- **Tests passing:** 202 repository/provenance/document/ISA/toolchain/program
   tests; 232
   directed model/unit tests, including standalone fetch/execute and
   architectural-reset RTL units; 39 RTL
@@ -1401,6 +1401,19 @@
   every category and failure boundary. No physical capture exists, all 372
   words remain fail-closed unsupported, and `OQ-010` remains open. Synthesis
   and formal evidence are unchanged because no RTL changed.
+- **New RAM-boundary measurement evidence:** the paired
+  `tools.trace.ram_boundary_capture` workflow validates both exact 26-word
+  DMOV/LTD images, 144 descending valid-RAM samples plus the diagnostic
+  `0x90` word, fetch/write/terminal framing, EVM register-run identity, and
+  hashed raw/transcript/photo provenance. It lists every changed valid address
+  and preserves varying diagnostics or documented parallel-state differences
+  as possible evidence rather than failures. Partial scans, missing diagnostic
+  output, and extra output are separately retained. Six regressions cover all
+  data/framing/package boundaries. Even a review-ready fixed baseline reports
+  `acceptance_complete=false` because varied history/sentinels, raw review,
+  and another specimen remain outstanding. No physical data exists,
+  trap-before-effects stays PROVISIONAL, and `OQ-014` remains open. Synthesis
+  and formal evidence are unchanged because no RTL changed.
 - **Unresolved issues:** PUSH/POP multicycle pipeline ownership remains absent,
   and complete fetch/execute overlap remains unqualified beyond the supported
   one-cycle, branch/call/computed-control, I/O, table, and interrupt paths;
@@ -1449,9 +1462,9 @@
   still has 28,656 primary-unlisted words with unknown silicon behavior and
   372 unsupported simultaneous-update words with unknown original forced-word
   execution
-- **Next task:** continue `ARCH-001` with strict original-NMOS RAM-boundary
-  capture normalization for the DMOV/LTD source-`0x8f` destination experiment
-  under `OQ-014`/`SC-038`; preserve every valid-RAM scan and diagnostic word
-  without assigning the disputed destination behavior.
+- **Next task:** continue `ARCH-001` with strict original-NMOS absent-RAM
+  capture normalization under `OQ-002`/`SC-041`, preserving the ordered
+  controlled-history read-only sweep before analyzing either destructive
+  sentinel-write direction.
 - **Latest committed baseline before this cycle:**
-  `10a1eff`
+  `af752a4`

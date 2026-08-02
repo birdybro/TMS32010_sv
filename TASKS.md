@@ -120,7 +120,8 @@ objective passing evidence.
 - **Documentation:** `docs/architecture/*.md`, `docs/research/*.md`
 - **Tests:** `tests/regressions/test_documentation.py`,
   `tests/regressions/test_toolchain.py::ToolchainSliceTests::test_reset_retention_probe_images_and_provisional_paths_are_stable`,
-  `tests/regressions/test_simultaneous_ar_capture.py`
+  `tests/regressions/test_simultaneous_ar_capture.py`,
+  `tests/regressions/test_ram_boundary_capture.py`
 - **Notes:** Initial primary-cited baseline and ADR exist. The status register
   is now qualified as exactly five architectural bits plus a 16-bit LST/SST
   representation: bits 12:9 and 7:2 are fixed-one SST output/ignored LST
@@ -150,8 +151,15 @@ objective passing evidence.
   consistent 144-word/`128-143` production evidence, and the related patent's
   internally inconsistent row/column capacity. Stable DMOV and LTD probe
   images clear and scan all valid words through `OUT`, expose an `0x90` read,
-  and leave T/P/ACC inspectable. No boundary outcome has been assigned without
-  the physical capture.
+  and leave T/P/ACC inspectable. A paired strict normalizer now checks both
+  exact images, all 145 outputs, fetch/write framing, EVM register rows, and
+  hashed raw/transcript/photo provenance. It preserves varying diagnostics,
+  valid-RAM changes, and parallel-register mismatches as evidence instead of
+  test failures. Six regressions cover full, partial, extra, malformed, and
+  complete-package flows. Fixed-baseline `review_ready` remains explicitly
+  short of acceptance because varied history/sentinels, raw review, and a
+  second specimen remain required. No boundary outcome has been assigned
+  without the physical capture.
   The broader `OQ-002` absent-address question is separately reduced to three
   reproducible original-NMOS fixtures under `SC-041`: a read-only
   `0x90`-`0xff` sweep places controlled `0x0000` and `0xffff` legal reads
@@ -1156,6 +1164,11 @@ objective passing evidence.
   source/write addresses, page crossing, both overflow/OVM result directions,
   common indirect post-update, and provisional trap-before-effects when the
   destination is unresolved under `OQ-014`.
+  The paired physical-capture normalizer now makes that provisional behavior
+  reviewable without using it as an expected result: it retains the complete
+  valid scan, diagnostic value, and all EVM fields, and does not reject a
+  qualified package for differing RAM/register effects. No physical data is
+  present and the fixed baselines alone cannot complete `OQ-014` acceptance.
   `DMOV` now passes the same primary-cited database/model/tool/RTL,
   one-cycle, native-phase, and randomized differential path for the copy-only
   subset: unchanged source, distinct next-address write, ACC/T/P/status
